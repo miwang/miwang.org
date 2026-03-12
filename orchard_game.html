@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orchard Harvest</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, 'KaiTi', 'STKaiti', serif;
+            background-color: #87CEEB; /* 天空蓝 */
+            color: #333;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* --- 星星计分板 --- */
+        #star-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #ffcc00;
+            display: none; 
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-family: sans-serif;
+            font-weight: bold;
+        }
+
+        .star-icon { font-size: 1.8rem; }
+        @keyframes starPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+        .pop-anim { animation: starPop 0.4s ease-in-out; }
+
+        /* --- 开始界面 --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            width: 95%;
+            height: 100%;
+            padding-top: 20px;
+            z-index: 30;
+            background-color: #f4f9f9;
+            position: absolute;
+            top: 0; left: 0;
+        }
+
+        #start-screen h1 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #4CAF50;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            font-family: sans-serif;
+        }
+        .btn:hover { transform: scale(1.05); }
+
+        #char-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .char-card {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            background-color: white;
+            color: #333;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+            font-family: 'KaiTi', 'STKaiti', serif;
+        }
+        .char-card.selected {
+            background-color: #ff9eab; /* 桃子粉 */
+            color: white;
+            border: 3px solid #ff7b00;
+            transform: scale(1.1);
+        }
+
+        /* --- 游戏界面 --- */
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 树冠背景 */
+        .tree-canopy {
+            position: absolute;
+            top: -10%;
+            width: 120%;
+            height: 60%;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            z-index: 1;
+            box-shadow: inset 0 -20px 0 rgba(0,0,0,0.1);
+        }
+
+        .header {
+            margin-top: 20px;
+            font-size: 2.2rem;
+            font-weight: bold;
+            z-index: 10;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-family: sans-serif;
+            background: rgba(0,0,0,0.2);
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+
+        /* 果园区域 */
+        .orchard-board {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 50vh;
+            margin-top: 20px;
+            z-index: 10;
+        }
+
+        .fruit {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3), inset -10px -10px 20px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            font-family: 'KaiTi', 'STKaiti', serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .fruit::before {
+            content: '🌿';
+            position: absolute;
+            top: -20px;
+            font-size: 1.5rem;
+        }
+
+        .fruit:active { transform: scale(0.95); }
+
+        /* 三种水果的颜色 */
+        .peach { background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff69b4); } /* 桃子 */
+        .persimmon { background: radial-gradient(circle at 30% 30%, #ffa500, #ff4500); } /* 柿子 */
+        .jujube { background: radial-gradient(circle at 30% 30%, #cd5c5c, #8b0000); border-radius: 40% 40% 50% 50%; } /* 枣子 */
+
+        /* 动画：点错时摇晃 */
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+        .shake-anim { animation: shake 0.4s ease-in-out; }
+
+        /* 动画：摘下掉入篮子 */
+        @keyframes dropToBasket {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            80% { transform: translateY(300px) scale(0.5); opacity: 1; }
+            100% { transform: translateY(350px) scale(0); opacity: 0; }
+        }
+        .drop-anim {
+            animation: dropToBasket 0.6s ease-in forwards;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* 底部竹筐和草地 */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 25%;
+            background-color: #8FBC8F;
+            z-index: 2;
+            border-top: 10px solid #6B8E23;
+        }
+
+        .basket-container {
+            position: absolute;
+            bottom: 5%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .basket {
+            font-size: 6rem;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+            transition: transform 0.2s;
+        }
+        
+        .basket-bounce {
+            transform: scale(1.1) translateY(-10px);
+        }
+
+        #next-btn {
+            position: absolute;
+            bottom: 25%;
+            z-index: 20;
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            background-color: #f3b236;
+            color: #1f2e46;
+            border-radius: 50px;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .header { font-size: 1.5rem; margin-top: 10px; }
+            .fruit { width: 65px; height: 65px; font-size: 2.2rem; }
+            .basket { font-size: 5rem; }
+            #next-btn { bottom: 28%; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="star-container">
+        <span class="star-icon" id="star-icon">⭐</span> x <span id="star-count">0</span>
+    </div>
+
+    <div id="start-screen">
+        <h1>Select Characters to Harvest</h1>
+        <div class="controls">
+            <button class="btn" onclick="selectAll()">Select All</button>
+            <button class="btn" onclick="clearAll()">Clear All</button>
+            <button class="btn" style="background-color: #f3b236; color: #1f2e46;" onclick="startGame()">Start Harvest</button>
+        </div>
+        <div id="char-grid"></div>
+    </div>
+
+    <div id="game-screen">
+        <div class="tree-canopy"></div>
+        
+        <div class="header" id="result-text">
+            Pick the fruit with ______
+        </div>
+        
+        <div class="orchard-board" id="board"></div>
+
+        <button class="btn" id="next-btn" onclick="nextRound()">Next Round ➔</button>
+
+        <div class="basket-container">
+            <div class="basket" id="basket">🧺</div>
+        </div>
+        <div class="ground"></div>
+    </div>
+
+    <script>
+        const allChars = [
+            '四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太',
+            '六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也',
+            '八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有',
+            '要','是','了'
+        ];
+
+        let selectedChars = [];
+        let currentTargetIndex = -1;
+        let currentChars = [];
+        let totalStars = 0;
+        const fruitTypes = ['peach', 'persimmon', 'jujube'];
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // 摘错的摇晃声
+        function playShakeSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // 掉进篮子的清脆声
+        function playDropSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        window.onload = () => {
+            const grid = document.getElementById('char-grid');
+            allChars.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'char-card';
+                card.innerText = char;
+                card.onclick = () => card.classList.toggle('selected');
+                grid.appendChild(card);
+            });
+        };
+
+        function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
+        function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
+
+        function startGame() {
+            initAudio(); 
+            const selectedElements = document.querySelectorAll('.char-card.selected');
+            selectedChars = Array.from(selectedElements).map(el => el.innerText);
+            
+            if (selectedChars.length < 4) {
+                alert("Please select at least 4 characters!");
+                return;
+            }
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            document.getElementById('star-container').style.display = 'flex'; 
+            nextRound();
+        }
+
+        function nextRound() {
+            const board = document.getElementById('board');
+            const resultText = document.getElementById('result-text');
+            const nextBtn = document.getElementById('next-btn');
+            
+            board.innerHTML = '';
+            nextBtn.style.display = 'none';
+            currentChars = [];
+
+            // 随机选4个不重复的字
+            let tempChars = [...selectedChars];
+            for (let i = tempChars.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tempChars[i], tempChars[j]] = [tempChars[j], tempChars[i]];
+            }
+            currentChars = tempChars.slice(0, 4);
+            currentTargetIndex = Math.floor(Math.random() * 4);
+
+            resultText.innerText = `Pick the fruit with "${currentChars[currentTargetIndex]}"`;
+
+            // 随机生成水果位置 (避免重叠的简单算法)
+            const positions = [
+                { top: '10%', left: '15%' },
+                { top: '25%', left: '60%' },
+                { top: '60%', left: '20%' },
+                { top: '55%', left: '70%' }
+            ];
+
+            for (let i = 0; i < 4; i++) {
+                const fruit = document.createElement('div');
+                const randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+                
+                fruit.className = `fruit ${randomFruitType}`;
+                fruit.innerText = currentChars[i];
+                fruit.style.top = positions[i].top;
+                fruit.style.left = positions[i].left;
+                
+                fruit.onclick = function() { pickFruit(i, this); };
+                board.appendChild(fruit);
+            }
+        }
+
+        function pickFruit(index, fruitElement) {
+            if (index === currentTargetIndex) {
+                // 摘对了
+                playDropSound();
+                fruitElement.classList.add('drop-anim');
+                
+                // 篮子接住的动画
+                const basket = document.getElementById('basket');
+                setTimeout(() => {
+                    basket.classList.add('basket-bounce');
+                    setTimeout(() => basket.classList.remove('basket-bounce'), 200);
+                    addStar();
+                }, 400);
+
+                document.getElementById('result-text').innerText = "Great job!";
+                document.getElementById('next-btn').style.display = 'block';
+                
+                const allFruits = document.querySelectorAll('.fruit');
+                allFruits.forEach(f => f.style.pointerEvents = 'none');
+            } else {
+                // 摘错了
+                playShakeSound();
+                fruitElement.classList.add('shake-anim');
+                setTimeout(() => fruitElement.classList.remove('shake-anim'), 400);
+            }
+        }
+        
+        function addStar() {
+            totalStars++;
+            document.getElementById('star-count').innerText = totalStars;
+            const starIcon = document.getElementById('star-icon');
+            starIcon.classList.remove('pop-anim');
+            void starIcon.offsetWidth; 
+            starIcon.classList.add('pop-anim');
+        }
+    </script>
+</body>
+</html>
