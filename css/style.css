@@ -1,0 +1,83 @@
+/* 1. 引入“霞鹜文楷”云端字体 (全站的灵魂！) */
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
+/* 2. 全局基础设置 (取代每个网页里的 body 设置) */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    /* 魔法在这里：强制全站优先使用霞鹜文楷 */
+    font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+    background-color: #f4f9f9;
+    color: #333;
+    overflow-x: hidden; 
+}
+
+/* 3. 全局通用顶部导航栏 (Header) */
+.header {
+    width: 100%;
+    background-color: #598586;
+    color: white;
+    padding: 15px 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    position: relative;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.header h1 { 
+    margin: 0; 
+    font-size: 2rem; 
+    color: #f3b236; 
+}
+
+/* 4. 全局通用的返回按钮 (Back Button) */
+.back-btn {
+    position: absolute;
+    left: 15px;
+    top: 20px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+}
+.back-btn:hover {
+    transform: scale(1.1);
+}
+
+/* 5. 全局通用互动按钮 (比如 Start 按钮) */
+.btn {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    background-color: #f3b236;
+    color: #1f2e46;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    /* 按钮也强制用楷体 */
+    font-family: "LXGW WenKai Lite", system-ui, sans-serif; 
+}
+.btn:hover { transform: scale(1.05); }
+
+/* 6. 全局通用动画 (答对的弹跳和答错的摇晃) */
+@keyframes tada {
+    0% { transform: scale(1); }
+    10%, 20% { transform: scale(0.9) rotate(-3deg); }
+    30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+    40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+    100% { transform: scale(1); }
+}
+.success-anim { animation: tada 0.8s; border-color: #4CAF50 !important; }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+.error-anim { animation: shake 0.4s; border-color: #dc3545 !important; }

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 5 🐼</title>
+    
+    <link rel="icon" type="image/png" href="../favicon.png">
+    
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        /* ==========================================
+           这里只保留五子棋【专属】的棋盘和棋子代码
+           ========================================== */
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #status {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #598586;
+            margin-bottom: 15px;
+            height: 35px;
+        }
+
+        /* 棋盘设计：经典的木质颜色和网格 */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            background-color: #e6b981; /* 木板色 */
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border: 4px solid #8b5a2b;
+        }
+
+        /* 每一个棋盘格子 */
+        .cell {
+            width: 25px;
+            height: 25px;
+            border: 1px solid rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+        }
+
+        .cell:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 重新开始按钮的额外间距 */
+        .controls {
+            margin-top: 25px;
+        }
+
+        /* 手机屏幕适配，让棋盘格子变小一点以塞进屏幕 */
+        @media (max-width: 600px) {
+            .cell { width: 20px; height: 20px; font-size: 1rem; }
+            .board { padding: 5px; }
+            #status { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="../index.html" class="back-btn">⬅️ Back</a>
+        <h1>Connect 5 🐼</h1>
+    </div>
+
+    <div class="game-container">
+        <div id="status">Player 1 (🐼)'s Turn</div>
+        
+        <div class="board" id="board">
+            </div>
+
+        <div class="controls">
+            <button class="btn" onclick="resetGame()">Restart Game 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const ROWS = 15;
+        const COLS = 15;
+        let currentPlayer = '🐼'; // 玩家1是熊猫，玩家2是小猫
+        let boardState = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+        let gameActive = true;
+
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+
+        // 音效
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+
+        function playPlaceSound() {
+            initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playWinSound() {
+            initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+            osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.2); 
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+        }
+
+        // 初始化棋盘
+        function initBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.onclick = handleCellClick;
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(e) {
+            if (!gameActive) return;
+            const r = parseInt(e.target.dataset.row);
+            const c = parseInt(e.target.dataset.col);
+
+            // 如果已经有棋子了，不能下
+            if (boardState[r][c] !== null) return;
+
+            // 落子
+            playPlaceSound();
+            boardState[r][c] = currentPlayer;
+            e.target.innerText = currentPlayer;
+
+            // 检查是否获胜
+            if (checkWin(r, c, currentPlayer)) {
+                playWinSound();
+                statusElement.innerText = `${currentPlayer} WINS! 🎉`;
+                statusElement.style.color = "#e74c3c";
+                gameActive = false;
+                return;
+            }
+
+            // 换人
+            currentPlayer = currentPlayer === '🐼' ? '😸' : '🐼';
+            statusElement.innerText = `Player (${currentPlayer})'s Turn`;
+            statusElement.style.color = "#598586";
+        }
+
+        function checkWin(row, col, player) {
+            return checkDirection(row, col, player, 1, 0) || // 水平
+                   checkDirection(row, col, player, 0, 1) || // 垂直
+                   checkDirection(row, col, player, 1, 1) || // 对角线 \
+                   checkDirection(row, col, player, 1, -1);  // 对角线 /
+        }
+
+        function checkDirection(row, col, player, rowDir, colDir) {
+            let count = 1;
+            
+            // 往正方向数
+            let r = row + rowDir;
+            let c = col + colDir;
+            while (r >= 0 && r < ROWS && c >= 0 && c < COLS && boardState[r][c] === player) { count++; r += rowDir; c += colDir; }
+            
+            // 往反方向数
+            r = row - rowDir;
+            c = col - colDir;
+            while (r >= 0 && r < ROWS && c >= 0 && c < COLS && boardState[r][c] === player) { count++; r -= rowDir; c -= colDir; }
+
+            return count >= 5;
+        }
+
+        function resetGame() {
+            boardState = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+            currentPlayer = '🐼';
+            gameActive = true;
+            statusElement.innerText = `Player 1 (🐼)'s Turn`;
+            statusElement.style.color = "#598586";
+            
+            // 清空界面上的棋子
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => cell.innerText = '');
+        }
+
+        initBoard();
+    </script>
+</body>
+</html>

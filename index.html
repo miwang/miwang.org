@@ -6,95 +6,25 @@
     <title>Wang Laoshi's Chinese Playground</title>
     
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/style.css">
     
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', system-ui, -apple-system, sans-serif;
-            background-color: #f4f9f9;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .header {
-            width: 100%;
-            background-color: #598586;
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-bottom: 8px solid #f3b236;
-            box-sizing: border-box;
-        }
-
-        .header h1 { margin: 0; font-size: 3rem; letter-spacing: 2px; }
+        .header { padding: 40px 20px; border-bottom: 8px solid #f3b236; }
+        .header h1 { font-size: 3rem; letter-spacing: 2px; color: white;}
         .header p { font-size: 1.2rem; margin-top: 10px; opacity: 0.9; }
 
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 40px auto;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            color: #1f2e46;
-            border-left: 6px solid #f3b236;
-            padding-left: 15px;
-            margin-bottom: 20px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            text-decoration: none;
-            color: #333;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            border: 2px solid transparent;
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
-            border-color: #f3b236;
-        }
-
+        .container { width: 90%; max-width: 1000px; margin: 40px auto; display: flex; flex-direction: column; gap: 40px; }
+        .section-title { font-size: 2rem; color: #1f2e46; border-left: 6px solid #f3b236; padding-left: 15px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        
+        .card { background: white; border-radius: 20px; padding: 25px; text-decoration: none; color: #333; box-shadow: 0 8px 15px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; align-items: center; text-align: center; border: 2px solid transparent; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 15px 25px rgba(0,0,0,0.1); border-color: #f3b236; }
         .card-icon { font-size: 4rem; margin-bottom: 15px; }
         .card-title { font-size: 1.5rem; font-weight: bold; color: #598586; margin-bottom: 10px; }
         .card-desc { font-size: 1rem; color: #666; }
 
-        .footer {
-            margin-top: auto;
-            padding: 30px;
-            text-align: center;
-            color: #888;
-            font-size: 1rem;
-            width: 100%;
-        }
-
-        @media (max-width: 600px) {
-            .header h1 { font-size: 2.2rem; }
-            .section-title { font-size: 1.6rem; }
-            .grid { grid-template-columns: 1fr; }
-        }
+        .footer { margin-top: auto; padding: 30px; text-align: center; color: #888; font-size: 1rem; width: 100%; }
+        @media (max-width: 600px) { .header h1 { font-size: 2.2rem; } .section-title { font-size: 1.6rem; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -105,23 +35,20 @@
     </div>
 
     <div class="container">
-        
         <div>
             <div class="section-title">🎮 Interactive Games</div>
             <div class="grid">
-                <a href="cat_game.html" class="card">
+                <a href="games/cat_game.html" class="card">
                     <div class="card-icon">😸</div>
                     <div class="card-title">Where is the Cat?</div>
                     <div class="card-desc">Practice reading characters by finding the hidden cat!</div>
                 </a>
-
-                <a href="connect_5.html" class="card">
+                <a href="games/connect_5.html" class="card">
                     <div class="card-icon">🐼</div>
                     <div class="card-title">Connect 5</div>
                     <div class="card-desc">Strategy and character recognition game.</div>
                 </a>
-
-                <a href="orchard_game.html" class="card">
+                <a href="games/orchard_game.html" class="card">
                     <div class="card-icon">🍎</div>
                     <div class="card-title">In the Orchard</div>
                     <div class="card-desc">Pick peaches, persimmons, and jujubes while learning!</div>
@@ -132,7 +59,7 @@
         <div>
             <div class="section-title">📝 Writing Practice</div>
             <div class="grid">
-                <a href="writing_tasks.html" class="card">
+                <a href="writing/writing_tasks.html" class="card">
                     <div class="card-icon">✍️</div>
                     <div class="card-title">Writing Assignments</div>
                     <div class="card-desc">Check your weekly Chinese character tracing tasks!</div>
@@ -143,19 +70,15 @@
         <div>
             <div class="section-title">🔢 Math Station</div>
             <div class="grid">
-                <a href="teen_numbers.html" class="card">
+                <a href="math/teen_numbers.html" class="card">
                     <div class="card-icon">🔟</div>
                     <div class="card-title">Teen Numbers</div>
                     <div class="card-desc">Make numbers 11-19 using 10 and some more!</div>
                 </a>
             </div>
         </div>
-
     </div>
 
-    <div class="footer">
-        Created with ❤️ by Wang Laoshi for our amazing kindergarteners!
-    </div>
-
+    <div class="footer">Created with ❤️ by Wang Laoshi for our amazing kindergarteners!</div>
 </body>
 </html>
