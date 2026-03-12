@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wang Laoshi's Chinese Playground</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    
     <style>
         body {
             margin: 0;
@@ -27,17 +30,8 @@
             box-sizing: border-box;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 3rem;
-            letter-spacing: 2px;
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            opacity: 0.9;
-        }
+        .header h1 { margin: 0; font-size: 3rem; letter-spacing: 2px; }
+        .header p { font-size: 1.2rem; margin-top: 10px; opacity: 0.9; }
 
         .container {
             width: 90%;
@@ -83,37 +77,9 @@
             border-color: #f3b236;
         }
 
-        .card-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #598586;
-            margin-bottom: 10px;
-        }
-
-        .card-desc {
-            font-size: 1rem;
-            color: #666;
-        }
-
-        .card.coming-soon {
-            background: #e9ecef;
-            cursor: default;
-            border-color: transparent;
-        }
-
-        .card.coming-soon:hover {
-            transform: none;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
-        }
-
-        .card.coming-soon .card-title {
-            color: #999;
-        }
+        .card-icon { font-size: 4rem; margin-bottom: 15px; }
+        .card-title { font-size: 1.5rem; font-weight: bold; color: #598586; margin-bottom: 10px; }
+        .card-desc { font-size: 1rem; color: #666; }
 
         .footer {
             margin-top: auto;
@@ -135,7 +101,7 @@
 
     <div class="header">
         <h1>Wang Laoshi's Chinese Playground 🐼</h1>
-        <p>Fun, interactive games to practice Chinese characters at home!</p>
+        <p>Fun, interactive games to learn and play at home!</p>
     </div>
 
     <div class="container">
@@ -154,23 +120,34 @@
                     <div class="card-title">Connect 5</div>
                     <div class="card-desc">Strategy and character recognition game.</div>
                 </a>
+
+                <a href="orchard_game.html" class="card">
+                    <div class="card-icon">🍎</div>
+                    <div class="card-title">In the Orchard</div>
+                    <div class="card-desc">Pick peaches, persimmons, and jujubes while learning!</div>
+                </a>
             </div>
         </div>
 
         <div>
-            <div class="section-title">🌱 Nature & Life</div>
+            <div class="section-title">📝 Writing Practice</div>
             <div class="grid">
-<a href="writing_tasks.html" class="card">
-    <div class="card-icon">📝</div>
-    <div class="card-title">Writing Assignments</div>
-    <div class="card-desc">Check your weekly Chinese character tracing tasks!</div>
-</a>
-                
-                <a href="tracing.html?char=天" class="card">
-    <div class="card-icon">✍️</div>
-    <div class="card-title">Stroke Order</div>
-    <div class="card-desc">Practice writing Chinese characters!</div>
-</a>
+                <a href="writing_tasks.html" class="card">
+                    <div class="card-icon">✍️</div>
+                    <div class="card-title">Writing Assignments</div>
+                    <div class="card-desc">Check your weekly Chinese character tracing tasks!</div>
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">🔢 Math Station</div>
+            <div class="grid">
+                <a href="teen_numbers.html" class="card">
+                    <div class="card-icon">🔟</div>
+                    <div class="card-title">Teen Numbers</div>
+                    <div class="card-desc">Make numbers 11-19 using 10 and some more!</div>
+                </a>
             </div>
         </div>
 
