@@ -22,49 +22,65 @@
             width: 100%;
             background-color: #598586;
             color: white;
-            padding: 20px 10px;
+            padding: 15px 10px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            box-sizing: border-box;
+            position: relative;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 2rem;
-            color: #f3b236;
-        }
-
-        /* 控制面板（供家长或老师输入） */
-        .controls {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        #char-input {
-            font-size: 1.5rem;
-            width: 60px;
-            text-align: center;
-            padding: 10px;
-            border: 2px solid #598586;
-            border-radius: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            background-color: #f3b236;
-            color: #1f2e46;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
+        .header h1 { margin: 0; font-size: 1.8rem; color: #f3b236; }
+        
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 18px;
+            color: white;
+            text-decoration: none;
             font-weight: bold;
-            transition: transform 0.2s;
+            font-size: 1.2rem;
         }
 
-        .btn:hover { transform: scale(1.05); }
-        .btn-secondary { background-color: #598586; color: white; }
+        /* 进度条区域 */
+        .progress-container {
+            margin: 20px 0 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .progress-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2e46;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* 提示信息 */
+        #message {
+            font-size: 1.4rem;
+            font-weight: bold;
+            height: 35px;
+            margin: 10px 0;
+            text-align: center;
+            transition: color 0.2s;
+        }
 
         /* 描红区域 */
         #character-target-div {
@@ -72,12 +88,11 @@
             border: 4px dashed #ccc;
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            /* 这个属性非常重要，防止在手机上画画时页面跟着滚动 */
             touch-action: none; 
             margin-bottom: 20px;
+            position: relative;
         }
 
-        /* 米字格背景 */
         .grid-background {
             background-image: 
                 linear-gradient(transparent 49%, #f0d4d4 49%, #f0d4d4 51%, transparent 51%),
@@ -87,14 +102,18 @@
             background-size: 100% 100%;
         }
 
-        #message {
-            font-size: 1.5rem;
+        .btn-hint {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #f3b236;
+            color: #1f2e46;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
             font-weight: bold;
-            color: #4CAF50;
-            height: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
-        /* 成功动画 */
         @keyframes tada {
             0% { transform: scale(1); }
             10%, 20% { transform: scale(0.9) rotate(-3deg); }
@@ -104,30 +123,61 @@
         }
         .success-anim { animation: tada 1s; }
 
+        /* 完成 10 次的撒花遮罩 */
+        #celebration {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        #celebration h2 { color: #ff7b00; font-size: 2.5rem; margin-bottom: 10px;}
+        #celebration p { font-size: 1.5rem; color: #4CAF50; font-weight: bold;}
     </style>
 </head>
 <body>
 
     <div class="header">
+        <a href="writing_tasks.html" class="back-btn">⬅️ Back</a>
         <h1>Trace the Character ✍️</h1>
     </div>
 
-    <div class="controls" id="input-controls">
-        <input type="text" id="char-input" maxlength="1" placeholder="字">
-        <button class="btn" onclick="loadUserChar()">Load</button>
-        <button class="btn btn-secondary" onclick="animateChar()">Show Me</button>
+    <div class="progress-container">
+        <div class="progress-text">Practice: <span id="count-display">0</span> / 10</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
     </div>
 
-    <div id="character-target-div" class="grid-background"></div>
+    <div id="message">Draw the strokes in order!</div>
 
-    <div id="message"></div>
+    <div id="character-target-div" class="grid-background">
+        <div id="celebration">
+            <h2>🎉 Amazing! 🎉</h2>
+            <p>You finished 10 times!</p>
+        </div>
+    </div>
+
+    <button class="btn-hint" onclick="animateChar()">Show Me Hint 👁️</button>
 
     <script>
         let writer;
+        let practiceCount = 0;
+        const targetCount = 10;
+        
         const targetDiv = document.getElementById('character-target-div');
         const messageDiv = document.getElementById('message');
+        const countDisplay = document.getElementById('count-display');
+        const progressFill = document.getElementById('progress-fill');
+        const celebrationDiv = document.getElementById('celebration');
 
-        // 音效配置
+        // 正向鼓励语库
+        const encouragements = ["Good job! 👍", "Excellent! 🌟", "Perfect stroke! ✨", "Keep going! 💪"];
+
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
 
@@ -136,78 +186,56 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        // 画对一笔的提示音
         function playStrokeSound() {
             initAudio();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.type = 'sine';
             osc.frequency.setValueAtTime(600, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // 画错的提示音
         function playMistakeSound() {
             initAudio();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(200, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         }
 
-        // 全部完成的欢呼声
         function playWinSound() {
             initAudio();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
             osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
             osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.2); 
             gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.6);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.6);
         }
 
-        // 核心渲染函数
         function renderCharacter(char) {
             initAudio();
-            targetDiv.innerHTML = ''; // 清空之前的字
-            messageDiv.innerText = '';
-            targetDiv.classList.remove('success-anim');
-
-            // 根据屏幕大小调整画板尺寸，适配手机
             const size = window.innerWidth < 400 ? 300 : 350;
             
             writer = HanziWriter.create('character-target-div', char, {
-                width: size,
-                height: size,
-                padding: 20,
-                showOutline: true, // 显示底部的灰色轮廓
-                showCharacter: false, // 隐藏原本写好的字，等待描红
-                strokeAnimationSpeed: 1.5,
-                delayBetweenStrokes: 150,
-                drawingColor: '#f3b236', // 描红的颜色
-                drawingWidth: 20, // 笔画粗细，适合小朋友的手指
-                outlineColor: '#e0e0e0'
+                width: size, height: size, padding: 20,
+                showOutline: true, showCharacter: false,
+                strokeAnimationSpeed: 1.5, delayBetweenStrokes: 150,
+                drawingColor: '#f3b236', drawingWidth: 20, outlineColor: '#e0e0e0'
             });
 
-            // 开启互动测验模式
             startQuiz();
         }
 
@@ -215,64 +243,69 @@
             writer.quiz({
                 onMistake: function(strokeData) {
                     playMistakeSound();
-                    messageDiv.style.color = 'red';
-                    messageDiv.innerText = 'Oops! Try again! ❌';
+                    messageDiv.style.color = '#e74c3c';
+                    messageDiv.innerText = "再想想！Let's double check 🤔";
                 },
                 onCorrectStroke: function(strokeData) {
                     playStrokeSound();
-                    messageDiv.innerText = ''; 
+                    messageDiv.style.color = '#598586';
+                    // 随机播放一条鼓励语
+                    messageDiv.innerText = encouragements[Math.floor(Math.random() * encouragements.length)];
                 },
                 onComplete: function(summaryData) {
                     playWinSound();
-                    messageDiv.style.color = '#4CAF50';
-                    messageDiv.innerText = 'Perfect! 🌟🌟🌟';
-                    targetDiv.classList.add('success-anim'); // 播放弹跳动画
+                    practiceCount++;
+                    updateProgress();
                     
-                    // 3秒后自动重新开始让孩子再练一次
-                    setTimeout(() => {
-                        writer.hideCharacter();
-                        startQuiz();
-                        targetDiv.classList.remove('success-anim');
-                        messageDiv.innerText = 'Try again!';
-                    }, 3000);
+                    targetDiv.classList.add('success-anim');
+                    
+                    if (practiceCount < targetCount) {
+                        messageDiv.style.color = '#4CAF50';
+                        messageDiv.innerText = `Nice! ${practiceCount} done! Next one...`;
+                        
+                        // 1.5秒后自动清空画板，继续下一次
+                        setTimeout(() => {
+                            writer.hideCharacter();
+                            targetDiv.classList.remove('success-anim');
+                            messageDiv.style.color = '#333';
+                            messageDiv.innerText = "Let's draw it again!";
+                            startQuiz();
+                        }, 1500);
+                    } else {
+                        // 完成10次！
+                        messageDiv.innerText = "";
+                        celebrationDiv.style.display = "flex";
+                    }
                 }
             });
         }
 
-        // 播放自动书写演示
+        function updateProgress() {
+            countDisplay.innerText = practiceCount;
+            const percentage = (practiceCount / targetCount) * 100;
+            progressFill.style.width = percentage + '%';
+        }
+
         function animateChar() {
             if(writer) {
                 initAudio();
+                messageDiv.innerText = "Watch carefully 👀";
                 writer.hideCharacter();
                 writer.animateCharacter({
                     onComplete: function() {
-                        setTimeout(startQuiz, 1000); // 演示完1秒后恢复书写模式
+                        setTimeout(() => {
+                            messageDiv.innerText = "Now your turn!";
+                            startQuiz();
+                        }, 500);
                     }
                 });
             }
         }
 
-        function loadUserChar() {
-            const inputChar = document.getElementById('char-input').value;
-            if (inputChar && inputChar.trim() !== '') {
-                renderCharacter(inputChar.trim()[0]);
-            }
-        }
-
-        // --- 超级外挂：读取网址里的汉字 ---
         window.onload = function() {
-            // 抓取网址里的参数，比如 ?char=看
             const urlParams = new URLSearchParams(window.location.search);
-            const charFromUrl = urlParams.get('char');
-
-            if (charFromUrl) {
-                // 如果网址里带了字，自动加载那个字，并且把输入框藏起来，防止孩子乱点
-                document.getElementById('char-input').value = charFromUrl;
-                renderCharacter(charFromUrl);
-            } else {
-                // 默认加载一个字
-                renderCharacter('天');
-            }
+            const charFromUrl = urlParams.get('char') || '看';
+            renderCharacter(charFromUrl);
         };
     </script>
 </body>

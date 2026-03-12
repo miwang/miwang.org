@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Assignments</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f4f9f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            background-color: #598586;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 { margin: 0; font-size: 2.5rem; color: #f3b236; }
+        .header p { font-size: 1.2rem; opacity: 0.9; margin-top: 10px; }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 每日任务卡片 */
+        .task-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            border-left: 8px solid #f3b236;
+        }
+
+        .task-date {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2e46;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 10px;
+        }
+
+        .char-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        /* 可点击的汉字按钮 */
+        .char-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: #e0e0e0;
+            color: #333;
+            font-size: 2rem;
+            text-decoration: none;
+            border-radius: 15px;
+            font-family: 'KaiTi', 'STKaiti', serif;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .char-btn:hover {
+            background-color: #598586;
+            color: #f3b236;
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        .back-home {
+            margin-top: 20px;
+            text-decoration: none;
+            color: #598586;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📝 Writing Practice</h1>
+        <p>Click a character to start your 10-times practice!</p>
+    </div>
+
+    <div class="container">
+        <div class="task-card">
+            <div class="task-date">📅 Week 1: Mar 15 - Mar 19</div>
+            <div class="char-container">
+                <a href="tracing.html?char=水" class="char-btn">水</a>
+                <a href="tracing.html?char=少" class="char-btn">少</a>
+                <a href="tracing.html?char=看" class="char-btn">看</a>
+            </div>
+        </div>
+
+        <div class="task-card">
+            <div class="task-date">📅 Week 2: Mar 22 - Mar 26</div>
+            <div class="char-container">
+                <a href="tracing.html?char=天" class="char-btn">天</a>
+                <a href="tracing.html?char=上" class="char-btn">上</a>
+                <a href="tracing.html?char=下" class="char-btn">下</a>
+            </div>
+        </div>
+    </div>
+
+    <a href="index.html" class="back-home">⬅️ Back to Playground</a>
+
+</body>
+</html>
