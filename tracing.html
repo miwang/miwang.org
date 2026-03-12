@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stroke Order Practice</title>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f4f9f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .header {
+            width: 100%;
+            background-color: #598586;
+            color: white;
+            padding: 20px 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #f3b236;
+        }
+
+        /* 控制面板（供家长或老师输入） */
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #char-input {
+            font-size: 1.5rem;
+            width: 60px;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #598586;
+            border-radius: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #f3b236;
+            color: #1f2e46;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover { transform: scale(1.05); }
+        .btn-secondary { background-color: #598586; color: white; }
+
+        /* 描红区域 */
+        #character-target-div {
+            background-color: white;
+            border: 4px dashed #ccc;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            /* 这个属性非常重要，防止在手机上画画时页面跟着滚动 */
+            touch-action: none; 
+            margin-bottom: 20px;
+        }
+
+        /* 米字格背景 */
+        .grid-background {
+            background-image: 
+                linear-gradient(transparent 49%, #f0d4d4 49%, #f0d4d4 51%, transparent 51%),
+                linear-gradient(90deg, transparent 49%, #f0d4d4 49%, #f0d4d4 51%, transparent 51%),
+                linear-gradient(45deg, transparent 49%, #f0d4d4 49%, #f0d4d4 51%, transparent 51%),
+                linear-gradient(-45deg, transparent 49%, #f0d4d4 49%, #f0d4d4 51%, transparent 51%);
+            background-size: 100% 100%;
+        }
+
+        #message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            height: 30px;
+        }
+
+        /* 成功动画 */
+        @keyframes tada {
+            0% { transform: scale(1); }
+            10%, 20% { transform: scale(0.9) rotate(-3deg); }
+            30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+            40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+            100% { transform: scale(1); }
+        }
+        .success-anim { animation: tada 1s; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Trace the Character ✍️</h1>
+    </div>
+
+    <div class="controls" id="input-controls">
+        <input type="text" id="char-input" maxlength="1" placeholder="字">
+        <button class="btn" onclick="loadUserChar()">Load</button>
+        <button class="btn btn-secondary" onclick="animateChar()">Show Me</button>
+    </div>
+
+    <div id="character-target-div" class="grid-background"></div>
+
+    <div id="message"></div>
+
+    <script>
+        let writer;
+        const targetDiv = document.getElementById('character-target-div');
+        const messageDiv = document.getElementById('message');
+
+        // 音效配置
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // 画对一笔的提示音
+        function playStrokeSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        // 画错的提示音
+        function playMistakeSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // 全部完成的欢呼声
+        function playWinSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+            osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.2); 
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.6);
+        }
+
+        // 核心渲染函数
+        function renderCharacter(char) {
+            initAudio();
+            targetDiv.innerHTML = ''; // 清空之前的字
+            messageDiv.innerText = '';
+            targetDiv.classList.remove('success-anim');
+
+            // 根据屏幕大小调整画板尺寸，适配手机
+            const size = window.innerWidth < 400 ? 300 : 350;
+            
+            writer = HanziWriter.create('character-target-div', char, {
+                width: size,
+                height: size,
+                padding: 20,
+                showOutline: true, // 显示底部的灰色轮廓
+                showCharacter: false, // 隐藏原本写好的字，等待描红
+                strokeAnimationSpeed: 1.5,
+                delayBetweenStrokes: 150,
+                drawingColor: '#f3b236', // 描红的颜色
+                drawingWidth: 20, // 笔画粗细，适合小朋友的手指
+                outlineColor: '#e0e0e0'
+            });
+
+            // 开启互动测验模式
+            startQuiz();
+        }
+
+        function startQuiz() {
+            writer.quiz({
+                onMistake: function(strokeData) {
+                    playMistakeSound();
+                    messageDiv.style.color = 'red';
+                    messageDiv.innerText = 'Oops! Try again! ❌';
+                },
+                onCorrectStroke: function(strokeData) {
+                    playStrokeSound();
+                    messageDiv.innerText = ''; 
+                },
+                onComplete: function(summaryData) {
+                    playWinSound();
+                    messageDiv.style.color = '#4CAF50';
+                    messageDiv.innerText = 'Perfect! 🌟🌟🌟';
+                    targetDiv.classList.add('success-anim'); // 播放弹跳动画
+                    
+                    // 3秒后自动重新开始让孩子再练一次
+                    setTimeout(() => {
+                        writer.hideCharacter();
+                        startQuiz();
+                        targetDiv.classList.remove('success-anim');
+                        messageDiv.innerText = 'Try again!';
+                    }, 3000);
+                }
+            });
+        }
+
+        // 播放自动书写演示
+        function animateChar() {
+            if(writer) {
+                initAudio();
+                writer.hideCharacter();
+                writer.animateCharacter({
+                    onComplete: function() {
+                        setTimeout(startQuiz, 1000); // 演示完1秒后恢复书写模式
+                    }
+                });
+            }
+        }
+
+        function loadUserChar() {
+            const inputChar = document.getElementById('char-input').value;
+            if (inputChar && inputChar.trim() !== '') {
+                renderCharacter(inputChar.trim()[0]);
+            }
+        }
+
+        // --- 超级外挂：读取网址里的汉字 ---
+        window.onload = function() {
+            // 抓取网址里的参数，比如 ?char=看
+            const urlParams = new URLSearchParams(window.location.search);
+            const charFromUrl = urlParams.get('char');
+
+            if (charFromUrl) {
+                // 如果网址里带了字，自动加载那个字，并且把输入框藏起来，防止孩子乱点
+                document.getElementById('char-input').value = charFromUrl;
+                renderCharacter(charFromUrl);
+            } else {
+                // 默认加载一个字
+                renderCharacter('天');
+            }
+        };
+    </script>
+</body>
+</html>
