@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Study — Wang Laoshi's Space</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <style>
+        :root {
+            --teal:      #598586;
+            --accent:    #f3b236;
+            --primary:   #1e2e46;
+            --bg:        #f4f9f9;
+            --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
+        }
+
+        body { background-color: var(--bg); margin: 0; font-family: var(--font-en); }
+
+        /* ── Nav ── */
+        .back-nav {
+            background: var(--teal); padding: 10px 24px;
+            display: flex; align-items: center;
+        }
+        .back-nav a {
+            color: #fff; text-decoration: none;
+            font-weight: 600; font-size: 0.95rem;
+            display: flex; align-items: center; gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .back-nav a:hover { opacity: 0.8; }
+
+        /* ── Header ── */
+        .header {
+            padding: 26px 25px; border-bottom: 6px solid var(--accent);
+            background: var(--teal); text-align: center;
+        }
+        .header h1 { font-size: 2.2rem; color: white; margin: 0; font-family: var(--font-en); }
+
+        .container { width: 95%; max-width: 900px; margin: 28px auto; }
+
+        /* ── Character header ── */
+        .char-header {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 18px; margin-bottom: 32px;
+            background: white; padding: 28px; border-radius: 20px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+
+        #character-target {
+            background: #fff9ea; width: 140px; height: 140px;
+            border-radius: 12px; border: 2px solid #ffeaa7; cursor: pointer;
+        }
+
+        .char-label {
+            font-family: var(--font-zh);
+            font-size: 1.1rem; color: var(--primary);
+            letter-spacing: 2px; margin: 0;
+        }
+
+        .practice-btn {
+            display: inline-block; padding: 11px 32px;
+            background: var(--accent); color: var(--primary);
+            border-radius: 50px; font-size: 1rem; font-weight: 700;
+            box-shadow: 0 4px 0 #d49a2a;
+            cursor: pointer; text-align: center;
+            user-select: none; transition: 0.2s;
+            font-family: var(--font-en);
+        }
+        .practice-btn:hover {
+            background: var(--primary); color: var(--accent);
+            box-shadow: 0 4px 0 #000; transform: translateY(-2px);
+        }
+
+        /* ── Phrase cards ── */
+        .phrase-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .phrase-card {
+            background: white; border-radius: 20px; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            border: 2px solid transparent;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            cursor: pointer; padding-bottom: 24px;
+        }
+        .phrase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+            border-color: var(--accent);
+        }
+
+        .img-top {
+            width: 100%; height: 220px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+            background: #fafafa;
+        }
+        .phrase-img {
+            max-width: 95%; max-height: 95%;
+            object-fit: contain; pointer-events: none;
+        }
+        /* Fallback when image missing */
+        .img-top.no-img {
+            height: 80px; background: #f4f9f9;
+        }
+
+        .text-bottom {
+            display: flex; flex-direction: column;
+            align-items: center; padding: 10px 20px 0;
+        }
+
+        .phrase-text {
+            font-family: var(--font-zh);
+            font-size: 4.5rem; color: var(--primary);
+            margin-bottom: 14px; line-height: 1.1; text-align: center;
+        }
+
+        .play-btn {
+            background: var(--teal); color: white;
+            padding: 10px 32px; border-radius: 50px;
+            font-weight: bold; font-size: 0.95rem;
+            display: inline-block; cursor: pointer;
+            font-family: var(--font-en);
+            transition: background 0.2s;
+        }
+        .play-btn:hover { background: #457273; }
+
+        /* ── Footer ── */
+        .footer { padding: 26px; text-align: center; color: #888; font-size: 0.85rem; }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.7rem; }
+            .phrase-list { grid-template-columns: 1fr; }
+            .phrase-text { font-size: 3.5rem; }
+            .img-top { height: 180px; }
+        }
+        @media (min-width: 1200px) {
+            .phrase-list { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="back-nav">
+        <a href="words_and_phrases_en.html">⬅️ Back to Sight Words</a>
+    </div>
+
+    <div class="header">
+        <h1>Word Study 📖</h1>
+    </div>
+
+    <div class="container">
+        <div class="char-header">
+            <div id="character-target" onclick="goToTracing()"></div>
+            <p class="char-label" id="char-label"></p>
+            <div class="practice-btn" onclick="goToTracing()">✍️ Click to Practice Writing</div>
+        </div>
+        <div id="phrases-container" class="phrase-list"></div>
+    </div>
+
+    <div class="footer">Created with ❤️ by Wang Laoshi</div>
+
+    <script src="../js/sight_words_data.js"></script>
+    <script>
+        const params     = new URLSearchParams(window.location.search);
+        const targetChar = params.get('char');
+        const data       = fullWordData.find(d => d.char === targetChar);
+
+        // ── Voice init ────────────────────────────────────────────────────
+        let preferredVoice = null;
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            // Prefer Xiaoxiao (Edge), fallback to any zh-CN voice
+            preferredVoice = voices.find(v => v.name.includes('Xiaoxiao'))
+                          || voices.find(v => v.lang.startsWith('zh'));
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        // ── Render ────────────────────────────────────────────────────────
+        if (data) {
+            document.title = `${targetChar} — Word Study`;
+            document.getElementById('char-label').textContent = targetChar;
+
+            // Hanzi Writer stroke animation
+            HanziWriter.create('character-target', targetChar, {
+                width: 140, height: 140, padding: 10,
+                strokeColor: '#598586',
+                outlineColor: '#e8f0f0',
+                delayBetweenAnimations: 2000
+            }).animateCharacter();
+
+            // Phrase cards
+            document.getElementById('phrases-container').innerHTML =
+                data.phrases.map(p => `
+                    <div class="phrase-card" onclick="speak('${p.replace(/'/g, "\\'")}')">
+                        <div class="img-top" id="img-wrap-${encodeURIComponent(p)}">
+                            <img src="../images/sight_words_phrases/${encodeURIComponent(p)}.png"
+                                 class="phrase-img"
+                                 onerror="this.closest('.img-top').classList.add('no-img'); this.remove();">
+                        </div>
+                        <div class="text-bottom">
+                            <div class="phrase-text">${p}</div>
+                            <div class="play-btn">🔊 Listen</div>
+                        </div>
+                    </div>`
+                ).join('');
+        }
+
+        // ── Navigation ────────────────────────────────────────────────────
+        function goToTracing() {
+            if (targetChar)
+                window.location.href = `tracing_en.html?char=${encodeURIComponent(targetChar)}&from=detail`;
+        }
+
+        // ── Speak ─────────────────────────────────────────────────────────
+        function speak(text) {
+            window.speechSynthesis.cancel();
+
+            // Try local audio first
+            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`);
+            audio.play().catch(() => {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                if (!preferredVoice) loadVoices();
+                if (preferredVoice) msg.voice = preferredVoice;
+                msg.rate = 0.9;
+                window.speechSynthesis.speak(msg);
+            });
+        }
+    </script>
+</body>
+</html>

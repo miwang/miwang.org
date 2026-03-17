@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daily Practice - MECC Final Control</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
+            --pv-hundred: #ff007f; --pv-ten: #70ad47; --pv-one: #00b0f0;
+        }
+
+        * { box-sizing: border-box; font-family: var(--wenkai) !important; }
+        body { background-color: #fff9ea; margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* 顶部导航 */
+        .top-nav { height: 50px; background: var(--main-teal); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 4px solid var(--accent-yellow); flex-shrink: 0; }
+        .top-nav a { color: white; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .page-indicator { color: white; font-size: 1.4rem; font-weight: bold; }
+
+        .content-frame { flex: 1; position: relative; width: 100%; overflow: hidden; }
+        .page { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; padding: 10px 20px; }
+        .page.active { display: flex; }
+
+        /* --- P1 (v5.1): 日历 --- */
+        .calendar-container { width: 100%; max-width: 1100px; background: white; border: 5px solid var(--main-teal); border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
+        .cal-header { background: var(--main-teal); color: white; padding: 8px; text-align: center; font-size: 1.8rem; display: flex; justify-content: center; gap: 30px; }
+        .cal-grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 2px; }
+        .weekday { background: #f8f9fa; padding: 3px 0; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; border-bottom: 1px solid #ddd; }
+        .weekday .zh { font-size: clamp(1rem, 1.8vw, 1.6rem); color: var(--main-teal); font-weight: bold; font-family: var(--kaiti) !important; }
+        .weekday > span:not(.en) { font-family: var(--kaiti) !important; }
+        .weather-card .label { font-family: var(--kaiti) !important; }
+        .shape-name-zh { font-family: var(--kaiti) !important; font-size: 1.6rem; }
+        .shape-title { font-family: var(--kaiti) !important; }
+        .page-indicator { font-family: var(--kaiti) !important; }
+        #header-zh { font-family: var(--kaiti) !important; }
+        .holiday-tag { font-family: var(--kaiti) !important; }
+        .top-nav a { font-family: var(--kaiti) !important; }
+        .pv-label { font-family: var(--kaiti) !important; }
+        .day-cell { background: white; cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #333; }
+        .day-cell.today { background: #fffceb; box-shadow: inset 0 0 0 4px var(--accent-yellow); }
+        .special-icon { font-size: 1.2rem; margin-left: 3px; vertical-align: middle; }
+        .holiday-tag { font-size: 1.1rem; margin-left: 3px; vertical-align: middle; font-family: sans-serif !important; }
+
+        /* --- P2 (v4.4): 天气 --- */
+        .weather-hub { width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 10px; }
+        .weather-card { background: white; border: 4px solid #ddd; border-radius: 20px; display: flex; flex-direction: column; align-items: center; padding: 20px; cursor: pointer; }
+        .weather-card .icon { font-size: 6rem; }
+        .weather-card .label { font-size: 2.2rem; font-weight: bold; }
+        .stats-panel { margin: 35px 0 10px; width: 100%; background: white; border-radius: 25px; padding: 20px; border: 4px dashed var(--main-teal); display: flex; justify-content: space-around; align-items: center; flex: 0.7; position: relative;}
+        .count { font-size: 2.8rem; font-weight: bold; color: #2c3e50; text-align: center; }
+        .count-ctrl { display: flex; gap: 10px; margin-top: 10px; }
+        .ctrl-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #eee; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* --- P3 (v4.3): 形状 --- */
+        .shape-title { font-size: 1.5rem; color: var(--main-teal); font-weight: bold; border-left: 6px solid var(--accent-yellow); padding-left: 12px; margin: 2px 0; align-self: flex-start;}
+        .shape-row { display: flex; justify-content: center; gap: 20px; width: 100%; }
+        .shape-card {
+            background: white; border: 4px solid #eee; border-radius: 20px;
+            width: 190px; height: 185px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* 🌟 全框悬浮动画 */
+        .shape-card:hover { transform: translateY(-10px) scale(1.05); border-color: var(--accent-yellow); box-shadow: 0 15px 30px rgba(0,0,0,0.1); background-color: #fffdf5; }
+        .shape-visual { font-size: 4.8rem; transition: 0.4s; line-height: 1; margin-bottom: 5px; }
+        .shape-name-en { font-size: 1.2rem; color: #888; }
+
+        /* --- P4 (v4.3): 百数图 --- */
+        .hundred-chart-layout { width: 100%; height: 100%; display: flex; gap: 15px; align-items: stretch; padding-bottom: 5px; }
+        .hundred-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; background: #ddd; padding: 4px; border-radius: 12px; flex: 1.8; height: 100%; }
+        .num-box { background: white; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; font-weight: bold; color: #444; cursor: pointer; border-radius: 4px; transition: 0.15s; }
+        .num-box.tens-column { background: #fff3e0; color: #e67e22; }
+        .num-box.highlight { background: var(--accent-yellow); color: white; transform: scale(1.1); z-index: 2; box-shadow: 0 0 10px rgba(243, 178, 54, 0.8); }
+        .interaction-side { flex: 0.55; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+        .video-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; overflow: hidden; border: 4px solid var(--main-teal); }
+
+        /* --- 🌟 P5 (Days in School): 优化版 --- */
+        .school-days-layout { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .pv-counter-row { display: flex; gap: 15px; margin-bottom: 5px; }
+        .pv-box { background: white; border: 3px solid #333; border-radius: 10px; width: 110px; text-align: center; overflow: hidden; }
+        .pv-label { color: white; font-size: 1.1rem; padding: 2px; font-weight: bold; }
+        .pv-num { font-size: 3.8rem; font-weight: bold; padding: 3px 0; color: #333; line-height: 1; }
+        .pv-ctrl { display: flex; border-top: 2px solid #333; }
+        .pv-btn { flex: 1; padding: 3px; font-size: 1rem; cursor: pointer; border: none; background: #f8f9fa; }
+
+        .method-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; min-height: 0; padding-bottom: 5px; }
+        .method-card { background: white; border: 2px solid #ddd; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; overflow: hidden; }
+        .method-title { font-size: 0.9rem; color: #888; border-bottom: 1px solid #eee; margin-bottom: 5px; padding-bottom: 2px; font-family: var(--kaiti) !important; }
+        .method-content { flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+        .tally-group { font-size: 1.6rem; letter-spacing: 2px; color: #333; font-family: monospace !important; margin-right: 4px; border: 1px solid #f0f0f0; padding: 1px 4px; border-radius: 4px; }
+        .mini-ten-frame { border: 2px solid #333; display: grid; grid-template-columns: repeat(5, 2fr); gap: 2px; padding: 2px; background: white; }
+        .mini-cell { width: 15px; height: 15px; border: 1px solid #999; border-radius: 50%; }
+        .mini-cell.filled { background: #dc3545; }
+
+        /* 生日标注 */
+        .birthday-icon { font-size: 1rem; margin-left: 2px; vertical-align: middle; }
+        .birthday-names { position: absolute; bottom: 1px; left: 0; width: 100%; text-align: center; font-size: 0.62rem; color: #e91e8c; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--wenkai) !important; }
+        .day-cell { position: relative; }
+
+        /* 底部导航 */
+        .page-ctrl { height: 60px; background: white; display: flex; align-items: center; justify-content: center; gap: 30px; border-top: 1px solid #eee; flex-shrink: 0; }
+        .nav-btn { background: var(--accent-yellow); border: none; padding: 6px 40px; border-radius: 50px; font-size: 1.3rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #d49a2a; min-width: 220px; font-family: var(--kaiti) !important; }
+
+        /* 🌟 锁死弹窗，修复“泄漏”Bug */
+        #event-modal { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); 
+            display: none; align-items: center; justify-content: center; z-index: 10000; 
+        }
+        .modal-content { background: white; padding: 20px; border-radius: 25px; width: 350px; text-align: center; border: 5px solid var(--main-teal); }
+        .icon-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 15px 0; }
+        .icon-option { font-size: 3.5rem; cursor: pointer; transition: 0.2s; }
+        .icon-option:hover { transform: scale(1.1); }
+
+        /* --- P6: 十几的练习 --- */
+        .math-practice-layout {
+            width: 100%; flex: 1; display: flex; flex-direction: row;
+            align-items: stretch; gap: 20px; padding: 10px 20px;
+        }
+        .math-left {
+            flex: 1.2; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 20px;
+        }
+        .math-right {
+            flex: 0.8; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 16px;
+        }
+        .vis-toggle { display: flex; gap: 8px; }
+        .vis-btn { padding: 6px 20px; border-radius: 20px; border: 2px solid var(--main-teal); background: white; color: var(--main-teal); font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s; font-family: var(--kaiti) !important; }
+        .vis-btn.active { background: var(--main-teal); color: white; }
+        .math-visual-aid { display: flex; gap: 20px; align-items: flex-end; min-height: 130px; justify-content: center; padding: 16px; background: rgba(255,255,255,0.6); border-radius: 16px; width: 100%; }
+        .equation-box { font-size: 5rem; font-weight: bold; color: var(--main-teal); display: flex; align-items: center; gap: 16px; }
+        .blank-box { width: 110px; height: 110px; border: 5px solid var(--accent-yellow); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: var(--accent-yellow); font-size: 4.5rem; background: white; }
+        .num-pad { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; }
+        .pad-btn { height: 70px; background: white; border: 3px solid #ddd; border-radius: 14px; font-size: 2rem; font-weight: bold; cursor: pointer; transition: 0.15s; color: #333; box-shadow: 0 4px 0 #ccc; }
+        .pad-btn:hover { background: var(--accent-yellow); border-color: var(--accent-yellow); color: white; transform: translateY(-2px); }
+        .pad-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 #ccc; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="../teachers.html">⬅️ 返回工具台</a>
+        <div class="page-indicator" id="page-title">📅 日期播报</div>
+        <button onclick="openBirthdayMgr()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:0.9rem;font-family:var(--kaiti);font-weight:bold;">🎂 生日</button>
+    </nav>
+
+    <div class="content-frame">
+        <div class="page active" id="page-1">
+            <div class="calendar-container">
+                <div class="cal-header"><span id="header-en"></span><span id="header-zh"></span></div>
+                <div class="cal-grid" id="cal-grid-body">
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Sunday</span><span>星期天</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Monday</span><span>星期一</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Tuesday</span><span>星期二</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Wednesday</span><span>星期三</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Thursday</span><span>星期四</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Friday</span><span>星期五</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Saturday</span><span>星期六</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-2">
+            <div class="weather-hub">
+                <div class="weather-card" onclick="changeW('sunny', 1)"><span class="icon">☀️</span><span class="label">晴天</span></div>
+                <div class="weather-card" onclick="changeW('cloudy', 1)"><span class="icon">☁️</span><span class="label">多云</span></div>
+                <div class="weather-card" onclick="changeW('rainy', 1)"><span class="icon">🌧️</span><span class="label">下雨</span></div>
+                <div class="weather-card" onclick="changeW('snowy', 1)"><span class="icon">❄️</span><span class="label">下雪</span></div>
+                <div class="weather-card" onclick="changeW('windy', 1)"><span class="icon">💨</span><span class="label">刮风</span></div>
+            </div>
+            <div class="stats-panel">
+                <div class="stat-item"><div class="count" id="count-sunny">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('sunny', -1)">-</button><button class="ctrl-btn" onclick="changeW('sunny', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-cloudy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('cloudy', -1)">-</button><button class="ctrl-btn" onclick="changeW('cloudy', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-rainy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('rainy', -1)">-</button><button class="ctrl-btn" onclick="changeW('rainy', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-snowy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('snowy', -1)">-</button><button class="ctrl-btn" onclick="changeW('snowy', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-windy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('windy', -1)">-</button><button class="ctrl-btn" onclick="changeW('windy', 1)">+</button></div></div>
+                <div style="position:absolute; bottom:8px; right:15px; color:#999; cursor:pointer; text-decoration:underline; font-size:0.75rem;" onclick="resetWeather()">重置统计</div>
+            </div>
+        </div>
+
+        <div class="page" id="page-3" style="padding-top:4px;">
+            <div class="shape-title"><span style="font-family:var(--wenkai)">2D</span> 平面形状</div>
+            <div class="shape-row">
+                <div class="shape-card"><span class="shape-visual" style="color:#2ecc71">●</span><div class="shape-name-zh">圆形</div><div class="shape-name-en">Circle</div></div>
+                <div class="shape-card"><span class="shape-visual" style="color:#3498db">■</span><div class="shape-name-zh">正方形</div><div class="shape-name-en">Square</div></div>
+                <div class="shape-card"><span class="shape-visual" style="color:#e74c3c">█</span><div class="shape-name-zh">长方形</div><div class="shape-name-en">Rectangle</div></div>
+                <div class="shape-card"><span class="shape-visual" style="color:#f1c40f">▲</span><div class="shape-name-zh">三角形</div><div class="shape-name-en">Triangle</div></div>
+            </div>
+            <div class="shape-title" style="margin-top:0px;"><span style="font-family:var(--wenkai)">3D</span> 立体形状</div>
+            <div class="shape-row">
+                <div class="shape-card"><span class="shape-visual">🏀</span><div class="shape-name-zh">球体</div><div class="shape-name-en">Sphere</div></div>
+                <div class="shape-card"><span class="shape-visual">🧊</span><div class="shape-name-zh">正方体</div><div class="shape-name-en">Cube</div></div>
+                <div class="shape-card"><span class="shape-visual">🥳</span><div class="shape-name-zh">圆锥体</div><div class="shape-name-en">Cone</div></div>
+                <div class="shape-card"><span class="shape-visual">🥫</span><div class="shape-name-zh">圆柱体</div><div class="shape-name-en">Cylinder</div></div>
+            </div>
+        </div>
+
+        <div class="page" id="page-4">
+            <div class="hundred-chart-layout">
+                <div class="hundred-grid" id="hundred-grid"></div>
+                <div class="interaction-side">
+                    <div style="font-size:1.6rem; color:var(--main-teal); text-align:center; font-weight:bold;">百数图</div>
+                    <div class="video-box">
+                        <iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/1RNFE4690fk" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <button class="nav-btn" style="min-width:100%; background:#95a5a6; box-shadow:0 4px 0 #7f8c8d; font-size:1.1rem; padding:8px;" onclick="clearHighlights()">清空高亮</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-5">
+            <h1 style="color:var(--main-teal); margin:0 0 10px 0; font-size: 1.6rem; font-family:var(--kaiti) !important;">我们在学校多少天了？</h1>
+            <div class="pv-counter-row">
+                <div class="pv-box"><div class="pv-label" style="background:var(--pv-hundred)">百</div><div class="pv-num" id="pv-h">0</div><div class="pv-ctrl"><button class="pv-btn" onclick="addDay(-100)">-</button><button class="pv-btn" onclick="addDay(100)">+</button></div></div>
+                <div class="pv-box"><div class="pv-label" style="background:var(--pv-ten)">十</div><div class="pv-num" id="pv-t">0</div><div class="pv-ctrl"><button class="pv-btn" onclick="addDay(-10)">-</button><button class="pv-btn" onclick="addDay(10)">+</button></div></div>
+                <div class="pv-box"><div class="pv-label" style="background:var(--pv-one)">一</div><div class="pv-num" id="pv-o">0</div><div class="pv-ctrl"><button class="pv-btn" onclick="addDay(-1)">-</button><button class="pv-btn" onclick="addDay(1)">+</button></div></div>
+            </div>
+            <div class="method-grid">
+                <div class="method-card"><div class="method-title">统计符号 <span style="font-family:var(--wenkai)">Tally Marks</span></div><div class="method-content" id="tally-area"></div></div>
+                <div class="method-card"><div class="method-title">十格阵 <span style="font-family:var(--wenkai)">Ten Frames</span></div><div class="method-content" id="frames-area"></div></div>
+                <div class="method-card" style="grid-column: span 2;"><div class="method-title">数学基数块 <span style="font-family:var(--wenkai)">Base-Ten Blocks</span></div><div class="method-content" id="blocks-area" style="align-items: flex-end; padding-bottom:5px;"></div></div>
+            </div>
+        </div>
+
+        <div class="page" id="page-6">
+            <div class="math-practice-layout">
+                <div class="math-left">
+                    <div class="vis-toggle">
+                        <button class="vis-btn active" id="p6-btn-blocks" onclick="setP6Visual('blocks')">数学基数块</button>
+                        <button class="vis-btn" id="p6-btn-frames" onclick="setP6Visual('frames')">十格阵</button>
+                    </div>
+                    <div class="math-visual-aid" id="math-visual-blocks"></div>
+                    <div class="equation-box" id="equation-display"></div>
+                </div>
+                <div class="math-right">
+                    <div class="num-pad" id="num-pad"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-ctrl">
+        <button class="nav-btn" id="prev-btn" onclick="changePage(-1)" disabled>⬅️</button>
+        <button class="nav-btn" id="next-btn" onclick="changePage(1)">天气 ➡️</button>
+    </div>
+
+    <div id="event-modal">
+        <div class="modal-content">
+            <div class="icon-selector">
+                <div class="icon-option" onclick="setSpecialIcon('🎂')">🎂</div>
+                <div class="icon-option" onclick="setSpecialIcon('🍦')">🍦</div>
+                <div class="icon-option" onclick="setSpecialIcon('🍿')">🍿</div>
+                <div class="icon-option" onclick="setSpecialIcon('🏆')">🏆</div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content: center;">
+                <button class="nav-btn" style="min-width:100px; background:#eee; color:#333; box-shadow:none; font-size:1rem;" onclick="setSpecialIcon('')">清除标记</button>
+                <button class="nav-btn" style="min-width:100px; background:#ccc; color:#333; box-shadow:none; font-size:1rem;" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="birthday-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10001; align-items:center; justify-content:center;">
+        <div style="background:white; padding:24px; border-radius:20px; width:420px; max-height:80vh; overflow-y:auto; border:4px solid var(--main-teal); position:relative;">
+            <button onclick="closeBirthdayMgr()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;">✕</button>
+            <div style="font-size:1.3rem;font-weight:bold;color:var(--main-teal);margin-bottom:14px;font-family:var(--kaiti);">🎂 学生生日管理</div>
+            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;">
+                <input id="bday-name" placeholder="名字 (First Name)" style="flex:1;padding:6px 10px;border:2px solid #ddd;border-radius:8px;font-size:1rem;font-family:var(--wenkai);">
+                <select id="bday-month" style="padding:6px;border:2px solid #ddd;border-radius:8px;font-family:var(--wenkai);">
+                    <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                    <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                    <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                    <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                </select>
+                <input id="bday-day" type="number" min="1" max="31" placeholder="日" style="width:60px;padding:6px;border:2px solid #ddd;border-radius:8px;font-size:1rem;text-align:center;">
+                <button onclick="addBirthday()" style="background:var(--main-teal);color:white;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:1rem;font-family:var(--kaiti);">添加</button>
+            </div>
+            <div style="margin-bottom:10px;display:flex;gap:8px;">
+                <button onclick="document.getElementById('bday-csv-input').click()" style="background:#f3b236;color:#1e2e46;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-family:var(--kaiti);">📂 批量导入 CSV</button>
+                <input id="bday-csv-input" type="file" accept=".csv" hidden onchange="importBirthdayCSV(this)">
+                <span style="font-size:0.75rem;color:#999;align-self:center;">格式：名字,月,日（每行一个）</span>
+            </div>
+            <div id="birthday-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let curr = 1;
+        let schoolDays = parseInt(localStorage.getItem('mecc_school_days') || "0");
+        const events = JSON.parse(localStorage.getItem('mecc_daily_events') || "{}");
+        const wStats = JSON.parse(localStorage.getItem('mecc_weather_stats') || '{"sunny":0,"cloudy":0,"rainy":0,"snowy":0,"windy":0}');
+        let selectedDateKey = "";
+        const holidays = {
+            "2026-1-1":  "🎆",
+            "2026-1-19": "✊🏾",
+            "2026-2-14": "💝",
+            "2026-2-16": "🎩",
+            "2026-3-17": "☘️",
+            "2026-4-5":  "🐰",
+            "2026-5-10": "💐",
+            "2026-5-25": "🎖️",
+            "2026-6-19": "✊🏿",
+            "2026-7-4":  "🎇",
+            "2026-9-7":  "👷",
+            "2026-10-31":"🎃",
+            "2026-11-11":"🎗️",
+            "2026-11-26":"🦃",
+            "2026-12-25":"🎄"
+        };
+
+        function changePage(delta) {
+            document.getElementById(`page-${curr}`).classList.remove('active');
+            curr += delta; document.getElementById(`page-${curr}`).classList.add('active');
+            const titles = ["📅 日期播报", "🌦️ 天气统计", "📐 形状", "🔢 百数图", "🏫 在校天数", "➕ 十几的练习"];
+            const labels = ["日期", "天气", "形状", "百数图", "天数", "练习"];
+            document.getElementById('page-title').innerText = titles[curr-1];
+            document.getElementById('prev-btn').disabled = (curr === 1);
+            document.getElementById('next-btn').disabled = (curr === 6);
+            if (curr > 1) document.getElementById('prev-btn').innerText = `⬅️ ${labels[curr-2]}`;
+            if (curr < 6) document.getElementById('next-btn').innerText = `${labels[curr]} ➡️`;
+            if (curr === 6) genNewMath();
+        }
+
+        // P1 逻辑
+        function toZhDate(y, m) { const map = ['零','一','二','三','四','五','六','七','八','九','十','十一','十二']; const yS = y.toString().split('').map(n => map[parseInt(n)]).join(''); return `${yS}年${map[m]}月`; }
+        function initCalendar() {
+            const now = new Date(); const y = now.getFullYear(); const m = now.getMonth() + 1; const today = now.getDate();
+            document.getElementById('header-en').innerText = `${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m-1]} ${y}`;
+            document.getElementById('header-zh').innerText = toZhDate(y, m);
+            const first = new Date(y, m-1, 1).getDay(); const total = new Date(y, m, 0).getDate();
+            const grid = document.getElementById('cal-grid-body');
+            while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+            const birthdays = JSON.parse(localStorage.getItem('mecc_birthdays') || '[]');
+            for(let i=0; i<first; i++) grid.appendChild(document.createElement('div')).className='day-cell other-month';
+            for(let d=1; d<=total; d++) {
+                const cell = document.createElement('div'); const key = `${y}-${m}-${d}`;
+                cell.className = `day-cell font-en ${d === today ? 'today' : ''}`;
+                let inner = `<span>${d}</span>`;
+                if (events[key]) inner += `<span class="special-icon">${events[key]}</span>`;
+                if (holidays[key]) inner += `<span class="holiday-tag">${holidays[key]}</span>`;
+                const bday = birthdays.filter(b => b.month === m && b.day === d);
+                if (bday.length > 0) {
+                    inner += `<span class="birthday-icon">\u{1F382}</span>`;
+                    inner += `<div class="birthday-names">${bday.map(b => b.name).join(' ')}</div>`;
+                }
+                cell.innerHTML = inner;
+                cell.onclick = () => { selectedDateKey = key; document.getElementById('event-modal').style.display='flex'; };
+                grid.appendChild(cell);
+            }
+        }
+
+        // 弹窗与统计逻辑
+        function setSpecialIcon(icon) { if(icon==="") delete events[selectedDateKey]; else events[selectedDateKey]=icon; localStorage.setItem('mecc_daily_events', JSON.stringify(events)); location.reload(); }
+        function closeModal() { document.getElementById('event-modal').style.display = 'none'; }
+        function changeW(t, a) { event.stopPropagation(); wStats[t] = Math.max(0, wStats[t]+a); localStorage.setItem('mecc_weather_stats', JSON.stringify(wStats)); updateW(); }
+        function updateW() { for(let k in wStats) { const el = document.getElementById(`count-${k}`); if(el) el.innerText = wStats[k]; } }
+        function resetWeather() { if(confirm("确定重置本月统计吗？")) { for(let k in wStats) wStats[k]=0; updateW(); } }
+        function initHundredGrid() { const container = document.getElementById('hundred-grid'); for (let i = 1; i <= 100; i++) { const box = document.createElement('div'); box.className = 'num-box'; if (i % 10 === 0) box.classList.add('tens-column'); box.innerText = i; box.onclick = () => box.classList.toggle('highlight'); container.appendChild(box); } }
+        function clearHighlights() { document.querySelectorAll('.num-box').forEach(b => b.classList.remove('highlight')); }
+
+        // P5 逻辑
+        function addDay(amt) { schoolDays = Math.max(0, schoolDays + amt); localStorage.setItem('mecc_school_days', schoolDays); updateSchoolDays(); }
+        function updateSchoolDays() {
+            const h = Math.floor(schoolDays / 100); const t = Math.floor((schoolDays % 100) / 10); const o = schoolDays % 10;
+            document.getElementById('pv-h').innerText = h; document.getElementById('pv-t').innerText = t; document.getElementById('pv-o').innerText = o;
+            let tally = ""; for(let i=0; i<Math.floor(schoolDays/5); i++) tally += `<span class="tally-group">卌</span>`;
+            const rem = schoolDays % 5; if(rem > 0) tally += `<span class="tally-group">${['','|','||','|||','||||'][rem]}</span>`;
+            document.getElementById('tally-area').innerHTML = tally;
+            let frames = ""; for(let f=0; f<Math.ceil(schoolDays/10); f++) {
+                let dots = ""; for(let d=0; d<10; d++) dots += `<div class="mini-cell ${(f*10+d)<schoolDays?'filled':''}"></div>`;
+                frames += `<div class="mini-ten-frame">${dots}</div>`;
+            }
+            document.getElementById('frames-area').innerHTML = frames;
+            let blocks = "";
+            for(let i=0; i<h; i++) blocks += `<div style="width:45px; height:45px; background:var(--accent-yellow); border:1px solid #333; display:grid; grid-template:repeat(10,1fr)/repeat(10,1fr);">${Array(100).fill('<div style="border:0.1px solid rgba(0,0,0,0.1)"></div>').join('')}</div>`;
+            for(let i=0; i<t; i++) blocks += `<div style="width:10px; height:45px; background:var(--pv-ten); border:1px solid #333; display:grid; grid-template:repeat(10,1fr)/1fr;">${Array(10).fill('<div style="border:0.1px solid rgba(0,0,0,0.2)"></div>').join('')}</div>`;
+            for(let i=0; i<o; i++) blocks += `<div style="width:10px; height:10px; background:var(--pv-one); border:1px solid #333;"></div>`;
+            document.getElementById('blocks-area').innerHTML = blocks;
+        }
+
+
+        // --- P6 逻辑 ---
+        let mathAns = 0;
+        let p6VisMode = 'blocks';
+
+        function setP6Visual(mode) {
+            p6VisMode = mode;
+            document.getElementById('p6-btn-blocks').classList.toggle('active', mode === 'blocks');
+            document.getElementById('p6-btn-frames').classList.toggle('active', mode === 'frames');
+            renderP6Visual(mathAns - 10);
+        }
+
+        // 音效：用 AudioContext 生成，不依赖外部文件
+        let _actx;
+        function getACtx() { if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)(); return _actx; }
+        function playCorrect() {
+            const ctx = getACtx();
+            [523, 659, 784].forEach((f, i) => {
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                o.connect(g); g.connect(ctx.destination);
+                const t = ctx.currentTime + i * 0.15;
+                g.gain.setValueAtTime(0, t);
+                g.gain.linearRampToValueAtTime(0.3, t + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                o.start(t); o.stop(t + 0.25);
+            });
+        }
+        function playWrong() {
+            const ctx = getACtx(); const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.type = 'sawtooth'; o.frequency.setValueAtTime(220, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+            g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
+        }
+
+        // 题型：0=和未知, 1=和未知(换序), 2=和在左, 3=和在左(换序), 4=加数x未知, 5=加数x未知(换序)
+        let mathX = 0;
+        function genNewMath() {
+            mathX = Math.floor(Math.random() * 9) + 1;
+            mathAns = 10 + mathX;
+            const r = Math.floor(Math.random() * 6);
+            const display = document.getElementById('equation-display');
+            if      (r === 0) { display.innerHTML = `10 + ${mathX} = <div class="blank-box">?</div>`; }
+            else if (r === 1) { display.innerHTML = `${mathX} + 10 = <div class="blank-box">?</div>`; }
+            else if (r === 2) { display.innerHTML = `<div class="blank-box">?</div> = 10 + ${mathX}`; }
+            else if (r === 3) { display.innerHTML = `<div class="blank-box">?</div> = ${mathX} + 10`; }
+            else if (r === 4) { mathAns = mathX; display.innerHTML = `10 + <div class="blank-box">?</div> = ${10 + mathX}`; }
+            else              { mathAns = mathX; display.innerHTML = `<div class="blank-box">?</div> + 10 = ${10 + mathX}`; }
+            renderP6Visual(mathX);
+            renderNumPad(r >= 4);
+        }
+
+        function renderP6Visual(x) {
+            const aid = document.getElementById('math-visual-blocks');
+            if (p6VisMode === 'blocks') {
+                let v = `<div style="width:22px;height:130px;background:var(--pv-ten);border:2px solid #333;display:grid;grid-template:repeat(10,1fr)/1fr;">${Array(10).fill('<div style="border:0.3px solid rgba(0,0,0,0.15)"></div>').join('')}</div>`;
+                v += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;align-content:start;">`;
+                for (let i = 0; i < x; i++) v += `<div style="width:22px;height:22px;background:var(--pv-one);border:2px solid #333;"></div>`;
+                v += `</div>`;
+                aid.style.alignItems = 'flex-end';
+                aid.innerHTML = v;
+            } else {
+                let d1 = "";
+                for (let d = 0; d < 10; d++) d1 += `<div class="mini-cell filled" style="width:22px;height:22px;"></div>`;
+                let frame1 = `<div class="mini-ten-frame" style="gap:3px;padding:5px;">${d1}</div>`;
+                if (x === 0) {
+                    aid.style.alignItems = 'flex-start';
+                    aid.innerHTML = frame1;
+                } else {
+                    let d2 = "";
+                    for (let d = 0; d < 10; d++) d2 += `<div class="mini-cell ${d < x ? 'filled' : ''}" style="width:22px;height:22px;"></div>`;
+                    let frame2 = `<div class="mini-ten-frame" style="gap:3px;padding:5px;">${d2}</div>`;
+                    aid.style.alignItems = 'flex-start';
+                    aid.innerHTML = frame1 + frame2;
+                }
+            }
+        }
+
+        function renderNumPad(isAddend) {
+            const pad = document.getElementById('num-pad');
+            pad.innerHTML = '';
+            const nums = isAddend
+                ? [1,2,3,4,5,6,7,8,9]
+                : [11,12,13,14,15,16,17,18,19];
+            nums.forEach(n => {
+                const btn = document.createElement('button');
+                btn.className = 'pad-btn';
+                btn.textContent = n;
+                btn.onclick = () => checkMathAns(n);
+                pad.appendChild(btn);
+            });
+        }
+
+        function checkMathAns(n) {
+            const blank = document.querySelector('.blank-box');
+            if (!blank) return;
+            if (n === mathAns) {
+                playCorrect();
+                blank.innerText = n; blank.style.color = "#4CAF50"; blank.style.borderColor = "#4CAF50";
+                setTimeout(genNewMath, 1200);
+            } else {
+                playWrong();
+                blank.innerText = n; blank.style.color = "#e74c3c"; blank.style.borderColor = "#e74c3c";
+                setTimeout(() => { blank.innerText = "?"; blank.style.color = ""; blank.style.borderColor = ""; }, 700);
+            }
+        }
+
+        // 生日管理
+        function openBirthdayMgr() {
+            document.getElementById('birthday-modal').style.display = 'flex';
+            renderBirthdayList();
+        }
+        function closeBirthdayMgr() { document.getElementById('birthday-modal').style.display = 'none'; }
+        function getBirthdays() { return JSON.parse(localStorage.getItem('mecc_birthdays') || '[]'); }
+        function saveBirthdays(arr) { localStorage.setItem('mecc_birthdays', JSON.stringify(arr)); }
+        function addBirthday() {
+            const name = document.getElementById('bday-name').value.trim();
+            const month = parseInt(document.getElementById('bday-month').value);
+            const day = parseInt(document.getElementById('bday-day').value);
+            if (!name || !day || day < 1 || day > 31) { alert('请填写完整信息'); return; }
+            const arr = getBirthdays();
+            arr.push({ name, month, day });
+            arr.sort((a, b) => a.month - b.month || a.day - b.day);
+            saveBirthdays(arr);
+            document.getElementById('bday-name').value = '';
+            document.getElementById('bday-day').value = '';
+            renderBirthdayList();
+            initCalendar();
+        }
+        function deleteBirthday(idx) {
+            const arr = getBirthdays(); arr.splice(idx, 1); saveBirthdays(arr);
+            renderBirthdayList(); initCalendar();
+        }
+        function renderBirthdayList() {
+            const arr = getBirthdays();
+            const months = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            const list = document.getElementById('birthday-list');
+            if (arr.length === 0) { list.innerHTML = '<div style="color:#999;font-size:0.9rem;text-align:center;">暂无生日记录</div>'; return; }
+            list.innerHTML = arr.map((b, i) => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8f9fa;border-radius:8px;">
+                    <span style="font-family:var(--wenkai);">🎂 ${b.name}</span>
+                    <span style="color:#888;font-size:0.9rem;">${months[b.month]} ${b.day}日</span>
+                    <button onclick="deleteBirthday(${i})" style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1rem;">✕</button>
+                </div>`).join('');
+        }
+        function importBirthdayCSV(input) {
+            if (!input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const lines = e.target.result.split('\n').filter(l => l.trim());
+                const arr = getBirthdays();
+                let added = 0;
+                lines.forEach(line => {
+                    const parts = line.split(',').map(s => s.trim());
+                    if (parts.length >= 3) {
+                        const name = parts[0], month = parseInt(parts[1]), day = parseInt(parts[2]);
+                        if (name && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                            arr.push({ name, month, day }); added++;
+                        }
+                    }
+                });
+                arr.sort((a, b) => a.month - b.month || a.day - b.day);
+                saveBirthdays(arr);
+                renderBirthdayList(); initCalendar();
+                alert(`成功导入 ${added} 条生日记录！`);
+            };
+            reader.readAsText(input.files[0]);
+            input.value = '';
+        }
+
+        window.onload = () => { initCalendar(); updateW(); initHundredGrid(); updateSchoolDays(); };
+    </script>
+</body>
+</html>

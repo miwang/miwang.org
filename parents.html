@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parents & Students — Wang Laoshi's Space</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+        :root {
+            --primary:   #1e2e46;
+            --accent:    #f3b236;
+            --accent-dk: #d4942a;
+            --teal:      #598586;
+            --bg:        #f4f6f8;
+            --card-bg:   #ffffff;
+            --text:      #1f2e46;
+            --text-muted:#6b7a8d;
+            --border:    #e4e9ef;
+            --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
+            --radius: 14px;
+            --shadow: 0 4px 14px rgba(30,46,70,0.08);
+            --shadow-hover: 0 10px 24px rgba(30,46,70,0.15);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { font-family: var(--font-en); background: var(--bg); color: var(--text); }
+
+        /* ── Nav ── */
+        .back-nav {
+            background: var(--primary);
+            padding: 5px 24px;
+            display: flex; align-items: center;
+        }
+        .back-nav a {
+            font-family: var(--font-en);
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex; align-items: center; gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .back-nav a:hover { opacity: 0.8; }
+
+        /* ── Header ── */
+        .site-header {
+            background: var(--primary);
+            padding: 14px 24px 12px;
+            border-bottom: 5px solid var(--accent);
+            text-align: center;
+        }
+        .site-header h1 {
+            font-family: var(--font-en);
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .site-header .zh-sub {
+            font-family: var(--font-zh);
+            font-size: 1rem;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 3px;
+        }
+
+        /* ── Layout ── */
+        .container {
+            width: 95%; max-width: 1020px;
+            margin: 36px auto;
+            display: flex; flex-direction: column; gap: 36px;
+        }
+
+        .section-title {
+            font-family: var(--font-en);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            border-left: 5px solid var(--accent);
+            padding-left: 14px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title .zh {
+            font-family: var(--font-zh);
+            font-weight: normal;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 22px 16px 20px;
+            text-decoration: none;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            border: 2px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent);
+        }
+
+        /* Progress ring overlay */
+        .card-progress-overlay {
+            position: absolute; top: 10px; right: 10px;
+            width: 44px; height: 44px;
+            background: white; border-radius: 50%; padding: 2px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mini-pct-text {
+            position: absolute;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: var(--font-en);
+        }
+
+        .card-icon { font-size: 2.8rem; margin-bottom: 10px; }
+
+        .card-title {
+            font-family: var(--font-en);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+        .card-title .zh {
+            font-family: var(--font-zh);
+            display: block;
+            font-size: 1rem;
+            font-weight: normal;
+            color: var(--teal);
+        }
+        .card-desc {
+            font-family: var(--font-en);
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .card-desc .zh { font-family: var(--font-zh); }
+
+        /* ── Admin zone ── */
+        .admin-zone {
+            margin-top: 20px;
+            padding: 18px;
+            border-top: 1px dashed var(--border);
+            text-align: center;
+        }
+        .btn-reset {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: var(--font-en);
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .btn-reset:hover { color: #e74c3c; border-color: #e74c3c; }
+
+        /* ── Footer ── */
+        .site-footer {
+            text-align: center;
+            padding: 22px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+        }
+        .site-footer .zh { font-family: var(--font-zh); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .site-header h1 { font-size: 1.7rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+            .card-icon { font-size: 2.2rem; }
+            .container { margin: 20px auto; gap: 24px; }
+            .back-nav { padding: 4px 16px; }
+        }
+
+        /* 平板（768px 以下） */
+        @media (max-width: 768px) {
+            .site-header h1 { font-size: 1.9rem; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+            .container { width: 95%; gap: 28px; }
+        }
+
+        /* 宽屏（1200px 以上） */
+        @media (min-width: 1200px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+            .container { max-width: 1100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="back-nav">
+        <a href="index.html">← Back to Portal</a>
+    </nav>
+
+    <header class="site-header">
+        <h1>Chinese Playground 🐼</h1>
+        <span class="zh-sub">学生与家长学习中心</span>
+    </header>
+
+    <div class="container">
+
+        <!-- Chinese Literacy -->
+        <section>
+            <div class="section-title">
+                📝 Chinese Literacy <span class="zh">汉字识写</span>
+            </div>
+            <div class="grid">
+                <a href="./cla/words_and_phrases_en.html" class="card">
+                    <div class="card-progress-overlay">
+                        <svg viewBox="0 0 36 36" style="width:100%;height:100%;">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="#e4e9ef" stroke-width="4"/>
+                            <path id="progress-path"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="#f3b236" stroke-width="4" stroke-dasharray="0, 100"/>
+                        </svg>
+                        <span class="mini-pct-text" id="pct-text">0%</span>
+                    </div>
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">
+                        Vocabulary &amp; Writing
+                        <span class="zh">词汇与书写</span>
+                    </div>
+                    <p class="card-desc">Review characters and practice writing.</p>
+                    <p id="stat-detail" style="font-size:0.75rem;color:var(--teal);margin-top:8px;font-weight:600;"></p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Math Station -->
+        <section>
+            <div class="section-title">
+                🔢 Math Station <span class="zh">数学练习站</span>
+            </div>
+            <div class="grid">
+                <a href="math/teen_numbers.html" class="card">
+                    <div class="card-icon">🔟</div>
+                    <div class="card-title">
+                        Teen Numbers
+                        <span class="zh">十几的数字</span>
+                    </div>
+                    <p class="card-desc">Mastering numbers 11–19.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Interactive Games -->
+        <section>
+            <div class="section-title">
+                🎮 Interactive Games <span class="zh">互动游戏</span>
+            </div>
+            <div class="grid">
+                <a href="games/cat_game_eng.html" class="card">
+                    <div class="card-icon">😸</div>
+                    <div class="card-title">
+                        Where is the Cat?
+                        <span class="zh">小猫在哪里？</span>
+                    </div>
+                    <p class="card-desc">Practice reading characters.</p>
+                </a>
+                <a href="games/connect_5_eng.html" class="card">
+                    <div class="card-icon">🐼</div>
+                    <div class="card-title">
+                        Connect 5
+                        <span class="zh">五子棋</span>
+                    </div>
+                    <p class="card-desc">Strategy &amp; character game.</p>
+                </a>
+                <a href="games/orchard_game.html" class="card">
+                    <div class="card-icon">🍎</div>
+                    <div class="card-title">
+                        In the Orchard
+                        <span class="zh">果园摘水果</span>
+                    </div>
+                    <p class="card-desc">Pick fruits while learning!</p>
+                </a>
+            </div>
+        </section>
+
+        <div class="admin-zone">
+            <button class="btn-reset" onclick="resetProgress()">Reset Student Progress</button>
+        </div>
+
+    </div>
+
+    <footer class="site-footer">
+        Created with ❤️ by <span class="zh">王老师</span> Wang Laoshi
+    </footer>
+
+    <script src="js/sight_words_data.js"></script>
+    <script>
+        function updateDashboard() {
+            const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
+            const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const currentMonthName = monthNames[new Date().getMonth()];
+
+            let thisMonthChars = fullWordData.filter(d => d.week === currentMonthName);
+            let displayLabel = currentMonthName;
+
+            if (thisMonthChars.length === 0) {
+                const lastEntry = fullWordData[fullWordData.length - 1];
+                if (lastEntry) {
+                    displayLabel = lastEntry.week;
+                    thisMonthChars = fullWordData.filter(d => d.week === displayLabel);
+                }
+            }
+
+            if (thisMonthChars.length > 0) {
+                const total = thisMonthChars.length;
+                const completed = thisMonthChars.filter(d => progress[d.char] === 'completed').length;
+                const percentage = Math.round((completed / total) * 100) || 0;
+                document.getElementById('pct-text').innerText = percentage + '%';
+                document.getElementById('progress-path').setAttribute('stroke-dasharray', `${percentage}, 100`);
+                document.getElementById('stat-detail').innerText = `${displayLabel}: ${completed}/${total} Mastered`;
+            } else {
+                document.getElementById('stat-detail').innerText = "No data found";
+            }
+        }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to clear all practice records? This cannot be undone.")) {
+                localStorage.removeItem('mecc_progress');
+                location.reload();
+            }
+        }
+
+        window.onload = updateDashboard;
+    </script>
+</body>
+</html>

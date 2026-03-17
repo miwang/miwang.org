@@ -4,401 +4,223 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🥛 自由五子棋 🍪</title>
+
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+
 <style>
-    /* 强制全局使用楷体 */
-    * { 
-        box-sizing: border-box;
-        font-family: '楷体', 'Kaiti', 'STKaiti', serif !important; 
+    /* 🌟 全系统统一字体 */
+    :root {
+        --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        --wenkai: "LXGW WenKai Lite", sans-serif;
     }
+    * { box-sizing: border-box; font-family: var(--kaiti) !important; }
     
-    body { 
-        background-color: #fff9ea; 
-        margin: 0;
-        min-height: 100vh;
-        overflow-y: auto; 
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-    }
+    body { background-color: #fff9ea; margin: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; justify-content: center; align-items: center; position: relative; }
 
-    /* ================= 设置界面样式 ================= */
+    /* 🌟 磨砂返回按钮 */
+    .back-btn-home {
+        position: absolute; top: 20px; left: 20px; color: #555; text-decoration: none;
+        font-size: 1.1rem; font-weight: bold; z-index: 50; 
+        background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px);
+        padding: 10px 20px; border-radius: 40px; border: 1.5px solid rgba(255,255,255,0.6);
+        transition: 0.2s;
+    }
+    .back-btn-home:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.6); }
+
+    /* 🌟 宽屏设置页面：由 800px 扩大至 1200px */
     #setup-view {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        text-align: center;
+        display: flex; flex-direction: column; align-items: center; background: transparent; padding: 30px 40px;
+        border-radius: 30px; box-shadow: none; text-align: center; 
+        width: 95%; max-width: 1200px; /* 🌟 核心改动：横向铺开 */
     }
-    #setup-view h1 { color: #333; margin: 0 0 10px 0; font-size: 40px; }
-    #setup-view .instructions { color: #666; margin: 0 0 25px 0; font-size: 20px; font-weight: bold; }
+    #setup-view h1 { color: #598586; margin: 0 0 5px 0; font-size: 3.2rem; letter-spacing: 5px; }
+    #setup-view .instructions { color: #666; margin: 0 0 20px 0; font-size: 1.2rem; }
     
-    textarea { 
-        width: 500px; 
-        height: 100px; 
-        padding: 15px; 
-        font-size: 22px; 
-        border-radius: 12px; 
-        border: 2px dashed #ccc; 
-        resize: vertical; 
-        line-height: 1.5;
-        white-space: pre-wrap; 
-        word-wrap: break-word;
-        margin-bottom: 25px;
+    .controls { margin-bottom: 20px; display: flex; gap: 20px; justify-content: center; }
+    .controls .btn {
+        padding: 12px 30px; font-size: 1.3rem; background-color: #f8f9fa; color: #555;
+        border: 2px solid #ddd; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;
     }
-    textarea:focus { border-color: #74b9ff; outline: none; }
-    
-    .start-btn { 
-        padding: 15px 40px; 
-        font-size: 24px; 
-        font-weight: bold;
-        cursor: pointer; 
-        background-color: #4CAF50; 
-        color: white; 
-        border: none; 
-        border-radius: 30px; 
-        transition: transform 0.2s, box-shadow 0.2s; 
-    }
-    .start-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+    .controls .btn:hover { background-color: #eee; transform: translateY(-2px); }
+    .controls .btn.start-btn { background-color: #2ecc71; color: white; border-color: #27ae60; box-shadow: 0 4px 0 #27ae60; }
+    .controls .btn.start-btn:active { transform: translateY(2px); box-shadow: none; }
 
-    /* ================= 游戏擂台界面样式 ================= */
+    /* 🌟 字库网格：改为 13 列，填满横向空间 */
+    #char-grid {
+        display: grid; 
+        grid-template-columns: repeat(13, 1fr); /* 🌟 增加列数，减少行数 */
+        gap: 12px; justify-content: center;
+        padding: 25px; background: rgba(89, 133, 134, 0.05); 
+        border-radius: 20px; width: 100%; border: 3px dashed #598586;
+    }
+    .char-card {
+        aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
+        font-size: 2rem; background-color: white; color: #333; border-radius: 12px;
+        cursor: pointer; transition: all 0.2s; border: 2px solid #eee; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05); user-select: none;
+    }
+    .char-card.selected { background-color: #74b9ff; color: white; border: 3px solid #fbc531; transform: scale(1.05); z-index: 2; box-shadow: 0 6px 15px rgba(116, 185, 255, 0.4); }
+
+    /* 游戏对战界面保持原有的宽屏大气风格 */
     #game-view {
-        display: none; /* 初始隐藏 */
-        width: 100%;
-        max-width: 1400px;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        position: relative;
+        display: none; width: 100%; max-width: 1400px; flex-direction: row; justify-content: space-between; align-items: center; padding: 20px; position: relative;
     }
-
-    /* 左右侧边栏队徽 */
-    .side-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.3; /* 没轮到的时候变更暗一点，突出当前回合队伍 */
-        transform: scale(0.85); 
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .side-panel .logo { font-size: 110px; filter: grayscale(80%); transition: all 0.4s; }
-    .side-panel .name { font-size: 36px; font-weight: bold; margin-top: 15px; color: #777; transition: all 0.4s; }
-
-    /* 高亮激活状态 */
+    .side-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.3; transform: scale(0.85); transition: 0.4s; }
+    .side-panel .logo { font-size: 120px; filter: grayscale(80%); }
+    .side-panel .name { font-size: 40px; font-weight: bold; margin-top: 15px; color: #777; }
     .side-panel.active { opacity: 1; transform: scale(1.1); }
     .side-panel.active .logo { filter: grayscale(0%); }
-    
-    .side-panel.p1.active .logo { filter: drop-shadow(0 0 25px #74b9ff); }
-    .side-panel.p1.active .name { color: #0984e3; text-shadow: 0 0 10px rgba(116, 185, 255, 0.5); }
-    
-    .side-panel.p2.active .logo { filter: drop-shadow(0 0 25px #fbc531); }
-    .side-panel.p2.active .name { color: #e1b12c; text-shadow: 0 0 10px rgba(251, 197, 49, 0.5); }
+    .side-panel.p1.active .logo { filter: drop-shadow(0 0 30px #74b9ff); }
+    .side-panel.p1.active .name { color: #0984e3; }
+    .side-panel.p2.active .logo { filter: drop-shadow(0 0 30px #fbc531); }
+    .side-panel.p2.active .name { color: #e1b12c; }
 
-    /* 中间棋盘区 */
-    #board-container {
-        flex: 2;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-    }
-
-    #board { 
-        display: grid; 
-        grid-template-columns: repeat(9, 65px); 
-        gap: 8px; 
-        background-color: #dcdde1; 
-        padding: 12px; 
-        border-radius: 12px; 
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2); 
-    }
-    .cell { 
-        width: 65px; 
-        height: 65px; 
-        background-color: white; 
-        border-radius: 8px; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
-        font-size: 30px; 
-        cursor: pointer; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-        user-select: none; 
-        transition: all 0.2s ease; 
-        position: relative; 
-    }
-    .cell:hover { transform: scale(1.08); background-color: #fdfdfd; z-index: 2; }
+    #board-container { flex: 2; display: flex; flex-direction: column; align-items: center; }
+    #board { display: grid; grid-template-columns: repeat(9, 70px); gap: 10px; background-color: #598586; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     
-    .cell.p1 { background-color: #74b9ff; color: white; transform: scale(0.95); box-shadow: inset 0 4px 8px rgba(0,0,0,0.15); }
-    .cell.p1::after { content: '🥛'; position: absolute; bottom: 2px; right: 2px; font-size: 16px; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3)); }
-
-    .cell.p2 { background-color: #fbc531; color: white; transform: scale(0.95); box-shadow: inset 0 4px 8px rgba(0,0,0,0.15); }
-    .cell.p2::after { content: '🍪'; position: absolute; bottom: 2px; right: 2px; font-size: 16px; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3)); }
+    .cell { width: 70px; height: 70px; background-color: white; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 36px; cursor: pointer; transition: 0.2s; position: relative; }
+    .cell.p1 { background-color: #74b9ff; color: white; transform: scale(0.95); }
+    .cell.p2 { background-color: #fbc531; color: white; transform: scale(0.95); }
+    .cell.winning-cell { border: 4px solid #ff4757; animation: winPulse 1.2s infinite; }
     
-    .cell.p1:hover, .cell.p2:hover { transform: scale(1.02); }
+    @keyframes winPulse { 0%, 100% { transform: scale(1.05); } 50% { transform: scale(1.15); box-shadow: 0 0 20px #ff4757; } }
 
-    .cell.winning-cell { z-index: 10; border: 3px solid #ff4757; animation: winPulse 1.2s infinite; }
-    @keyframes winPulse {
-        0% { transform: scale(1.05); box-shadow: 0 0 10px 2px #ff4757; }
-        50% { transform: scale(1.15); box-shadow: 0 0 20px 6px #ff4757; }
-        100% { transform: scale(1.05); box-shadow: 0 0 10px 2px #ff4757; }
-    }
-
-    /* 将返回按钮移至底部并优化样式 */
-    .back-btn {
-        padding: 8px 25px;
-        font-size: 18px;
-        background-color: transparent;
-        color: #999;
-        border: 2px solid #ddd;
-        border-radius: 30px;
-        cursor: pointer;
-        margin-top: 30px; /* 放在棋盘下方并留出间距 */
-        transition: all 0.3s;
-    }
-    .back-btn:hover { 
-        background-color: #ecf0f1; 
-        color: #555;
-        border-color: #ccc;
-    }
-
-    /* ================= 奖杯弹窗 ================= */
-    #trophy-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-    }
-    #trophy-overlay.show { opacity: 1; pointer-events: auto; }
-    
-    .trophy-icon { font-size: 150px; transform: scale(0); filter: drop-shadow(0 0 40px gold); }
-    #trophy-overlay.show .trophy-icon { animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
-    @keyframes popIn { 0% { transform: scale(0) rotate(-20deg); } 80% { transform: scale(1.2) rotate(10deg); } 100% { transform: scale(1) rotate(0deg); } }
-    
-    .overlay-text { color: white; font-size: 50px; font-weight: bold; margin: 30px 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
-    
-    .close-btn {
-        padding: 15px 40px; font-size: 24px; font-weight: bold;
-        background-color: #f1c40f; color: #333; border: none; border-radius: 40px;
-        cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.4); margin-top: 20px;
-    }
-    .close-btn:hover { background-color: #f39c12; transform: scale(1.05) translateY(-3px); }
+    #trophy-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+    .trophy-icon { font-size: 150px; animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+    @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    .overlay-text { color: white; font-size: 60px; font-weight: bold; margin: 30px 0; }
 </style>
 </head>
 <body>
 
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
+
     <div id="setup-view">
-        <h1>🥛 自由五子棋 🍪</h1>
-        <div class="instructions">
-            规则：<span style="color: #ff4757;">连成五个即获胜！</span><br>
-            <span style="font-size: 16px; font-weight: normal; color: #888;">(若点错，再次点击可切换队伍或变回空白)</span>
+        <h1 class="font-zh">🥛 自由五子棋 🍪</h1>
+        <div class="instructions font-zh">
+            规则：<span style="color: #ff4757; font-weight: bold;">连成五个即获胜！</span>
+            <span style="font-size: 16px; color: #888;"> (系统会自动记忆上次的选择)</span>
         </div>
         
-        <textarea id="wordList" title="用逗号或空格隔开即可">是,小,去,我,目,你,白,四,头,有,几,多,山,月,人,要,日,手,花,五,个,六,少,八</textarea>
-        <button class="start-btn" onclick="startGame()">进入对战擂台</button>
+        <div class="controls">
+            <button class="btn font-zh" onclick="selectAll()">全选</button>
+            <button class="btn font-zh" onclick="clearAll()">清空</button>
+            <button class="btn start-btn font-zh" onclick="startGame()">进入对战擂台</button>
+        </div>
+        <div id="char-grid"></div>
     </div>
 
     <div id="game-view">
-        
-        <div class="side-panel p1" id="panel-1">
-            <div class="logo">🥛</div>
-            <div class="name">牛奶队</div>
-        </div>
-
-        <div id="board-container">
-            <div id="board"></div>
-            <button class="back-btn" onclick="showSetup()">← 返回修改字库重新开局</button>
-        </div>
-
-        <div class="side-panel p2" id="panel-2">
-            <div class="logo">🍪</div>
-            <div class="name">饼干队</div>
-        </div>
-
+        <div class="side-panel p1" id="panel-1"><div class="logo">🥛</div><div class="name font-zh">牛奶队</div></div>
+        <div id="board-container"><div id="board"></div><button class="btn font-zh" style="margin-top:25px;" onclick="showSetup()">← 返回修改字库</button></div>
+        <div class="side-panel p2" id="panel-2"><div class="logo">🍪</div><div class="name font-zh">饼干队</div></div>
     </div>
 
-    <div id="trophy-overlay">
+    <div id="trophy-overlay" onclick="closeTrophy()">
         <div class="trophy-icon">🏆</div>
-        <div class="overlay-text" id="overlay-msg">恭喜获胜！</div>
-        <button class="close-btn" onclick="closeTrophy()">继续查看棋盘</button>
+        <div class="overlay-text font-zh" id="overlay-msg">恭喜获胜！</div>
+        <div style="color:rgba(255,255,255,0.6); font-size: 20px;">点击任意位置继续</div>
     </div>
 
 <script>
-    const rows = 7;
-    const cols = 9;
-    let boardState = []; 
-    let boardWords = []; 
-    let currentPlayer = 1; 
-    let hasShownTrophy = false; 
+    const rows = 7; const cols = 9;
+    let boardState = []; let boardWords = []; let currentPlayer = 1;
 
-    function showSetup() {
-        document.getElementById('game-view').style.display = 'none';
-        document.getElementById('setup-view').style.display = 'flex';
-    }
+    const allChars = [
+        '四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太',
+        '六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也',
+        '八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有',
+        '要','是','了','去'
+    ];
+    
+    function loadSavedWords() { return JSON.parse(localStorage.getItem('connect5TeacherWords')) || []; }
+    function saveWords(wordsArray) { localStorage.setItem('connect5TeacherWords', JSON.stringify(wordsArray)); }
+
+    window.onload = () => {
+        const grid = document.getElementById('char-grid');
+        const savedWords = loadSavedWords();
+        allChars.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'char-card font-zh';
+            card.innerText = char;
+            if (savedWords.includes(char)) card.classList.add('selected');
+            card.onclick = () => card.classList.toggle('selected');
+            grid.appendChild(card);
+        });
+    };
+
+    function selectAll() { document.querySelectorAll('.char-card').forEach(card => card.classList.add('selected')); }
+    function clearAll() { document.querySelectorAll('.char-card').forEach(card => card.classList.remove('selected')); }
+    function showSetup() { document.getElementById('game-view').style.display = 'none'; document.getElementById('setup-view').style.display = 'flex'; }
 
     function startGame() {
-        let rawInput = document.getElementById('wordList').value;
-        let words = rawInput.split(/[,，\s]+/).filter(w => w.trim() !== '');
-        
-        if (words.length === 0) {
-            alert("请输入至少一个字！");
-            return;
-        }
-
+        const selected = document.querySelectorAll('.char-card.selected');
+        let words = Array.from(selected).map(el => el.innerText);
+        if (words.length === 0) { alert("请先选字！"); return; }
+        saveWords(words);
         document.getElementById('setup-view').style.display = 'none';
         document.getElementById('game-view').style.display = 'flex';
-
-        boardWords = [];
-        while(boardWords.length < (rows * cols)) {
-            boardWords = boardWords.concat(words); 
-        }
-        boardWords = boardWords.slice(0, rows * cols); 
-
-        for (let i = boardWords.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [boardWords[i], boardWords[j]] = [boardWords[j], boardWords[i]];
-        }
-
-        boardState = [];
-        currentPlayer = 1;
-        hasShownTrophy = false;
-        
-        for (let r = 0; r < rows; r++) {
-            let row = [];
-            for (let c = 0; c < cols; c++) {
-                row.push(0); 
-            }
-            boardState.push(row);
-        }
-
-        renderBoard();
-        evaluateGameState();
+        boardWords = []; while(boardWords.length < (rows * cols)) { boardWords = boardWords.concat(words); }
+        boardWords = boardWords.slice(0, rows * cols).sort(() => Math.random() - 0.5);
+        boardState = Array.from({length: rows}, () => Array(cols).fill(0));
+        currentPlayer = 1; renderBoard(); evaluateGameState();
     }
 
     function claimCell(r, c) {
-        let currentState = boardState[r][c];
-
-        if (currentState === 0) {
-            boardState[r][c] = currentPlayer;
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
-        } else if (currentState === 1) {
-            boardState[r][c] = 2; 
-        } else if (currentState === 2) {
-            boardState[r][c] = 0; 
-        }
-
-        renderBoard();
-        evaluateGameState();
+        if (boardState[r][c] === 0) { boardState[r][c] = currentPlayer; currentPlayer = currentPlayer === 1 ? 2 : 1; } 
+        else if (boardState[r][c] === 1) { boardState[r][c] = 2; } 
+        else { boardState[r][c] = 0; }
+        renderBoard(); evaluateGameState();
     }
 
     function renderBoard() {
-        const boardEl = document.getElementById('board');
-        boardEl.innerHTML = '';
-        
+        const b = document.getElementById('board'); b.innerHTML = '';
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
-                let cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.id = `cell-${r}-${c}`; 
-                
-                if (boardState[r][c] === 1) cell.classList.add('p1');
-                if (boardState[r][c] === 2) cell.classList.add('p2');
-                
-                cell.innerText = boardWords[r * cols + c];
-                cell.addEventListener('click', () => claimCell(r, c));
-                
-                boardEl.appendChild(cell);
+                let div = document.createElement('div'); div.className = 'cell font-zh';
+                if (boardState[r][c] === 1) div.classList.add('p1');
+                if (boardState[r][c] === 2) div.classList.add('p2');
+                div.innerText = boardWords[r * cols + c];
+                div.onclick = () => claimCell(r, c);
+                b.appendChild(div);
             }
         }
     }
 
     function evaluateGameState() {
-        const panel1 = document.getElementById('panel-1');
-        const panel2 = document.getElementById('panel-2');
-        
-        let winCells1 = checkWinForPlayer(1);
-        let winCells2 = checkWinForPlayer(2);
-
-        panel1.classList.remove('active');
-        panel2.classList.remove('active');
-
-        if (!winCells1 && !winCells2) {
-            hasShownTrophy = false;
-            if (currentPlayer === 1) {
-                panel1.classList.add('active');
-            } else {
-                panel2.classList.add('active');
-            }
-            return;
-        }
-
-        if (winCells1) {
-            panel1.classList.add('active'); 
-            applyWinHighlight(winCells1);
-            if (!hasShownTrophy) showTrophy("🥛 牛奶队");
-            return;
-        }
-        
-        if (winCells2) {
-            panel2.classList.add('active');
-            applyWinHighlight(winCells2);
-            if (!hasShownTrophy) showTrophy("🍪 饼干队");
-            return;
-        }
+        const p1 = document.getElementById('panel-1'); const p2 = document.getElementById('panel-2');
+        p1.classList.remove('active'); p2.classList.remove('active');
+        let w1 = checkWin(1); let w2 = checkWin(2);
+        if (w1) { p1.classList.add('active'); highlight(w1); showTrophy("牛奶队"); }
+        else if (w2) { p2.classList.add('active'); highlight(w2); showTrophy("饼干队"); }
+        else { if(currentPlayer === 1) p1.classList.add('active'); else p2.classList.add('active'); }
     }
 
-    function checkWinForPlayer(player) {
-        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
-
+    function checkWin(p) {
+        const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
-                if (boardState[r][c] !== player) continue;
-
-                for (let [dr, dc] of directions) {
-                    let count = 1;
-                    let winningCells = [[r, c]]; 
-                    let nr = r + dr, nc = c + dc;
-                    
-                    while (nr >= 0 && nr < rows && nc >= 0 && nc < cols && boardState[nr][nc] === player) {
-                        count++;
-                        winningCells.push([nr, nc]);
-                        nr += dr; nc += dc;
+                if (boardState[r][c] !== p) continue;
+                for (let [dr, dc] of dirs) {
+                    let win = [[r, c]];
+                    for(let i=1; i<5; i++) {
+                        let nr = r+dr*i, nc = c+dc*i;
+                        if(nr>=0 && nr<rows && nc>=0 && nc<cols && boardState[nr][nc] === p) win.push([nr,nc]); else break;
                     }
-                    if (count >= 5) return winningCells; 
+                    if(win.length >= 5) return win;
                 }
             }
         }
         return null;
     }
 
-    function applyWinHighlight(cells) {
-        cells.forEach(([r, c]) => {
-            let cellEl = document.getElementById(`cell-${r}-${c}`);
-            if (cellEl) cellEl.classList.add('winning-cell');
-        });
+    function highlight(cells) { cells.forEach(([r, c]) => { document.getElementById('board').children[r*cols+c].classList.add('winning-cell'); }); }
+    function showTrophy(name) { 
+        document.getElementById('overlay-msg').innerText = `🏆 恭喜${name}获胜！`; 
+        document.getElementById('trophy-overlay').style.display = 'flex'; 
     }
-
-    function showTrophy(winnerName) {
-        const overlay = document.getElementById('trophy-overlay');
-        const msg = document.getElementById('overlay-msg');
-        
-        msg.style.color = winnerName.includes("牛奶队") ? "#74b9ff" : "#fbc531";
-        msg.innerHTML = `🏆 恭喜 ${winnerName} 获胜！ 🏆`;
-        
-        overlay.classList.add('show');
-        hasShownTrophy = true; 
-    }
-
-    function closeTrophy() {
-        document.getElementById('trophy-overlay').classList.remove('show');
-    }
+    function closeTrophy() { document.getElementById('trophy-overlay').style.display = 'none'; }
 </script>
-
 </body>
 </html>

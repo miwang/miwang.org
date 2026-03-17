@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四会字学习进度索引 - MECC</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* 🌟 1. 终极字体防御：确保 Safari 渲染楷体 */
+        :root {
+            --kaiti-font: "STKaiti", "华文楷体", "楷体", "KaiTi", "LXGW WenKai Lite", "BiauKai", serif;
+        }
+
+        body { background-color: #f8fafc; margin: 0; font-family: var(--kaiti-font) !important; }
+        
+        .back-nav { padding: 15px 25px; background: #1e2e46; display: flex; align-items: center; min-height: 64px; box-sizing: border-box; }
+        .back-nav a { color: #f3b236; text-decoration: none; font-weight: bold; font-size: 1.1rem; font-family: var(--kaiti-font) !important; }
+        
+        .header { padding: 30px 25px; border-bottom: 6px solid #f3b236; background: #598586; text-align: center; }
+        .header h1 { font-size: 2.5rem; color: white; margin: 0; font-family: var(--kaiti-font) !important; letter-spacing: 2px; }
+        
+        .container { width: 95%; max-width: 1000px; margin: 30px auto; }
+
+        .progress-summary { 
+            background: #1e2e46; color: white; padding: 20px; 
+            border-radius: 15px; margin-bottom: 30px; 
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .summary-text h2 { margin: 0; font-size: 1.6rem; color: #f3b236; font-family: var(--kaiti-font) !important; }
+        .summary-text p { margin: 5px 0 0; opacity: 0.8; font-size: 1rem; }
+        
+        .bar-container { width: 150px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; background: #f3b236; width: 0%; transition: width 0.5s ease; }
+
+        .week-section { margin-bottom: 40px; background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .week-title { font-size: 1.8rem; color: #1e2e46; border-left: 8px solid #f3b236; padding-left: 15px; margin-bottom: 20px; font-weight: bold; text-align: left; font-family: var(--kaiti-font) !important; }
+        
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
+        .char-card { 
+            background: #fff9ea; border: 2px solid #ffeaa7; border-radius: 12px; height: 110px; 
+            display: flex; align-items: center; justify-content: center; text-decoration: none; 
+            transition: 0.2s; position: relative; 
+        }
+        .char-card:hover { transform: scale(1.05); border-color: #f3b236; }
+        
+        .char-text { font-size: 3.8rem; color: #e74c3c; font-family: var(--kaiti-font) !important; }
+        
+        .badge-done { 
+            position: absolute; top: -8px; right: -8px; 
+            background: #4CAF50; color: white; border-radius: 50%; 
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; 
+            font-size: 14px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+        }
+    </style>
+</head>
+<body>
+    <div class="back-nav"><a href="../teachers.html">⬅️ 返回工具台</a></div>
+    <div class="header"><h1>四会字学习进度索引 📘</h1></div>
+    
+    <div class="container">
+        <div class="progress-summary">
+            <div class="summary-text">
+                <h2 id="summary-title">学习进度</h2>
+                <p id="summary-detail">加油，继续努力练习！</p>
+            </div>
+            <div style="text-align: right;">
+                <div class="bar-container">
+                    <div id="top-bar-fill" class="bar-fill"></div>
+                </div>
+                <div id="top-pct" style="margin-top: 5px; font-weight: bold; color: #f3b236;">0%</div>
+            </div>
+        </div>
+
+        <div id="main-content"></div>
+    </div>
+
+    <script src="../js/sight_words_data.js"></script>
+    <script>
+        const content = document.getElementById('main-content');
+        const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
+
+        // 🌟 双语转换映射表：确保 March 自动变三月
+        const monthMap = {
+            "January": "一月", "February": "二月", "March": "三月", "April": "四月",
+            "May": "五月", "June": "六月", "July": "七月", "August": "八月",
+            "September": "九月", "October": "十月", "November": "十一月", "December": "十二月",
+            "一月": "一月", "二月": "二月", "三月": "三月", "四月": "四月",
+            "五月": "五月", "六月": "六月", "七月": "七月", "八月": "八月",
+            "九月": "九月", "十月": "十月", "十一月": "十一月", "十二月": "十二月"
+        };
+
+        const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const monthNamesZh = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+        
+        const now = new Date();
+        const currentMonthEn = monthNamesEn[now.getMonth()];
+        const currentMonthZh = monthNamesZh[now.getMonth()];
+
+        const labels = [];
+        fullWordData.forEach(item => {
+            if (!labels.includes(item.week)) { labels.push(item.week); }
+        });
+
+        // 智能匹配：在数据中寻找本月（支持中英文匹配）
+        let displayLabel = currentMonthZh; 
+        let thisPeriodChars = fullWordData.filter(d => d.week === currentMonthEn || d.week === currentMonthZh);
+
+        // 如果本月没字，显示最后一组
+        if (thisPeriodChars.length === 0 && labels.length > 0) {
+            const lastLabel = labels[labels.length - 1];
+            displayLabel = monthMap[lastLabel] || lastLabel; 
+            thisPeriodChars = fullWordData.filter(d => d.week === lastLabel);
+        }
+
+        if (thisPeriodChars.length > 0) {
+            const completedCount = thisPeriodChars.filter(d => progress[d.char] === 'completed').length;
+            const percentage = Math.round((completedCount / thisPeriodChars.length) * 100) || 0;
+            
+            document.getElementById('top-bar-fill').style.width = percentage + '%';
+            document.getElementById('top-pct').innerText = percentage + '%';
+            document.getElementById('summary-title').innerText = `${displayLabel} 学习进度`;
+            document.getElementById('summary-detail').innerText = `本阶段已掌握 ${completedCount} / ${thisPeriodChars.length} 个汉字 ✅`;
+        }
+
+        content.innerHTML = labels.map(label => {
+            const charsInGroup = fullWordData.filter(item => item.week === label);
+            const labelTitle = monthMap[label] || label; 
+            return `
+                <div class="week-section">
+                    <div class="week-title">${labelTitle}</div>
+                    <div class="char-grid">
+                        ${charsInGroup.map(item => {
+                            const isDone = progress[item.char] === 'completed';
+                            return `
+                                <a href="word_detail_zh.html?char=${encodeURIComponent(item.char)}" class="char-card" onclick="saveScroll()">
+                                    <span class="badge-done" style="display: ${isDone ? 'flex' : 'none'}">✅</span>
+                                    <span class="char-text">${item.char}</span>
+                                </a>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        // ── Scroll position save & restore ──
+        function saveScroll() {
+            sessionStorage.setItem('wap_zh_scroll', window.scrollY);
+        }
+        const savedScroll = sessionStorage.getItem('wap_zh_scroll');
+        if (savedScroll !== null) {
+            window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+            sessionStorage.removeItem('wap_zh_scroll');
+        }
+    </script>
+</body>
+</html>

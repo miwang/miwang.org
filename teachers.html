@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师专属工作台</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* 🌟 终极修复：Safari 强制楷体补丁 */
+        :root {
+            --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        }
+
+        body, html { 
+            font-family: var(--kaiti-font) !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, .section-title, .card-title, .card-desc, .submit-btn, .font-zh {
+            font-family: var(--kaiti-font) !important;
+        }
+
+        .font-en { font-family: "LXGW WenKai Lite", Arial, sans-serif !important; }
+
+        .header { padding: 12px 20px 20px; border-bottom: 6px solid #e74c3c; background-color: #2c3e50; position: relative; text-align: center; }
+        .header h1 { font-size: 2.5rem; letter-spacing: 2px; color: white;}
+        .header p { font-size: 1.1rem; margin-top: 5px; color: #bdc3c7; }
+        
+        .container { width: 95%; max-width: 1000px; margin: 30px auto; display: flex; flex-direction: column; gap: 30px; }
+        .section-title { font-size: 1.6rem; color: #2c3e50; border-left: 6px solid #e74c3c; padding-left: 15px; margin-bottom: 15px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        
+        .card { background: white; border-radius: 12px; padding: 20px 15px; text-decoration: none; color: #333; box-shadow: 0 4px 8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; text-align: center; border: 2px solid #ecf0f1; position: relative; cursor: pointer; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.15); border-color: #e74c3c; }
+        
+        .lock-badge { position: absolute; top: -10px; right: -10px; background: #e74c3c; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1rem; box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4); }
+
+        .card-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .card-title { font-size: 1.4rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        .card-desc { font-size: 1rem; color: #7f8c8d; line-height: 1.4; }
+        
+        @media (max-width: 600px) { .header h1 { font-size: 2rem; } .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } .card-icon { font-size: 2.5rem; } }
+
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(44, 62, 80, 0.9); z-index: 1000; display: none;
+            justify-content: center; align-items: center;
+        }
+        .lock-box { background: white; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #999; border: none; background: none; font-weight: bold; }
+        .close-btn:hover { color: #e74c3c; }
+        .lock-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .lock-title { font-size: 1.5rem; color: #2c3e50; margin-bottom: 20px; font-weight: bold; }
+        .password-input { font-size: 2rem; padding: 10px; width: 150px; text-align: center; border: 2px solid #ccc; border-radius: 8px; letter-spacing: 5px; outline: none; font-family: monospace !important; }
+        .password-input:focus { border-color: #e74c3c; }
+        .submit-btn { margin-top: 20px; padding: 12px 30px; font-size: 1.2rem; background-color: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .submit-btn:hover { background-color: #c0392b; }
+        #error-msg { color: #e74c3c; margin-top: 15px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="font-zh" style="position:absolute; left:20px; top:10px; color:rgba(255,255,255,0.8); text-decoration:none; font-size:0.95rem; font-weight:bold;">⬅️ 返回主页</a>
+        <h1 class="font-zh">王老师的教学工具台 🛠️</h1>
+        <p class="font-zh">课堂管理与互动辅助工具</p>
+    </div>
+
+    <div class="container">
+        
+        <div>
+            <div class="section-title font-zh">👥 分组与轮换工具 (王老师专属)</div>
+            <div class="grid">
+                <div class="card" onclick="saveScroll(); requirePassword('tools/elephants_milk_cookie.html')">
+                    <div class="lock-badge">🔒</div>
+                    <div class="card-icon">🐘🥛</div>
+                    <div class="card-title"><span class="font-zh">大象班</span> <span class="font-en">(Elephants)</span></div>
+                    <div class="card-desc"><span class="font-zh">牛奶饼干</span> <span class="font-en">Turn & Talk</span> <span class="font-zh">分组</span></div>
+                </div>
+                
+                <div class="card" onclick="saveScroll(); requirePassword('tools/tigers_milk_cookie.html')">
+                    <div class="lock-badge">🔒</div>
+                    <div class="card-icon">🐯🍪</div>
+                    <div class="card-title"><span class="font-zh">老虎班</span> <span class="font-en">(Tigers)</span></div>
+                    <div class="card-desc"><span class="font-zh">牛奶饼干</span> <span class="font-en">Turn & Talk</span> <span class="font-zh">分组</span></div>
+                </div>
+
+                <div class="card" onclick="saveScroll(); requirePassword('tools/elephants_centers.html')">
+                    <div class="lock-badge">🔒</div>
+                    <div class="card-icon">🐘⏳</div>
+                    <div class="card-title"><span class="font-zh">大象班</span> <span class="font-en">Centers</span></div>
+                    <div class="card-desc font-zh">小组轮换定时器与管理</div>
+                </div>
+                
+                <div class="card" onclick="saveScroll(); requirePassword('tools/tigers_centers.html')">
+                    <div class="lock-badge">🔒</div>
+                    <div class="card-icon">🐯⏳</div>
+                    <div class="card-title"><span class="font-zh">老虎班</span> <span class="font-en">Centers</span></div>
+                    <div class="card-desc font-zh">小组轮换定时器与管理</div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title font-zh">📖 课堂教学工具 (核心生字)</div>
+            <div class="grid">
+                <a onclick="saveScroll()" href="math/mecc_daily_practices.html" class="card">
+                    <div class="card-icon">☀️</div>
+                    <div class="card-title font-zh">数学早会</div>
+                    <div class="card-desc font-zh">日期、天气与在校天数统计</div>
+                </a>
+
+                <a onclick="saveScroll()" href="cla/words_and_phrases_zh.html" class="card">
+                    <div class="card-icon">📘</div>
+                    <div class="card-title font-zh">四会字学习</div>
+                    <div class="card-desc font-zh">查看进度、生字研习与笔顺</div>
+                </a>
+
+                <a onclick="saveScroll()" href="cla/songs.html" class="card">
+                    <div class="card-icon">🎶</div>
+                    <div class="card-title font-zh">我们来唱歌</div>
+                    <div class="card-desc font-zh">儿歌点读与学生字 (加注版)</div>
+                </a>
+
+                <a onclick="saveScroll()" href="games/sentence_builder.html" class="card">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title font-zh">一起来造句</div>
+                    <div class="card-desc font-zh">彩色句子拼图与语法练习</div>
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title font-zh">🎮 课堂互动游戏 (完全公开)</div>
+            <div class="grid">
+                <a onclick="saveScroll()" href="games/knockknock.html" class="card">
+                    <div class="card-icon">🚪</div>
+                    <div class="card-title font-zh">这是谁？</div>
+                    <div class="card-desc font-zh">家庭成员识字与听音辨人</div>
+                </a>
+
+                <a onclick="saveScroll()" href="games/cat_game.html" class="card">
+                    <div class="card-icon">😸</div>
+                    <div class="card-title font-zh">小猫在哪里？</div>
+                    <div class="card-desc font-zh">汉字认读与躲猫猫互动</div>
+                </a>
+                
+                <a onclick="saveScroll()" href="games/connect_5.html" class="card">
+                    <div class="card-icon">🐼</div>
+                    <div class="card-title font-zh">自由五子棋</div>
+                    <div class="card-desc font-zh">牛奶饼干双人对战复习</div>
+                </a>
+                
+                <a onclick="saveScroll()" href="games/orchard_game.html" class="card">
+                    <div class="card-icon">🍎</div>
+                    <div class="card-title font-zh">果园摘水果</div>
+                    <div class="card-desc font-zh">动态掉落接水果识字游戏</div>
+                </a>
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="modal-overlay">
+        <div class="lock-box">
+            <button class="close-btn" onclick="closeModal()">✕</button>
+            <div class="lock-icon">🤫</div>
+            <div class="lock-title font-zh">请输入王老师专属密码</div>
+            <input type="password" id="pwd" class="password-input" maxlength="6" onkeydown="if(event.key === 'Enter') checkPassword()">
+            <br>
+            <button class="submit-btn" onclick="checkPassword()">验证身份</button>
+            <div id="error-msg" class="font-zh">密码错误，请重试！</div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PASSWORD = "5683";
+        let targetUrl = "";
+
+        function requirePassword(url) {
+            targetUrl = url;
+            if(sessionStorage.getItem("teacher_unlocked") === "true") {
+                window.location.href = targetUrl;
+            } else {
+                document.getElementById('modal-overlay').style.display = 'flex';
+                document.getElementById('pwd').focus();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('pwd').value = "";
+            document.getElementById('error-msg').style.opacity = 0;
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('pwd').value;
+            const errorMsg = document.getElementById('error-msg');
+            
+            if (input === CORRECT_PASSWORD) {
+                sessionStorage.setItem("teacher_unlocked", "true");
+                window.location.href = targetUrl;
+            } else {
+                errorMsg.style.opacity = 1;
+                document.getElementById('pwd').value = "";
+                setTimeout(() => errorMsg.style.opacity = 0, 2000);
+            }
+        }
+
+        function saveScroll() {
+            sessionStorage.setItem('teachers_scroll', window.scrollY);
+        }
+        const savedScroll = sessionStorage.getItem('teachers_scroll');
+        if (savedScroll !== null) {
+            window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+            sessionStorage.removeItem('teachers_scroll');
+        }
+    </script>
+</body>
+</html>

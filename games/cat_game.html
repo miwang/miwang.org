@@ -1,481 +1,235 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<link rel="icon" type="image/png" href="../favicon.png">
-<link rel="stylesheet" href="../css/style.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小猫在哪里？</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>😸 小猫在哪里？ 😸</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
     <style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
-body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            /* 把绝对高度改成最小高度，允许内容撑开屏幕 */
-            min-height: 100vh; 
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f4f9f9;
-            color: #333;
-            /* 允许上下滑动，但禁止左右乱晃 */
-            overflow-x: hidden; 
-            overflow-y: auto; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            user-select: none;
-        }
-        /* --- 星星计分板 --- */
-        #star-container {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            font-size: 2rem;
-            color: #f3b236;
-            display: none; /* 开始界面隐藏 */
-            align-items: center;
-            gap: 10px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+        :root {
+            /* 🌟 沿用您最满意的万无一失字体链 */
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
         }
 
-        .star-icon {
-            font-size: 2.5rem;
+        /* 暴力覆盖，确保字体全局统一 */
+        *, h1, h2, .btn, .char-card, .name, #result-text { font-family: var(--kaiti) !important; font-weight: bold; }
+        .score, .font-en { font-family: var(--wenkai) !important; }
+
+        body {
+            margin: 0; padding: 0; background-color: #1f2e46; color: white;
+            overflow: hidden; display: flex; flex-direction: column; align-items: center;
+            height: 100vh; width: 100vw; user-select: none;
         }
 
-        @keyframes starPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.6); color: #fff; }
-            100% { transform: scale(1); }
+        /* 🌟 统一磨砂返回按钮 */
+        .back-btn-home {
+            position: absolute; top: 15px; left: 20px; color: #fff; text-decoration: none;
+            font-size: 1.1rem; z-index: 999; 
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 8px 20px; border-radius: 40px; border: 1.5px solid rgba(255,255,255,0.2);
+            transition: 0.2s;
+        }
+        .back-btn-home:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.25); }
+
+        /* --- 🌟 游戏顶栏：彻底解决重叠 --- */
+        .game-top-bar {
+            width: 100%; height: 12vh; display: none; /* 初始隐藏 */
+            align-items: center; justify-content: center; position: relative; padding: 0 20px;
         }
 
-        .pop-anim {
-            animation: starPop 0.4s ease-in-out;
-        }
+        .game-header { font-size: 3rem; color: var(--accent-yellow); letter-spacing: 5px; margin: 0; }
 
-        /* --- 开始界面（字卡墙）样式 --- */
-        #start-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            width: 90%;
-            height: 100%;
-            padding-top: 30px;
-            z-index: 10;
+        /* 🌟 记分牌：放在右侧，并缩小比例防止撞车 */
+        #vs-scoreboard {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%) scale(0.9);
+            display: flex; align-items: center; gap: 15px; 
+            background: rgba(255, 255, 255, 0.1); padding: 8px 20px; 
+            border-radius: 50px; border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
+        .player-box { display: flex; align-items: center; gap: 10px; }
+        .player-box .name { font-size: 1.2rem; color: #fff; }
+        .player-box .score { font-size: 2.5rem; color: var(--accent-yellow); min-width: 40px; text-align: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-yellow); background: white; }
 
-        #start-screen h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #f3b236;
-        }
-
-        .controls {
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            background-color: #598586;
-            color: #f3b236;
-            border: 2px solid #f3b236;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: transform 0.2s, background-color 0.2s;
-            margin: 0 10px;
- font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-            background-color: #4a6f70;
-        }
+        /* --- 选词界面：宽屏布局 --- */
+        #start-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; }
+        #start-screen h1 { font-size: 3rem; margin-bottom: 15px; color: var(--accent-yellow); }
+        .controls { margin-bottom: 20px; display: flex; gap: 20px; }
+        .btn { padding: 10px 30px; font-size: 1.2rem; background-color: var(--main-teal); color: white; border: 2px solid var(--accent-yellow); border-radius: 50px; cursor: pointer; transition: 0.2s; }
+        .btn-start { background-color: var(--accent-yellow); color: #1f2e46; box-shadow: 0 4px 0 #d49a2a; }
 
         #char-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-            overflow-y: auto;
-            max-height: 60vh;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            display: grid; grid-template-columns: repeat(13, 1fr); gap: 10px; 
+            max-width: 1250px; width: 95%; padding: 20px; 
+            background: rgba(255, 255, 255, 0.08); border-radius: 20px; border: 3px dashed rgba(243, 178, 54, 0.4);
         }
-
         .char-card {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.8rem;
-            background-color: #e0e0e0;
-            color: #333;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 3px solid transparent;
+            aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center;
+            font-size: 2rem; background-color: #f0f0f0; color: #333; border-radius: 10px; cursor: pointer; transition: 0.2s;
         }
+        .char-card.selected { background-color: var(--main-teal); color: var(--accent-yellow); border: 3px solid var(--accent-yellow); transform: scale(1.05); }
 
-        .char-card.selected {
-            background-color: #598586;
-            color: #f3b236;
-            border: 3px solid #f3b236;
-            transform: scale(1.1);
+        /* --- 游戏区 --- */
+        #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; position: relative; }
+        .game-board { flex: 1; display: flex; align-items: center; justify-content: center; gap: 40px; z-index: 2; }
+        
+        .card-container { position: relative; width: 200px; height: 200px; }
+        .char-circle { 
+            position: absolute; inset: 0; background-color: var(--main-teal); border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; font-size: 8rem; 
+            color: var(--accent-yellow); cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.4); 
+            border: 5px solid transparent; transition: 0.2s; 
         }
+        .char-circle:hover { transform: translateY(-10px); border-color: var(--accent-yellow); }
 
-        /* --- 游戏界面样式 --- */
-        #game-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
+        .hidden-cat { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 8rem; opacity: 0; }
+        .cat-found-anim { animation: bounceCat 0.5s infinite; opacity: 1 !important; }
+        @keyframes bounceCat { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, -80%); } }
+        .fly-away { animation: magicVanish 0.8s forwards; pointer-events: none; }
+        @keyframes magicVanish { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0) translateY(-500px) rotate(360deg); opacity: 0; } }
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 50px;
-            font-size: 3.5rem;
-            letter-spacing: 5px;
-        }
-
-        .game-board {
-            display: flex;
-            gap: 40px;
-            margin-top: 100px;
-            z-index: 2;
-        }
-
-        .card-container {
-            position: relative;
-            width: 180px;
-            height: 180px;
-        }
-
-        .hidden-cat {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 8rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        @keyframes bounceCat {
-            0%, 100% { transform: translate(-50%, -50%); }
-            50% { transform: translate(-50%, -80%); }
-        }
-
-        .cat-found-anim {
-            animation: bounceCat 0.5s ease-in-out infinite;
-            opacity: 1 !important;
-        }
-
-        .char-circle {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #598586;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 6rem;
-            color: #f3b236;
-            cursor: pointer;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.4), inset 0 0 15px rgba(255,255,255,0.2);
-            transition: transform 0.1s;
-        }
-
-        .char-circle:active {
-            transform: scale(0.95);
-        }
-
-        @keyframes tornadoFly {
-            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: translateY(-150px) scale(1.5) rotate(180deg); opacity: 0.8; }
-            100% { transform: translateY(-400px) scale(0) rotate(720deg); opacity: 0; }
-        }
-
-        .fly-away {
-            animation: tornadoFly 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-            pointer-events: none;
-        }
-
-        .footer {
-            margin-top: auto;
-            margin-bottom: 60px;
-            font-size: 2.5rem;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            color: #598586;
-        }
-
-        .bottom-wave {
-            position: absolute;
-            bottom: -50%;
-            width: 150%;
-            height: 80%;
-            background-color: #ffffff;
-            border-radius: 50%;
-            z-index: 1;
-        }
-
-        #next-btn {
-            display: none;
-        }
+        .footer { height: 20vh; width: 100%; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #result-text { font-size: 2.8rem; color: var(--main-teal); margin-bottom: 10px; }
+        .bottom-wave { position: absolute; bottom: -30vh; width: 150vw; height: 60vh; background-color: #ffffff; border-radius: 50%; z-index: 1; }
     </style>
 </head>
 <body>
 
-    <div id="star-container">
-        <span class="star-icon" id="star-icon">⭐</span> x <span id="star-count">0</span>
-    </div>
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
 
     <div id="start-screen">
-        <h1>选择本节课的四会字</h1>
+        <h1>😸 小猫在哪里？ 😸</h1>
         <div class="controls">
             <button class="btn" onclick="selectAll()">全选</button>
             <button class="btn" onclick="clearAll()">清空</button>
-            <button class="btn" onclick="startGame()" style="background-color: #f3b236; color: #1f2e46; border-color: #1f2e46;">开始游戏</button>
+            <button class="btn btn-start" onclick="startGame()">开始游戏</button>
         </div>
         <div id="char-grid"></div>
     </div>
 
     <div id="game-screen">
-        <div class="header">
-            小猫在哪里？
+        <div class="game-top-bar" id="game-top-bar">
+            <h1 class="game-header">小猫在哪里？</h1>
+            <div id="vs-scoreboard">
+                <div class="player-box">
+                    <img src="../favicon.png" class="avatar">
+                    <span class="name">王老师</span>
+                    <span class="score" id="score-teacher">0</span>
+                </div>
+                <div style="font-size: 1.2rem; font-weight: bold; color: #ff4757; font-style: italic;">VS</div>
+                <div class="player-box">
+                    <span class="score" id="score-student">0</span>
+                    <span class="name">小朋友</span>
+                    <div style="font-size: 2rem;">👧👦</div>
+                </div>
+            </div>
         </div>
-        
+
         <div class="game-board" id="board"></div>
 
         <div class="footer">
             <div id="result-text">小猫在 ______ 的后面。</div>
-            <button class="btn" id="next-btn" onclick="nextRound()">下一组 ➔</button>
+            <button class="btn" id="next-btn" onclick="nextRound()" style="display:none; background: #3498db; border-color:#2980b9;">下一组 ➔</button>
         </div>
-
         <div class="bottom-wave"></div>
     </div>
 
     <script>
-        const allChars = [
-            '四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太',
-            '六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也',
-            '八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有',
-            '要','是','了'
-        ];
+        const allChars = ['四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太','六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也','八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有','要','是','了','去'];
+        let selectedChars = []; let teacherScore = 0; let studentScore = 0; let wrongAttempts = 0; let roundOver = false; let currentChars = []; let targetIdx = -1;
 
-        let selectedChars = [];
-        let currentTargetIndex = -1;
-        let currentChars = [];
-        let totalStars = 0; // 记录星星总数
-
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new AudioCtx(); if(audioCtx.state==='suspended') audioCtx.resume(); }
 
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new AudioContext();
+        function playSfx(type) {
+            initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            if(type === 'swoosh') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(50, now+0.4);
+                gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4);
+                osc.start(); osc.stop(now+0.4);
+            } else if(type === 'tada') {
+                osc.type = 'triangle'; [523, 659, 783, 1046].forEach((f, i) => osc.frequency.setValueAtTime(f, now + i*0.1));
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.6);
+                osc.start(); osc.stop(now+0.6);
+            } else if(type === 'teacherWin') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(400, now+0.1); osc.frequency.linearRampToValueAtTime(200, now+0.2); osc.frequency.linearRampToValueAtTime(500, now+0.3);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.5);
+                osc.start(); osc.stop(now+0.5);
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playSwooshSound() {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
-            
-            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        }
-
-        function playTadaSound() {
-            initAudio();
-            const osc1 = audioCtx.createOscillator();
-            const osc2 = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            osc1.connect(gainNode);
-            osc2.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            osc1.type = 'triangle';
-            osc2.type = 'sine';
-            
-            osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
-            osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
-            
-            osc2.frequency.setValueAtTime(1046.50, audioCtx.currentTime); 
-            osc2.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1); 
-            
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
-            
-            osc1.start();
-            osc2.start();
-            osc1.stop(audioCtx.currentTime + 0.6);
-            osc2.stop(audioCtx.currentTime + 0.6);
-        }
-        
-        // 获得星星时的清脆音效
-        function playStarSound() {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-            osc.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1); // C#6
-            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.2); // E6
-            
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
         }
 
         window.onload = () => {
             const grid = document.getElementById('char-grid');
+            const saved = JSON.parse(localStorage.getItem('catGameWords')) || [];
             allChars.forEach(char => {
                 const card = document.createElement('div');
-                card.className = 'char-card';
-                card.innerText = char;
-                card.onclick = () => {
-                    card.classList.toggle('selected');
-                };
+                card.className = 'char-card' + (saved.includes(char) ? ' selected' : '');
+                card.innerText = char; card.onclick = () => card.classList.toggle('selected');
                 grid.appendChild(card);
             });
         };
 
-        function selectAll() {
-            document.querySelectorAll('.char-card').forEach(card => card.classList.add('selected'));
-        }
-
-        function clearAll() {
-            document.querySelectorAll('.char-card').forEach(card => card.classList.remove('selected'));
-        }
+        function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
+        function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
 
         function startGame() {
-            initAudio(); 
-            
-            const selectedElements = document.querySelectorAll('.char-card.selected');
-            selectedChars = Array.from(selectedElements).map(el => el.innerText);
-            
-            if (selectedChars.length < 4) {
-                alert("因为每轮需要展示4个不重复的字，请至少选择4个字来开始游戏哦！");
-                return;
-            }
-
+            selectedChars = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
+            if (selectedChars.length < 4) { alert("请至少选择4个字来玩小猫藏猫猫哦！"); return; }
+            localStorage.setItem('catGameWords', JSON.stringify(selectedChars));
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
-            document.getElementById('star-container').style.display = 'flex'; // 显示计分板
+            document.getElementById('game-top-bar').style.display = 'flex';
             nextRound();
         }
 
         function nextRound() {
-            const board = document.getElementById('board');
-            const resultText = document.getElementById('result-text');
-            const nextBtn = document.getElementById('next-btn');
-            
-            board.innerHTML = '';
-            resultText.innerText = '小猫在 ______ 的后面。';
-            nextBtn.style.display = 'none';
-            currentChars = [];
-
-            let tempChars = [...selectedChars];
-            for (let i = tempChars.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [tempChars[i], tempChars[j]] = [tempChars[j], tempChars[i]];
-            }
-            currentChars = tempChars.slice(0, 4);
-
-            currentTargetIndex = Math.floor(Math.random() * 4);
-
-            for (let i = 0; i < 4; i++) {
-                const container = document.createElement('div');
-                container.className = 'card-container';
-
-                const cat = document.createElement('div');
-                cat.className = 'hidden-cat';
-                cat.innerText = '😸';
-                cat.id = 'cat-' + i;
-                
-                if (i === currentTargetIndex) {
-                    cat.style.opacity = '1';
-                }
-
-                const circle = document.createElement('div');
-                circle.className = 'char-circle';
-                circle.innerText = currentChars[i];
-                circle.onclick = function() { reveal(i, this, cat); };
-
-                container.appendChild(cat);
-                container.appendChild(circle);
-                board.appendChild(container);
-            }
-        }
-
-        function reveal(index, circleElement, catElement) {
-            circleElement.classList.add('fly-away');
-
-            if (index === currentTargetIndex) {
-                playTadaSound();
-                setTimeout(addStar, 400); // 稍微延迟一下加星星，效果更好
-                
-                catElement.classList.add('cat-found-anim');
-                const charFound = currentChars[index];
-                document.getElementById('result-text').innerText = `小猫在“${charFound}”的后面！`;
-                document.getElementById('next-btn').style.display = 'block';
-                
-                const allCircles = document.querySelectorAll('.char-circle');
-                allCircles.forEach(c => c.style.pointerEvents = 'none');
-            } else {
-                playSwooshSound();
-            }
-        }
-        
-        function addStar() {
-            totalStars++;
-            document.getElementById('star-count').innerText = totalStars;
-            playStarSound();
-            
-            // 触发星星放大特效
-            const starIcon = document.getElementById('star-icon');
-            starIcon.classList.remove('pop-anim');
-            void starIcon.offsetWidth; // 触发重绘，重新播放动画
-            starIcon.classList.add('pop-anim');
+            const board = document.getElementById('board'); board.innerHTML = '';
+            document.getElementById('result-text').innerText = '小猫在 ______ 的后面。';
+            document.getElementById('result-text').style.color = '#598586';
+            document.getElementById('next-btn').style.display = 'none';
+            wrongAttempts = 0; roundOver = false;
+            currentChars = [...selectedChars].sort(() => Math.random() - 0.5).slice(0, 4);
+            targetIdx = Math.floor(Math.random() * 4);
+            currentChars.forEach((char, i) => {
+                const container = document.createElement('div'); container.className = 'card-container';
+                const cat = document.createElement('div'); cat.className = 'hidden-cat'; cat.innerText = '😸'; cat.id = 'cat-'+i;
+                const circle = document.createElement('div'); circle.className = 'char-circle'; circle.innerText = char; circle.id = 'circle-'+i;
+                circle.onclick = () => {
+                    if (roundOver || circle.classList.contains('fly-away')) return;
+                    circle.classList.add('fly-away');
+                    if (i === targetIdx) {
+                        roundOver = true; playSfx('tada'); cat.classList.add('cat-found-anim');
+                        studentScore++; document.getElementById('score-student').innerText = studentScore;
+                        document.getElementById('result-text').innerText = `找到啦！是“${char}”！小朋友加一分！`;
+                        document.getElementById('next-btn').style.display = 'block';
+                    } else {
+                        playSfx('swoosh'); wrongAttempts++;
+                        if (wrongAttempts === 3) {
+                            roundOver = true; teacherScore++; document.getElementById('score-teacher').innerText = teacherScore;
+                            document.getElementById('result-text').innerText = `王老师截胡成功！`;
+                            document.getElementById('result-text').style.color = '#ff4757';
+                            playSfx('teacherWin');
+                            setTimeout(() => {
+                                playSfx('tada');
+                                document.getElementById('circle-'+targetIdx).classList.add('fly-away');
+                                document.getElementById('cat-'+targetIdx).classList.add('cat-found-anim');
+                                document.getElementById('result-text').innerText = `哈哈！躲在“${currentChars[targetIdx]}”后面！`;
+                                document.getElementById('next-btn').style.display = 'block';
+                            }, 1000);
+                        }
+                    }
+                };
+                container.appendChild(cat); container.appendChild(circle); board.appendChild(container);
+            });
         }
     </script>
 </body>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我们来唱歌 - MECC Final Edition</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/songs_data.js"></script>
+    <script src="https://unpkg.com/pinyin-pro"></script>
+
+    <style>
+        :root {
+            /* STKaiti 第一：macOS/Safari 楷体；KaiTi：Windows 楷体；LXGW 兜底 */
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
+        }
+
+        /* 🌟 暴力锁定：所有带 font-zh 的标签强制楷体 */
+        .font-zh, [class*="font-zh"] { font-family: var(--kaiti) !important; font-weight: bold; }
+        .font-en, [class*="font-en"] { font-family: var(--wenkai) !important; }
+
+        body { background-color: #fff9ea; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* 磨砂返回按钮 */
+        .back-btn-capsule {
+            position: absolute; top: 20px; left: 20px; color: #555; text-decoration: none;
+            font-size: 1.1rem; font-weight: bold; z-index: 5000; 
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 8px 22px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.6);
+            display: flex; align-items: center; cursor: pointer;
+        }
+
+        .list-header { text-align: center; padding: 30px 0 10px 0; flex-shrink: 0; }
+        .list-header h1 { font-size: 3.5rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
+
+        /* 🌟 列表页：强制卡片整齐 */
+        #gallery-view {
+            flex: 1; overflow-y: auto; display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-auto-rows: 290px; align-items: start; gap: 30px; padding: 20px 50px; box-sizing: border-box;
+        }
+        .song-card {
+            background: white; border: 4px solid var(--main-teal); border-radius: 20px;
+            overflow: hidden; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; height: 290px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+        .song-card:hover { transform: translateY(-5px); border-color: var(--accent-yellow); }
+        .card-img-wrapper { width: 100%; height: 175px; overflow: hidden; background: #f4f4f4; display: flex; align-items: center; justify-content: center; position: relative; }
+        .song-card img { width: 100%; height: 100%; object-fit: cover; }
+
+        .song-info { flex: 1; padding: 12px; text-align: center; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
+        .song-info h3 { margin: 0; font-size: 1.2rem; color: #333; line-height: 1.3; }
+
+        /* 🌟 播放页设计 */
+        #play-view { display: none; height: 100vh; flex-direction: column; background: #fff9ea; z-index: 2000; position: relative; }
+        .play-header { height: 12vh; background: var(--main-teal); display: flex; align-items: center; justify-content: center; border-bottom: 0.6vh solid var(--accent-yellow); }
+        .lyrics-panel { flex: 1; display: flex; flex-direction: column; background: white; margin: 1.5vh; border-radius: 4vh; overflow: hidden; }
+        .lyrics-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2vh; overflow-y: auto; }
+        .lyric-line { font-size: 9vh; font-weight: bold; margin: 0.6vh 0; color: #1e2e46; text-align: center; width: 100%; }
+        .pagination-controls { height: 12vh; display: flex; justify-content: center; align-items: center; gap: 8vw; background: #fff; border-top: 1px solid #f0f0f0; }
+        .page-btn { background: var(--accent-yellow); border: none; padding: 1.5vh 8vw; border-radius: 20px; font-size: 4vh; cursor: pointer; box-shadow: 0 0.6vh 0 #d49a2a; }
+
+        /* 🌟 悬浮图片容器：带删除按钮 */
+        #hover-img-container { 
+            position: fixed; display: none; z-index: 10000; padding: 10px;
+            pointer-events: auto; /* 必须允许点击，否则点不到删除按钮 */
+        }
+        #global-hover-img { 
+            max-height: 40vh; max-width: 420px; 
+            border: 6px solid var(--accent-yellow); border-radius: 20px; 
+            background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+        }
+        /* 🗑️ 红色删除小按钮 */
+        .btn-delete-item {
+            position: absolute; top: 0px; right: 0px; 
+            background: #e74c3c; color: white; border: 3px solid white;
+            width: 45px; height: 45px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 10001; transition: 0.2s;
+        }
+        .btn-delete-item:hover { transform: scale(1.1); background: #c0392b; }
+
+        .hover-word { border-bottom: 0.8vh dashed var(--main-teal); cursor: pointer; display: inline-block; }
+        .clickable-char { cursor: pointer; border-radius: 8px; display: inline-block; }
+        .red-word { color: #e74c3c !important; }
+        
+        #selection-bubble { position: fixed; display: none; background: rgba(89, 133, 134, 0.95); color: white; padding: 10px 25px; border-radius: 50px; cursor: pointer; z-index: 9999; font-size: 1.2rem; font-weight: bold; border: 2px solid white; backdrop-filter: blur(5px); }
+
+        .admin-bar { background: white; margin: 10px 50px 20px 50px; padding: 12px; border-radius: 20px; border: 2px dashed var(--main-teal); display: flex; justify-content: center; gap: 20px; align-items: center; flex-shrink: 0; }
+        .admin-btn { background: var(--main-teal); color: white; border: none; padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 1rem; font-family: var(--kaiti); }
+    </style>
+</head>
+<body>
+
+    <div id="list-view" style="display: flex; flex-direction: column; height: 100vh;">
+        <a href="../teachers.html" class="back-btn-capsule font-zh">⬅️ 返回工具台</a>
+        <div class="list-header"><h1 id="main-title" class="font-zh"></h1></div>
+        <div id="gallery-view"></div>
+        <div class="admin-bar font-zh">
+            <span>数据中心：</span>
+            <button class="admin-btn" onclick="exportData()">💾 导出备份</button>
+            <button class="admin-btn" onclick="document.getElementById('fileInput').click()">📂 导入备份</button>
+            <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
+            <button class="admin-btn" style="background:#e74c3c;" onclick="resetAll()">🗑️ 清空所有记录</button>
+        </div>
+    </div>
+
+    <div id="play-view">
+        <div class="back-btn-capsule font-zh" onclick="closePlay()">⬅️ 返回列表</div>
+        <div class="play-header"><h1 id="song-title" class="font-zh" style="color:white; font-size: 6vh; margin:0;"></h1></div>
+        <div class="lyrics-panel">
+            <div class="lyrics-content" id="lyrics-content"></div>
+            <div class="pagination-controls">
+                <button class="page-btn" onclick="prevPage()">⬅️</button>
+                <div id="page-indicator" class="font-en" style="font-size: 4vh; color: var(--main-teal); font-weight: bold;"></div>
+                <button class="page-btn" onclick="nextPage()">➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="selection-bubble" onmousedown="makeHardWord()">🖼️ 加注图片</div>
+    
+    <div id="hover-img-container" onmouseenter="keepImg()" onmouseleave="hideImg()">
+        <button class="btn-delete-item" id="delete-item-btn">🗑️</button>
+        <img id="global-hover-img" src="">
+    </div>
+
+    <script>
+        function formatText(text, isLyrics = false) {
+            if (!text) return "";
+            return text.split('').map(char => {
+                const isEn = /[a-zA-Z0-9\s\p{P}]/u.test(char);
+                const className = isEn ? 'font-en' : 'font-zh';
+                if (!isEn && isLyrics) {
+                    const isRed = localStorage.getItem(`mecc_red_${currentSong.id}_${char}`) === 'true';
+                    return `<span class="${className} clickable-char ${isRed ? 'red-word' : ''}" data-char="${char}" onclick="toggleChar(event, this,'${char}')">${char}</span>`;
+                }
+                return `<span class="${className}">${char}</span>`;
+            }).join('');
+        }
+
+        const listView = document.getElementById('list-view');
+        const playView = document.getElementById('play-view');
+        const lyricsContent = document.getElementById('lyrics-content');
+        const bubble = document.getElementById('selection-bubble');
+        const imgContainer = document.getElementById('hover-img-container');
+        const globalImg = document.getElementById('global-hover-img');
+        const deleteBtn = document.getElementById('delete-item-btn');
+
+        let currentSong = null, currentSlides = [], currentSlideIndex = 0, selectedText = "", hideTimer = null;
+
+        function initGallery() {
+            document.getElementById('main-title').innerHTML = formatText("🎶 我们来唱歌 🎶");
+            document.getElementById('gallery-view').innerHTML = songsData.map((song, index) => `
+                <div class="song-card" onclick="startLevel(${index})">
+                    <div class="card-img-wrapper"><img src="../images/songs/${song.cover}" onerror="this.style.display='none';"></div>
+                    <div class="song-info"><h3>${formatText(song.title)}</h3></div>
+                </div>
+            `).join('');
+        }
+
+        function startLevel(idx) {
+            currentSong = songsData[idx]; listView.style.display = 'none'; playView.style.display = 'flex';
+            document.getElementById('song-title').innerHTML = formatText(currentSong.title);
+            currentSlides = []; let temp = [];
+            currentSong.lyrics.forEach(l => {
+                if(l === "---") { currentSlides.push({type:'text', content:temp}); temp = []; }
+                else { temp.push(l); }
+            });
+            if(temp.length) currentSlides.push({type:'text', content:temp});
+            currentSlides.push({type:'video', content:currentSong.youtubeId});
+            currentSlideIndex = 0; renderSlide();
+        }
+
+        function renderSlide() {
+            const slide = currentSlides[currentSlideIndex];
+            lyricsContent.innerHTML = "";
+            if(slide.type === 'text') {
+                const hardWords = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}");
+                const sortedWords = Object.keys(hardWords).sort((a,b) => b.length - a.length);
+
+                slide.content.forEach(line => {
+                    let parts = [{ text: line, isMarked: false }];
+                    sortedWords.forEach(word => {
+                        let newParts = [];
+                        parts.forEach(part => {
+                            if (part.isMarked) { newParts.push(part); }
+                            else {
+                                let subparts = part.text.split(word);
+                                subparts.forEach((sub, idx) => {
+                                    if (sub !== "") newParts.push({ text: sub, isMarked: false });
+                                    if (idx < subparts.length - 1) newParts.push({ text: word, isMarked: true, img: hardWords[word] });
+                                });
+                            }
+                        });
+                        parts = newParts;
+                    });
+
+                    const div = document.createElement('div');
+                    div.className = 'lyric-line';
+                    parts.forEach(part => {
+                        const span = document.createElement('span');
+                        if (part.isMarked) {
+                            span.className = 'hover-word';
+                            span.innerHTML = formatText(part.text, true);
+                            span.onmouseenter = (e) => showImg(e, part.img, part.text);
+                            span.onmouseleave = scheduleHide;
+                        } else {
+                            span.innerHTML = formatText(part.text, true);
+                        }
+                        div.appendChild(span);
+                    });
+                    lyricsContent.appendChild(div);
+                });
+            } else {
+                lyricsContent.innerHTML = `<div style="width:90%; height:80%; border-radius:20px; overflow:hidden; border:8px solid var(--main-teal);"><iframe src="https://www.youtube-nocookie.com/embed/${slide.content}?rel=0" style="width:100%; height:100%; border:none;" allowfullscreen></iframe></div>`;
+            }
+            document.getElementById('page-indicator').innerText = `${currentSlideIndex + 1} / ${currentSlides.length}`;
+        }
+
+        // 🌟 核心：显示逻辑（边界保护 + 延迟消失）
+        function showImg(e, src, word) {
+            clearTimeout(hideTimer);
+            globalImg.src = `../images/songs/${src}`;
+            imgContainer.style.display = 'block';
+            const rect = e.target.getBoundingClientRect();
+            
+            // 延迟一点获取高度，确保图片加载后计算
+            setTimeout(() => {
+                let topPos = rect.top - imgContainer.offsetHeight - 10;
+                if (topPos < 10) topPos = rect.bottom + 10; // 顶天了就向下弹
+
+                let leftPos = rect.left;
+                if (leftPos + imgContainer.offsetWidth > window.innerWidth) leftPos = window.innerWidth - imgContainer.offsetWidth - 20;
+
+                imgContainer.style.top = topPos + 'px';
+                imgContainer.style.left = leftPos + 'px';
+            }, 0);
+
+            deleteBtn.onclick = (event) => {
+                event.stopPropagation();
+                if(confirm(`删除“${word}”的图片加注？`)) {
+                    let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}");
+                    delete d[word]; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d));
+                    imgContainer.style.display = 'none'; renderSlide();
+                }
+            };
+        }
+
+        function scheduleHide() { hideTimer = setTimeout(() => { imgContainer.style.display = 'none'; }, 250); }
+        function keepImg() { clearTimeout(hideTimer); }
+        function hideImg() { imgContainer.style.display = 'none'; }
+
+        // 其他逻辑保持不变...
+        function toggleChar(e, el, char) {
+            e.stopPropagation(); const newState = !el.classList.contains('red-word');
+            localStorage.setItem(`mecc_red_${currentSong.id}_${char}`, newState);
+            document.querySelectorAll(`.clickable-char[data-char="${char}"]`).forEach(span => {
+                if (newState) span.classList.add('red-word'); else span.classList.remove('red-word');
+            });
+        }
+        document.onmouseup = (e) => {
+            const s = window.getSelection(); const t = s.toString().trim();
+            if (playView.style.display === 'flex' && t && t.length > 0) {
+                const rect = s.getRangeAt(0).getBoundingClientRect();
+                selectedText = t; bubble.style.display = 'block';
+                bubble.style.top = (rect.top - 65) + 'px'; bubble.style.left = (rect.left + (rect.width/2) - 50) + 'px';
+            } else if (e.target !== bubble) { bubble.style.display = 'none'; }
+        };
+        function makeHardWord() {
+            const { pinyin } = pinyinPro; const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".png";
+            const imgFile = prompt(`加注图片文件名:`, autoName);
+            if (imgFile) { let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); d[selectedText] = imgFile; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); bubble.style.display = 'none'; renderSlide(); }
+        }
+        function closePlay() { playView.style.display = 'none'; listView.style.display = 'flex'; bubble.style.display = 'none'; }
+        function exportData() { const data = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('mecc_')) data[k] = localStorage.getItem(k); } const blob = new Blob([JSON.stringify(data)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `mecc_songs_backup.json`; a.click(); }
+        function importData(event) { const file = event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { const data = JSON.parse(e.target.result); Object.keys(data).forEach(key => localStorage.setItem(key, data[key])); alert("导入成功！"); location.reload(); }; reader.readAsText(file); }
+        function resetAll() { if(confirm("确定清空吗？")) { Object.keys(localStorage).forEach(k => k.startsWith('mecc_') && localStorage.removeItem(k)); location.reload(); } }
+        function prevPage() { if(currentSlideIndex > 0) { currentSlideIndex--; renderSlide(); } }
+        function nextPage() { if(currentSlideIndex < currentSlides.length - 1) { currentSlideIndex++; renderSlide(); } }
+
+        window.onload = initGallery;
+    </script>
+</body>
+</html>

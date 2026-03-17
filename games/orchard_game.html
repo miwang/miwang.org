@@ -1,475 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <link rel="icon" type="image/png" href="../favicon.png">
-<link rel="stylesheet" href="../css/style.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orchard Harvest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🍎 果园摘水果 🍎</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, 'KaiTi', 'STKaiti', serif;
-            background-color: #87CEEB; /* 天空蓝 */
-            color: #333;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            user-select: none;
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+        :root {
+            --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
         }
+        * { box-sizing: border-box; font-family: var(--kaiti-font) !important; }
+        body { margin: 0; padding: 0; background: #87CEEB; overflow: hidden; height: 100vh; width: 100vw; user-select: none; }
 
-        /* --- 星星计分板 --- */
-        #star-container {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 1.5rem;
-            color: #ffcc00;
-            display: none; 
-            align-items: center;
-            gap: 8px;
-            z-index: 20;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 8px 15px;
-            border-radius: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-family: sans-serif;
-            font-weight: bold;
-        }
+        .back-btn-home { position: absolute; top: 20px; left: 20px; color: #555; text-decoration: none; font-size: 1.2rem; z-index: 1000; background: rgba(255, 255, 255, 0.8); padding: 10px 20px; border-radius: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        .star-icon { font-size: 1.8rem; }
-        @keyframes starPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.5); }
-            100% { transform: scale(1); }
-        }
-        .pop-anim { animation: starPop 0.4s ease-in-out; }
-
-        /* --- 开始界面 --- */
+        /* --- 选字界面 --- */
         #start-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            width: 95%;
-            height: 100%;
-            padding-top: 20px;
-            z-index: 30;
-            background-color: #f4f9f9;
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; inset: 0; background: #fff9ea; z-index: 500;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
-
-        #start-screen h1 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: #4CAF50;
-            text-align: center;
-            font-family: sans-serif;
+        #start-screen h1 { font-size: 3rem; color: #e74c3c; margin: 10px 0; }
+        
+        /* 优化后的网格，适配 51 个字 */
+        .word-grid {
+            display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px;
+            max-width: 1100px; background: white; padding: 20px; border-radius: 20px; border: 4px solid #f3b236;
+            max-height: 60vh; overflow-y: auto;
         }
-
-        .controls {
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
+        .word-item {
+            width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; background: #f0f0f0; border-radius: 10px; cursor: pointer; border: 2px solid transparent;
         }
-
-        .btn {
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-            font-family: sans-serif;
-        }
-        .btn:hover { transform: scale(1.05); }
-
-        #char-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 15px;
-            width: 100%;
-            max-width: 800px;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-
-        .char-card {
-            width: 45px;
-            height: 45px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.6rem;
-            background-color: white;
-            color: #333;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 3px solid transparent;
-            font-family: 'KaiTi', 'STKaiti', serif;
-        }
-        .char-card.selected {
-            background-color: #ff9eab; /* 桃子粉 */
-            color: white;
-            border: 3px solid #ff7b00;
-            transform: scale(1.1);
-        }
+        .word-item.selected { background: #e74c3c; color: white; border-color: #f3b236; transform: scale(1.05); }
+        
+        .ctrl-btns { margin: 15px 0; display: flex; gap: 15px; }
+        .btn { padding: 12px 35px; font-size: 1.4rem; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-start { background: #e74c3c; color: white; box-shadow: 0 5px 0 #c0392b; }
+        .btn-start:active { transform: translateY(3px); box-shadow: 0 2px 0 #c0392b; }
 
         /* --- 游戏界面 --- */
-        #game-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        /* 树冠背景 */
-        .tree-canopy {
-            position: absolute;
-            top: -10%;
-            width: 120%;
-            height: 60%;
-            background-color: #4CAF50;
-            border-radius: 50%;
-            z-index: 1;
-            box-shadow: inset 0 -20px 0 rgba(0,0,0,0.1);
-        }
-
-        .header {
-            margin-top: 20px;
-            font-size: 2.2rem;
-            font-weight: bold;
-            z-index: 10;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-family: sans-serif;
-            background: rgba(0,0,0,0.2);
-            padding: 10px 20px;
-            border-radius: 30px;
-        }
-
-        /* 果园区域 */
-        .orchard-board {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            height: 50vh;
-            margin-top: 20px;
-            z-index: 10;
-        }
-
-        .fruit {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3), inset -10px -10px 20px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
-            font-family: 'KaiTi', 'STKaiti', serif;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .fruit::before {
-            content: '🌿';
-            position: absolute;
-            top: -20px;
-            font-size: 1.5rem;
-        }
-
-        .fruit:active { transform: scale(0.95); }
-
-        /* 三种水果的颜色 */
-        .peach { background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff69b4); } /* 桃子 */
-        .persimmon { background: radial-gradient(circle at 30% 30%, #ffa500, #ff4500); } /* 柿子 */
-        .jujube { background: radial-gradient(circle at 30% 30%, #cd5c5c, #8b0000); border-radius: 40% 40% 50% 50%; } /* 枣子 */
-
-        /* 动画：点错时摇晃 */
-        @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-15deg); }
-            75% { transform: rotate(15deg); }
-        }
-        .shake-anim { animation: shake 0.4s ease-in-out; }
-
-        /* 动画：摘下掉入篮子 */
-        @keyframes dropToBasket {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            80% { transform: translateY(300px) scale(0.5); opacity: 1; }
-            100% { transform: translateY(350px) scale(0); opacity: 0; }
-        }
-        .drop-anim {
-            animation: dropToBasket 0.6s ease-in forwards;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        /* 底部竹筐和草地 */
-        .ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 25%;
-            background-color: #8FBC8F;
-            z-index: 2;
-            border-top: 10px solid #6B8E23;
-        }
-
-        .basket-container {
-            position: absolute;
-            bottom: 5%;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        .basket {
-            font-size: 6rem;
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
-            transition: transform 0.2s;
-        }
+        #game-screen { display: none; width: 100%; height: 100%; position: relative; background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 100%); }
+        .task-bar { position: absolute; top: 30px; width: 80%; left: 10%; background: rgba(255,255,255,0.95); border-radius: 60px; padding: 15px; text-align: center; border: 6px solid #e74c3c; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        #task-text { font-size: 3.5rem; color: #2c3e50; font-weight: bold; margin: 0; }
         
-        .basket-bounce {
-            transform: scale(1.1) translateY(-10px);
-        }
+        .fruit { position: absolute; width: 115px; height: 115px; display: flex; justify-content: center; align-items: center; font-size: 3.2rem; font-weight: bold; color: white; z-index: 50; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .apple { background: #e74c3c; border-radius: 50% 50% 48% 48%; border: 4px solid #c0392b; }
+        .pear { background: #f1c40f; border-radius: 45% 45% 50% 50%; border: 4px solid #d4ac0d; width: 105px; }
+        .grape { background: #9b59b6; border-radius: 50%; border: 4px solid #8e44ad; width: 95px; height: 115px; }
 
-        #next-btn {
-            position: absolute;
-            bottom: 25%;
-            z-index: 20;
-            font-size: 1.5rem;
-            padding: 15px 30px;
-            background-color: #f3b236;
-            color: #1f2e46;
-            border-radius: 50px;
-            display: none;
-        }
+        #basket { position: absolute; bottom: 40px; left: 50%; width: 280px; height: 140px; transform: translateX(-50%); background: #d35400; border-radius: 15px 15px 80px 80px; border: 8px solid #a04000; display: flex; justify-content: center; align-items: center; z-index: 60; touch-action: none; transition: background 0.2s; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        #basket::before { content: '🧺'; font-size: 4.5rem; opacity: 0.4; }
+        
+        .catch-correct { background-color: #2ecc71 !important; transform: translateX(-50%) scale(1.1) !important; }
+        .catch-wrong { background-color: #e74c3c !important; animation: shake 0.4s; }
+        @keyframes shake { 0%, 100% { transform: translateX(-50%); } 25% { transform: translateX(-58%); } 75% { transform: translateX(-42%); } }
 
-        @media (max-width: 600px) {
-            .header { font-size: 1.5rem; margin-top: 10px; }
-            .fruit { width: 65px; height: 65px; font-size: 2.2rem; }
-            .basket { font-size: 5rem; }
-            #next-btn { bottom: 28%; font-size: 1.2rem; }
-        }
+        .score-board { position: absolute; top: 180px; right: 40px; background: #f3b236; color: #1e2e46; padding: 15px 30px; border-radius: 30px; font-size: 2rem; font-weight: bold; z-index: 100; border: 4px solid white; }
     </style>
 </head>
 <body>
 
-    <div id="star-container">
-        <span class="star-icon" id="star-icon">⭐</span> x <span id="star-count">0</span>
-    </div>
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
 
     <div id="start-screen">
-        <h1>Select Characters to Harvest</h1>
-        <div class="controls">
-            <button class="btn" onclick="selectAll()">Select All</button>
-            <button class="btn" onclick="clearAll()">Clear All</button>
-            <button class="btn" style="background-color: #f3b236; color: #1f2e46;" onclick="startGame()">Start Harvest</button>
+        <h1>🍎 果园摘水果</h1>
+        <div class="ctrl-btns">
+            <button class="btn" onclick="selectAll()">全选本页字</button>
+            <button class="btn" onclick="clearAll()">全部清空</button>
         </div>
-        <div id="char-grid"></div>
+        <div id="word-grid" class="word-grid"></div>
+        <div class="ctrl-btns">
+            <button class="btn btn-start" onclick="startGame()">选好了，去摘水果！</button>
+        </div>
     </div>
 
     <div id="game-screen">
-        <div class="tree-canopy"></div>
-        
-        <div class="header" id="result-text">
-            Pick the fruit with ______
-        </div>
-        
-        <div class="orchard-board" id="board"></div>
-
-        <button class="btn" id="next-btn" onclick="nextRound()">Next Round ➔</button>
-
-        <div class="basket-container">
-            <div class="basket" id="basket">🧺</div>
-        </div>
-        <div class="ground"></div>
+        <div class="task-bar"><p id="task-text">准备好...</p></div>
+        <div class="score-board">积分: <span id="score">0</span></div>
+        <div id="basket"></div>
     </div>
 
     <script>
-        const allChars = [
-            '四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太',
-            '六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也',
-            '八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有',
-            '要','是','了'
-        ];
-
-        let selectedChars = [];
-        let currentTargetIndex = -1;
-        let currentChars = [];
-        let totalStars = 0;
-        const fruitTypes = ['peach', 'persimmon', 'jujube'];
-
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        // 🌟 字库同步：51个字
+        const allWords = ['四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太','六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也','八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有','要','是','了'];
+        let selectedWords = [];
+        let currentTarget = "";
+        let score = 0;
+        let gameActive = false;
         let audioCtx;
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        // 摘错的摇晃声
-        function playShakeSound() {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
-        }
-
-        // 掉进篮子的清脆声
-        function playDropSound() {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        }
-
         window.onload = () => {
-            const grid = document.getElementById('char-grid');
-            allChars.forEach(char => {
-                const card = document.createElement('div');
-                card.className = 'char-card';
-                card.innerText = char;
-                card.onclick = () => card.classList.toggle('selected');
-                grid.appendChild(card);
+            const grid = document.getElementById('word-grid');
+            const saved = JSON.parse(localStorage.getItem('orchardWords')) || ['大','小','天'];
+            allWords.forEach(w => {
+                const div = document.createElement('div');
+                div.className = 'word-item' + (saved.includes(w) ? ' selected' : '');
+                div.innerText = w;
+                div.onclick = () => div.classList.toggle('selected');
+                grid.appendChild(div);
             });
         };
 
-        function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
-        function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
+        function selectAll() { document.querySelectorAll('.word-item').forEach(i => i.classList.add('selected')); }
+        function clearAll() { document.querySelectorAll('.word-item').forEach(i => i.classList.remove('selected')); }
+
+        // 🌟 动感BGM生成器
+        function startBgm() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [261.6, 329.6, 392.0, 523.2];
+            let step = 0;
+            setInterval(() => {
+                if(!gameActive) return;
+                const osc = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                osc.connect(g); g.connect(audioCtx.destination);
+                osc.frequency.value = notes[step % 4];
+                g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+                step++;
+            }, 200);
+        }
+
+        function playSfx(isCorrect) {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.connect(g); g.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            if(isCorrect) {
+                osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                g.gain.setValueAtTime(0.2, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+            } else {
+                osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                g.gain.setValueAtTime(0.3, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            }
+            osc.start(); osc.stop(now + 0.3);
+        }
 
         function startGame() {
-            initAudio(); 
-            const selectedElements = document.querySelectorAll('.char-card.selected');
-            selectedChars = Array.from(selectedElements).map(el => el.innerText);
-            
-            if (selectedChars.length < 4) {
-                alert("Please select at least 4 characters!");
-                return;
-            }
-
+            selectedWords = Array.from(document.querySelectorAll('.word-item.selected')).map(el => el.innerText);
+            if(selectedWords.length < 2) { alert("老师，请至少选两个字哦！"); return; }
+            localStorage.setItem('orchardWords', JSON.stringify(selectedWords));
             document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'flex';
-            document.getElementById('star-container').style.display = 'flex'; 
-            nextRound();
+            document.getElementById('game-screen').style.display = 'block';
+            gameActive = true;
+            startBgm();
+            refreshTask();
+            createFruit();
         }
 
-        function nextRound() {
-            const board = document.getElementById('board');
-            const resultText = document.getElementById('result-text');
-            const nextBtn = document.getElementById('next-btn');
+        const basket = document.getElementById('basket');
+        const canvas = document.getElementById('game-screen');
+        let isDragging = false;
+
+        const moveHandler = (e) => {
+            if (!isDragging) return;
+            let x = (e.clientX || (e.touches ? e.touches[0].clientX : 0));
+            let left = x - canvas.offsetLeft;
+            if (left < 140) left = 140;
+            if (left > window.innerWidth - 140) left = window.innerWidth - 140;
+            basket.style.left = left + 'px';
+        };
+        basket.onmousedown = () => isDragging = true;
+        window.onmouseup = () => isDragging = false;
+        window.onmousemove = moveHandler;
+        basket.ontouchmove = (e) => { e.preventDefault(); isDragging = true; moveHandler(e); };
+
+        function createFruit() {
+            if (!gameActive) return;
+            const fruit = document.createElement('div');
+            const word = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+            const types = ['apple', 'pear', 'grape'];
+            const type = types[Math.floor(Math.random() * 3)];
             
-            board.innerHTML = '';
-            nextBtn.style.display = 'none';
-            currentChars = [];
+            fruit.className = `fruit ${type}`;
+            fruit.innerText = word;
+            fruit.style.left = Math.random() * (window.innerWidth - 130) + 'px';
+            fruit.style.top = '-130px';
+            canvas.appendChild(fruit);
 
-            // 随机选4个不重复的字
-            let tempChars = [...selectedChars];
-            for (let i = tempChars.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [tempChars[i], tempChars[j]] = [tempChars[j], tempChars[i]];
-            }
-            currentChars = tempChars.slice(0, 4);
-            currentTargetIndex = Math.floor(Math.random() * 4);
-
-            resultText.innerText = `Pick the fruit with "${currentChars[currentTargetIndex]}"`;
-
-            // 随机生成水果位置 (避免重叠的简单算法)
-            const positions = [
-                { top: '10%', left: '15%' },
-                { top: '25%', left: '60%' },
-                { top: '60%', left: '20%' },
-                { top: '55%', left: '70%' }
-            ];
-
-            for (let i = 0; i < 4; i++) {
-                const fruit = document.createElement('div');
-                const randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+            let speed = 4 + Math.random() * 3.5;
+            function fall() {
+                if (!fruit.parentNode || !gameActive) return;
+                let top = parseFloat(fruit.style.top);
+                top += speed;
+                fruit.style.top = top + 'px';
                 
-                fruit.className = `fruit ${randomFruitType}`;
-                fruit.innerText = currentChars[i];
-                fruit.style.top = positions[i].top;
-                fruit.style.left = positions[i].left;
-                
-                fruit.onclick = function() { pickFruit(i, this); };
-                board.appendChild(fruit);
+                const bRect = basket.getBoundingClientRect();
+                const fRect = fruit.getBoundingClientRect();
+                if (fRect.bottom > bRect.top + 25 && fRect.right > bRect.left && fRect.left < bRect.right && fRect.top < bRect.bottom) {
+                    handleCatch(word, fruit); return;
+                }
+                if (top > window.innerHeight) fruit.remove();
+                else requestAnimationFrame(fall);
             }
+            requestAnimationFrame(fall);
+            setTimeout(createFruit, 1600);
         }
 
-        function pickFruit(index, fruitElement) {
-            if (index === currentTargetIndex) {
-                // 摘对了
-                playDropSound();
-                fruitElement.classList.add('drop-anim');
-                
-                // 篮子接住的动画
-                const basket = document.getElementById('basket');
-                setTimeout(() => {
-                    basket.classList.add('basket-bounce');
-                    setTimeout(() => basket.classList.remove('basket-bounce'), 200);
-                    addStar();
-                }, 400);
-
-                document.getElementById('result-text').innerText = "Great job!";
-                document.getElementById('next-btn').style.display = 'block';
-                
-                const allFruits = document.querySelectorAll('.fruit');
-                allFruits.forEach(f => f.style.pointerEvents = 'none');
+        function handleCatch(word, el) {
+            const isCorrect = (word === currentTarget);
+            playSfx(isCorrect);
+            if(isCorrect) {
+                score += 10; document.getElementById('score').innerText = score;
+                basket.classList.add('catch-correct');
+                setTimeout(() => { basket.classList.remove('catch-correct'); refreshTask(); }, 400);
             } else {
-                // 摘错了
-                playShakeSound();
-                fruitElement.classList.add('shake-anim');
-                setTimeout(() => fruitElement.classList.remove('shake-anim'), 400);
+                basket.classList.add('catch-wrong');
+                setTimeout(() => basket.classList.remove('catch-wrong'), 400);
             }
+            el.remove();
         }
-        
-        function addStar() {
-            totalStars++;
-            document.getElementById('star-count').innerText = totalStars;
-            const starIcon = document.getElementById('star-icon');
-            starIcon.classList.remove('pop-anim');
-            void starIcon.offsetWidth; 
-            starIcon.classList.add('pop-anim');
+
+        function refreshTask() {
+            currentTarget = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+            document.getElementById('task-text').innerText = `请摘掉：“${currentTarget}”`;
         }
     </script>
 </body>

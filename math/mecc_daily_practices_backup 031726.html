@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daily Practice - MECC Final Control</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
+            --pv-hundred: #ff007f; --pv-ten: #70ad47; --pv-one: #00b0f0;
+        }
+
+        * { box-sizing: border-box; font-family: var(--wenkai) !important; }
+        body { background-color: #fff9ea; margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* 顶部导航 */
+        .top-nav { height: 50px; background: var(--main-teal); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; border-bottom: 4px solid var(--accent-yellow); flex-shrink: 0; }
+        .top-nav a { color: white; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .page-indicator { color: white; font-size: 1.4rem; font-weight: bold; }
+
+        .content-frame { flex: 1; position: relative; width: 100%; overflow: hidden; }
+        .page { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; padding: 10px 20px; }
+        .page.active { display: flex; }
+
+        /* --- P1 (v5.1): 日历 --- */
+        .calendar-container { width: 100%; max-width: 1100px; background: white; border: 5px solid var(--main-teal); border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
+        .cal-header { background: var(--main-teal); color: white; padding: 8px; text-align: center; font-size: 1.8rem; display: flex; justify-content: center; gap: 30px; }
+        .cal-grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 2px; }
+        .weekday { background: #f8f9fa; padding: 4px 0; text-align: center; display: flex; flex-direction: column; line-height: 1.1; border-bottom: 1px solid #ddd;}
+        .weekday .zh { font-size: 1rem; color: var(--main-teal); font-weight: bold; font-family: var(--kaiti) !important; }
+        .weekday > span:not(.en) { font-family: var(--kaiti) !important; }
+        .weather-card .label { font-family: var(--kaiti) !important; }
+        .shape-name-zh { font-family: var(--kaiti) !important; font-size: 1.3rem; }
+        .shape-title { font-family: var(--kaiti) !important; }
+        .page-indicator { font-family: var(--kaiti) !important; }
+        #header-zh { font-family: var(--kaiti) !important; }
+        .holiday-tag { font-family: var(--kaiti) !important; }
+        .top-nav a { font-family: var(--kaiti) !important; }
+        .pv-label { font-family: var(--kaiti) !important; }
+        .day-cell { background: white; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #333; }
+        .day-cell.today { background: #fffceb; box-shadow: inset 0 0 0 4px var(--accent-yellow); }
+        .special-icon { position: absolute; top: 2px; right: 2px; font-size: 1.6rem; }
+        .holiday-tag { position: absolute; bottom: 2px; left: 0; width: 100%; text-align: center; font-size: 0.7rem; color: #e74c3c; font-weight: bold; }
+
+        /* --- P2 (v4.4): 天气 --- */
+        .weather-hub { width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 10px; }
+        .weather-card { background: white; border: 4px solid #ddd; border-radius: 20px; display: flex; flex-direction: column; align-items: center; padding: 20px; cursor: pointer; }
+        .weather-card .icon { font-size: 6rem; }
+        .weather-card .label { font-size: 2.2rem; font-weight: bold; }
+        .stats-panel { margin: 25px 0; width: 100%; background: white; border-radius: 25px; padding: 20px; border: 4px dashed var(--main-teal); display: flex; justify-content: space-around; align-items: center; flex: 0.7; position: relative;}
+        .count-ctrl { display: flex; gap: 10px; margin-top: 10px; }
+        .ctrl-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #eee; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* --- P3 (v4.3): 形状 --- */
+        .shape-title { font-size: 1.5rem; color: var(--main-teal); font-weight: bold; border-left: 6px solid var(--accent-yellow); padding-left: 12px; margin: 5px 0; align-self: flex-start;}
+        .shape-row { display: flex; justify-content: center; gap: 20px; width: 100%; }
+        .shape-card {
+            background: white; border: 4px solid #eee; border-radius: 20px;
+            width: 190px; height: 185px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* 🌟 全框悬浮动画 */
+        .shape-card:hover { transform: translateY(-10px) scale(1.05); border-color: var(--accent-yellow); box-shadow: 0 15px 30px rgba(0,0,0,0.1); background-color: #fffdf5; }
+        .shape-visual { font-size: 4.8rem; transition: 0.4s; line-height: 1; margin-bottom: 5px; }
+
+        /* --- P4 (v4.3): 百数图 --- */
+        .hundred-chart-layout { width: 100%; height: 100%; display: flex; gap: 15px; align-items: stretch; padding-bottom: 5px; }
+        .hundred-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; background: #ddd; padding: 4px; border-radius: 12px; flex: 1.8; height: 100%; }
+        .num-box { background: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: #444; cursor: pointer; border-radius: 4px; transition: 0.15s; }
+        .num-box.tens-column { background: #fff3e0; color: #e67e22; }
+        .num-box.highlight { background: var(--accent-yellow); color: white; transform: scale(1.1); z-index: 2; box-shadow: 0 0 10px rgba(243, 178, 54, 0.8); }
+        .interaction-side { flex: 0.55; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+        .video-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; overflow: hidden; border: 4px solid var(--main-teal); }
+
+        /* --- 🌟 P5 (Days in School): 优化版 --- */
+        .school-days-layout { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .pv-counter-row { display: flex; gap: 15px; margin-bottom: 5px; }
+        .pv-box { background: white; border: 3px solid #333; border-radius: 10px; width: 110px; text-align: center; overflow: hidden; }
+        .pv-label { color: white; font-size: 1.1rem; padding: 2px; font-weight: bold; }
+        .pv-num { font-size: 3.8rem; font-weight: bold; padding: 3px 0; color: #333; line-height: 1; }
+        .pv-ctrl { display: flex; border-top: 2px solid #333; }
+        .pv-btn { flex: 1; padding: 3px; font-size: 1rem; cursor: pointer; border: none; background: #f8f9fa; }
+
+        .method-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; min-height: 0; padding-bottom: 5px; }
+        .method-card { background: white; border: 2px solid #ddd; border-radius: 15px; padding: 10px; display: flex; flex-direction: column; overflow: hidden; }
+        .method-title { font-size: 0.9rem; color: #888; border-bottom: 1px solid #eee; margin-bottom: 5px; padding-bottom: 2px; font-family: var(--kaiti) !important; }
+        .method-content { flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+        .tally-group { font-size: 1.6rem; letter-spacing: 2px; color: #333; font-family: monospace !important; margin-right: 4px; border: 1px solid #f0f0f0; padding: 1px 4px; border-radius: 4px; }
+        .mini-ten-frame { border: 2px solid #333; display: grid; grid-template-columns: repeat(5, 2fr); gap: 2px; padding: 2px; background: white; }
+        .mini-cell { width: 15px; height: 15px; border: 1px solid #999; border-radius: 50%; }
+        .mini-cell.filled { background: #dc3545; }
+
+        /* 底部导航 */
+        .page-ctrl { height: 60px; background: white; display: flex; align-items: center; justify-content: center; gap: 30px; border-top: 1px solid #eee; flex-shrink: 0; }
+        .nav-btn { background: var(--accent-yellow); border: none; padding: 6px 40px; border-radius: 50px; font-size: 1.3rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #d49a2a; min-width: 220px; font-family: var(--kaiti) !important; }
+
+        /* 🌟 锁死弹窗，修复“泄漏”Bug */
+        #event-modal { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); 
+            display: none; align-items: center; justify-content: center; z-index: 10000; 
+        }
+        .modal-content { background: white; padding: 20px; border-radius: 25px; width: 350px; text-align: center; border: 5px solid var(--main-teal); }
+        .icon-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 15px 0; }
+        .icon-option { font-size: 3.5rem; cursor: pointer; transition: 0.2s; }
+        .icon-option:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a href="../teachers.html">⬅️ 返回工具台</a>
+        <div class="page-indicator" id="page-title">📅 日期播报</div>
+        <div style="width: 80px;"></div>
+    </nav>
+
+    <div class="content-frame">
+        <div class="page active" id="page-1">
+            <div class="calendar-container">
+                <div class="cal-header"><span id="header-en"></span><span id="header-zh"></span></div>
+                <div class="cal-grid" id="cal-grid-body">
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Sunday</span><span>星期天</span></div>
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Monday</span><span>星期一</span></div>
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Tuesday</span><span>星期二</span></div>
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Wednesday</span><span>星期三</span></div>
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Thursday</span><span>星期四</span></div>
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Friday</span><span>星期五</span></div>
+                    <div class="weekday"><span class="en" style="font-size:0.7rem">Saturday</span><span>星期六</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-2">
+            <div class="weather-hub">
+                <div class="weather-card" onclick="changeW('sunny', 1)"><span class="icon">☀️</span><span class="label">晴天</span></div>
+                <div class="weather-card" onclick="changeW('cloudy', 1)"><span class="icon">☁️</span><span class="label">多云</span></div>
+                <div class="weather-card" onclick="changeW('rainy', 1)"><span class="icon">🌧️</span><span class="label">下雨</span></div>
+                <div class="weather-card" onclick="changeW('snowy', 1)"><span class="icon">❄️</span><span class="label">下雪</span></div>
+                <div class="weather-card" onclick="changeW('windy', 1)"><span class="icon">💨</span><span class="label">刮风</span></div>
+            </div>
+            <div class="stats-panel">
+                <div class="stat-item"><div class="count" id="count-sunny">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('sunny', -1)">-</button><button class="ctrl-btn" onclick="changeW('sunny', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-cloudy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('cloudy', -1)">-</button><button class="ctrl-btn" onclick="changeW('cloudy', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-rainy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('rainy', -1)">-</button><button class="ctrl-btn" onclick="changeW('rainy', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-snowy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('snowy', -1)">-</button><button class="ctrl-btn" onclick="changeW('snowy', 1)">+</button></div></div>
+                <div class="stat-item"><div class="count" id="count-windy">0</div><div class="count-ctrl"><button class="ctrl-btn" onclick="changeW('windy', -1)">-</button><button class="ctrl-btn" onclick="changeW('windy', 1)">+</button></div></div>
+                <div style="position:absolute; bottom:8px; right:15px; color:#999; cursor:pointer; text-decoration:underline; font-size:0.75rem;" onclick="resetWeather()">重置统计</div>
+            </div>
+        </div>
+
+        <div class="page" id="page-3">
+            <div class="shape-title"><span style="font-family:var(--wenkai)">2D</span> 平面形状</div>
+            <div class="shape-row">
+                <div class="shape-card"><span class="shape-visual" style="color:#2ecc71">●</span><div class="shape-name-zh">圆形</div><div class="shape-name-en">Circle</div></div>
+                <div class="shape-card"><span class="shape-visual" style="color:#3498db">■</span><div class="shape-name-zh">正方形</div><div class="shape-name-en">Square</div></div>
+                <div class="shape-card"><span class="shape-visual" style="color:#e74c3c">█</span><div class="shape-name-zh">长方形</div><div class="shape-name-en">Rectangle</div></div>
+                <div class="shape-card"><span class="shape-visual" style="color:#f1c40f">▲</span><div class="shape-name-zh">三角形</div><div class="shape-name-en">Triangle</div></div>
+            </div>
+            <div class="shape-title" style="margin-top:10px;"><span style="font-family:var(--wenkai)">3D</span> 立体形状</div>
+            <div class="shape-row">
+                <div class="shape-card"><span class="shape-visual">🏀</span><div class="shape-name-zh">球体</div><div class="shape-name-en">Sphere</div></div>
+                <div class="shape-card"><span class="shape-visual">🧊</span><div class="shape-name-zh">正方体</div><div class="shape-name-en">Cube</div></div>
+                <div class="shape-card"><span class="shape-visual">🥳</span><div class="shape-name-zh">圆锥体</div><div class="shape-name-en">Cone</div></div>
+                <div class="shape-card"><span class="shape-visual">🥫</span><div class="shape-name-zh">圆柱体</div><div class="shape-name-en">Cylinder</div></div>
+            </div>
+        </div>
+
+        <div class="page" id="page-4">
+            <div class="hundred-chart-layout">
+                <div class="hundred-grid" id="hundred-grid"></div>
+                <div class="interaction-side">
+                    <div style="font-size:1.6rem; color:var(--main-teal); text-align:center; font-weight:bold;">百数图</div>
+                    <div class="video-box">
+                        <iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/1RNFE4690fk" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <button class="nav-btn" style="min-width:100%; background:#95a5a6; box-shadow:0 4px 0 #7f8c8d; font-size:1.1rem; padding:8px;" onclick="clearHighlights()">清空高亮</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-5">
+            <h1 style="color:var(--main-teal); margin:0 0 10px 0; font-size: 1.6rem; font-family:var(--kaiti) !important;">我们在学校多少天了？</h1>
+            <div class="pv-counter-row">
+                <div class="pv-box"><div class="pv-label" style="background:var(--pv-hundred)">百</div><div class="pv-num" id="pv-h">0</div><div class="pv-ctrl"><button class="pv-btn" onclick="addDay(-100)">-</button><button class="pv-btn" onclick="addDay(100)">+</button></div></div>
+                <div class="pv-box"><div class="pv-label" style="background:var(--pv-ten)">十</div><div class="pv-num" id="pv-t">0</div><div class="pv-ctrl"><button class="pv-btn" onclick="addDay(-10)">-</button><button class="pv-btn" onclick="addDay(10)">+</button></div></div>
+                <div class="pv-box"><div class="pv-label" style="background:var(--pv-one)">一</div><div class="pv-num" id="pv-o">0</div><div class="pv-ctrl"><button class="pv-btn" onclick="addDay(-1)">-</button><button class="pv-btn" onclick="addDay(1)">+</button></div></div>
+            </div>
+            <div class="method-grid">
+                <div class="method-card"><div class="method-title">统计符号 <span style="font-family:var(--wenkai)">Tally Marks</span></div><div class="method-content" id="tally-area"></div></div>
+                <div class="method-card"><div class="method-title">十格阵 <span style="font-family:var(--wenkai)">Ten Frames</span></div><div class="method-content" id="frames-area"></div></div>
+                <div class="method-card" style="grid-column: span 2;"><div class="method-title">数学基数块 <span style="font-family:var(--wenkai)">Base-Ten Blocks</span></div><div class="method-content" id="blocks-area" style="align-items: flex-end; padding-bottom:5px;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-ctrl">
+        <button class="nav-btn" id="prev-btn" onclick="changePage(-1)" disabled>⬅️</button>
+        <button class="nav-btn" id="next-btn" onclick="changePage(1)">天气 ➡️</button>
+    </div>
+
+    <div id="event-modal">
+        <div class="modal-content">
+            <div class="icon-selector">
+                <div class="icon-option" onclick="setSpecialIcon('🎂')">🎂</div>
+                <div class="icon-option" onclick="setSpecialIcon('🍦')">🍦</div>
+                <div class="icon-option" onclick="setSpecialIcon('🍿')">🍿</div>
+                <div class="icon-option" onclick="setSpecialIcon('🏆')">🏆</div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content: center;">
+                <button class="nav-btn" style="min-width:100px; background:#eee; color:#333; box-shadow:none; font-size:1rem;" onclick="setSpecialIcon('')">清除标记</button>
+                <button class="nav-btn" style="min-width:100px; background:#ccc; color:#333; box-shadow:none; font-size:1rem;" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let curr = 1;
+        let schoolDays = parseInt(localStorage.getItem('mecc_school_days') || "0");
+        const events = JSON.parse(localStorage.getItem('mecc_daily_events') || "{}");
+        const wStats = JSON.parse(localStorage.getItem('mecc_weather_stats') || '{"sunny":0,"cloudy":0,"rainy":0,"snowy":0,"windy":0}');
+        let selectedDateKey = "";
+        const holidays = { "2026-1-1": "New Year", "2026-1-19": "MLK Day", "2026-2-16": "Presidents Day", "2026-5-25": "Memorial Day", "2026-9-7": "Labor Day", "2026-11-11": "Veterans Day", "2026-11-26": "Thanksgiving", "2026-12-25": "Christmas" };
+
+        function changePage(delta) {
+            document.getElementById(`page-${curr}`).classList.remove('active');
+            curr += delta; document.getElementById(`page-${curr}`).classList.add('active');
+            const titles = ["📅 日期播报", "🌦️ 天气统计", "📐 形状", "🔢 百数图", "🏫 在校天数"];
+            const labels = ["日期", "天气", "形状", "百数图", "天数"];
+            document.getElementById('page-title').innerText = titles[curr-1];
+            document.getElementById('prev-btn').disabled = (curr === 1);
+            document.getElementById('next-btn').disabled = (curr === 5);
+            if (curr > 1) document.getElementById('prev-btn').innerText = `⬅️ ${labels[curr-2]}`;
+            if (curr < 5) document.getElementById('next-btn').innerText = `${labels[curr]} ➡️`;
+        }
+
+        // P1 逻辑
+        function toZhDate(y, m) { const map = ['零','一','二','三','四','五','六','七','八','九','十','十一','十二']; const yS = y.toString().split('').map(n => map[parseInt(n)]).join(''); return `${yS}年${map[m]}月`; }
+        function initCalendar() {
+            const now = new Date(); const y = now.getFullYear(); const m = now.getMonth() + 1; const today = now.getDate();
+            document.getElementById('header-en').innerText = `${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m-1]} ${y}`;
+            document.getElementById('header-zh').innerText = toZhDate(y, m);
+            const first = new Date(y, m-1, 1).getDay(); const total = new Date(y, m, 0).getDate();
+            const grid = document.getElementById('cal-grid-body');
+            for(let i=0; i<first; i++) grid.appendChild(document.createElement('div')).className='day-cell other-month';
+            for(let d=1; d<=total; d++) {
+                const cell = document.createElement('div'); const key = `${y}-${m}-${d}`;
+                cell.className = `day-cell font-en ${d === today ? 'today' : ''}`;
+                cell.innerHTML = `<span>${d}</span>${events[key] ? `<span class="special-icon">${events[key]}</span>` : ''}`;
+                if(holidays[key]) cell.innerHTML += `<div class="holiday-tag">${holidays[key]}</div>`;
+                cell.onclick = () => { selectedDateKey = key; document.getElementById('event-modal').style.display='flex'; };
+                grid.appendChild(cell);
+            }
+        }
+
+        // 弹窗与统计逻辑
+        function setSpecialIcon(icon) { if(icon==="") delete events[selectedDateKey]; else events[selectedDateKey]=icon; localStorage.setItem('mecc_daily_events', JSON.stringify(events)); location.reload(); }
+        function closeModal() { document.getElementById('event-modal').style.display = 'none'; }
+        function changeW(t, a) { event.stopPropagation(); wStats[t] = Math.max(0, wStats[t]+a); localStorage.setItem('mecc_weather_stats', JSON.stringify(wStats)); updateW(); }
+        function updateW() { for(let k in wStats) { const el = document.getElementById(`count-${k}`); if(el) el.innerText = wStats[k]; } }
+        function resetWeather() { if(confirm("确定重置本月统计吗？")) { for(let k in wStats) wStats[k]=0; updateW(); } }
+        function initHundredGrid() { const container = document.getElementById('hundred-grid'); for (let i = 1; i <= 100; i++) { const box = document.createElement('div'); box.className = 'num-box'; if (i % 10 === 0) box.classList.add('tens-column'); box.innerText = i; box.onclick = () => box.classList.toggle('highlight'); container.appendChild(box); } }
+        function clearHighlights() { document.querySelectorAll('.num-box').forEach(b => b.classList.remove('highlight')); }
+
+        // P5 逻辑
+        function addDay(amt) { schoolDays = Math.max(0, schoolDays + amt); localStorage.setItem('mecc_school_days', schoolDays); updateSchoolDays(); }
+        function updateSchoolDays() {
+            const h = Math.floor(schoolDays / 100); const t = Math.floor((schoolDays % 100) / 10); const o = schoolDays % 10;
+            document.getElementById('pv-h').innerText = h; document.getElementById('pv-t').innerText = t; document.getElementById('pv-o').innerText = o;
+            let tally = ""; for(let i=0; i<Math.floor(schoolDays/5); i++) tally += `<span class="tally-group">卌</span>`;
+            const rem = schoolDays % 5; if(rem > 0) tally += `<span class="tally-group">${['','|','||','|||','||||'][rem]}</span>`;
+            document.getElementById('tally-area').innerHTML = tally;
+            let frames = ""; for(let f=0; f<Math.ceil(schoolDays/10); f++) {
+                let dots = ""; for(let d=0; d<10; d++) dots += `<div class="mini-cell ${(f*10+d)<schoolDays?'filled':''}"></div>`;
+                frames += `<div class="mini-ten-frame">${dots}</div>`;
+            }
+            document.getElementById('frames-area').innerHTML = frames;
+            let blocks = "";
+            for(let i=0; i<h; i++) blocks += `<div style="width:45px; height:45px; background:var(--accent-yellow); border:1px solid #333; display:grid; grid-template:repeat(10,1fr)/repeat(10,1fr);">${Array(100).fill('<div style="border:0.1px solid rgba(0,0,0,0.1)"></div>').join('')}</div>`;
+            for(let i=0; i<t; i++) blocks += `<div style="width:10px; height:45px; background:var(--pv-ten); border:1px solid #333; display:grid; grid-template:repeat(10,1fr)/1fr;">${Array(10).fill('<div style="border:0.1px solid rgba(0,0,0,0.2)"></div>').join('')}</div>`;
+            for(let i=0; i<o; i++) blocks += `<div style="width:10px; height:10px; background:var(--pv-one); border:1px solid #333;"></div>`;
+            document.getElementById('blocks-area').innerHTML = blocks;
+        }
+
+        window.onload = () => { initCalendar(); updateW(); initHundredGrid(); updateSchoolDays(); };
+    </script>
+</body>
+</html>

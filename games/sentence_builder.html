@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>句子排排队 - MECC Task Focused</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/sentences_data.js"></script>
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+        }
+
+        .font-zh { font-family: var(--kaiti) !important; }
+        .font-en { font-family: var(--wenkai) !important; }
+
+        body { 
+            background-color: #fff9ea; margin: 0; padding: 0;
+            display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden;
+            position: relative; touch-action: none;
+        }
+
+        /* 🌟 磨砂透明返回按钮 */
+        .glass-btn {
+            position: absolute; top: 20px; left: 25px; color: #444; text-decoration: none;
+            font-size: 1.2rem; font-weight: bold; z-index: 9999; 
+            background: rgba(255, 255, 255, 0.35); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 10px 28px; border-radius: 40px; 
+            border: 1.5px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; align-items: center; cursor: pointer; transition: 0.2s;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.05); }
+
+        /* --- 1. 画廊列表页：统一规格 --- */
+        #list-view { display: flex; flex-direction: column; height: 100vh; width: 100%; }
+        .list-header { text-align: center; padding: 35px 0 10px 0; flex-shrink: 0; }
+        .list-header h1 { font-size: 3.2rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
+
+        #gallery-view {
+            flex: 1; overflow-y: auto; display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px; padding: 20px 50px; box-sizing: border-box;
+        }
+        .sentence-card {
+            background: white; border: 4px solid var(--main-teal); border-radius: 22px;
+            overflow: hidden; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.07); display: flex; flex-direction: column;
+        }
+        .sentence-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
+
+        .card-img-wrapper { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #fdfdfd; border-bottom: 2px solid #eee; flex-shrink: 0; }
+        .sentence-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .sentence-card .card-info { padding: 20px 15px; text-align: center; font-size: 1.4rem; font-weight: bold; color: #333; background: white; flex: 1; display: flex; align-items: center; justify-content: center; }
+
+        /* --- 2. 练习界面 --- */
+        #play-view { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; padding: 15px; box-sizing: border-box; position: absolute; top:0; left:0; background: #fff9ea; z-index: 8000; }
+        
+        .play-controls { width: 100%; height: 10vh; display: flex; align-items: center; justify-content: flex-end; padding: 0 40px; box-sizing: border-box; }
+        .btn-action { background: #2ecc71; color: white; border: none; padding: 10px 35px; border-radius: 40px; cursor: pointer; font-size: 1.5rem; font-weight: bold; margin-left: 20px; box-shadow: 0 4px 0 #27ae60; }
+
+        .image-stage { flex: 0 0 35%; width: 90%; max-width: 900px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .drop-zone {
+            flex: 0 0 18%; width: 90%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
+            border-radius: 25px; display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 15px; padding: 0 25px; overflow-x: auto;
+            transition: background 0.2s;
+        }
+        .drop-zone.active-hover { background: rgba(89, 133, 134, 0.25); border-style: solid; }
+
+        .word-pool { flex: 1; width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; padding: 25px; overflow-y: auto; }
+
+        /* 🌟 巨型积木：7.5vh */
+        .word-brick {
+            padding: 1.5vh 45px; border-radius: 20px; font-size: 7.5vh; font-weight: bold; color: #1e2e46; cursor: pointer;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.12); margin: 8px; white-space: nowrap;
+            user-select: none; touch-action: none; position: relative;
+        }
+        .word-brick.dragging { opacity: 0.6; transform: scale(1.1); z-index: 99999; position: fixed !important; pointer-events: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+        #reading-overlay { position: fixed; inset: 0; background: #fff9ea; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+        .reading-brick { padding: 4vh 60px; border-radius: 35px; font-size: 15vh; font-weight: bold; color: #1e2e46; box-shadow: 0 15px 0 rgba(0,0,0,0.1); margin: 25px; }
+    </style>
+</head>
+<body>
+
+    <div id="list-view">
+        <a href="../teachers.html" class="glass-btn font-zh">⬅️ 返回工具台</a>
+        <div class="list-header"><h1 class="font-zh">🧩 句子排排队 🧩</h1></div>
+        <div id="gallery-view"></div>
+    </div>
+
+    <div id="play-view">
+        <div class="glass-btn font-zh" onclick="closePlay()">⬅️ 返回列表</div>
+        <div class="play-controls">
+            <div id="success-controls" style="visibility: hidden; display: flex;">
+                <button class="btn-action font-zh" onclick="enterReadingMode()">📖 全屏读字</button>
+                <button class="btn-action font-zh" style="background:#3498db; box-shadow: 0 4px 0 #2980b9;" onclick="closePlay()">🔙 完成并返回</button>
+            </div>
+        </div>
+        <div class="image-stage" id="main-image"></div>
+        <div class="drop-zone" id="drop-zone"></div>
+        <div id="word-pool" class="word-pool"></div>
+    </div>
+
+    <div id="reading-overlay" onclick="this.style.display='none'">
+        <div id="full-container" style="display:flex; flex-wrap:wrap; justify-content:center;"></div>
+    </div>
+
+    <script>
+        const listView = document.getElementById('list-view');
+        const playView = document.getElementById('play-view');
+        const pool = document.getElementById('word-pool');
+        const zone = document.getElementById('drop-zone');
+        let currentLevelIdx = 0, currentData = null;
+
+        function splitFonts(text) {
+            return text.split('').map(char => {
+                const isEn = /[a-zA-Z0-9\s\p{P}]/u.test(char);
+                return `<span class="${isEn ? 'font-en' : 'font-zh'}">${char}</span>`;
+            }).join('');
+        }
+
+        function initGallery() {
+            listView.style.display = 'flex';
+            playView.style.display = 'none';
+            document.getElementById('gallery-view').innerHTML = sentencesList.map((item, index) => `
+                <div class="sentence-card" onclick="startLevel(${index})">
+                    <div class="card-img-wrapper"><img src="${item.image}"></div>
+                    <div class="card-info font-zh">练习 ${index + 1}</div>
+                </div>
+            `).join('');
+        }
+
+        function startLevel(index) {
+            currentLevelIdx = index;
+            currentData = sentencesList[currentLevelIdx];
+            listView.style.display = 'none';
+            playView.style.display = 'flex';
+            zone.innerHTML = ''; pool.innerHTML = '';
+            document.getElementById('success-controls').style.visibility = 'hidden';
+            document.getElementById('main-image').style.backgroundImage = `url('${currentData.image}')`;
+
+            [...currentData.words].sort(() => Math.random() - 0.5).forEach(word => {
+                const brick = document.createElement('div');
+                brick.className = 'word-brick';
+                brick.innerHTML = splitFonts(word);
+                const color = colorDictionary[word] || "#e0e0e0";
+                brick.style.backgroundColor = color;
+                brick.dataset.word = word;
+                brick.dataset.color = color;
+                addTouchLogic(brick); 
+                pool.appendChild(brick);
+            });
+        }
+
+        function addTouchLogic(el) {
+            let startX, startY;
+            const moveHandler = (e) => {
+                if (!el.classList.contains('dragging')) return;
+                e.preventDefault();
+                const touch = e.touches ? e.touches[0] : e;
+                el.style.left = (touch.clientX - startX) + 'px';
+                el.style.top = (touch.clientY - startY) + 'px';
+                const zoneRect = zone.getBoundingClientRect();
+                if (touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
+                    touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom) {
+                    zone.classList.add('active-hover');
+                } else { zone.classList.remove('active-hover'); }
+            };
+
+            const endHandler = (e) => {
+                if (!el.classList.contains('dragging')) return;
+                const touch = e.changedTouches ? e.changedTouches[0] : e;
+                el.classList.remove('dragging');
+                el.style.left = ''; el.style.top = '';
+                zone.classList.remove('active-hover');
+                const zoneRect = zone.getBoundingClientRect();
+                const isInside = touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
+                                 touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom;
+                if (isInside) {
+                    const siblings = [...zone.querySelectorAll('.word-brick:not(.dragging)')];
+                    const nextSibling = siblings.find(sib => {
+                        const box = sib.getBoundingClientRect();
+                        return touch.clientX < box.left + box.width / 2;
+                    });
+                    zone.insertBefore(el, nextSibling);
+                } else { pool.appendChild(el); }
+                check();
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('touchmove', moveHandler);
+            };
+
+            const startHandler = (e) => {
+                const touch = e.touches ? e.touches[0] : e;
+                const rect = el.getBoundingClientRect();
+                startX = touch.clientX - rect.left + (el.offsetWidth/2);
+                startY = touch.clientY - rect.top + (el.offsetHeight/2);
+                el.classList.add('dragging');
+                el.style.left = (touch.clientX - startX) + 'px';
+                el.style.top = (touch.clientY - startY) + 'px';
+                document.addEventListener('mousemove', moveHandler, {passive: false});
+                document.addEventListener('touchmove', moveHandler, {passive: false});
+                document.addEventListener('mouseup', endHandler, {once: true});
+                document.addEventListener('touchend', endHandler, {once: true});
+            };
+            el.addEventListener('mousedown', startHandler);
+            el.addEventListener('touchstart', startHandler, {passive: false});
+        }
+
+        function check() {
+            const current = [...zone.querySelectorAll('.word-brick')].map(b => b.dataset.word).join('');
+            if (current === currentData.words.join('')) {
+                document.getElementById('success-controls').style.visibility = 'visible';
+                new Audio('../audio/correct.mp3').play().catch(()=>null);
+            }
+        }
+
+        function enterReadingMode() {
+            const container = document.getElementById('full-container');
+            container.innerHTML = '';
+            [...zone.querySelectorAll('.word-brick')].forEach(b => {
+                const rb = document.createElement('div');
+                rb.className = 'reading-brick';
+                rb.innerHTML = b.innerHTML;
+                rb.style.backgroundColor = b.dataset.color;
+                container.appendChild(rb);
+            });
+            document.getElementById('reading-overlay').style.display = 'flex';
+        }
+
+        function closePlay() { listView.style.display = 'flex'; playView.style.display = 'none'; }
+        window.onload = initGallery;
+    </script>
+</body>
+</html>

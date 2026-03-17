@@ -3,82 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wang Laoshi's Chinese Playground</title>
-    
+    <title>Wang Laoshi's Space</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/style.css">
-    
     <style>
-        .header { padding: 40px 20px; border-bottom: 8px solid #f3b236; }
-        .header h1 { font-size: 3rem; letter-spacing: 2px; color: white;}
-        .header p { font-size: 1.2rem; margin-top: 10px; opacity: 0.9; }
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+        :root {
+            --primary:   #1e2e46;
+            --accent:    #f3b236;
+            --accent-dk: #d4942a;
+            --teal:      #598586;
+            --bg:        #f4f6f8;
+            --card-bg:   #ffffff;
+            --text:      #1f2e46;
+            --text-muted:#6b7a8d;
+            --border:    #e4e9ef;
+            --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
+            --radius: 14px;
+            --shadow: 0 4px 16px rgba(30,46,70,0.09);
+            --shadow-hover: 0 10px 28px rgba(30,46,70,0.16);
+        }
 
-        .container { width: 90%; max-width: 1000px; margin: 40px auto; display: flex; flex-direction: column; gap: 40px; }
-        .section-title { font-size: 2rem; color: #1f2e46; border-left: 6px solid #f3b236; padding-left: 15px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        
-        .card { background: white; border-radius: 20px; padding: 25px; text-decoration: none; color: #333; box-shadow: 0 8px 15px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; align-items: center; text-align: center; border: 2px solid transparent; }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 15px 25px rgba(0,0,0,0.1); border-color: #f3b236; }
-        .card-icon { font-size: 4rem; margin-bottom: 15px; }
-        .card-title { font-size: 1.5rem; font-weight: bold; color: #598586; margin-bottom: 10px; }
-        .card-desc { font-size: 1rem; color: #666; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .footer { margin-top: auto; padding: 30px; text-align: center; color: #888; font-size: 1rem; width: 100%; }
-        @media (max-width: 600px) { .header h1 { font-size: 2.2rem; } .section-title { font-size: 1.6rem; } .grid { grid-template-columns: 1fr; } }
+        body {
+            font-family: var(--font-en);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        .site-header {
+            background: var(--primary);
+            padding: 16px 24px 14px;
+            text-align: center;
+            border-bottom: 5px solid var(--accent);
+            position: relative;
+        }
+        .site-header h1 {
+            font-family: var(--font-en);
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .site-header .zh-sub {
+            font-family: var(--font-zh);
+            font-size: 1.1rem;
+            color: var(--accent);
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .site-header .tagline {
+            font-family: var(--font-en);
+            font-size: 1rem;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1px;
+        }
+
+        /* ── Portal cards ── */
+        .portal-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 32px;
+            padding: 16px 24px 40px;
+            flex-wrap: wrap;
+        }
+
+        .portal-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            width: 300px;
+            text-decoration: none;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            border: 2px solid var(--border);
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+        .portal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent);
+        }
+
+        .card-top-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--accent);
+        }
+        .card-top-bar.teal { background: var(--teal); }
+
+        .card-body { padding: 32px 24px 28px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+        .card-avatar {
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+            font-size: 3.2rem;
+            display: flex; align-items: center; justify-content: center;
+            background: #f0f4f8;
+        }
+        .card-avatar.teal-border { border-color: var(--teal); }
+        .card-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+        .card-title-en {
+            font-family: var(--font-en);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .card-title-zh {
+            font-family: var(--font-zh);
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: block;
+        }
+        .card-desc {
+            font-family: var(--font-en);
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .card-cta {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 9px 22px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: var(--accent);
+            color: #fff;
+            transition: background 0.2s;
+        }
+        .card-cta.teal { background: var(--teal); }
+        .portal-card:hover .card-cta { background: var(--accent-dk); }
+        .portal-card:hover .card-cta.teal { background: #457273; }
+
+        /* ── Footer ── */
+        .site-footer {
+            text-align: center;
+            padding: 24px;
+            font-family: var(--font-en);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+        .site-footer .zh { font-family: var(--font-zh); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .site-header h1 { font-size: 2rem; }
+            .portal-card { width: 100%; max-width: 360px; }
+            .portal-container { padding: 36px 16px; gap: 20px; }
+        }
+
+        /* 平板（768px 以下） */
+        @media (max-width: 768px) {
+            .site-header { padding: 36px 20px 30px; }
+            .site-header h1 { font-size: 2.2rem; }
+            .portal-container { gap: 24px; padding: 40px 20px; }
+            .portal-card { width: 100%; max-width: 420px; }
+        }
+
+        /* 宽屏（1200px 以上）卡片不要太宽 */
+        @media (min-width: 1200px) {
+            .portal-card { width: 320px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Wang Laoshi's Chinese Playground 🐼</h1>
-        <p>Fun, interactive games to learn and play at home!</p>
-    </div>
+    <header class="site-header">
+        <span class="zh-sub">王老师的教学基地</span>
+        <h1>Wang Laoshi's Space 🐼</h1>
+        <p class="tagline">Please select your portal &nbsp;／&nbsp; 请选择入口</p>
+    </header>
 
-    <div class="container">
-        <div>
-            <div class="section-title">🎮 Interactive Games</div>
-            <div class="grid">
-                <a href="games/cat_game.html" class="card">
-                    <div class="card-icon">😸</div>
-                    <div class="card-title">Where is the Cat?</div>
-                    <div class="card-desc">Practice reading characters by finding the hidden cat!</div>
-                </a>
-                <a href="games/connect_5.html" class="card">
-                    <div class="card-icon">🐼</div>
-                    <div class="card-title">Connect 5</div>
-                    <div class="card-desc">Strategy and character recognition game.</div>
-                </a>
-                <a href="games/orchard_game.html" class="card">
-                    <div class="card-icon">🍎</div>
-                    <div class="card-title">In the Orchard</div>
-                    <div class="card-desc">Pick peaches, persimmons, and jujubes while learning!</div>
-                </a>
+    <main class="portal-container">
+
+        <a href="parents.html" class="portal-card">
+            <div class="card-top-bar teal"></div>
+            <div class="card-body">
+                <div class="card-avatar teal-border">
+                    <img src="images/parent_avatar.jpg" alt="Parents & Students" onerror="this.parentElement.textContent='🐼'">
+                </div>
+                <div class="card-title-en">Parents &amp; Students</div>
+                <span class="card-title-zh">学生与家长入口</span>
+                <p class="card-desc">Games, Math Station, vocabulary practice, and writing exercises.</p>
+                <span class="card-cta teal">Enter →</span>
             </div>
-        </div>
+        </a>
 
-        <div>
-            <div class="section-title">📝 Writing Practice</div>
-            <div class="grid">
-                <a href="writing/writing_tasks.html" class="card">
-                    <div class="card-icon">✍️</div>
-                    <div class="card-title">Writing Assignments</div>
-                    <div class="card-desc">Check your weekly Chinese character tracing tasks!</div>
-                </a>
+        <a href="teachers.html" class="portal-card">
+            <div class="card-top-bar"></div>
+            <div class="card-body">
+                <div class="card-avatar">
+                    <img src="images/avatars/wanglaoshi.png" alt="Wang Laoshi">
+                </div>
+                <div class="card-title-en">Teacher's Tools</div>
+                <span class="card-title-zh">教师专属工具台</span>
+                <p class="card-desc"><span style="font-family:var(--font-zh)">课堂管理、分组轮换、生字教学与互动游戏工具。</span></p>
+                <span class="card-cta">Enter →</span>
             </div>
-        </div>
+        </a>
 
-        <div>
-            <div class="section-title">🔢 Math Station</div>
-            <div class="grid">
-                <a href="math/teen_numbers.html" class="card">
-                    <div class="card-icon">🔟</div>
-                    <div class="card-title">Teen Numbers</div>
-                    <div class="card-desc">Make numbers 11-19 using 10 and some more!</div>
-                </a>
-            </div>
-        </div>
-    </div>
+    </main>
 
-    <div class="footer">Created with ❤️ by Wang Laoshi for our amazing kindergarteners!</div>
+    <footer class="site-footer">
+        Created with ❤️ by <span class="zh">王老师</span> Wang Laoshi
+    </footer>
+
 </body>
 </html>

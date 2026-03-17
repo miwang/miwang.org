@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elephants 分组 🥛🍪</title>
+    
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    
+    <style>
+        :root {
+            --milk-color: #E3F2FD;
+            --cookie-color: #FFF3E0;
+            --bg-color: #f4f7f6;
+            --card-border: #3949AB;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'KaiTi', 'STKaiti', "LXGW WenKai Lite", serif;
+            text-align: center; 
+            background-color: var(--bg-color); 
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* --- 回到主页按钮 (完美居中版) --- */
+        .back-btn-home {
+            position: absolute;
+            top: 23px; /* 🎯 像素级修正：完美对齐右侧的控制栏按钮 */
+            left: 15px;
+            color: #555;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .back-btn-home:hover {
+            transform: scale(1.05);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- 顶部控制栏 --- */
+        .controls { 
+            background: white; padding: 5px 15px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            height: 60px; flex-shrink: 0; z-index: 100;
+        }
+        
+        button { 
+            font-family: 'KaiTi', 'STKaiti', "LXGW WenKai Lite", serif;
+            font-size: 1rem; padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;
+            transition: transform 0.1s; 
+        }
+        button:active { transform: scale(0.95); }
+        .btn-green { background-color: #4CAF50; color: white; }
+        .btn-blue { background-color: #2196F3; color: white; }
+        .btn-orange { background-color: #FF9800; color: white; }
+
+        /* --- 1. 考勤区域 --- */
+        #attendance-section { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 10px; 
+            padding-top: 60px; /* 🎯 增加顶部留白，避开左上角按钮 */
+        }
+        
+        #attendance-section h1 {
+            margin: 0 0 15px 0;
+            font-size: 2.2rem;
+            color: #3949AB;
+        }
+
+        .attendance-grid { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+            max-width: 850px; 
+        }
+        
+        .student-card { 
+            cursor: pointer; background: white; border-radius: 12px; padding: 5px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid transparent; 
+            font-weight: bold; font-size: 1rem;
+            width: 80px; 
+            transition: all 0.2s;
+        }
+        .student-card img { 
+            width: 55px; height: 55px; 
+            border-radius: 50%; object-fit: cover; background: #ddd; margin-bottom: 2px;
+        }
+        .student-card.absent { opacity: 0.4; filter: grayscale(100%); background: #eee; transform: scale(0.95); }
+
+        /* --- 2. 分组显示区域 --- */
+        #pairing-section { 
+            display: none; flex-grow: 1; flex-direction: column; 
+            padding: 10px; height: calc(100vh - 60px);
+        }
+
+        #status-bar {
+            flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px 5px 20px; height: 60px;
+        }
+        #turn-indicator { font-size: 1.8rem; font-weight: bold; color: #444; }
+
+        #pairs-container {
+            flex-grow: 1; display: grid; gap: 1.5vh; padding: 0 10px 10px 10px;
+            justify-content: center; align-content: center; 
+        }
+
+        /* --- 卡片核心样式 --- */
+        .pair-card {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 0.5vh; border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border: 3px solid var(--card-border);
+            overflow: hidden; height: 100%; position: relative;
+        }
+
+        .role-box { 
+            width: 46%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 10px; transition: all 0.3s;
+            position: relative; 
+        }
+        
+        .role-box img { 
+            height: 55%; max-height: 90px; aspect-ratio: 1/1; 
+            border-radius: 50%; object-fit: cover; 
+            border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        
+        .role-name { font-size: 1.6rem; font-weight: bold; margin-top: 5px; line-height: 1; }
+
+        .role-icon {
+            position: absolute; top: 2px; left: 2px; font-size: 1.8rem; 
+            z-index: 5; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); 
+        }
+
+        .milk-side { background-color: var(--milk-color); color: #0D47A1; }
+        .cookie-side { background-color: var(--cookie-color); color: #E65100; }
+
+        .speaking { 
+            background-color: #fff !important; transform: scale(1.05); 
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.8); border: 4px solid #4CAF50; z-index: 10;
+        }
+        .listening { opacity: 0.4; filter: grayscale(40%); transform: scale(0.95); }
+
+        .vs-text { font-size: 1rem; color: #ccc; font-weight: bold; width: 8%; }
+
+        @media (max-height: 600px) { .role-name { font-size: 1rem; } .role-icon { font-size: 1.2rem; } }
+
+    </style>
+</head>
+<body>
+
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
+
+    <div id="attendance-section">
+        <h1>🐘 大象班今天谁没有来？</h1>
+        <div class="attendance-grid" id="student-grid"></div>
+        <div style="margin-top: 20px;">
+            <button class="btn-green" style="font-size:1.5rem; padding:15px 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" onclick="startGrouping()">✅ 点名完成，开始分组</button>
+        </div>
+    </div>
+
+    <div id="pairing-section">
+        <div class="controls">
+            <button class="btn-orange" style="margin-left: 110px;" onclick="resetToAttendance()">⬅️ 重新点名</button>
+            
+            <div style="flex-grow:1; font-weight:bold; color:#555; font-size: 1.5rem;">Turn & Talk</div>
+            <button class="btn-blue" onclick="reshuffle()">🔀 重新洗牌</button>
+        </div>
+
+        <div id="status-bar">
+            <div id="turn-indicator">准备 (Ready?)</div>
+            <button id="action-btn" class="btn-green" style="font-size: 1.5rem; padding: 10px 30px;" onclick="toggleTurn()">
+                🥛 牛奶说 Milk Speaks
+            </button>
+        </div>
+
+        <div id="pairs-container"></div>
+    </div>
+
+    <script>
+        const allStudents = [
+            { id: 1, name: "聂文举", img: "../images/avatars/elephants 25-26/Andrew.png" },
+            { id: 2, name: "毕夏", img: "../images/avatars/elephants 25-26/Asiah.png" },
+            { id: 3, name: "毛不亦", img: "../images/avatars/elephants 25-26/Aubree.png" },
+            { id: 4, name: "葛金", img: "../images/avatars/elephants 25-26/Jaylin.png" },
+            { id: 5, name: "包不同", img: "../images/avatars/elephants 25-26/Axton.png" },
+            { id: 6, name: "康雨安", img: "../images/avatars/elephants 25-26/Ayuk.png" },
+            { id: 7, name: "福本来", img: "../images/avatars/elephants 25-26/Bennett.png" },
+            { id: 8, name: "高文良", img: "../images/avatars/elephants 25-26/Calix.png" },
+            { id: 9, name: "寇心怡", img: "../images/avatars/elephants 25-26/Charlotte.png" },
+            { id: 10, name: "柏梦君", img: "../images/avatars/elephants 25-26/Emmalyn.png" },
+            { id: 11, name: "万江水", img: "../images/avatars/elephants 25-26/Francis.png" },
+            { id: 12, name: "艾天骄", img: "../images/avatars/elephants 25-26/George.png" },
+            { id: 13, name: "范红红", img: "../images/avatars/elephants 25-26/Hannah.png" },
+            { id: 14, name: "穆知远", img: "../images/avatars/elephants 25-26/Jaden.png" },
+            { id: 15, name: "都雨润", img: "../images/avatars/elephants 25-26/Jerrin.png" },
+            { id: 16, name: "苏凯", img: "../images/avatars/elephants 25-26/Kase.png" },
+            { id: 17, name: "那天", img: "../images/avatars/elephants 25-26/Latia.png" },
+            { id: 18, name: "饶梁音", img: "../images/avatars/elephants 25-26/Lyanna.png" },
+            { id: 19, name: "王梦洁", img: "../images/avatars/elephants 25-26/Majesty.png" },
+            { id: 20, name: "江林炘", img: "../images/avatars/elephants 25-26/Noe.png" },
+            { id: 21, name: "福秉仁", img: "../images/avatars/elephants 25-26/Rhyus.png" },
+            { id: 22, name: "习志强", img: "../images/avatars/elephants 25-26/Seth.png" },
+            { id: 23, name: "魏千语", img: "../images/avatars/elephants 25-26/Silvia.png" },
+            { id: 24, name: "唐天天", img: "../images/avatars/elephants 25-26/Skylar.png" },
+            { id: 25, name: "危芷若", img: "../images/avatars/elephants 25-26/Zuri.png" },
+        ];
+
+        let presentStudents = [];
+        let currentPairs = [];
+        let turnState = 'idle'; 
+        const grid = document.getElementById('student-grid');
+
+        function loadSavedAttendance() {
+            const savedAbsentIds = JSON.parse(localStorage.getItem('elephantsAbsentIds')) || [];
+            allStudents.forEach(student => {
+                student.isAbsent = savedAbsentIds.includes(student.id);
+            });
+        }
+
+        function saveAttendance() {
+            const currentAbsentIds = allStudents.filter(s => s.isAbsent).map(s => s.id);
+            localStorage.setItem('elephantsAbsentIds', JSON.stringify(currentAbsentIds));
+        }
+        
+        function renderAttendance() {
+            grid.innerHTML = '';
+            loadSavedAttendance(); 
+
+            allStudents.forEach(student => {
+                const div = document.createElement('div');
+                div.className = `student-card ${student.isAbsent ? 'absent' : ''}`;
+                div.innerHTML = `<img src="${student.img}" alt="${student.name}" onerror="this.src='https://via.placeholder.com/60'"><div>${student.name}</div>`;
+                
+                div.onclick = () => {
+                    div.classList.toggle('absent');
+                    student.isAbsent = div.classList.contains('absent');
+                    saveAttendance(); 
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function startGrouping() {
+            presentStudents = allStudents.filter(s => !s.isAbsent);
+            if (presentStudents.length < 2) { alert("需要2个小朋友以上才能分组哦！"); return; }
+            document.getElementById('attendance-section').style.display = 'none';
+            document.getElementById('pairing-section').style.display = 'flex';
+            reshuffle();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function reshuffle() {
+            turnState = 'idle';
+            updateTurnUI();
+            let tempPool = [...presentStudents];
+            shuffleArray(tempPool);
+            currentPairs = [];
+            while (tempPool.length >= 2) { currentPairs.push([tempPool.pop(), tempPool.pop()]); }
+            if (tempPool.length === 1 && currentPairs.length > 0) { currentPairs[0].push(tempPool.pop()); }
+            renderPairsSmart();
+        }
+
+        function renderPairsSmart() {
+            const container = document.getElementById('pairs-container');
+            container.innerHTML = '';
+            const pairCount = currentPairs.length;
+            
+            let columns = 3; 
+            if (pairCount <= 4) columns = 2;       
+            else if (pairCount <= 6) columns = 2;  
+            else if (pairCount <= 9) columns = 3;  
+            else if (pairCount <= 16) columns = 4; 
+            else columns = 5;                      
+
+            container.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+            currentPairs.forEach(pair => {
+                const isTrio = pair.length === 3;
+                let html = `
+                <div class="pair-card">
+                    <div class="role-box milk-side" id="milk-${pair[0].id}">
+                        <span class="role-icon">🥛</span> <img src="${pair[0].img}" onerror="this.src='https://via.placeholder.com/60'">
+                        <div class="role-name">${pair[0].name}</div>
+                    </div>
+                    
+                    <div class="vs-text">VS</div>
+
+                    <div class="role-box cookie-side" id="cookie-${pair[1].id}">
+                        <span class="role-icon">🍪</span> <img src="${pair[1].img}" onerror="this.src='https://via.placeholder.com/60'">
+                        <div class="role-name">${pair[1].name}</div>
+                    </div>
+                `;
+
+                if (isTrio) {
+                     html += `
+                    <div class="role-box cookie-side" id="cookie-${pair[2].id}" style="margin-left:5px">
+                        <span class="role-icon">🍪</span>
+                        <img src="${pair[2].img}" onerror="this.src='https://via.placeholder.com/60'">
+                        <div class="role-name">${pair[2].name}</div>
+                    </div>`;
+                }
+
+                html += `</div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function toggleTurn() {
+            const btn = document.getElementById('action-btn');
+            const indicator = document.getElementById('turn-indicator');
+            if (turnState === 'idle' || turnState === 'cookie') {
+                turnState = 'milk';
+                indicator.innerText = "👉 牛奶说 (Milk)";
+                indicator.style.color = "#1565C0"; 
+                btn.innerText = "换饼干Cookie说 🍪";
+                btn.className = "btn-orange";
+                updateClasses('speaking', 'listening');
+            } else {
+                turnState = 'cookie';
+                indicator.innerText = "👉 饼干说 (Cookie)";
+                indicator.style.color = "#E65100"; 
+                btn.innerText = "换牛奶Milk说 🥛";
+                btn.className = "btn-blue";
+                updateClasses('listening', 'speaking');
+            }
+        }
+
+        function updateClasses(milkClass, cookieClass) {
+            document.querySelectorAll('.milk-side').forEach(el => el.className = `role-box milk-side ${milkClass}`);
+            document.querySelectorAll('.cookie-side').forEach(el => el.className = `role-box cookie-side ${cookieClass}`);
+        }
+
+        function updateTurnUI() {
+            document.getElementById('turn-indicator').innerText = "准备 (Ready?)";
+            document.getElementById('action-btn').innerText = "🥛 牛奶说 Milk Speaks";
+            document.getElementById('action-btn').className = "btn-green";
+            document.querySelectorAll('.role-box').forEach(el => el.classList.remove('speaking', 'listening'));
+        }
+
+        function resetToAttendance() {
+            document.getElementById('attendance-section').style.display = 'flex';
+            document.getElementById('pairing-section').style.display = 'none';
+        }
+
+        renderAttendance();
+    </script>
+</body>
+</html>

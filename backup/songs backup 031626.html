@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们来唱歌 - MECC (Sync Support)</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/songs_data.js"></script>
+    <script src="https://unpkg.com/pinyin-pro"></script>
+
+    <style>
+        :root {
+            --kaiti-sequence: "STKaiti", "华文楷体", "楷体", "KaiTi", "LXGW WenKai Lite", "BiauKai", serif;
+        }
+
+        body { 
+            background-color: #fff9ea; 
+            margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative;
+            font-family: var(--kaiti-sequence) !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .back-btn-home { position: absolute; top: 15px; left: 20px; color: #555; text-decoration: none; font-size: 1.1rem; z-index: 100; background: rgba(0, 0, 0, 0.05); padding: 8px 15px; border-radius: 20px; }
+        .header { padding: 10px 25px; border-bottom: 4px solid #f3b236; background: #598586; text-align: center; z-index: 10; }
+        .header h1 { font-size: 2.2rem; color: white; margin: 0; letter-spacing: 2px; font-family: var(--kaiti-sequence) !important; }
+
+        .main-container { flex: 1; display: flex; gap: 0; padding: 15px; box-sizing: border-box; width: 100%; overflow: hidden; position: relative; }
+
+        .lyrics-panel { 
+            flex: 1; background: white; border-radius: 25px; padding: 10px 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #fff; 
+            display: flex; flex-direction: column; height: 100%; overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .lyrics-content { 
+            flex: 1; display: flex; flex-direction: column; justify-content: space-around; 
+            align-items: center; text-align: center; width: 100%; user-select: text; 
+        }
+        
+        .lyric-line { 
+            font-size: 4.8rem; line-height: 1.2; color: #1e2e46; font-weight: bold; width: 100%; 
+            word-break: keep-all; font-family: var(--kaiti-sequence) !important;
+        }
+        
+        .clickable-char { cursor: pointer; transition: all 0.2s; display: inline-block; padding: 0 2px; border-radius: 5px; }
+        .red-word { color: #e74c3c !important; }
+        .hover-word { border-bottom: 5px dashed #598586; cursor: pointer; }
+
+        .toggle-side-btn { 
+            background: #f3b236; color: #1e2e46; border: 2px solid #598586; padding: 25px 10px; 
+            border-radius: 15px 0 0 15px; cursor: pointer; position: absolute; right: 355px; 
+            top: 50%; transform: translateY(-50%); z-index: 100; font-size: 1.6rem; font-weight: bold; transition: all 0.5s; 
+        }
+        .side-panel { width: 340px; display: flex; flex-direction: column; gap: 15px; padding-left: 15px; transition: all 0.5s; }
+        .side-hidden .side-panel { width: 0; opacity: 0; padding-left: 0; pointer-events: none; }
+        .side-hidden .toggle-side-btn { right: 0; }
+        .side-hidden .lyric-line { font-size: 5.8rem; }
+
+        .video-box { background: #000; border-radius: 15px; overflow: hidden; aspect-ratio: 16/9; border: 3px solid #1e2e46; }
+        .pagination-controls { display: flex; justify-content: center; gap: 30px; align-items: center; padding: 10px 0; border-top: 2px solid #f8fafc; background: white; }
+        .page-btn { background: #f3b236; border: none; padding: 12px 35px; border-radius: 50px; font-size: 1.3rem; cursor: pointer; color: #1e2e46; font-weight: bold; font-family: var(--kaiti-sequence) !important; }
+
+        /* 🌟 侧边栏按钮组样式 */
+        .admin-controls { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+        .sync-btn { background: #598586; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .reset-btn { background: #e74c3c; color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; opacity: 0.8; }
+        
+        #global-hover-img { 
+            position: fixed; display: none; z-index: 999999; 
+            max-width: 250px; max-height: 250px; border: 5px solid #f3b236; 
+            border-radius: 20px; background: white; box-shadow: 0 15px 45px rgba(0,0,0,0.4); 
+            pointer-events: none; object-fit: contain;
+        }
+
+        #selection-bubble { 
+            position: fixed; display: none; background: #598586; color: white; 
+            padding: 10px 20px; border-radius: 30px; cursor: pointer; 
+            z-index: 999999; font-size: 1.2rem; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid white;
+            font-family: var(--kaiti-sequence) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
+    <div class="header"><h1>🎶 我们来唱歌 🎶</h1></div>
+
+    <div class="main-container" id="main-layout">
+        <div class="lyrics-panel">
+            <div class="lyrics-content" id="lyrics-content"></div>
+            <div class="pagination-controls" id="pagination-controls">
+                <button class="page-btn" onclick="prevPage()" id="prev-btn">⬅️ 上一页</button>
+                <div class="page-indicator" id="page-indicator" style="font-weight: bold; font-size: 1.5rem;">1 / 1</div>
+                <button class="page-btn" onclick="nextPage()" id="next-btn">下一页 ➡️</button>
+            </div>
+        </div>
+
+        <button class="toggle-side-btn" onclick="toggleSidePanel()" id="toggle-btn">▶</button>
+
+        <div class="side-panel">
+            <div class="song-selector" style="background:white; padding:15px; border-radius:15px; border:2px solid #ecf0f1;">
+                <h3 style="margin:0">选择歌曲</h3>
+                <select id="song-select" onchange="changeSong()" style="width:100%; padding:10px; font-size:1.1rem; border:2px solid #598586; border-radius:8px; font-family: var(--kaiti-sequence);"></select>
+            </div>
+            <div class="video-box">
+                <iframe id="yt-player" src="" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+            
+            <div class="admin-controls">
+                <p style="color:#598586; font-size: 0.75rem; margin:0; text-align:center;">💡 识字/加注进度将保存在当前浏览器</p>
+                <button class="sync-btn" onclick="exportData()">💾 备份配置 (在家点这个)</button>
+                <button class="sync-btn" onclick="document.getElementById('fileInput').click()">📂 恢复配置 (在校点这个)</button>
+                <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
+                <button class="reset-btn" onclick="resetAll()">🗑️ 重置当前歌曲记录</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="selection-bubble" onmousedown="makeHardWord()">🖼️ 加注图片</div>
+    <img id="global-hover-img" src="" alt="preview">
+
+    <script>
+        const lyricsContent = document.getElementById('lyrics-content');
+        const bubble = document.getElementById('selection-bubble');
+        const globalImg = document.getElementById('global-hover-img');
+        let currentSongId = "", currentSlides = [], currentSlideIndex = 0, selectedText = "";
+
+        // 🌟 导出数据
+        function exportData() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('mecc_')) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mecc_backup_${new Date().toLocaleDateString()}.json`;
+            a.click();
+        }
+
+        // 🌟 导入数据
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    Object.keys(data).forEach(key => localStorage.setItem(key, data[key]));
+                    alert("同步成功！页面即将刷新。");
+                    location.reload();
+                } catch (err) { alert("文件格式错误！"); }
+            };
+            reader.readAsText(file);
+        }
+
+        // 识字同步与保存
+        function syncRed(char, isRed) {
+            document.querySelectorAll('.clickable-char').forEach(el => {
+                if(el.innerText === char) isRed ? el.classList.add('red-word') : el.classList.remove('red-word');
+            });
+        }
+
+        function toggleChar(el, char) {
+            if(window.getSelection().toString()) return;
+            event.stopPropagation();
+            el.classList.toggle('red-word');
+            const isRed = el.classList.contains('red-word');
+            localStorage.setItem(`mecc_red_${currentSongId}_${char}`, isRed);
+            syncRed(char, isRed);
+        }
+
+        function showImg(e, src) {
+            const wordRect = e.target.getBoundingClientRect();
+            globalImg.src = `../images/songs/${src}`;
+            globalImg.style.display = 'block';
+            const imgW = 220; const imgH = 220; 
+            let top = wordRect.top - (imgH + 30);
+            if (top < 70) top = wordRect.bottom + 20;
+            let left = wordRect.left + (wordRect.width / 2) - (imgW / 2);
+            if (left < 20) left = 20;
+            if (left + imgW + 20 > window.innerWidth) left = window.innerWidth - imgW - 20;
+            globalImg.style.top = top + 'px';
+            globalImg.style.left = left + 'px';
+        }
+        function hideImg() { globalImg.style.display = 'none'; }
+
+        document.onmouseup = (e) => {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+            if (text && text.length > 1) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                selectedText = text;
+                bubble.style.display = 'block';
+                bubble.style.top = (rect.top - 60) + 'px';
+                bubble.style.left = (rect.left + rect.width/2 - 50) + 'px';
+            } else if (e.target !== bubble) {
+                bubble.style.display = 'none';
+            }
+        };
+
+        function makeHardWord() {
+            const { pinyin } = pinyinPro;
+            const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".png";
+            const imgFile = prompt(`加注词语：“${selectedText}”\n确认图片文件名:`, autoName);
+            if (imgFile) {
+                const key = `mecc_hard_${currentSongId}`;
+                let data = JSON.parse(localStorage.getItem(key) || "{}");
+                data[selectedText] = imgFile;
+                localStorage.setItem(key, JSON.stringify(data));
+                bubble.style.display = 'none';
+                window.getSelection().removeAllRanges();
+                renderSlide(); 
+            }
+        }
+
+        function renderLyricsLine(line) {
+            const hardWords = JSON.parse(localStorage.getItem(`mecc_hard_${currentSongId}`) || "{}");
+            let html = line;
+            html = html.replace(/\[([^|]+)\|([^\]]+)\]/g, (m, word, img) => wrapHardWord(word, img));
+            const sortedKeys = Object.keys(hardWords).sort((a,b) => b.length - a.length);
+            sortedKeys.forEach(word => {
+                html = html.replace(new RegExp(word, 'g'), wrapHardWord(word, hardWords[word]));
+            });
+            let final = "";
+            html.split(/(<[^>]+>)/g).forEach(part => {
+                if (part.startsWith('<')) final += part;
+                else {
+                    final += part.split('').map(c => {
+                        if (!c.trim()) return c;
+                        const isRed = localStorage.getItem(`mecc_red_${currentSongId}_${c}`) === 'true';
+                        return `<span class="clickable-char ${isRed?'red-word':''}" onclick="toggleChar(this,'${c}')">${c}</span>`;
+                    }).join('');
+                }
+            });
+            return `<div class="lyric-line">${final}</div>`;
+        }
+
+        function wrapHardWord(word, img) {
+            let chars = word.split('').map(c => {
+                const isRed = localStorage.getItem(`mecc_red_${currentSongId}_${c}`) === 'true';
+                return `<span class="clickable-char ${isRed?'red-word':''}" onclick="toggleChar(this,'${c}')">${c}</span>`;
+            }).join('');
+            return `<span class="hover-word" onmouseover="showImg(event,'${img}')" onmouseout="hideImg()">${chars}</span>`;
+        }
+
+        function changeSong() {
+            const song = songsData[document.getElementById('song-select').value];
+            currentSongId = song.id;
+            document.getElementById('yt-player').src = `https://www.youtube-nocookie.com/embed/${song.youtubeId}?rel=0`;
+            currentSlides = []; let temp = [];
+            song.lyrics.forEach(l => l === "---" ? (currentSlides.push(temp), temp=[]) : temp.push(l));
+            if(temp.length) currentSlides.push(temp);
+            currentSlideIndex = 0; renderSlide();
+        }
+
+        function renderSlide() {
+            lyricsContent.innerHTML = currentSlides[currentSlideIndex].map(renderLyricsLine).join('');
+            document.getElementById('page-indicator').innerText = `${currentSlideIndex+1} / ${currentSlides.length}`;
+            document.getElementById('prev-btn').disabled = currentSlideIndex === 0;
+            document.getElementById('next-btn').disabled = currentSlideIndex === currentSlides.length - 1;
+        }
+
+        function toggleSidePanel() { 
+            document.getElementById('main-layout').classList.toggle('side-hidden'); 
+            document.getElementById('toggle-btn').innerText = document.getElementById('main-layout').classList.contains('side-hidden') ? '◀' : '▶'; 
+        }
+        function prevPage() { if(currentSlideIndex > 0) { currentSlideIndex--; renderSlide(); } }
+        function nextPage() { if(currentSlideIndex < currentSlides.length-1) { currentSlideIndex++; renderSlide(); } }
+        function resetAll() { if(confirm("重置本歌记录？")) { 
+            const prefix = `mecc_red_${currentSongId}_`;
+            Object.keys(localStorage).forEach(k => { if(k.startsWith(prefix)) localStorage.removeItem(k); });
+            localStorage.removeItem(`mecc_hard_${currentSongId}`); 
+            location.reload(); 
+        } }
+
+        songsData.forEach((s, i) => { const o = document.createElement('option'); o.value=i; o.innerText=s.title; document.getElementById('song-select').appendChild(o); });
+        changeSong();
+    </script>
+</body>
+</html>

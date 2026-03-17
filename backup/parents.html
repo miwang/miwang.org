@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parents & Students Hub</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background-color: #f8fafc; margin: 0; }
+        .back-nav { padding: 15px 25px; background: #1e2e46; display: flex; align-items: center; min-height: 64px; box-sizing: border-box; }
+        .back-nav a { color: #f3b236; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .header { padding: 30px 20px; border-bottom: 6px solid #f3b236; background: #598586; text-align: center; }
+        .header h1 { font-size: 2.5rem; letter-spacing: 1px; color: white; margin: 0; }
+        .container { width: 95%; max-width: 1000px; margin: 30px auto; display: flex; flex-direction: column; gap: 30px; }
+        .section-title { font-size: 1.5rem; color: #1f2e46; border-left: 5px solid #f3b236; padding-left: 12px; margin-bottom: 15px; font-weight: bold; text-align: left; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; align-items: stretch; }
+        
+        .card { 
+            position: relative; background: white; border-radius: 12px; padding: 20px; 
+            text-decoration: none; color: #333; box-shadow: 0 4px 8px rgba(0,0,0,0.05); 
+            transition: 0.2s; display: flex; flex-direction: column; align-items: center; 
+            text-align: center; border: 2px solid transparent; height: 100%; box-sizing: border-box; 
+        }
+        .card:hover { transform: translateY(-5px); border-color: #f3b236; }
+
+        /* 内嵌进度环 */
+        .card-progress-overlay {
+            position: absolute; top: 10px; right: 10px;
+            width: 42px; height: 42px; background: white; border-radius: 50%; padding: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+        }
+        .mini-pct-text { position: absolute; font-size: 0.7rem; font-weight: bold; color: #1e2e46; font-family: inherit; }
+
+        .card-icon { font-size: 3rem; margin-bottom: 8px; }
+        .card-title { font-size: 1.2rem; font-weight: bold; color: #598586; margin-bottom: 5px; font-family: inherit; }
+        .card-desc { font-size: 0.85rem; color: #666; line-height: 1.3; font-family: inherit; }
+
+        /* 🌟 清空按钮样式 */
+        .admin-zone { margin-top: 50px; padding: 20px; border-top: 1px dashed #cbd5e1; text-align: center; }
+        .btn-reset { background: none; border: 1px solid #cbd5e1; color: #94a3b8; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        .btn-reset:hover { color: #ef4444; border-color: #ef4444; }
+
+        @media (max-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+    </style>
+</head>
+<body>
+    <div class="back-nav"><a href="index.html">⬅️ Back to Portal</a></div>
+    <div class="header"><h1>Chinese Playground 🐼</h1></div>
+
+    <div class="container">
+        <div>
+            <div class="section-title">📝 Chinese Literacy</div>
+            <div class="grid">
+                <a href="words_and_phrases.html" class="card">
+                    <div class="card-progress-overlay">
+                        <svg viewBox="0 0 36 36" style="width:100%; height:100%;">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="4"/>
+                            <path id="progress-path" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f3b236" stroke-width="4" stroke-dasharray="0, 100"/>
+                        </svg>
+                        <span class="mini-pct-text" id="pct-text">0%</span>
+                    </div>
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">Vocabulary & Writing</div>
+                    <div class="card-desc">Review characters and practice writing.</div>
+                    <p id="stat-detail" style="font-size: 0.75rem; color: #598586; margin-top: 8px; font-weight: bold; font-family: inherit;"></p>
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">🔢 Math Station</div>
+            <div class="grid">
+                <a href="math/teen_numbers.html" class="card">
+                    <div class="card-icon">🔟</div>
+                    <div class="card-title">Teen Numbers</div>
+                    <div class="card-desc">Mastering numbers 11-19.</div>
+                </a>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">🎮 Interactive Games</div>
+            <div class="grid">
+                <a href="games/cat_game_eng.html" class="card"><div class="card-icon">😸</div><div class="card-title">Where is the Cat?</div><div class="card-desc">Practice reading characters.</div></a>
+                <a href="games/connect_5_eng.html" class="card"><div class="card-icon">🐼</div><div class="card-title">Connect 5</div><div class="card-desc">Strategy & character game.</div></a>
+                <a href="games/orchard_game.html" class="card"><div class="card-icon">🍎</div><div class="card-title">In the Orchard</div><div class="card-desc">Pick fruits while learning!</div></a>
+            </div>
+        </div>
+
+        <div class="admin-zone">
+            <button class="btn-reset" onclick="resetProgress()">Reset Student Progress</button>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script>
+        function updateDashboard() {
+            const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
+            
+            // 1. 🌟 获取当前系统的月份名称
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const currentMonthName = monthNames[new Date().getMonth()]; 
+
+            // 2. 🌟 寻找匹配月份的数据
+            let thisMonthChars = fullWordData.filter(d => d.week === currentMonthName);
+            let displayLabel = currentMonthName;
+
+            // 3. 🌟 如果当前月没数据，回退到 data.js 里的最后一个月
+            if (thisMonthChars.length === 0) {
+                const lastEntry = fullWordData[fullWordData.length - 1];
+                if (lastEntry) {
+                    displayLabel = lastEntry.week;
+                    thisMonthChars = fullWordData.filter(d => d.week === displayLabel);
+                }
+            }
+            
+            if (thisMonthChars.length > 0) {
+                const total = thisMonthChars.length;
+                const completed = thisMonthChars.filter(d => progress[d.char] === 'completed').length;
+                const percentage = Math.round((completed / total) * 100) || 0;
+
+                document.getElementById('pct-text').innerText = percentage + '%';
+                document.getElementById('progress-path').setAttribute('stroke-dasharray', `${percentage}, 100`);
+                document.getElementById('stat-detail').innerText = `${displayLabel}: ${completed}/${total} Mastered`;
+            } else {
+                document.getElementById('stat-detail').innerText = "No data found";
+            }
+        }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to clear all practice records? This cannot be undone.")) {
+                localStorage.removeItem('mecc_progress');
+                location.reload();
+            }
+        }
+
+        window.onload = updateDashboard;
+    </script>
+</body>
+</html>

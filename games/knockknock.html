@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚪 这是谁？ 🚪</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+        /* 🌟 1. 复刻 Teachers 页面的终极修复方案 */
+        :root {
+            /* 定义与工具台完全一致的万能楷体序列 */
+            --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body, html { 
+            background-color: #fff9ea; margin: 0; padding: 0; 
+            height: 100vh; width: 100vw; overflow: hidden; 
+            display: flex; justify-content: center; align-items: center; position: relative;
+            /* 强制应用变量 */
+            font-family: var(--kaiti-font) !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 强制所有文字元素都继承这个变量，防止 Safari 滑落 */
+        h1, h2, div, p, button, span, input {
+            font-family: var(--kaiti-font) !important;
+        }
+
+        /* 🌟 2. 标准化返回按钮 */
+        .back-btn-home {
+            position: absolute; top: 20px; left: 20px; color: #555; text-decoration: none;
+            font-size: 1.2rem; font-weight: 500; z-index: 9999; 
+            background: rgba(0, 0, 0, 0.05); padding: 8px 15px; border-radius: 20px; 
+            transition: transform 0.2s, background 0.2s;
+        }
+        .back-btn-home:hover { transform: scale(1.05); background: rgba(0, 0, 0, 0.1); }
+
+        .container { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+        /* 🌟 3. 首页：记忆模式 */
+        #memory-screen { width: 100%; max-width: 1000px; text-align: center; }
+        .timer-box { font-size: 2.2rem; color: #ff4757; font-weight: bold; margin-bottom: 20px; }
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .memory-card { background: white; border-radius: 15px; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .memory-card img { height: 16vh; width: auto; object-fit: contain; }
+        .memory-card p { font-size: 1.8rem; margin: 5px 0 0; color: #333; font-weight: bold; }
+        
+        .start-btn { 
+            background-color: #4CAF50; color: white; border: none; padding: 15px 50px; 
+            border-radius: 50px; font-size: 1.5rem; font-weight: bold; cursor: pointer; 
+            transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 10px rgba(76,175,80,0.3);
+        }
+        .start-btn:hover { transform: scale(1.05); background-color: #45a049; }
+
+        /* 🌟 4. 游戏页样式 */
+        #play-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: space-evenly; }
+        .status-msg { font-size: 3rem; color: #333; font-weight: bold; margin: 10px 0; }
+
+        .game-stage { 
+            position: relative; width: 95%; max-width: 800px; height: 50vh; 
+            background: #eee url('../images/family/door.jpeg') no-repeat center center; 
+            background-size: cover; border: 6px solid #598586; border-radius: 20px; 
+        }
+        #char-container { 
+            position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%) scale(0.8);
+            width: 80%; height: 90%; opacity: 0; 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            background-repeat: no-repeat; background-position: bottom center; background-size: contain;
+        }
+
+        .answer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 95%; max-width: 850px; }
+        .ans-btn { 
+            background: #f3b236; color: #1e2e46; border: none; padding: 15px 5px; 
+            border-radius: 12px; font-size: 1.8rem; font-weight: bold; 
+            cursor: pointer; box-shadow: 0 6px 0 #d49a2a; transition: 0.2s;
+        }
+        .ans-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #d49a2a; }
+        .ans-btn.wrong { background: #ff4757 !important; color: white !important; box-shadow: 0 6px 0 #c0392b !important; }
+        .ans-btn.correct { background: #4CAF50 !important; color: white !important; box-shadow: 0 6px 0 #3e8e41 !important; }
+
+        .next-btn { background: #1e2e46; color: #f3b236; border: none; padding: 12px 40px; border-radius: 50px; font-size: 1.3rem; font-weight: bold; cursor: pointer; visibility: hidden; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
+
+    <div class="container">
+        <div id="memory-screen">
+            <div class="timer-box" id="countdown">倒计时: 60s</div>
+            <div class="memory-grid" id="memory-grid"></div>
+            <button class="start-btn" onclick="startGame()">记住了，开始挑战！</button>
+        </div>
+
+        <div id="play-screen">
+            <div class="status-msg" id="msg">谁在敲门？</div>
+            <div class="game-stage"><div id="char-container"></div></div>
+            <div id="btn-container" class="answer-grid"></div>
+            <button class="next-btn" id="next-btn" onclick="nextRound()">下一位家人</button>
+        </div>
+    </div>
+
+    <script>
+        const members = ['爷爷', '奶奶', '爸爸', '妈妈', '哥哥', '姐姐', '弟弟', '妹妹'];
+        let remainingMembers = []; let timeLeft = 60; let timerId = null; let currentTarget = null; let isLocked = false;
+
+        function playSfx(f) { new Audio(`../audio/${f}.mp3`).play().catch(()=>null); }
+
+        window.onload = () => {
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = members.map(m => `
+                <div class="memory-card"><img src="../images/family/${encodeURIComponent(m)}.png"><p>${m}</p></div>
+            `).join('');
+
+            const container = document.getElementById('btn-container');
+            container.innerHTML = members.map(m => 
+                `<button class="ans-btn" onclick="check(this, '${m}')">${m}</button>`
+            ).join('');
+
+            timerId = setInterval(() => {
+                timeLeft--; document.getElementById('countdown').innerText = `倒计时: ${timeLeft}s`;
+                if (timeLeft <= 0) startGame();
+            }, 1000);
+        };
+
+        function startGame() {
+            clearInterval(timerId); remainingMembers = [...members];
+            document.getElementById('memory-screen').style.display = 'none';
+            document.getElementById('play-screen').style.display = 'flex';
+            nextRound();
+        }
+
+        function nextRound() {
+            if (remainingMembers.length === 0) {
+                alert("太棒了！所有家人都认识了一遍！");
+                remainingMembers = [...members];
+            }
+            isLocked = false;
+            const idx = Math.floor(Math.random() * remainingMembers.length);
+            currentTarget = remainingMembers.splice(idx, 1)[0];
+            document.getElementById('msg').innerText = "这是谁？";
+            document.getElementById('msg').style.color = "#333";
+            const charDiv = document.getElementById('char-container');
+            charDiv.style.opacity = "0"; charDiv.style.backgroundImage = "none";
+            document.getElementById('next-btn').style.visibility = "hidden";
+            document.querySelectorAll('.ans-btn').forEach(b => {
+                b.style.backgroundColor = "#f3b236"; b.style.color = "#1e2e46"; 
+                b.classList.remove('wrong', 'correct');
+            });
+            playSfx('doorbell');
+        }
+
+        function check(btn, name) {
+            if (isLocked) return;
+            if (name === currentTarget) {
+                isLocked = true;
+                btn.classList.add('correct');
+                playSfx('correct');
+                document.getElementById('msg').innerText = `你真棒！是${name}！`;
+                document.getElementById('msg').style.color = "#4CAF50";
+                const charDiv = document.getElementById('char-container');
+                charDiv.style.backgroundImage = `url('../images/family/${encodeURIComponent(name)}.png')`;
+                charDiv.style.opacity = "1"; charDiv.style.transform = "translateX(-50%) scale(1)";
+                document.getElementById('next-btn').style.visibility = "visible";
+            } else {
+                playSfx('wrong');
+                btn.classList.add('wrong');
+                document.getElementById('msg').innerText = "不对，再想想？";
+                document.getElementById('msg').style.color = "#ff4757";
+            }
+        }
+    </script>
+</body>
+</html>

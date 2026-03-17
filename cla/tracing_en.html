@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Writing Practice — Wang Laoshi's Space</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --teal:    #598586;
+            --accent:  #f3b236;
+            --primary: #1e2e46;
+            --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
+        }
+
+        body, html {
+            background-color: #f4f9f9; margin: 0; padding: 0;
+            height: 100%; width: 100%; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            font-family: var(--font-en);
+        }
+
+        /* ── Nav ── */
+        .nav-top {
+            width: 100%; background: var(--teal); padding: 0 20px;
+            height: 44px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .nav-top a { color: #fff; text-decoration: none; font-weight: 600; font-size: 0.92rem; }
+        .nav-top a:hover { opacity: 0.8; }
+        .nav-title { color: white; font-weight: 600; font-size: 0.92rem; }
+
+        /* ── Challenge info ── */
+        .challenge-info {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 10px 0 6px; flex-shrink: 0;
+        }
+        .stars-display {
+            font-size: 1.3rem; color: var(--accent);
+            margin-bottom: 5px; letter-spacing: 2px;
+        }
+        .progress-box {
+            width: 260px; height: 8px;
+            background: #dde8e8; border-radius: 5px; overflow: hidden; margin-bottom: 6px;
+        }
+        .bar-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; border-radius: 5px; }
+
+        .char-label {
+            color: var(--teal); font-weight: bold; font-size: 0.95rem;
+            font-family: var(--font-en);
+        }
+        .char-label span {
+            font-size: 2rem; color: var(--primary);
+            font-family: var(--font-zh); vertical-align: middle; margin-left: 4px;
+        }
+
+        /* ── Writer ── */
+        #writer-container {
+            border: 5px solid var(--teal); border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            touch-action: none; flex-shrink: 0;
+        }
+
+        #msg {
+            margin-top: 8px; height: 22px;
+            color: var(--teal); font-weight: bold; font-size: 0.9rem;
+            font-family: var(--font-en);
+        }
+
+        /* ── Controls ── */
+        .controls { margin-top: 12px; }
+        .btn {
+            padding: 9px 28px; border-radius: 25px; border: none;
+            cursor: pointer; font-weight: bold; color: white;
+            transition: 0.2s; font-size: 0.95rem;
+            font-family: var(--font-en);
+        }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+        /* ── Final overlay ── */
+        #final-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(30,46,70,0.97);
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 1000; color: white; text-align: center;
+            font-family: var(--font-en);
+        }
+        #final-overlay h2 { font-size: 2rem; margin: 12px 0 8px; }
+        #final-overlay p  { font-size: 1.1rem; opacity: 0.85; margin: 0; }
+        #final-overlay .trophy { font-size: 7rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-top">
+        <a id="back-link" href="words_and_phrases_en.html">⬅️ Back</a>
+        <span class="nav-title">Writing Practice</span>
+        <div style="width:60px;"></div>
+    </nav>
+
+    <div class="challenge-info">
+        <div class="stars-display" id="stars">⚪⚪⚪⚪⚪⚪⚪⚪⚪⚪</div>
+        <div class="progress-box"><div class="bar-fill" id="progress-bar"></div></div>
+        <div class="char-label">Write: <span id="char-display"></span></div>
+    </div>
+
+    <div id="writer-container"></div>
+    <div id="msg">Loading...</div>
+
+    <div class="controls">
+        <button class="btn" style="background: var(--teal);" onclick="writer.animateCharacter()">💡 Show Me</button>
+    </div>
+
+    <div id="final-overlay">
+        <div class="trophy">🏆</div>
+        <h2>Amazing Job!</h2>
+        <p>You mastered this character today!</p>
+        <button class="btn" id="finish-btn" style="background: var(--accent); color: var(--primary); margin-top: 28px; font-size: 1.05rem;">
+            ✅ Finish
+        </button>
+    </div>
+
+    <script>
+        const urlParams  = new URLSearchParams(window.location.search);
+        const charToDraw = urlParams.get('char') || '天';
+        const from       = urlParams.get('from');
+
+        document.getElementById('char-display').textContent = charToDraw;
+
+        // ── Smart back navigation ─────────────────────────────────────────
+        const backLink  = document.getElementById('back-link');
+        const finishBtn = document.getElementById('finish-btn');
+
+        let backUrl;
+        if (from === 'detail') {
+            backUrl = `word_detail_en.html?char=${encodeURIComponent(charToDraw)}`;
+            backLink.textContent = `⬅️ Back to "${charToDraw}"`;
+        } else {
+            backUrl = 'words_and_phrases_en.html';
+            backLink.textContent = '⬅️ Back to Sight Words';
+        }
+        backLink.href = backUrl;
+        finishBtn.onclick = () => { location.href = backUrl; };
+
+        // ── Progress save ─────────────────────────────────────────────────
+        function saveProgress() {
+            const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
+            progress[charToDraw] = 'completed';
+            localStorage.setItem('mecc_progress', JSON.stringify(progress));
+        }
+
+        // ── Hanzi Writer ──────────────────────────────────────────────────
+        const writerSize = Math.min(window.innerWidth * 0.88, window.innerHeight * 0.46, 480);
+        const writer = HanziWriter.create('writer-container', charToDraw, {
+            width:  writerSize,
+            height: writerSize,
+            padding: 24,
+            strokeColor: '#598586',
+            outlineColor: '#e0eded',
+            showHintAfterMisses: 2,
+        });
+
+        let count = 0;
+
+        function startQuiz() {
+            writer.quiz({
+                onComplete: () => {
+                    count++;
+                    document.getElementById('progress-bar').style.width = (count * 10) + '%';
+                    document.getElementById('stars').textContent =
+                        '⭐'.repeat(count) + '⚪'.repeat(10 - count);
+
+                    if (count < 10) {
+                        confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+                        setTimeout(() => writer.quiz({ onComplete: arguments.callee.caller }), 800);
+                    } else {
+                        saveProgress();
+                        confetti({ particleCount: 160, spread: 75, origin: { y: 0.6 } });
+                        document.getElementById('final-overlay').style.display = 'flex';
+                    }
+                }
+            });
+        }
+
+        window.onload = () => {
+            document.getElementById('msg').textContent = 'Watch carefully...';
+            writer.animateCharacter({
+                onComplete: () => {
+                    document.getElementById('msg').textContent = 'Your turn! ✏️';
+                    startQuiz();
+                }
+            });
+        };
+    </script>
+</body>
+</html>

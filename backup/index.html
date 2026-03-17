@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wang Laoshi's Portal</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        .header { padding: 50px 20px; border-bottom: 6px solid #f3b236; }
+        .header h1 { font-size: 3rem; letter-spacing: 2px; color: white;}
+        .header p { font-size: 1.2rem; margin-top: 10px; opacity: 0.9; }
+
+        .portal-container { 
+            width: 90%; max-width: 900px; margin: 60px auto; 
+            display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; 
+        }
+        
+        .portal-card { 
+            background: white; border-radius: 20px; padding: 40px 20px; width: 320px;
+            text-decoration: none; color: #333; box-shadow: 0 10px 20px rgba(0,0,0,0.08); 
+            transition: transform 0.3s, box-shadow 0.3s; 
+            display: flex; flex-direction: column; align-items: center; text-align: center; 
+            border: 3px solid transparent; 
+        }
+        .portal-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); border-color: #f3b236; }
+        
+        .portal-icon { font-size: 5rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; height: 100px;}
+        
+        /* 🌟 CSS for BOTH avatars */
+        .teacher-avatar, .parent-avatar {
+            width: 90px; 
+            height: 90px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 3px solid #f3b236; /* Unified border color */
+        }
+
+        .portal-title { font-size: 1.8rem; font-weight: bold; color: #598586; margin-bottom: 15px; }
+        .portal-desc { font-size: 1.1rem; color: #666; line-height: 1.4; }
+
+        .footer { margin-top: auto; padding: 30px; text-align: center; color: #888; font-size: 0.9rem; width: 100%; }
+        @media (max-width: 600px) { .header h1 { font-size: 2.2rem; } .portal-card { width: 100%; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Welcome to Wang Laoshi's Space 🐼</h1>
+        <p>Please select your portal / 请选择您的入口</p>
+    </div>
+
+    <div class="portal-container">
+        <a href="parents.html" class="portal-card">
+            <div class="portal-icon">
+                <img src="images/parent_avatar.png" alt="Parents & Students" class="parent-avatar">
+            </div>
+            <div class="portal-title">Parents & Students</div>
+            <div class="portal-desc">Games, Math Station, and Writing Practice.</div>
+        </a>
+
+        <a href="teachers.html" class="portal-card">
+            <div class="portal-icon">
+                <img src="favicon.png" alt="Wang Laoshi" class="teacher-avatar">
+            </div>
+            <div class="portal-title">Teacher's Tools</div>
+            <div class="portal-desc">课堂管理与教学工具（教师专属）。</div>
+        </a>
+    </div>
+
+    <div class="footer">Created with ❤️ by Wang Laoshi</div>
+</body>
+</html>
