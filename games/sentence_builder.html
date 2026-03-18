@@ -19,8 +19,8 @@
 
         body { 
             background-color: #fff9ea; margin: 0; padding: 0;
-            display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden;
-            position: relative; touch-action: none;
+            display: flex; flex-direction: column; min-height: 100vh; width: 100vw;
+            position: relative;
         }
 
         /* 🌟 磨砂透明返回按钮 */
@@ -37,14 +37,15 @@
         .glass-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.05); }
 
         /* --- 1. 画廊列表页：统一规格 --- */
-        #list-view { display: flex; flex-direction: column; height: 100vh; width: 100%; }
+        #list-view { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
         .list-header { text-align: center; padding: 35px 0 10px 0; flex-shrink: 0; }
         .list-header h1 { font-size: 3.2rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
 
         #gallery-view {
-            flex: 1; overflow-y: auto; display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px; padding: 20px 50px; box-sizing: border-box;
+            flex: 1; display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px; padding: 15px 40px; box-sizing: border-box;
+            align-content: start;
         }
         .sentence-card {
             background: white; border: 4px solid var(--main-teal); border-radius: 22px;
@@ -55,10 +56,10 @@
 
         .card-img-wrapper { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #fdfdfd; border-bottom: 2px solid #eee; flex-shrink: 0; }
         .sentence-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .sentence-card .card-info { padding: 20px 15px; text-align: center; font-size: 1.4rem; font-weight: bold; color: #333; background: white; flex: 1; display: flex; align-items: center; justify-content: center; }
+        .sentence-card .card-info { padding: 12px 10px; text-align: center; font-size: 1.1rem; font-weight: bold; color: #333; background: white; flex: 1; display: flex; align-items: center; justify-content: center; }
 
         /* --- 2. 练习界面 --- */
-        #play-view { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; padding: 15px; box-sizing: border-box; position: absolute; top:0; left:0; background: #fff9ea; z-index: 8000; }
+        #play-view { display: none; position: fixed; top:0; left:0; height: 100dvh; width: 100vw; flex-direction: column; align-items: center; padding: 15px; box-sizing: border-box; background: #fff9ea; z-index: 8000; overflow: hidden; }
         
         .play-controls { width: 100%; height: 10vh; display: flex; align-items: center; justify-content: flex-end; padding: 0 40px; box-sizing: border-box; }
         .btn-action { background: #2ecc71; color: white; border: none; padding: 10px 35px; border-radius: 40px; cursor: pointer; font-size: 1.5rem; font-weight: bold; margin-left: 20px; box-shadow: 0 4px 0 #27ae60; }
@@ -66,8 +67,8 @@
         .image-stage { flex: 0 0 35%; width: 90%; max-width: 900px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
         .drop-zone {
-            flex: 0 0 18%; width: 90%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
-            border-radius: 25px; display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 15px; padding: 0 25px; overflow-x: auto;
+            flex: 0 0 auto; min-height: 80px; max-height: 200px; width: 90%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
+            border-radius: 25px; display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; align-items: flex-start; gap: 8px; padding: 10px 15px; overflow-x: hidden; overflow-y: auto;
             transition: background 0.2s;
         }
         .drop-zone.active-hover { background: rgba(89, 133, 134, 0.25); border-style: solid; }
@@ -84,6 +85,86 @@
 
         #reading-overlay { position: fixed; inset: 0; background: #fff9ea; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         .reading-brick { padding: 4vh 60px; border-radius: 35px; font-size: 15vh; font-weight: bold; color: #1e2e46; box-shadow: 0 15px 0 rgba(0,0,0,0.1); margin: 25px; }
+
+        @media (max-width: 768px) {
+            /* 返回按钮 */
+            .glass-btn { top: 12px !important; left: 12px !important; font-size: 0.9rem !important; padding: 7px 16px !important; }
+
+            /* 列表页标题留出返回按钮空间 */
+            .list-header { padding: 56px 16px 8px !important; }
+            .list-header h1 { font-size: 2rem !important; letter-spacing: 3px !important; }
+
+            /* 卡片改为单列，图片改为正方形显示核心区域 */
+            #gallery-view {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+                padding: 10px 16px 24px !important;
+            }
+            .card-img-wrapper { aspect-ratio: 2 / 1 !important; }
+            .sentence-card img { object-position: center center !important; }
+            .sentence-card .card-info { padding: 10px !important; font-size: 1.1rem !important; }
+
+            /* ── 游戏界面完整重排 ── */
+            #play-view {
+                padding: 8px 8px 6px !important;
+                height: 100dvh !important;
+                justify-content: flex-start !important;
+            }
+
+            /* 顶部控制栏：返回按钮左，成功按钮右，紧凑 */
+            .play-controls {
+                height: auto !important;
+                padding: 4px 8px 4px 0 !important;
+                min-height: 44px !important;
+                flex-shrink: 0 !important;
+            }
+            .btn-action {
+                padding: 6px 14px !important;
+                font-size: 0.85rem !important;
+                margin-left: 8px !important;
+                border-radius: 20px !important;
+            }
+
+            /* 图片区：固定高度，不要撑太高 */
+            .image-stage {
+                flex: 0 0 28dvh !important;
+                width: 96% !important;
+                border-radius: 16px !important;
+                border-width: 3px !important;
+                margin-bottom: 8px !important;
+            }
+
+            /* drop-zone：固定两行高度，视觉上始终显示两行空间 */
+            .drop-zone {
+                height: 148px !important;
+                min-height: unset !important;
+                max-height: unset !important;
+                width: 96% !important;
+                padding: 8px 10px !important;
+                gap: 6px !important;
+                border-radius: 16px !important;
+                margin-bottom: 8px !important;
+                overflow-y: hidden !important;
+            }
+
+            /* 词库：剩余空间，可纵向滚动 */
+            .word-pool {
+                flex: 1 !important;
+                gap: 10px !important;
+                padding: 10px 8px !important;
+                overflow-y: auto !important;
+                align-content: flex-start !important;
+            }
+
+            /* 积木字号：一行约放3个词，更自然触发换行 */
+            .word-brick {
+                font-size: 1.6rem !important;
+                padding: 8px 14px !important;
+                border-radius: 12px !important;
+                margin: 2px !important;
+                box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -99,7 +180,6 @@
         <div class="play-controls">
             <div id="success-controls" style="visibility: hidden; display: flex;">
                 <button class="btn-action font-zh" onclick="enterReadingMode()">📖 全屏读字</button>
-                <button class="btn-action font-zh" style="background:#3498db; box-shadow: 0 4px 0 #2980b9;" onclick="closePlay()">🔙 完成并返回</button>
             </div>
         </div>
         <div class="image-stage" id="main-image"></div>
@@ -141,6 +221,7 @@
             currentData = sentencesList[currentLevelIdx];
             listView.style.display = 'none';
             playView.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
             zone.innerHTML = ''; pool.innerHTML = '';
             document.getElementById('success-controls').style.visibility = 'hidden';
             document.getElementById('main-image').style.backgroundImage = `url('${currentData.image}')`;
@@ -158,6 +239,47 @@
             });
         }
 
+        // 多行感知：找到拖放点最近的插入位置
+        function getInsertTarget(clientX, clientY) {
+            const siblings = [...zone.querySelectorAll('.word-brick')];
+            if (siblings.length === 0) return null;
+
+            // 按行分组
+            const rows = [];
+            siblings.forEach(sib => {
+                const box = sib.getBoundingClientRect();
+                const centerY = box.top + box.height / 2;
+                let row = rows.find(r => Math.abs(r.centerY - centerY) < box.height * 0.6);
+                if (!row) { row = { centerY, items: [] }; rows.push(row); }
+                row.items.push(sib);
+            });
+            rows.sort((a, b) => a.centerY - b.centerY);
+
+            // 找最近的行（Y距离最小）
+            let bestRow = rows[0];
+            let minDist = Infinity;
+            rows.forEach(r => {
+                const dist = Math.abs(r.centerY - clientY);
+                if (dist < minDist) { minDist = dist; bestRow = r; }
+            });
+
+            // 在该行内按X找插入点
+            const nextInRow = bestRow.items.find(sib => {
+                const box = sib.getBoundingClientRect();
+                return clientX < box.left + box.width / 2;
+            });
+
+            if (nextInRow) return nextInRow;
+            // 拖到该行最右侧：插到该行最后一个词的后面
+            // 如果是最后一行，追加末尾；否则插到下一行第一个词前
+            const lastInRow = bestRow.items[bestRow.items.length - 1];
+            const rowIdx = rows.indexOf(bestRow);
+            if (rowIdx < rows.length - 1) {
+                return rows[rowIdx + 1].items[0]; // 插到下一行开头
+            }
+            return null; // 追加末尾
+        }
+
         function addTouchLogic(el) {
             let startX, startY;
             const moveHandler = (e) => {
@@ -167,10 +289,22 @@
                 el.style.left = (touch.clientX - startX) + 'px';
                 el.style.top = (touch.clientY - startY) + 'px';
                 const zoneRect = zone.getBoundingClientRect();
-                if (touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
-                    touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom) {
+                const isOverZone = touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
+                    touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom;
+
+                const oldIndicator = zone.querySelector('.insert-indicator');
+                if (oldIndicator) oldIndicator.remove();
+
+                if (isOverZone) {
                     zone.classList.add('active-hover');
-                } else { zone.classList.remove('active-hover'); }
+                    const target = getInsertTarget(touch.clientX, touch.clientY);
+                    const indicator = document.createElement('div');
+                    indicator.className = 'insert-indicator';
+                    indicator.style.cssText = 'width:4px; min-height:40px; align-self:stretch; background:#ff6b6b; border-radius:4px; flex-shrink:0; pointer-events:none;';
+                    zone.insertBefore(indicator, target);
+                } else {
+                    zone.classList.remove('active-hover');
+                }
             };
 
             const endHandler = (e) => {
@@ -179,16 +313,14 @@
                 el.classList.remove('dragging');
                 el.style.left = ''; el.style.top = '';
                 zone.classList.remove('active-hover');
+                const indicator = zone.querySelector('.insert-indicator');
+                if (indicator) indicator.remove();
+
                 const zoneRect = zone.getBoundingClientRect();
                 const isInside = touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
                                  touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom;
                 if (isInside) {
-                    const siblings = [...zone.querySelectorAll('.word-brick:not(.dragging)')];
-                    const nextSibling = siblings.find(sib => {
-                        const box = sib.getBoundingClientRect();
-                        return touch.clientX < box.left + box.width / 2;
-                    });
-                    zone.insertBefore(el, nextSibling);
+                    zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY));
                 } else { pool.appendChild(el); }
                 check();
                 document.removeEventListener('mousemove', moveHandler);
@@ -212,6 +344,75 @@
             el.addEventListener('touchstart', startHandler, {passive: false});
         }
 
+        function autoSizeZone() {
+            const bricks = [...zone.querySelectorAll('.word-brick')];
+            if (bricks.length === 0) return;
+            const gap = 8;
+            const zonePadding = 24;
+            const availW = zone.clientWidth - zonePadding - gap * (bricks.length - 1);
+
+            // 二分法：临时设字号，用 scrollWidth 测量实际宽度
+            let lo = 10, hi = 38, best = 10;
+            while (lo <= hi) {
+                const mid = (lo + hi) >> 1;
+                bricks.forEach(b => {
+                    b.style.fontSize = mid + 'px';
+                    b.style.padding = `${Math.round(mid*0.3)}px ${Math.round(mid*0.55)}px`;
+                });
+                // 强制 reflow 后测量
+                const totalW = bricks.reduce((s, b) => s + b.offsetWidth, 0);
+                if (totalW <= availW) { best = mid; lo = mid + 1; }
+                else hi = mid - 1;
+            }
+            bricks.forEach(b => {
+                b.style.fontSize = best + 'px';
+                b.style.padding = `${Math.round(best*0.3)}px ${Math.round(best*0.55)}px`;
+            });
+        }
+
+        function autoSizeReading() {
+            const overlay = document.getElementById('reading-overlay');
+            const bricks = [...document.querySelectorAll('.reading-brick')];
+            if (bricks.length === 0) return;
+            const availW = overlay.clientWidth * 0.95;
+            const availH = overlay.clientHeight * 0.95;
+
+            // 二分法：找最大字号，让所有词换行后总高度 <= availH
+            let lo = 20, hi = 200, best = 20;
+            while (lo <= hi) {
+                const mid = (lo + hi) >> 1;
+                const pad = Math.round(mid * 0.25);
+                const margin = Math.round(mid * 0.15);
+                bricks.forEach(b => {
+                    b.style.fontSize = mid + 'px';
+                    b.style.padding = `${pad}px ${Math.round(mid * 0.5)}px`;
+                    b.style.margin = margin + 'px';
+                    b.style.borderRadius = Math.round(mid * 0.25) + 'px';
+                    b.style.boxShadow = `0 ${Math.round(mid*0.1)}px 0 rgba(0,0,0,0.1)`;
+                });
+                // 模拟换行：按行累计宽度，统计总行数和高度
+                let rowW = 0, rows = 1;
+                const brickH = bricks[0].offsetHeight + margin * 2;
+                bricks.forEach(b => {
+                    const bw = b.offsetWidth + margin * 2;
+                    if (rowW + bw > availW && rowW > 0) { rows++; rowW = bw; }
+                    else rowW += bw;
+                });
+                const totalH = rows * brickH;
+                if (totalH <= availH) { best = mid; lo = mid + 1; }
+                else hi = mid - 1;
+            }
+            const pad = Math.round(best * 0.25);
+            const margin = Math.round(best * 0.15);
+            bricks.forEach(b => {
+                b.style.fontSize = best + 'px';
+                b.style.padding = `${pad}px ${Math.round(best * 0.5)}px`;
+                b.style.margin = margin + 'px';
+                b.style.borderRadius = Math.round(best * 0.25) + 'px';
+                b.style.boxShadow = `0 ${Math.round(best*0.1)}px 0 rgba(0,0,0,0.1)`;
+            });
+        }
+
         function check() {
             const current = [...zone.querySelectorAll('.word-brick')].map(b => b.dataset.word).join('');
             if (current === currentData.words.join('')) {
@@ -231,9 +432,14 @@
                 container.appendChild(rb);
             });
             document.getElementById('reading-overlay').style.display = 'flex';
+            requestAnimationFrame(autoSizeReading);
         }
 
-        function closePlay() { listView.style.display = 'flex'; playView.style.display = 'none'; }
+        function closePlay() { 
+            listView.style.display = 'flex'; 
+            playView.style.display = 'none'; 
+            document.body.style.overflow = '';
+        }
         window.onload = initGallery;
     </script>
 </body>

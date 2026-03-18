@@ -13,14 +13,22 @@
             --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
         }
 
-        body, html { background-color: #f8f9fa; margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: column; align-items: center; font-family: var(--kaiti-font) !important; }
+        body, html { background-color: #f8f9fa; margin: 0; padding: 0; height: 100dvh; width: 100%; overflow: hidden; display: flex; flex-direction: column; align-items: center; font-family: var(--kaiti-font) !important; }
         
         .nav-top { 
-            width: 100%; background: #1e2e46; padding: 0 25px; 
-            height: 64px; min-height: 64px; box-sizing: border-box; 
-            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; 
+            width: 100%; background: #598586; padding: 0 20px; 
+            height: 56px; box-sizing: border-box; 
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+            border-bottom: 5px solid #f3b236;
         }
-        .nav-top a { color: #f3b236; text-decoration: none; font-weight: 700; font-size: 1rem; font-family: var(--kaiti-font) !important; }
+        .nav-top a { color: #fff; text-decoration: none; font-weight: 700; font-size: 1rem; font-family: var(--kaiti-font) !important; white-space: nowrap; }
+        @media (max-width: 768px) {
+            .nav-top { height: 56px; }
+            .nav-top a { font-size: 0.9rem; }
+            .stars-display { font-size: 1.5rem; }
+            .progress-box { width: 85vw; }
+            .btn { padding: 10px 36px; white-space: nowrap; }
+        }
         
         .challenge-info { display: flex; flex-direction: column; align-items: center; padding: 10px 0; flex-shrink: 0; }
         .stars-display { font-size: 1.4rem; color: #f3b236; margin-bottom: 5px; letter-spacing: 2px; }
@@ -85,9 +93,14 @@
         finishBtn.onclick = () => { location.href = backUrl; };
 
         let count = 0;
+        const isMobile = window.innerWidth <= 768;
+        const reservedH = isMobile ? 56 + 90 + 30 + 60 + 40 : 0;
+        const wSize = isMobile
+            ? Math.min(window.innerWidth * 0.92, window.innerHeight - reservedH, 420)
+            : Math.min(window.innerWidth * 0.9, 500);
         const writer = HanziWriter.create('writer-container', charToDraw, {
-            width: Math.min(window.innerWidth * 0.9, 500),
-            height: Math.min(window.innerHeight * 0.45, 500),
+            width: wSize,
+            height: wSize,
             padding: 25,
             strokeColor: '#598586',
             showHintAfterMisses: 2

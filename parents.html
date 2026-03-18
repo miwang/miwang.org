@@ -29,30 +29,24 @@
 
         body { font-family: var(--font-en); background: var(--bg); color: var(--text); }
 
-        /* ── Nav ── */
-        .back-nav {
+        /* ── Header (合并版) ── */
+        .site-header {
             background: var(--primary);
-            padding: 5px 24px;
-            display: flex; align-items: center;
+            border-bottom: 5px solid var(--accent);
+            padding: 14px 24px 12px;
+            position: relative;
+            text-align: center;
         }
-        .back-nav a {
+        .site-header .back-link {
+            position: absolute; left: 20px; top: 14px;
             font-family: var(--font-en);
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.95rem;
-            display: flex; align-items: center; gap: 6px;
-            transition: opacity 0.2s;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
-        .back-nav a:hover { opacity: 0.8; }
-
-        /* ── Header ── */
-        .site-header {
-            background: var(--primary);
-            padding: 14px 24px 12px;
-            border-bottom: 5px solid var(--accent);
-            text-align: center;
-        }
+        .site-header .back-link:hover { opacity: 0.8; }
         .site-header h1 {
             font-family: var(--font-en);
             font-size: 2.2rem;
@@ -65,6 +59,11 @@
             font-size: 1rem;
             color: rgba(255,255,255,0.6);
             letter-spacing: 3px;
+        }
+        @media (max-width: 768px) {
+            .site-header h1 { font-size: 1.6rem; padding: 0 80px; }
+            .site-header .zh-sub { font-size: 0.85rem; }
+            .site-header .back-link { font-size: 0.8rem; }
         }
 
         /* ── Layout ── */
@@ -194,7 +193,6 @@
             .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
             .card-icon { font-size: 2.2rem; }
             .container { margin: 20px auto; gap: 24px; }
-            .back-nav { padding: 4px 16px; }
         }
 
         /* 平板（768px 以下） */
@@ -213,11 +211,8 @@
 </head>
 <body>
 
-    <nav class="back-nav">
-        <a href="index.html">← Back to Portal</a>
-    </nav>
-
     <header class="site-header">
+        <a href="index.html" class="back-link">← Back to Portal</a>
         <h1>Chinese Playground 🐼</h1>
         <span class="zh-sub">学生与家长学习中心</span>
     </header>
@@ -230,7 +225,7 @@
                 📝 Chinese Literacy <span class="zh">汉字识写</span>
             </div>
             <div class="grid">
-                <a href="./cla/words_and_phrases_en.html" class="card">
+                <a href="./cla/words_and_phrases_en.html" class="card" onclick="saveScroll()">
                     <div class="card-progress-overlay">
                         <svg viewBox="0 0 36 36" style="width:100%;height:100%;">
                             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -258,7 +253,7 @@
                 🔢 Math Station <span class="zh">数学练习站</span>
             </div>
             <div class="grid">
-                <a href="math/teen_numbers.html" class="card">
+                <a href="math/teen_numbers.html" class="card" onclick="saveScroll()">
                     <div class="card-icon">🔟</div>
                     <div class="card-title">
                         Teen Numbers
@@ -275,7 +270,7 @@
                 🎮 Interactive Games <span class="zh">互动游戏</span>
             </div>
             <div class="grid">
-                <a href="games/cat_game_eng.html" class="card">
+                <a href="games/cat_game_eng.html" class="card" onclick="saveScroll()">
                     <div class="card-icon">😸</div>
                     <div class="card-title">
                         Where is the Cat?
@@ -283,7 +278,7 @@
                     </div>
                     <p class="card-desc">Practice reading characters.</p>
                 </a>
-                <a href="games/connect_5_eng.html" class="card">
+                <a href="games/connect_5_eng.html" class="card" onclick="saveScroll()">
                     <div class="card-icon">🐼</div>
                     <div class="card-title">
                         Connect 5
@@ -291,7 +286,7 @@
                     </div>
                     <p class="card-desc">Strategy &amp; character game.</p>
                 </a>
-                <a href="games/orchard_game.html" class="card">
+                <a href="games/orchard_game.html" class="card" onclick="saveScroll()">
                     <div class="card-icon">🍎</div>
                     <div class="card-title">
                         In the Orchard
@@ -342,6 +337,10 @@
             }
         }
 
+        function saveScroll() {
+            sessionStorage.setItem('parents_scroll', window.scrollY);
+        }
+
         function resetProgress() {
             if (confirm("Are you sure you want to clear all practice records? This cannot be undone.")) {
                 localStorage.removeItem('mecc_progress');
@@ -349,7 +348,14 @@
             }
         }
 
-        window.onload = updateDashboard;
+        window.onload = function() {
+            updateDashboard();
+            const saved = sessionStorage.getItem('parents_scroll');
+            if (saved !== null) {
+                window.scrollTo({ top: parseInt(saved), behavior: 'instant' });
+                sessionStorage.removeItem('parents_scroll');
+            }
+        };
     </script>
 </body>
 </html>

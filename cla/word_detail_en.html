@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <script src="https://unpkg.com/pinyin-pro"></script>
     <style>
         :root {
             --teal:      #598586;
@@ -19,27 +20,58 @@
 
         body { background-color: var(--bg); margin: 0; font-family: var(--font-en); }
 
-        /* ── Nav ── */
-        .back-nav {
-            background: var(--teal); padding: 10px 24px;
-            display: flex; align-items: center;
+        /* ── Nav (合并版) ── */
+        .nav-top {
+            background: var(--teal); padding: 0 20px;
+            height: 56px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; border-bottom: 5px solid var(--accent);
         }
-        .back-nav a {
+        .nav-top a {
             color: #fff; text-decoration: none;
             font-weight: 600; font-size: 0.95rem;
-            display: flex; align-items: center; gap: 6px;
-            transition: opacity 0.2s;
+            white-space: nowrap;
         }
-        .back-nav a:hover { opacity: 0.8; }
+        .nav-top a:hover { opacity: 0.8; }
+        .nav-title { color: white; font-weight: 700; font-size: 1.2rem; }
+        .nav-spacer { width: 120px; }
 
-        /* ── Header ── */
-        .header {
-            padding: 26px 25px; border-bottom: 6px solid var(--accent);
-            background: var(--teal); text-align: center;
+        @media (max-width: 768px) {
+            .nav-top { height: 56px; }
+            .nav-top a { font-size: 0.9rem; }
+            .nav-title { font-size: 1rem; }
+            .nav-spacer { width: 80px; }
+            .char-header { padding: 16px; gap: 12px; margin-bottom: 20px; }
+            .phrase-text { font-size: 3rem; }
+            .img-top { height: 160px; }
+            .container { margin: 16px auto; }
         }
-        .header h1 { font-size: 2.2rem; color: white; margin: 0; font-family: var(--font-en); }
 
         .container { width: 95%; max-width: 900px; margin: 28px auto; }
+
+        /* ── Character card with audio/image ── */
+        .char-card-wrap {
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+        .char-img-box {
+            width: 120px; height: 120px; border-radius: 14px; overflow: hidden;
+            background: #f4f9f9; border: 2px solid #e0eded;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .char-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .char-img-box.no-img { background: #f4f9f9; }
+        .char-pinyin {
+            font-size: 1.2rem; color: var(--teal); font-weight: 600;
+            font-family: var(--font-en); letter-spacing: 1px;
+        }
+        .char-play-btn {
+            background: var(--teal); color: white;
+            padding: 7px 22px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: bold; cursor: pointer;
+            font-family: var(--font-en); border: none;
+            transition: background 0.2s;
+        }
+        .char-play-btn:hover { background: #457273; }
 
         /* ── Character header ── */
         .char-header {
@@ -148,18 +180,27 @@
 </head>
 <body>
 
-    <div class="back-nav">
+    <nav class="nav-top">
         <a href="words_and_phrases_en.html">⬅️ Back to Sight Words</a>
-    </div>
-
-    <div class="header">
-        <h1>Word Study 📖</h1>
-    </div>
+        <span class="nav-title">Word Study 📖</span>
+        <div class="nav-spacer"></div>
+    </nav>
 
     <div class="container">
         <div class="char-header">
-            <div id="character-target" onclick="goToTracing()"></div>
-            <p class="char-label" id="char-label"></p>
+            <div style="display:flex; gap:28px; align-items:center; flex-wrap:wrap; justify-content:center;">
+                <div class="char-card-wrap">
+                    <div id="character-target" onclick="goToTracing()"></div>
+                    <p class="char-label" id="char-label"></p>
+                </div>
+                <div class="char-card-wrap">
+                    <div class="char-img-box" id="char-img-box">
+                        <img id="char-img" src="" alt="">
+                    </div>
+                    <div class="char-pinyin" id="char-pinyin"></div>
+                    <button class="char-play-btn" onclick="speakChar()">🔊 Listen</button>
+                </div>
+            </div>
             <div class="practice-btn" onclick="goToTracing()">✍️ Click to Practice Writing</div>
         </div>
         <div id="phrases-container" class="phrase-list"></div>
@@ -185,9 +226,41 @@
         loadVoices();
 
         // ── Render ────────────────────────────────────────────────────────
+        // 多音字手动覆盖表
+        const pinyinOverride = { '长': 'cháng', '会': 'huì', '了': 'le', '和': 'hé', '看': 'kàn', '大': 'dà' };
+        function getCharPinyin(char) {
+            if (pinyinOverride[char]) return pinyinOverride[char];
+            if (window.pinyinPro) return window.pinyinPro.pinyin(char, { toneType: 'symbol' });
+            return '';
+        }
+        function getPinyinNoTone(char) {
+            if (window.pinyinPro) return window.pinyinPro.pinyin(char, { toneType: 'none' });
+            return '';
+        }
+        function speakChar() {
+            const pinyin = getPinyinNoTone(targetChar).replace(/ /g, '');
+            const audio = new Audio(`../audio/chars/${encodeURIComponent(pinyin)}.mp3`);
+            audio.play().catch(() => {
+                const msg = new SpeechSynthesisUtterance(targetChar);
+                msg.lang = 'zh-CN';
+                if (!preferredVoice) loadVoices();
+                if (preferredVoice) msg.voice = preferredVoice;
+                msg.rate = 0.85;
+                window.speechSynthesis.speak(msg);
+            });
+        }
+
         if (data) {
             document.title = `${targetChar} — Word Study`;
             document.getElementById('char-label').textContent = targetChar;
+
+            // 拼音和单字图片
+            const py = getCharPinyin(targetChar);
+            const pyNoTone = getPinyinNoTone(targetChar).replace(/ /g, '');
+            document.getElementById('char-pinyin').textContent = py;
+            const charImg = document.getElementById('char-img');
+            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(pyNoTone)}.png`;
+            charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
 
             // Hanzi Writer stroke animation
             HanziWriter.create('character-target', targetChar, {

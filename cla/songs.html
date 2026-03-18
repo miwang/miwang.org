@@ -45,23 +45,26 @@
         .song-card {
             background: white; border: 4px solid var(--main-teal); border-radius: 20px;
             overflow: hidden; cursor: pointer; transition: 0.2s;
-            display: flex; flex-direction: column; height: 290px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            display: flex; flex-direction: column; height: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
         }
         .song-card:hover { transform: translateY(-5px); border-color: var(--accent-yellow); }
-        .card-img-wrapper { width: 100%; height: 175px; overflow: hidden; background: #f4f4f4; display: flex; align-items: center; justify-content: center; position: relative; }
+        .card-img-wrapper { width: 100%; height: 155px; overflow: hidden; background: #f4f4f4; display: flex; align-items: center; justify-content: center; position: relative; }
         .song-card img { width: 100%; height: 100%; object-fit: cover; }
 
-        .song-info { flex: 1; padding: 12px; text-align: center; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
-        .song-info h3 { margin: 0; font-size: 1.2rem; color: #333; line-height: 1.3; }
+        .song-info { flex: 1; padding: 6px 10px; text-align: center; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
+        .song-info h3 { margin: 0; font-size: 1rem; color: #333; line-height: 1.3; }
 
         /* 🌟 播放页设计 */
         #play-view { display: none; height: 100vh; flex-direction: column; background: #fff9ea; z-index: 2000; position: relative; }
-        .play-header { height: 12vh; background: var(--main-teal); display: flex; align-items: center; justify-content: center; border-bottom: 0.6vh solid var(--accent-yellow); }
+        .play-header { min-height: 12vh; background: var(--main-teal); display: flex; align-items: center; justify-content: space-between; border-bottom: 0.6vh solid var(--accent-yellow); padding: 0 20px; gap: 12px; }
+        .play-back-btn { flex-shrink: 0; color: white; cursor: pointer; font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.4); transition: 0.2s; white-space: nowrap; font-family: var(--kaiti); }
+        .play-back-btn:hover { background: rgba(255,255,255,0.35); }
+        .play-header-spacer { flex-shrink: 0; visibility: hidden; padding: 8px 18px; font-size: 1rem; white-space: nowrap; }
         .lyrics-panel { flex: 1; display: flex; flex-direction: column; background: white; margin: 1.5vh; border-radius: 4vh; overflow: hidden; }
         .lyrics-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2vh; overflow-y: auto; }
         .lyric-line { font-size: 9vh; font-weight: bold; margin: 0.6vh 0; color: #1e2e46; text-align: center; width: 100%; }
         .pagination-controls { height: 12vh; display: flex; justify-content: center; align-items: center; gap: 8vw; background: #fff; border-top: 1px solid #f0f0f0; }
-        .page-btn { background: var(--accent-yellow); border: none; padding: 1.5vh 8vw; border-radius: 20px; font-size: 4vh; cursor: pointer; box-shadow: 0 0.6vh 0 #d49a2a; }
+        .page-btn { background: var(--accent-yellow); border: none; padding: 1.5vh 8vw; border-radius: 20px; font-size: 4vh; cursor: pointer; box-shadow: 0 0.6vh 0 #d49a2a; touch-action: manipulation; }
 
         /* 🌟 悬浮图片容器：带删除按钮 */
         #hover-img-container { 
@@ -92,6 +95,73 @@
 
         .admin-bar { background: white; margin: 10px 50px 20px 50px; padding: 12px; border-radius: 20px; border: 2px dashed var(--main-teal); display: flex; justify-content: center; gap: 20px; align-items: center; flex-shrink: 0; }
         .admin-btn { background: var(--main-teal); color: white; border: none; padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 1rem; font-family: var(--kaiti); }
+
+        @media (max-width: 768px) {
+            /* ── 列表页 ── */
+            .list-header { padding: 56px 16px 6px !important; }
+            .list-header h1 { font-size: 2rem !important; letter-spacing: 2px !important; }
+
+            #gallery-view {
+                grid-template-columns: 1fr 1fr !important;
+                grid-auto-rows: auto !important;
+                gap: 14px !important;
+                padding: 10px 14px !important;
+            }
+            /* 卡片固定统一高度，封面占固定高度，歌名区固定高度不撑开 */
+            .song-card { height: 220px !important; }
+            .card-img-wrapper { height: 150px !important; flex-shrink: 0 !important; }
+            .song-info { 
+                height: 70px !important; flex-shrink: 0 !important; 
+                overflow: hidden !important; padding: 6px 8px !important;
+            }
+            .song-info h3 { 
+                font-size: 0.9rem !important; 
+                display: -webkit-box !important; -webkit-line-clamp: 2 !important; 
+                -webkit-box-orient: vertical !important; overflow: hidden !important;
+                line-height: 1.3 !important;
+            }
+
+            .admin-bar {
+                margin: 6px 12px 10px !important;
+                padding: 6px 8px !important;
+                gap: 6px !important;
+                flex-wrap: nowrap !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            .admin-bar span { font-size: 0.75rem !important; white-space: nowrap !important; }
+            .admin-btn { padding: 5px 8px !important; font-size: 0.75rem !important; white-space: nowrap !important; }
+
+            /* ── 歌词页 ── */
+            .play-header { min-height: auto !important; padding: 10px 12px !important; gap: 8px !important; }
+            .play-back-btn { font-size: 0.85rem !important; padding: 6px 12px !important; }
+            #song-title { 
+                font-size: clamp(0.7rem, 2.8vw, 1rem) !important; 
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+
+            /* 歌词：不换行，字号自适应最长行 */
+            .lyric-line { 
+                font-size: clamp(1.4rem, 6vw, 2rem) !important;
+                white-space: nowrap !important;
+                margin: 0.4em 0 !important;
+                width: 100% !important;
+                text-align: center !important;
+                overflow: hidden !important;
+                text-overflow: clip !important;
+                transform-origin: center !important;
+            }
+
+            .pagination-controls {
+                height: auto !important;
+                padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+                gap: 6vw !important;
+            }
+            .page-btn { padding: 10px 10vw !important; font-size: 1.6rem !important; }
+            #page-indicator { font-size: 1.4rem !important; }
+        }
     </style>
 </head>
 <body>
@@ -110,8 +180,11 @@
     </div>
 
     <div id="play-view">
-        <div class="back-btn-capsule font-zh" onclick="closePlay()">⬅️ 返回列表</div>
-        <div class="play-header"><h1 id="song-title" class="font-zh" style="color:white; font-size: 6vh; margin:0;"></h1></div>
+        <div class="play-header">
+            <div class="play-back-btn font-zh" onclick="closePlay()">⬅️ 返回列表</div>
+            <h1 id="song-title" class="font-zh" style="color:white; font-size: clamp(1rem, 3.5vh, 2.2rem); margin:0; text-align:center; flex:1;"></h1>
+            <div class="play-header-spacer font-zh">⬅️ 返回列表</div>
+        </div>
         <div class="lyrics-panel">
             <div class="lyrics-content" id="lyrics-content"></div>
             <div class="pagination-controls">
@@ -176,45 +249,85 @@
             currentSlideIndex = 0; renderSlide();
         }
 
+        // 🌟 手机端断行：优先用 mobile 字段，否则按标点自动拆
+        function getMobileLines(lineData) {
+            // 如果数据是对象且有 mobile 字段，直接用
+            if (typeof lineData === 'object' && lineData.mobile) return lineData.mobile;
+            const text = typeof lineData === 'object' ? lineData.pc : lineData;
+            // 超过12字才考虑拆行
+            if (text.length <= 12) return [text];
+            // 按「，。！？；」拆，保留标点在前段末尾
+            const segs = text.split(/(?<=[，。！？；、,!?;])/);
+            if (segs.length <= 1) return [text]; // 没有标点，不拆
+            // 合并太短的片段（<3字）到前一段
+            const result = [];
+            let buf = '';
+            segs.forEach(seg => {
+                buf += seg;
+                if (buf.length >= 4) { result.push(buf); buf = ''; }
+            });
+            if (buf) { 
+                if (result.length) result[result.length - 1] += buf;
+                else result.push(buf);
+            }
+            return result;
+        }
+
         function renderSlide() {
             const slide = currentSlides[currentSlideIndex];
             lyricsContent.innerHTML = "";
             if(slide.type === 'text') {
                 const hardWords = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}");
                 const sortedWords = Object.keys(hardWords).sort((a,b) => b.length - a.length);
+                const isMobile = window.innerWidth <= 768;
 
-                slide.content.forEach(line => {
-                    let parts = [{ text: line, isMarked: false }];
-                    sortedWords.forEach(word => {
-                        let newParts = [];
-                        parts.forEach(part => {
-                            if (part.isMarked) { newParts.push(part); }
-                            else {
-                                let subparts = part.text.split(word);
-                                subparts.forEach((sub, idx) => {
-                                    if (sub !== "") newParts.push({ text: sub, isMarked: false });
-                                    if (idx < subparts.length - 1) newParts.push({ text: word, isMarked: true, img: hardWords[word] });
-                                });
-                            }
+                slide.content.forEach(lineData => {
+                    // 取实际文字（兼容字符串和 {pc, mobile} 对象）
+                    const lineText = typeof lineData === 'object' ? lineData.pc : lineData;
+                    // 手机端拆行，桌面端直接用原行
+                    const renderLines = isMobile ? getMobileLines(lineData) : [lineText];
+
+                    renderLines.forEach(line => {
+                        let parts = [{ text: line, isMarked: false }];
+                        sortedWords.forEach(word => {
+                            let newParts = [];
+                            parts.forEach(part => {
+                                if (part.isMarked) { newParts.push(part); }
+                                else {
+                                    let subparts = part.text.split(word);
+                                    subparts.forEach((sub, idx) => {
+                                        if (sub !== "") newParts.push({ text: sub, isMarked: false });
+                                        if (idx < subparts.length - 1) newParts.push({ text: word, isMarked: true, img: hardWords[word] });
+                                    });
+                                }
+                            });
+                            parts = newParts;
                         });
-                        parts = newParts;
-                    });
 
-                    const div = document.createElement('div');
-                    div.className = 'lyric-line';
-                    parts.forEach(part => {
-                        const span = document.createElement('span');
-                        if (part.isMarked) {
-                            span.className = 'hover-word';
-                            span.innerHTML = formatText(part.text, true);
-                            span.onmouseenter = (e) => showImg(e, part.img, part.text);
-                            span.onmouseleave = scheduleHide;
-                        } else {
-                            span.innerHTML = formatText(part.text, true);
+                        const div = document.createElement('div');
+                        div.className = 'lyric-line';
+                        // 手机端：按行字数动态调字号，保证不换行又尽量大
+                        if (isMobile) {
+                            const vw = window.innerWidth;
+                            const availPx = vw * 0.86;
+                            const pxPerChar = availPx / line.length;
+                            const computedSize = Math.min(pxPerChar * 0.85, 32);
+                            div.style.fontSize = Math.max(computedSize, 14) + 'px';
                         }
-                        div.appendChild(span);
+                        parts.forEach(part => {
+                            const span = document.createElement('span');
+                            if (part.isMarked) {
+                                span.className = 'hover-word';
+                                span.innerHTML = formatText(part.text, true);
+                                span.onmouseenter = (e) => showImg(e, part.img, part.text);
+                                span.onmouseleave = scheduleHide;
+                            } else {
+                                span.innerHTML = formatText(part.text, true);
+                            }
+                            div.appendChild(span);
+                        });
+                        lyricsContent.appendChild(div);
                     });
-                    lyricsContent.appendChild(div);
                 });
             } else {
                 lyricsContent.innerHTML = `<div style="width:90%; height:80%; border-radius:20px; overflow:hidden; border:8px solid var(--main-teal);"><iframe src="https://www.youtube-nocookie.com/embed/${slide.content}?rel=0" style="width:100%; height:100%; border:none;" allowfullscreen></iframe></div>`;

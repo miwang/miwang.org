@@ -22,13 +22,13 @@
 
         body {
             margin: 0; padding: 0; background-color: #1f2e46; color: white;
-            overflow: hidden; display: flex; flex-direction: column; align-items: center;
-            height: 100vh; width: 100vw; user-select: none;
+            overflow: auto; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; width: 100vw; user-select: none;
         }
 
         /* 🌟 统一磨砂返回按钮 */
         .back-btn-home {
-            position: absolute; top: 15px; left: 20px; color: #fff; text-decoration: none;
+            position: fixed; top: 15px; left: 20px; color: #fff; text-decoration: none;
             font-size: 1.1rem; z-index: 999; 
             background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             padding: 8px 20px; border-radius: 40px; border: 1.5px solid rgba(255,255,255,0.2);
@@ -58,16 +58,16 @@
         .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-yellow); background: white; }
 
         /* --- 选词界面：宽屏布局 --- */
-        #start-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px; }
-        #start-screen h1 { font-size: 3rem; margin-bottom: 15px; color: var(--accent-yellow); }
-        .controls { margin-bottom: 20px; display: flex; gap: 20px; }
-        .btn { padding: 10px 30px; font-size: 1.2rem; background-color: var(--main-teal); color: white; border: 2px solid var(--accent-yellow); border-radius: 50px; cursor: pointer; transition: 0.2s; }
+        #start-screen { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; min-height: 100vh; padding: 4px 20px 12px; box-sizing: border-box; }
+        #start-screen h1 { font-size: 2rem; margin-bottom: 8px; color: var(--accent-yellow); }
+        .controls { margin-bottom: 12px; display: flex; gap: 16px; }
+        .btn { padding: clamp(6px, 0.8vh, 10px) clamp(16px, 2vw, 26px); font-size: clamp(0.9rem, 1.2vw, 1.2rem); background-color: var(--main-teal); color: white; border: 2px solid var(--accent-yellow); border-radius: 50px; cursor: pointer; transition: 0.2s; }
         .btn-start { background-color: var(--accent-yellow); color: #1f2e46; box-shadow: 0 4px 0 #d49a2a; }
 
         #char-grid {
-            display: grid; grid-template-columns: repeat(13, 1fr); gap: 10px; 
-            max-width: 1250px; width: 95%; padding: 20px; 
-            background: rgba(255, 255, 255, 0.08); border-radius: 20px; border: 3px dashed rgba(243, 178, 54, 0.4);
+            display: grid; grid-template-columns: repeat(13, 1fr); gap: clamp(5px, 0.8vw, 10px);
+            max-width: 1250px; width: 95%; padding: clamp(10px, 1.5vh, 20px);
+            background: rgba(255, 255, 255, 0.08); border-radius: 16px; border: 2px dashed rgba(243, 178, 54, 0.4);
         }
         .char-card {
             aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center;
@@ -76,10 +76,10 @@
         .char-card.selected { background-color: var(--main-teal); color: var(--accent-yellow); border: 3px solid var(--accent-yellow); transform: scale(1.05); }
 
         /* --- 游戏区 --- */
-        #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; position: relative; }
+        #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100vh; position: relative; overflow: hidden; }
         .game-board { flex: 1; display: flex; align-items: center; justify-content: center; gap: 40px; z-index: 2; }
         
-        .card-container { position: relative; width: 200px; height: 200px; }
+        .card-container { position: relative; width: clamp(120px, 18vw, 220px); height: clamp(120px, 18vw, 220px); }
         .char-circle { 
             position: absolute; inset: 0; background-color: var(--main-teal); border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; font-size: 8rem; 
@@ -88,7 +88,7 @@
         }
         .char-circle:hover { transform: translateY(-10px); border-color: var(--accent-yellow); }
 
-        .hidden-cat { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 8rem; opacity: 0; }
+        .hidden-cat { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(3.5rem, 7vw, 8rem); opacity: 0; }
         .cat-found-anim { animation: bounceCat 0.5s infinite; opacity: 1 !important; }
         @keyframes bounceCat { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, -80%); } }
         .fly-away { animation: magicVanish 0.8s forwards; pointer-events: none; }
@@ -97,6 +97,62 @@
         .footer { height: 20vh; width: 100%; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #result-text { font-size: 2.8rem; color: var(--main-teal); margin-bottom: 10px; }
         .bottom-wave { position: absolute; bottom: -30vh; width: 150vw; height: 60vh; background-color: #ffffff; border-radius: 50%; z-index: 1; }
+
+        @media (max-width: 768px) {
+            body { height: 100dvh; }
+
+            /* 返回按钮 */
+            .back-btn-home { font-size: 0.85rem !important; padding: 5px 10px !important; top: 8px !important; left: 10px !important; z-index: 999 !important; }
+
+            /* 选词界面 */
+            #start-screen { padding: 52px 12px 12px !important; justify-content: flex-start !important; overflow-y: auto; }
+            #start-screen h1 { font-size: 1.6rem !important; margin-bottom: 10px !important; }
+            .controls { gap: 8px !important; flex-wrap: wrap; margin-bottom: 12px !important; }
+            .btn { padding: 8px 16px !important; font-size: 1rem !important; }
+            #char-grid { grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)) !important; gap: 6px !important; padding: 12px !important; max-width: 100% !important; }
+            .char-card { font-size: 1.3rem !important; }
+
+            /* 游戏界面 */
+            .game-header { font-size: 1.4rem !important; letter-spacing: 2px !important; }
+            #vs-scoreboard { position: static !important; transform: none !important; margin-left: auto; padding: 5px 12px !important; gap: 8px !important; }
+            .player-box .score { font-size: 1.6rem !important; }
+            .player-box .name { font-size: 0.9rem !important; }
+            .avatar { width: 28px !important; height: 28px !important; }
+            .game-top-bar { 
+                height: auto !important; 
+                flex-direction: column !important;
+                padding: 8px 0 6px !important; 
+                gap: 6px !important;
+                align-items: center !important;
+                width: 100% !important;
+            }
+            .game-header { font-size: 1.6rem !important; letter-spacing: 2px !important; width: 100% !important; text-align: center !important; }
+            #vs-scoreboard { 
+                position: static !important; transform: none !important; 
+                width: 90% !important; max-width: 360px !important;
+                display: flex !important; justify-content: center !important;
+                margin: 0 auto !important;
+                padding: 6px 16px !important; gap: 12px !important;
+            }
+
+            #game-screen { justify-content: flex-start !important; padding-top: 38px !important; padding-bottom: 110px !important; box-sizing: border-box !important; }
+            .game-board { 
+                display: grid !important; 
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important; 
+                padding: 0 16px !important;
+                margin-top: 4vh !important;
+                width: 100% !important;
+                flex: none !important;
+            }
+            .card-container { width: 42vw !important; height: 42vw !important; }
+            .char-circle { font-size: 15vw !important; }
+            .hidden-cat { font-size: 17vw !important; }
+            .bottom-wave { display: none !important; }
+            .footer { margin-top: 16px !important; height: auto !important; padding: 0 !important; flex-direction: column !important; align-items: center !important; gap: 10px !important; }
+            #result-text { font-size: 1.3rem !important; }
+            .btn-back-setup { position: fixed !important; bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 999 !important; background: rgba(255,255,255,0.12) !important; border-color: rgba(255,255,255,0.3) !important; color: rgba(255,255,255,0.7) !important; font-size: 0.9rem !important; padding: 8px 24px !important; white-space: nowrap !important; }
+        }
     </style>
 </head>
 <body>
@@ -136,6 +192,7 @@
         <div class="footer">
             <div id="result-text">小猫在 ______ 的后面。</div>
             <button class="btn" id="next-btn" onclick="nextRound()" style="display:none; background: #3498db; border-color:#2980b9;">下一组 ➔</button>
+            <button class="btn btn-back-setup" onclick="backToSetup()" style="background:transparent; border-color:rgba(255,255,255,0.3); color:rgba(255,255,255,0.6); font-size:0.9rem; padding:6px 16px; margin-top:4px;">← 返回字库</button>
         </div>
         <div class="bottom-wave"></div>
     </div>
@@ -177,6 +234,12 @@
                 grid.appendChild(card);
             });
         };
+
+        function backToSetup() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('game-top-bar').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        }
 
         function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
         function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }

@@ -18,17 +18,53 @@
         body { 
             background-color: #f8fafc; margin: 0; 
             display: flex; flex-direction: column; 
-            height: 100vh; width: 100vw; overflow: hidden; /* 强制锁定一屏 */
+            height: 100vh; width: 100vw; overflow: hidden;
+        }
+        /* 手机竖屏：grid 2列，高度由内容决定 */
+        @media (max-width: 768px) {
+            body { height: 100dvh; overflow: hidden; }
+            .header { min-height: 60px; }
+            .header h1 { font-size: 1.3rem; }
+            .back-link { font-size: 0.85rem; }
+            .game-area {
+                flex: 1; overflow: hidden;
+                padding: 6px 8px; gap: 4px;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .target-box { margin-top: 0; flex-shrink: 0; }
+            #message { margin: 0; height: auto; font-size: 1rem; line-height: 1.2; flex-shrink: 0; }
+            .options-container {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px; flex: 1;
+                width: 100%; max-width: 100%;
+                align-content: stretch;
+                min-height: 0;
+            }
+            .option-card {
+                width: 100%; height: 100%;
+                padding: 8px 6px; flex: none;
+                min-height: 0;
+            }
+            .dot-group { gap: 3px; }
+            .frame-cell, .loose-cell { width: clamp(14px, 5vw, 26px); height: clamp(14px, 5vw, 26px); }
+            .dot { width: clamp(10px, 3.8vw, 20px); height: clamp(10px, 3.8vw, 20px); }
+            .target-label { font-size: 1rem; }
+            .target-number { font-size: 2rem; padding: 0 12px; }
+            #star-container { font-size: 1rem; padding: 3px 14px; flex-shrink: 0; }
         }
         body.night-mode { background-color: #000000 !important; }
 
         /* 🌟 极简标题栏 */
         .header { 
-            height: 50px; border-bottom: 4px solid #f3b236; background: #598586; 
-            display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0;
+            border-bottom: 4px solid #f3b236; background: #598586; 
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; flex-shrink: 0; min-height: 50px; gap: 8px;
         }
-        .header h1 { font-size: 1.5rem; color: white; margin: 0; }
-        .back-link { position: absolute; left: 20px; color: #f3b236; text-decoration: none; font-weight: bold; }
+        .header h1 { font-size: clamp(1rem, 3.5vw, 1.5rem); color: white; margin: 0; flex: 1; text-align: center; white-space: nowrap; }
+        .back-link { color: #f3b236; text-decoration: none; font-weight: bold; font-size: clamp(0.7rem, 2vw, 1rem); white-space: nowrap; flex-shrink: 0; }
+        .header-spacer { width: clamp(60px, 10vw, 120px); flex-shrink: 0; }
 
         /* 游戏主体区 */
         .game-area { 
@@ -60,7 +96,7 @@
             background: white; border: 3px solid transparent; border-radius: 15px; 
             display: flex; justify-content: center; align-items: center; 
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.06); transition: 0.2s;
-            height: clamp(130px, 18vh, 220px); flex: 1 1 clamp(220px, 25vw, 380px); max-width: 420px;
+            padding: 16px 12px; flex: 1 1 clamp(220px, 25vw, 380px); max-width: 420px;
         }
         .option-card.selected { border-color: #f3b236; background-color: #fffdf5; transform: scale(1.03); }
 
@@ -86,6 +122,7 @@
     <div class="header">
         <a href="../parents.html" class="back-link">⬅️ Back to Parents Hub</a>
         <h1>Teen Numbers 🎆</h1>
+        <div class="header-spacer"></div>
     </div>
 
     <div class="game-area">

@@ -95,6 +95,32 @@
         #final-overlay h2 { font-size: 2rem; margin: 12px 0 8px; }
         #final-overlay p  { font-size: 1.1rem; opacity: 0.85; margin: 0; }
         #final-overlay .trophy { font-size: 7rem; }
+
+        @media (max-width: 768px) {
+            body { height: 100dvh; overflow: hidden; justify-content: flex-start; }
+
+            /* 导航栏放大 */
+            .nav-top { height: 56px; padding: 0 16px; }
+            .nav-top a { font-size: 1rem; }
+            .nav-title { font-size: 1.1rem; }
+
+            /* 星星和进度条放大 */
+            .challenge-info { padding: 8px 0 4px; gap: 2px; }
+            .stars-display { font-size: 1.6rem; letter-spacing: 3px; margin-bottom: 4px; }
+            .progress-box { width: 85vw; height: 10px; margin-bottom: 4px; }
+            .char-label { font-size: 1.1rem; }
+            .char-label span { font-size: 2.4rem; }
+
+            /* Show Me 按钮不换行 */
+            .controls { margin-top: 8px; }
+            .btn { 
+                padding: 10px 36px; font-size: 1.1rem; 
+                white-space: nowrap;
+            }
+
+            /* 提示文字 */
+            #msg { font-size: 1rem; height: auto; margin-top: 6px; }
+        }
     </style>
 </head>
 <body>
@@ -157,7 +183,11 @@
         }
 
         // ── Hanzi Writer ──────────────────────────────────────────────────
-        const writerSize = Math.min(window.innerWidth * 0.88, window.innerHeight * 0.46, 480);
+        const isMobile = window.innerWidth <= 768;
+        const reservedHeight = isMobile ? 56 + 90 + 30 + 60 + 40 : 0;
+        const writerSize = isMobile
+            ? Math.min(window.innerWidth * 0.92, window.innerHeight - reservedHeight, 420)
+            : Math.min(window.innerWidth * 0.88, window.innerHeight * 0.46, 480);
         const writer = HanziWriter.create('writer-container', charToDraw, {
             width:  writerSize,
             height: writerSize,

@@ -21,12 +21,10 @@
         }
 
         .back-btn-home {
-            position: absolute; top: 20px; left: 20px; color: #e0e0e0; text-decoration: none;
-            font-size: 1.1rem; font-weight: bold; z-index: 50; background: rgba(255, 255, 255, 0.15);
-            padding: 8px 18px; border-radius: 20px; transition: transform 0.2s, background 0.2s;
-            border: none;
+            position: absolute; top: 16px; left: 20px; color: rgba(255,255,255,0.8);
+            text-decoration: none; font-size: 0.95rem; font-weight: 600; z-index: 50;
         }
-        .back-btn-home:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.25); color: #fff; }
+        .back-btn-home:hover { color: #fff; }
 
         #star-container {
             position: absolute; top: 20px; right: 30px; font-size: 2rem; color: #f3b236;
@@ -43,7 +41,7 @@
             width: 90%; height: 100%; padding-top: 30px; z-index: 10;
         }
         #start-screen h1 { font-size: 2.5rem; margin-bottom: 15px; color: #f3b236; }
-        .controls { margin-bottom: 20px; }
+        .controls { margin-bottom: 20px; display: flex; gap: 12px; justify-content: center; align-items: center; }
         .btn {
             padding: 12px 25px; font-size: 1.2rem; background-color: #598586; color: #f3b236;
             border: 2px solid #f3b236; border-radius: 50px; cursor: pointer; font-weight: bold;
@@ -53,13 +51,16 @@
         .btn:hover { transform: scale(1.05); background-color: #4a6f70; }
 
         #char-grid {
-            display: grid; grid-template-columns: repeat(10, 50px); gap: 10px; justify-content: center;
-            padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; max-width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+            gap: 10px; justify-content: center;
+            padding: 20px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px; width: 100%; max-width: 700px;
         }
         
         /* 🌟 汉字卡片坚守楷体阵地 */
         .char-card {
-            width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 52px; display: flex; justify-content: center; align-items: center;
             font-size: 1.8rem; background-color: #e0e0e0; color: #333; border-radius: 10px;
             cursor: pointer; transition: all 0.2s; border: 3px solid transparent; box-sizing: border-box; 
             font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important; 
@@ -98,11 +99,51 @@
         .bottom-wave { position: absolute; bottom: -35%; width: 150%; height: 80%; background-color: #ffffff; border-radius: 50%; z-index: 1; }
         .footer { margin-top: auto; margin-bottom: 25px; font-size: 2rem; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 15px; color: #598586; font-weight: bold; width:100%;}
         #next-btn { display: none; }
+
+        @media (max-width: 768px) {
+            body { height: 100dvh; }
+
+            /* 返回按钮：手机上稍微大一点 */
+            .back-btn-home { font-size: 1rem; top: 12px; }
+
+            /* 星星：游戏时右上角 */
+            #star-container {
+                top: 8px !important; right: 12px !important;
+                font-size: 1.2rem !important; padding: 6px 12px !important;
+                gap: 6px !important;
+            }
+            .star-icon { font-size: 1.4rem !important; }
+
+            /* 启动界面 */
+            #start-screen h1 { font-size: 1.6rem !important; margin-top: 36px !important; }
+            #start-screen { padding-top: 20px !important; }
+            .controls { flex-direction: row !important; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; margin-bottom: 16px; }
+            .controls .btn:nth-child(1) { width: 44% !important; margin: 0 !important; }
+            .controls .btn:nth-child(2) { width: 44% !important; margin: 0 !important; }
+            .controls .btn:nth-child(3) { width: 55% !important; margin: 0 !important; flex-basis: 100%; text-align: center; }
+
+            /* 字格 */
+            #char-grid { grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)) !important; gap: 6px !important; padding: 12px !important; }
+            .char-card { height: 38px !important; font-size: 1.2rem !important; }
+
+            /* 游戏界面 */
+            .header { margin-top: 48px !important; font-size: 1.4rem !important; }
+            .game-board {
+                display: grid !important; grid-template-columns: 1fr 1fr !important;
+                gap: 16px !important; margin-top: 10vh !important;
+                padding: 0 20px !important; width: 100% !important;
+            }
+            .card-container { width: 42vw !important; height: 42vw !important; }
+            .char-circle { font-size: 16vw !important; }
+            .hidden-cat { font-size: 18vw !important; }
+            .bottom-wave { display: none !important; }
+            .footer { margin-top: auto !important; padding: 0 16px !important; font-size: 1.1rem !important; color: #f3b236 !important; margin-bottom: 12px !important; }
+        }
     </style>
 </head>
 <body>
 
-    <a href="../parents.html" class="back-btn-home">⬅️ Back</a>
+    <a href="../parents.html" class="back-btn-home">⬅️ Back to Parents Hub</a>
 
     <div id="star-container">
         <span class="star-icon" id="star-icon">⭐</span> x <span id="star-count">0</span>
@@ -126,6 +167,7 @@
         <div class="footer">
             <div id="result-text">The cat is behind ______.</div>
             <button class="btn" id="next-btn" onclick="nextRound()">Next Round ➔</button>
+            <button class="btn" onclick="backToSetup()" style="background:transparent; border-color:rgba(255,255,255,0.3); color:rgba(255,255,255,0.6); font-size:0.9rem; padding:6px 16px; margin-top:4px;">← Back to Setup</button>
         </div>
 
         <div class="bottom-wave"></div>
@@ -188,6 +230,13 @@
                 grid.appendChild(card);
             });
         };
+
+        function backToSetup() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('star-container').style.display = 'none';
+            if(document.getElementById('mobile-star')) document.getElementById('mobile-star').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        }
 
         function selectAll() { document.querySelectorAll('.char-card').forEach(card => card.classList.add('selected')); }
         function clearAll() { document.querySelectorAll('.char-card').forEach(card => card.classList.remove('selected')); }

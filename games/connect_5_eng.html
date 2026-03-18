@@ -25,15 +25,16 @@
     .back-btn-home:hover { transform: scale(1.05); background: rgba(0, 0, 0, 0.1); }
 
     #setup-view {
-        display: flex; flex-direction: column; align-items: center; background: white; padding: 40px;
-        border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 800px;
+        display: flex; flex-direction: column; align-items: center; background: white; padding: 24px 24px 20px;
+        border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;
+        width: min(680px, 92vw);
     }
-    #setup-view h1 { color: #333; margin: 0 0 10px 0; font-size: 40px; }
-    #setup-view .instructions { color: #666; margin: 0 0 25px 0; font-size: 18px; font-weight: bold; }
+    #setup-view h1 { color: #333; margin: 0 0 6px 0; font-size: 28px; }
+    #setup-view .instructions { color: #666; margin: 0 0 14px 0; font-size: 14px; font-weight: bold; }
     
-    .controls { margin-bottom: 20px; display: flex; gap: 15px; justify-content: center; }
+    .controls { margin-bottom: 12px; display: flex; gap: 10px; justify-content: center; }
     .controls .btn {
-        padding: 10px 25px; font-size: 1.2rem; background-color: #ecf0f1; color: #555;
+        padding: 8px 20px; font-size: 1rem; background-color: #ecf0f1; color: #555;
         border: 2px solid #bdc3c7; border-radius: 50px; cursor: pointer; font-weight: bold; transition: transform 0.2s, background-color 0.2s; 
     }
     .controls .btn:hover { transform: scale(1.05); background-color: #dcdde1; }
@@ -41,12 +42,12 @@
     .controls .btn.start-btn:hover { background-color: #45a049; }
 
     #char-grid {
-        display: grid; grid-template-columns: repeat(10, 50px); gap: 10px; justify-content: center;
-        padding: 20px; background: #f8f9fa; border-radius: 15px; width: 100%; border: 2px dashed #ccc;
+        display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px;
+        padding: 16px; background: #f8f9fa; border-radius: 15px; width: 100%; border: 2px dashed #ccc;
     }
 
     .char-card {
-        width: 100%; height: 50px; display: flex; justify-content: center; align-items: center;
+        width: 100%; height: 48px; display: flex; justify-content: center; align-items: center;
         font-size: 1.8rem; background-color: white; color: #333; border-radius: 10px;
         cursor: pointer; transition: all 0.2s; border: 3px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important; 
@@ -84,7 +85,7 @@
     @keyframes winPulse { 0% { transform: scale(1.05); box-shadow: 0 0 10px 2px #ff4757; } 50% { transform: scale(1.15); box-shadow: 0 0 20px 6px #ff4757; } 100% { transform: scale(1.05); box-shadow: 0 0 10px 2px #ff4757; } }
 
     /* 🌟 改名：改为 return-setup-btn，防止和 style.css 冲突 */
-    .return-setup-btn { padding: 8px 25px; font-size: 16px; background-color: transparent; color: #999; border: 2px solid #ddd; border-radius: 30px; cursor: pointer; margin-top: 30px; transition: all 0.3s; font-weight: bold;}
+    .return-setup-btn { padding: 8px 25px; font-size: 16px; background-color: transparent; color: #999; border: 2px solid #ddd; border-radius: 30px; cursor: pointer; margin-top: 30px; transition: all 0.3s; font-weight: bold; font-family: "LXGW WenKai Lite", system-ui, sans-serif !important; }
     .return-setup-btn:hover { background-color: #ecf0f1; color: #555; border-color: #ccc; }
 
     #trophy-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
@@ -95,11 +96,77 @@
     .overlay-text { color: white; font-size: 50px; font-weight: bold; margin: 30px 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
     .close-btn { padding: 15px 40px; font-size: 20px; font-weight: bold; background-color: #f1c40f; color: #333; border: none; border-radius: 40px; cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.4); margin-top: 20px; }
     .close-btn:hover { background-color: #f39c12; transform: scale(1.05) translateY(-3px); }
+
+    @media (max-width: 768px) {
+        /* 返回按钮：纯文字 */
+        .back-btn-home {
+            background: none !important; padding: 4px 0 !important;
+            font-size: 0.95rem !important; top: 14px !important; left: 16px !important;
+            border-radius: 0 !important; color: #555 !important;
+        }
+
+        /* 选词界面 */
+        #setup-view { padding: 20px 12px !important; margin-top: 44px; width: 100%; box-sizing: border-box; }
+        #setup-view h1 { font-size: 1.8rem !important; }
+        #setup-view .instructions { font-size: 0.95rem !important; margin-bottom: 16px !important; }
+        .controls { gap: 8px !important; flex-wrap: wrap; justify-content: center; }
+        .controls .btn { padding: 8px 16px !important; font-size: 1rem !important; }
+        #char-grid {
+            grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)) !important;
+            gap: 6px !important; padding: 12px !important;
+        }
+        .char-card { height: 40px !important; font-size: 1.3rem !important; }
+
+        /* 游戏界面：竖版布局 */
+        #game-view {
+            flex-direction: column !important;
+            align-items: center !important;
+            padding: 8px !important;
+            gap: 8px !important;
+        }
+
+        /* 玩家面板：横向小条 */
+        .side-panel {
+            flex-direction: row !important;
+            transform: scale(1) !important;
+            opacity: 1 !important;
+            gap: 10px !important;
+            padding: 6px 16px !important;
+            border-radius: 30px !important;
+            background: rgba(0,0,0,0.04) !important;
+            width: 90% !important;
+            justify-content: center !important;
+        }
+        .side-panel .logo { font-size: 2rem !important; filter: grayscale(60%) !important; }
+        .side-panel .name { font-size: 1.2rem !important; margin-top: 0 !important; }
+        .side-panel.active { transform: scale(1.03) !important; }
+        .side-panel.p1.active .logo { filter: drop-shadow(0 0 8px #74b9ff) !important; }
+        .side-panel.p2.active .logo { filter: drop-shadow(0 0 8px #fbc531) !important; }
+
+        /* 棋盘容器 */
+        #board-container { flex: none !important; width: 100% !important; }
+
+        /* 棋盘格子：用 vw 自适应 */
+        #board {
+            grid-template-columns: repeat(9, calc((100vw - 60px) / 9)) !important;
+            gap: 3px !important;
+            padding: 6px !important;
+        }
+        .cell {
+            width: calc((100vw - 60px) / 9) !important;
+            height: calc((100vw - 60px) / 9) !important;
+            font-size: calc((100vw - 60px) / 9 * 0.55) !important;
+            border-radius: 4px !important;
+        }
+        .cell::after { font-size: 10px !important; }
+
+        .return-setup-btn { margin-top: 10px !important; font-size: 0.9rem !important; padding: 6px 18px !important; }
+    }
 </style>
 </head>
 <body>
 
-    <a href="../parents.html" class="back-btn-home">⬅️ Back</a>
+    <a href="../parents.html" class="back-btn-home">⬅️ Back to Parents Hub</a>
 
     <div id="setup-view">
         <h1>🥛 Connect 5 🍪</h1>

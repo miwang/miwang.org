@@ -35,7 +35,7 @@
         .weekday .zh { font-size: clamp(1rem, 1.8vw, 1.6rem); color: var(--main-teal); font-weight: bold; font-family: var(--kaiti) !important; }
         .weekday > span:not(.en) { font-family: var(--kaiti) !important; }
         .weather-card .label { font-family: var(--kaiti) !important; }
-        .shape-name-zh { font-family: var(--kaiti) !important; font-size: 1.6rem; }
+        .shape-name-zh { font-family: var(--kaiti) !important; font-size: clamp(1.1rem, 2vh, 1.6rem); }
         .shape-title { font-family: var(--kaiti) !important; }
         .page-indicator { font-family: var(--kaiti) !important; }
         #header-zh { font-family: var(--kaiti) !important; }
@@ -49,26 +49,26 @@
 
         /* --- P2 (v4.4): 天气 --- */
         .weather-hub { width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 10px; }
-        .weather-card { background: white; border: 4px solid #ddd; border-radius: 20px; display: flex; flex-direction: column; align-items: center; padding: 20px; cursor: pointer; }
-        .weather-card .icon { font-size: 6rem; }
-        .weather-card .label { font-size: 2.2rem; font-weight: bold; }
-        .stats-panel { margin: 35px 0 10px; width: 100%; background: white; border-radius: 25px; padding: 20px; border: 4px dashed var(--main-teal); display: flex; justify-content: space-around; align-items: center; flex: 0.7; position: relative;}
-        .count { font-size: 2.8rem; font-weight: bold; color: #2c3e50; text-align: center; }
+        .weather-card { background: white; border: 4px solid #ddd; border-radius: 20px; display: flex; flex-direction: column; align-items: center; padding: 20px 10px; cursor: pointer; flex: 1; transition: 0.2s; }
+        .weather-card .icon { font-size: clamp(3rem, 8vh, 7rem); }
+        .weather-card .label { font-size: clamp(1.4rem, 2.5vh, 2.2rem); font-weight: bold; }
+        .stats-panel { margin: 12px 0 6px; width: 100%; background: white; border-radius: 20px; padding: 12px 16px; border: 3px dashed var(--main-teal); display: flex; justify-content: space-around; align-items: center; flex: 0 0 auto; position: relative;}
+        .count { font-size: clamp(1.8rem, 3vh, 2.6rem); font-weight: bold; color: #2c3e50; text-align: center; }
         .count-ctrl { display: flex; gap: 10px; margin-top: 10px; }
-        .ctrl-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #eee; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .ctrl-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: #eee; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* --- P3 (v4.3): 形状 --- */
         .shape-title { font-size: 1.5rem; color: var(--main-teal); font-weight: bold; border-left: 6px solid var(--accent-yellow); padding-left: 12px; margin: 2px 0; align-self: flex-start;}
-        .shape-row { display: flex; justify-content: center; gap: 20px; width: 100%; }
+        .shape-row { display: flex; justify-content: center; gap: clamp(8px, 2vw, 20px); width: 100%; flex: 1; align-items: center; }
         .shape-card {
             background: white; border: 4px solid #eee; border-radius: 20px;
-            width: 190px; height: 185px; display: flex; flex-direction: column;
+            flex: 1; min-width: 0; aspect-ratio: 1/1; max-width: 220px; display: flex; flex-direction: column;
             align-items: center; justify-content: center; cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         /* 🌟 全框悬浮动画 */
         .shape-card:hover { transform: translateY(-10px) scale(1.05); border-color: var(--accent-yellow); box-shadow: 0 15px 30px rgba(0,0,0,0.1); background-color: #fffdf5; }
-        .shape-visual { font-size: 4.8rem; transition: 0.4s; line-height: 1; margin-bottom: 5px; }
+        .shape-visual { font-size: clamp(3rem, 6vh, 5rem); transition: 0.4s; line-height: 1; margin-bottom: 5px; }
         .shape-name-en { font-size: 1.2rem; color: #888; }
 
         /* --- P4 (v4.3): 百数图 --- */
@@ -124,23 +124,86 @@
         }
         .math-left {
             flex: 1.2; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 20px;
+            align-items: center; justify-content: space-evenly; gap: 10px;
         }
         .math-right {
             flex: 0.8; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 16px;
+            align-items: center; justify-content: center; gap: 10px;
         }
         .vis-toggle { display: flex; gap: 8px; }
         .vis-btn { padding: 6px 20px; border-radius: 20px; border: 2px solid var(--main-teal); background: white; color: var(--main-teal); font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s; font-family: var(--kaiti) !important; }
         .vis-btn.active { background: var(--main-teal); color: white; }
-        .math-visual-aid { display: flex; gap: 20px; align-items: flex-end; min-height: 130px; justify-content: center; padding: 16px; background: rgba(255,255,255,0.6); border-radius: 16px; width: 100%; }
-        .equation-box { font-size: 5rem; font-weight: bold; color: var(--main-teal); display: flex; align-items: center; gap: 16px; }
+        .math-visual-aid { display: flex; gap: 20px; align-items: flex-end; min-height: clamp(100px, 20vh, 160px); justify-content: center; padding: 16px; background: rgba(255,255,255,0.6); border-radius: 16px; width: 100%; flex: 1; }
+        .equation-box { font-size: clamp(3rem, 6vh, 5.5rem); font-weight: bold; color: var(--main-teal); display: flex; align-items: center; gap: 16px; }
         .blank-box { width: 110px; height: 110px; border: 5px solid var(--accent-yellow); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: var(--accent-yellow); font-size: 4.5rem; background: white; }
         .num-pad { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; }
-        .pad-btn { height: 70px; background: white; border: 3px solid #ddd; border-radius: 14px; font-size: 2rem; font-weight: bold; cursor: pointer; transition: 0.15s; color: #333; box-shadow: 0 4px 0 #ccc; }
+        .pad-btn { height: clamp(50px, 8vh, 80px); background: white; border: 3px solid #ddd; border-radius: 14px; font-size: clamp(1.4rem, 2.5vh, 2.2rem); font-weight: bold; cursor: pointer; transition: 0.15s; color: #333; box-shadow: 0 4px 0 #ccc; }
         .pad-btn:hover { background: var(--accent-yellow); border-color: var(--accent-yellow); color: white; transform: translateY(-2px); }
         .pad-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 #ccc; }
 
+
+        @media (max-width: 768px) {
+            /* 全局 */
+            body { height: 100dvh; }
+            .top-nav { height: 44px; padding: 0 12px; }
+            .top-nav a { font-size: 0.85rem; }
+            .page-indicator { font-size: 1.1rem; }
+            .page-ctrl { height: 52px; gap: 12px; }
+            .nav-btn { padding: 6px 20px; font-size: 1rem; min-width: 120px; }
+            .page { padding: 8px 10px; }
+
+            /* P1 日历 */
+            .cal-header { font-size: clamp(1rem, 4vw, 1.4rem); gap: 10px; padding: 6px; }
+            .weekday .zh { font-size: clamp(0.7rem, 2.5vw, 1rem); }
+            .day-cell { font-size: clamp(1rem, 3.5vw, 1.6rem); }
+            .special-icon { font-size: 0.85rem; }
+            .holiday-tag { font-size: 0.5rem; }
+
+            /* P2 天气 */
+            .weather-hub { gap: 8px; margin-top: 6px; }
+            .weather-card { padding: 10px 5px; border-radius: 14px; border-width: 3px; }
+            .weather-card .icon { font-size: clamp(2rem, 8vw, 4rem); }
+            .weather-card .label { font-size: clamp(1rem, 3.5vw, 1.6rem); }
+            .stats-panel { margin-top: 12px; padding: 12px 8px; }
+            .count { font-size: clamp(1.6rem, 5vw, 2.4rem); }
+            .ctrl-btn { width: 32px; height: 32px; font-size: 1.2rem; }
+
+            /* P3 形状 */
+            .shape-title { font-size: 1.1rem; }
+            .shape-row { gap: 8px; }
+            .shape-card { width: clamp(70px, 20vw, 130px); height: clamp(70px, 20vw, 130px); border-radius: 14px; border-width: 3px; }
+            .shape-visual { font-size: clamp(2.5rem, 8vw, 4rem); }
+            .shape-name-zh { font-size: 1rem; }
+            .shape-name-en { font-size: 0.75rem; }
+
+            /* P4 百数图 */
+            .hundred-chart-layout { flex-direction: column; gap: 8px; }
+            .hundred-grid { flex: none; }
+            .num-box { font-size: clamp(0.75rem, 2.5vw, 1.2rem); }
+            .interaction-side { flex-direction: row; flex: none; gap: 8px; align-items: center; }
+            .video-box { width: 45%; aspect-ratio: 16/9; }
+            .interaction-side > div { font-size: 1rem; }
+
+            /* P5 在校天数 */
+            .pv-box { width: clamp(70px, 22vw, 110px); }
+            .pv-num { font-size: clamp(2rem, 7vw, 3.8rem); }
+            .pv-label { font-size: 0.9rem; }
+            .pv-btn { font-size: 0.85rem; }
+            .method-grid { gap: 8px; }
+            .tally-group { font-size: 1.2rem; }
+            .mini-cell { width: 12px; height: 12px; }
+
+            /* P6 十几练习 */
+            .math-practice-layout { flex-direction: column; gap: 10px; padding: 6px 10px; }
+            .math-left { flex: none; gap: 10px; }
+            .math-right { flex: none; }
+            .equation-box { font-size: clamp(2.5rem, 8vw, 5rem); gap: 8px; }
+            .blank-box { width: clamp(60px, 18vw, 100px); height: clamp(60px, 18vw, 100px); font-size: clamp(2.5rem, 8vw, 4rem); border-width: 4px; }
+            .num-pad { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .pad-btn { height: clamp(44px, 10vw, 60px); font-size: clamp(1.3rem, 4vw, 1.8rem); }
+            .math-visual-aid { min-height: 80px; padding: 10px; gap: 10px; }
+            .vis-btn { padding: 5px 14px; font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
@@ -148,13 +211,14 @@
     <nav class="top-nav">
         <a href="../teachers.html">⬅️ 返回工具台</a>
         <div class="page-indicator" id="page-title">📅 日期播报</div>
-        <button onclick="openBirthdayMgr()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:0.9rem;font-family:var(--kaiti);font-weight:bold;">🎂 生日</button>
+        <div style="width:80px;"></div>
     </nav>
 
     <div class="content-frame">
         <div class="page active" id="page-1">
+            <div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:4px;"><button onclick="openBirthdayMgr()" style="background:var(--main-teal);border:2px solid var(--accent-yellow);color:white;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.9rem;font-family:var(--kaiti);font-weight:bold;">🎂 生日</button></div>
             <div class="calendar-container">
-                <div class="cal-header"><span id="header-en"></span><span id="header-zh"></span></div>
+                <div class="cal-header"><button onclick="shiftMonth(-1)" style="background:none;border:none;color:white;font-size:1.6rem;cursor:pointer;padding:0 8px;">◀</button><span id="header-en"></span><span id="header-zh" style="margin-left:8px;"></span><button onclick="shiftMonth(1)" style="background:none;border:none;color:white;font-size:1.6rem;cursor:pointer;padding:0 8px;">▶</button></div>
                 <div class="cal-grid" id="cal-grid-body">
                     <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Sunday</span><span>星期天</span></div>
                     <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Monday</span><span>星期一</span></div>
@@ -185,12 +249,12 @@
             </div>
         </div>
 
-        <div class="page" id="page-3" style="padding-top:4px;">
+        <div class="page" id="page-3" style="padding-top:4px; justify-content: space-evenly;">
             <div class="shape-title"><span style="font-family:var(--wenkai)">2D</span> 平面形状</div>
             <div class="shape-row">
                 <div class="shape-card"><span class="shape-visual" style="color:#2ecc71">●</span><div class="shape-name-zh">圆形</div><div class="shape-name-en">Circle</div></div>
                 <div class="shape-card"><span class="shape-visual" style="color:#3498db">■</span><div class="shape-name-zh">正方形</div><div class="shape-name-en">Square</div></div>
-                <div class="shape-card"><span class="shape-visual" style="color:#e74c3c">█</span><div class="shape-name-zh">长方形</div><div class="shape-name-en">Rectangle</div></div>
+                <div class="shape-card"><span class="shape-visual"><svg width="72" height="44" viewBox="0 0 72 44"><rect x="2" y="2" width="68" height="40" rx="4" fill="#e74c3c"/></svg></span><div class="shape-name-zh">长方形</div><div class="shape-name-en">Rectangle</div></div>
                 <div class="shape-card"><span class="shape-visual" style="color:#f1c40f">▲</span><div class="shape-name-zh">三角形</div><div class="shape-name-en">Triangle</div></div>
             </div>
             <div class="shape-title" style="margin-top:0px;"><span style="font-family:var(--wenkai)">3D</span> 立体形状</div>
@@ -292,6 +356,7 @@
 
     <script>
         let curr = 1;
+        let calOffset = 0; // 0=当前月，-1=上月，+1=下月
         let schoolDays = parseInt(localStorage.getItem('mecc_school_days') || "0");
         const events = JSON.parse(localStorage.getItem('mecc_daily_events') || "{}");
         const wStats = JSON.parse(localStorage.getItem('mecc_weather_stats') || '{"sunny":0,"cloudy":0,"rainy":0,"snowy":0,"windy":0}');
@@ -329,8 +394,12 @@
 
         // P1 逻辑
         function toZhDate(y, m) { const map = ['零','一','二','三','四','五','六','七','八','九','十','十一','十二']; const yS = y.toString().split('').map(n => map[parseInt(n)]).join(''); return `${yS}年${map[m]}月`; }
+        function shiftMonth(d) { calOffset += d; initCalendar(); }
+
         function initCalendar() {
-            const now = new Date(); const y = now.getFullYear(); const m = now.getMonth() + 1; const today = now.getDate();
+            const base = new Date(); base.setMonth(base.getMonth() + calOffset);
+            const now = new Date(); const y = base.getFullYear(); const m = base.getMonth() + 1;
+            const today = (calOffset === 0) ? now.getDate() : -1;
             document.getElementById('header-en').innerText = `${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m-1]} ${y}`;
             document.getElementById('header-zh').innerText = toZhDate(y, m);
             const first = new Date(y, m-1, 1).getDay(); const total = new Date(y, m, 0).getDate();
