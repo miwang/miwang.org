@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teen Numbers Addition — Wang Laoshi's Space</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
+            --pv-ten: #70ad47;
+            --pv-one: #00b0f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--wenkai);
+            background: #fff9ea;
+            display: flex; flex-direction: column;
+            height: 100vh; width: 100vw; overflow: hidden;
+        }
+
+        /* ── Header ── */
+        .top-bar {
+            height: 54px;
+            background: var(--main-teal);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 4px solid var(--accent-yellow);
+            flex-shrink: 0;
+        }
+        .top-bar a {
+            color: white; text-decoration: none;
+            font-weight: bold; font-size: 0.95rem;
+            font-family: var(--wenkai);
+            padding: 4px 10px; border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .top-bar a:hover { background: rgba(255,255,255,0.12); }
+        .top-bar .title {
+            color: white; font-size: 1.3rem; font-weight: bold;
+            font-family: var(--wenkai);
+            letter-spacing: 0.5px;
+        }
+        .top-bar .score-badge {
+            background: rgba(255,255,255,0.2);
+            color: white; padding: 4px 14px;
+            border-radius: 20px; font-size: 0.9rem;
+            font-weight: bold; font-family: var(--wenkai);
+        }
+
+        /* ── Main layout ── */
+        .main-area {
+            flex: 1; display: flex; flex-direction: row;
+            align-items: stretch; gap: 20px;
+            padding: 16px 24px; overflow: hidden;
+        }
+
+        .left-side {
+            flex: 1.2; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 20px;
+        }
+        .right-side {
+            flex: 0.8; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 16px;
+        }
+
+        /* ── Visual toggle ── */
+        .vis-toggle { display: flex; gap: 8px; }
+        .vis-btn {
+            padding: 7px 22px; border-radius: 20px;
+            border: 2px solid var(--main-teal);
+            background: white; color: var(--main-teal);
+            font-weight: bold; cursor: pointer;
+            font-size: 0.9rem; transition: 0.2s;
+            font-family: var(--wenkai);
+        }
+        .vis-btn.active { background: var(--main-teal); color: white; }
+        .vis-btn:hover:not(.active) { background: #eef6f6; }
+
+        /* ── Visual aid area ── */
+        .visual-aid {
+            display: flex; gap: 20px; align-items: flex-end;
+            min-height: 140px; justify-content: center;
+            padding: 18px; background: rgba(255,255,255,0.7);
+            border-radius: 18px; width: 100%;
+            border: 2px solid #eee;
+        }
+
+        /* ── Equation ── */
+        .equation-box {
+            font-size: clamp(2.8rem, 6vw, 5rem);
+            font-weight: bold; color: var(--main-teal);
+            display: flex; align-items: center; gap: 14px;
+            font-family: var(--wenkai);
+        }
+        .blank-box {
+            width: clamp(70px, 12vw, 110px);
+            height: clamp(70px, 12vw, 110px);
+            border: 5px solid var(--accent-yellow);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent-yellow);
+            font-size: clamp(2.4rem, 5vw, 4.5rem);
+            background: white;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        /* ── Num pad ── */
+        .num-pad {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 10px; width: 100%; max-width: 320px;
+        }
+        .pad-btn {
+            height: clamp(50px, 9vw, 72px);
+            background: white; border: 3px solid #ddd;
+            border-radius: 14px; font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: bold; cursor: pointer;
+            transition: 0.15s; color: #333;
+            box-shadow: 0 4px 0 #ccc;
+            font-family: var(--wenkai);
+        }
+        .pad-btn:hover {
+            background: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            color: white; transform: translateY(-2px);
+        }
+        .pad-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 #ccc; }
+
+        /* ── Ten frame (shared with visual) ── */
+        .mini-ten-frame {
+            border: 2px solid #333;
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 3px; padding: 5px; background: white;
+        }
+        .mini-cell {
+            width: 22px; height: 22px;
+            border: 1px solid #999; border-radius: 50%;
+        }
+        .mini-cell.filled { background: #dc3545; }
+
+        /* ── Streak animation ── */
+        @keyframes streakPop {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .streak-pop { animation: streakPop 0.35s ease-out; }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+            .main-area {
+                flex-direction: column;
+                padding: 10px 12px;
+                gap: 12px;
+            }
+            .left-side, .right-side {
+                flex: none; width: 100%;
+            }
+            .left-side { gap: 12px; }
+            .right-side { gap: 10px; }
+            .visual-aid {
+                min-height: 90px; padding: 10px;
+                gap: 12px;
+            }
+            .num-pad {
+                max-width: 100%;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .pad-btn { height: 52px; font-size: 1.3rem; }
+            .top-bar .title { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="../parents.html">← Back</a>
+        <span class="title">➕ Teen Numbers Addition</span>
+        <span class="score-badge" id="score-badge">🔥 0</span>
+    </div>
+
+    <div class="main-area">
+        <div class="left-side">
+            <div class="vis-toggle">
+                <button class="vis-btn active" id="btn-blocks" onclick="setVisual('blocks')">Base-Ten Blocks</button>
+                <button class="vis-btn" id="btn-frames" onclick="setVisual('frames')">Ten Frames</button>
+            </div>
+            <div class="visual-aid" id="visual-aid"></div>
+            <div class="equation-box" id="equation-display"></div>
+        </div>
+        <div class="right-side">
+            <div class="num-pad" id="num-pad"></div>
+        </div>
+    </div>
+
+    <script>
+        let mathAns = 0;
+        let mathX = 0;
+        let visMode = 'blocks';
+        let streak = 0;
+
+        // Audio via AudioContext
+        let _actx;
+        function getACtx() { if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)(); return _actx; }
+
+        function playCorrect() {
+            const ctx = getACtx();
+            [523, 659, 784].forEach((f, i) => {
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                o.connect(g); g.connect(ctx.destination);
+                const t = ctx.currentTime + i * 0.15;
+                g.gain.setValueAtTime(0, t);
+                g.gain.linearRampToValueAtTime(0.3, t + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                o.start(t); o.stop(t + 0.25);
+            });
+        }
+
+        function playWrong() {
+            const ctx = getACtx();
+            const o = ctx.createOscillator(); const g = ctx.createGain();
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(220, ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+            g.gain.setValueAtTime(0.3, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            o.connect(g); g.connect(ctx.destination);
+            o.start(); o.stop(ctx.currentTime + 0.3);
+        }
+
+        function setVisual(mode) {
+            visMode = mode;
+            document.getElementById('btn-blocks').classList.toggle('active', mode === 'blocks');
+            document.getElementById('btn-frames').classList.toggle('active', mode === 'frames');
+            renderVisual(mathX);
+        }
+
+        function renderVisual(x) {
+            const aid = document.getElementById('visual-aid');
+            if (visMode === 'blocks') {
+                let v = `<div style="width:22px;height:130px;background:var(--pv-ten);border:2px solid #333;display:grid;grid-template:repeat(10,1fr)/1fr;">${Array(10).fill('<div style="border:0.3px solid rgba(0,0,0,0.15)"></div>').join('')}</div>`;
+                v += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;align-content:start;">`;
+                for (let i = 0; i < x; i++) v += `<div style="width:22px;height:22px;background:var(--pv-one);border:2px solid #333;"></div>`;
+                v += `</div>`;
+                aid.style.alignItems = 'flex-end';
+                aid.innerHTML = v;
+            } else {
+                let d1 = "";
+                for (let d = 0; d < 10; d++) d1 += `<div class="mini-cell filled"></div>`;
+                let frame1 = `<div class="mini-ten-frame">${d1}</div>`;
+                if (x === 0) {
+                    aid.style.alignItems = 'flex-start';
+                    aid.innerHTML = frame1;
+                } else {
+                    let d2 = "";
+                    for (let d = 0; d < 10; d++) d2 += `<div class="mini-cell ${d < x ? 'filled' : ''}"></div>`;
+                    let frame2 = `<div class="mini-ten-frame">${d2}</div>`;
+                    aid.style.alignItems = 'flex-start';
+                    aid.innerHTML = frame1 + frame2;
+                }
+            }
+        }
+
+        function renderNumPad(isAddend) {
+            const pad = document.getElementById('num-pad');
+            pad.innerHTML = '';
+            const nums = isAddend ? [1,2,3,4,5,6,7,8,9] : [11,12,13,14,15,16,17,18,19];
+            nums.forEach(n => {
+                const btn = document.createElement('button');
+                btn.className = 'pad-btn';
+                btn.textContent = n;
+                btn.onclick = () => checkAnswer(n);
+                pad.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(n) {
+            const blank = document.querySelector('.blank-box');
+            if (!blank) return;
+            if (n === mathAns) {
+                playCorrect();
+                blank.innerText = n;
+                blank.style.color = "#4CAF50";
+                blank.style.borderColor = "#4CAF50";
+                streak++;
+                updateScore();
+                setTimeout(genNewMath, 900);
+            } else {
+                playWrong();
+                blank.innerText = n;
+                blank.style.color = "#e74c3c";
+                blank.style.borderColor = "#e74c3c";
+                streak = 0;
+                updateScore();
+                setTimeout(() => {
+                    blank.innerText = "?";
+                    blank.style.color = "";
+                    blank.style.borderColor = "";
+                }, 600);
+            }
+        }
+
+        function updateScore() {
+            const badge = document.getElementById('score-badge');
+            badge.innerText = `🔥 ${streak}`;
+            badge.classList.remove('streak-pop');
+            void badge.offsetWidth;
+            if (streak > 0) badge.classList.add('streak-pop');
+        }
+
+        // 6 question types
+        function genNewMath() {
+            mathX = Math.floor(Math.random() * 9) + 1;
+            mathAns = 10 + mathX;
+            const r = Math.floor(Math.random() * 6);
+            const display = document.getElementById('equation-display');
+            if      (r === 0) { display.innerHTML = `10 + ${mathX} = <div class="blank-box">?</div>`; }
+            else if (r === 1) { display.innerHTML = `${mathX} + 10 = <div class="blank-box">?</div>`; }
+            else if (r === 2) { display.innerHTML = `<div class="blank-box">?</div> = 10 + ${mathX}`; }
+            else if (r === 3) { display.innerHTML = `<div class="blank-box">?</div> = ${mathX} + 10`; }
+            else if (r === 4) { mathAns = mathX; display.innerHTML = `10 + <div class="blank-box">?</div> = ${10 + mathX}`; }
+            else              { mathAns = mathX; display.innerHTML = `<div class="blank-box">?</div> + 10 = ${10 + mathX}`; }
+            renderVisual(mathX);
+            renderNumPad(r >= 4);
+        }
+
+        window.onload = genNewMath;
+    </script>
+</body>
+</html>

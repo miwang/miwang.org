@@ -1,47 +1,123 @@
-/* 1. 引入“霞鹜文楷”云端字体 */
+/* ══════════════════════════════════════════
+   Wang Laoshi's Space — Global Stylesheet
+   ══════════════════════════════════════════ */
+
+/* 1. Web Font */
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
 
-/* 2. 全局基础设置 */
-body {
+/* 2. Global Reset & Base */
+*, *::before, *::after {
+    box-sizing: border-box;
     margin: 0;
-    font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
-    background-color: #f4f9f9;
-    color: #333;
+    padding: 0;
 }
 
-/* 3. 全局通用顶部导航栏 */
+body {
+    font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+    background-color: #f0f3f7;
+    color: #1a2740;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Font Utility Classes ── */
+
+/* English: LXGW WenKai Lite */
+.font-en {
+    font-family: "LXGW WenKai Lite", system-ui, sans-serif !important;
+}
+
+/* Chinese: KaiTi priority, LXGW fallback */
+.font-zh {
+    font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important;
+}
+
+/* Chinese phrases — Safari-optimized KaiTi stack */
+.phrase-text {
+    font-family:
+        "STKaiti-SC-Regular",
+        "STKaiti",
+        "Kaiti SC",
+        "BiauKai",
+        "楷体",
+        "KaiTi",
+        "LXGW WenKai Lite",
+        serif !important;
+}
+
+/* 3. Legacy Header (used by sub-pages not yet migrated) */
 .header {
-    background-color: #598586;
+    background: linear-gradient(135deg, #1a2740 0%, #243552 100%);
     color: white;
     padding: 15px 10px;
     text-align: center;
-    border-bottom: 6px solid #f3b236;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4e8a8b, #f0a832, #4e8a8b);
 }
 
-.header h1 { margin: 0; font-size: 2rem; color: #fff; }
+.header h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: #fff;
+}
 
-/* 4. 返回按钮 */
+/* 4. Navigation */
 .back-btn {
-    color: white;
+    color: #f0a832;
     text-decoration: none;
     font-weight: bold;
+    transition: opacity 0.2s;
+}
+.back-btn:hover { opacity: 0.8; }
+
+.back-btn-home {
+    position: absolute;
+    top: 15px; left: 20px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 50;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+.back-btn-home:hover {
+    background: rgba(255,255,255,0.08);
+    color: #f0a832;
 }
 
-/* 5. 全局通用互动按钮 */
+/* 5. Global Button */
 .btn {
-    padding: 10px 20px;
-    background-color: #f3b236;
-    color: #1f2e46;
+    padding: 10px 22px;
+    background-color: #f0a832;
+    color: #1a2740;
     border: none;
-    border-radius: 50px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
-    font-family: inherit; 
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: background 0.2s, transform 0.15s;
+}
+.btn:hover {
+    background-color: #d4922a;
+}
+.btn:active {
+    transform: scale(0.97);
 }
 
-/* 6. 动画效果 */
+/* 6. Animations */
 @keyframes tada {
-    0% { transform: scale(1); }
+    0%   { transform: scale(1); }
     10%, 20% { transform: scale(0.9) rotate(-3deg); }
     30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
     40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
@@ -49,36 +125,8 @@ body {
 }
 .success-anim { animation: tada 0.8s; }
 
-/* 🌟 针对 Safari 深度优化的汉字楷体定义 */
-.phrase-text {
-    font-family: 
-        "STKaiti-SC-Regular",  /* 1. Safari 对华文楷体的最精确内部名称 */
-        "STKaiti",             /* 2. 华文楷体系统简称 */
-        "Kaiti SC",            /* 3. 您的 Mac 识别的名称 */
-        "BiauKai",             /* 4. 繁体环境备选 */
-        "楷体", 
-        "KaiTi", 
-        "LXGW WenKai Lite",    /* 5. 兜底 */
-        serif !important;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-/* =========================================
-   新增：王老师的专属精准字体库
-   ========================================= */
-
-/* 🌟 万能印章 1：纯英文专属（只用霞鹜文楷） */
-.font-en {
-    font-family: "LXGW WenKai Lite", serif !important;
-}
-
-/* 🌟 万能印章 2：中文专属（优先楷体，楷体没有的罕见字用霞鹜兜底） */
-.font-zh {
-    font-family: "楷体", "KaiTi", "STKaiti", "LXGW WenKai Lite", serif !important;
-}
-/* 🌟 修正后的返回按钮样式 */
-.back-btn-home {
-    position: absolute; top: 15px; left: 20px; color: #555; text-decoration: none;
-    font-size: 1.1rem; font-weight: 500; z-index: 50; 
-    background: rgba(0, 0, 0, 0.05); padding: 8px 15px; border-radius: 20px; 
-    transition: transform 0.2s, background 0.2s;
-    /* 这里不再写死字体，交给 HTML 里的 class="font-zh" 来决定 */
-}
+.fade-in { animation: fadeIn 0.4s ease-out; }

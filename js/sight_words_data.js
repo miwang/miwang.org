@@ -24,7 +24,7 @@ const fullWordData = [
 
     // --- 十一月 November ---
     { char: "我", week: "November", phrases: ["我六岁。", "我相信我会飞！", "我们", "我叫"] },
-    { char: "会", week: "November", phrases: ["我会跑", "我会游泳", "我会说中文", "我会数到100。"] },
+    { char: "会", week: "November", phrases: ["我会跑。", "我会游泳。", "我会说中文。", "我会数到100。"] },
     { char: "不", week: "November", phrases: ["不可以", "不喜欢", "不对", "不会", "不一样"] },
     { char: "飞", week: "November", phrases: ["飞机", "我会飞", "飞碟", "起飞"] },
     { char: "个", week: "November", phrases: ["几个人", "这个", "那个", "一个"] },
@@ -58,11 +58,11 @@ const fullWordData = [
     { char: "水", week: "February", phrases: ["水果", "水杯", "水上乐园", "喝水"] },
 
     // --- 三月 March ---
-    { char: "和", week: "March", phrases: ["我和大象", "和我一样", "和朋友一起", "我和妈妈"] },
+    { char: "和", week: "March", phrases: ["我和爸爸", "和我一样", "和朋友一起", "我和妈妈"] },
     { char: "土", week: "March", phrases: ["不可以玩土", "土豆", "很多土", "泥土"] },
     { char: "木", week: "March", phrases: ["木头", "树木", "木船", "啄木鸟"] },
     { char: "叶", week: "March", phrases: ["橙色的叶子", "茶叶", "香叶", "落叶"] },
-    { char: "花", week: "March", phrases: ["爆米花", "花儿", "雪花"] },
+    { char: "花", week: "March", phrases: ["爆米花", "花儿", "雪花", "花瓶"] },
 
     // --- 四月 April ---
     { char: "长", week: "April", phrases: ["长尾巴", "长头发", "长方形", "校长", "长大"] },

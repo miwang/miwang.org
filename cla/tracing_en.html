@@ -64,7 +64,7 @@
             border: 5px solid var(--teal); border-radius: 20px;
             background: #fff;
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            touch-action: none; flex-shrink: 0;
+            touch-action: none; flex-shrink: 1;
         }
 
         #msg {
@@ -121,7 +121,43 @@
             /* 提示文字 */
             #msg { font-size: 1rem; height: auto; margin-top: 6px; }
         }
-    </style>
+
+        /* ── 桌面端左右布局 ── */
+        @media (min-width: 769px) {
+            body { flex-direction: row; flex-wrap: wrap; align-items: stretch; justify-content: center; }
+            
+            .nav-top { width: 100%; flex-shrink: 0; order: 0; }
+
+            #writer-container { 
+                order: 1; flex-shrink: 0; align-self: center;
+                margin: 20px 30px 20px 40px;
+            }
+
+            .right-panel {
+                order: 2; flex: 1; min-width: 220px; max-width: 340px;
+                display: flex; flex-direction: column; 
+                align-items: center; justify-content: center;
+                gap: 20px; padding: 20px 30px 20px 0;
+            }
+
+            /* 在桌面端隐藏原来的独立元素，移入 right-panel */
+            .challenge-info { display: none; }
+            #msg { display: none; }
+            .controls { display: none; }
+
+            .right-panel .stars-display { font-size: 1.6rem; letter-spacing: 4px; }
+            .right-panel .progress-box { width: 100%; height: 12px; }
+            .right-panel .char-label { font-size: 1.2rem; }
+            .right-panel .char-label span { font-size: 2.8rem; }
+            .right-panel #msg-desktop { 
+                color: var(--teal, #598586); font-weight: bold; font-size: 1.1rem; 
+                text-align: center;
+            }
+            .right-panel .btn { 
+                padding: 12px 40px; font-size: 1.1rem; width: 100%;
+            }
+        }
+        </style>
 </head>
 <body>
 
@@ -138,10 +174,19 @@
     </div>
 
     <div id="writer-container"></div>
-    <div id="msg">Loading...</div>
 
+    <!-- 桌面端右侧面板 -->
+    <div class="right-panel" id="right-panel" style="display:none;">
+        <div class="char-label" id="char-label-desktop"></div>
+        <div class="stars-display" id="stars-desktop">⚪⚪⚪⚪⚪⚪⚪⚪⚪⚪</div>
+        <div class="progress-box"><div class="bar-fill" id="progress-bar-desktop"></div></div>
+        <div id="msg-desktop">Loading...</div>
+        <button class="btn" style="background: var(--teal);" onclick="showDemo()">💡 Show Me</button>
+    </div>
+
+    <div id="msg">Loading...</div>
     <div class="controls">
-        <button class="btn" style="background: var(--teal);" onclick="writer.animateCharacter()">💡 Show Me</button>
+        <button class="btn" style="background: var(--teal);" onclick="showDemo()">💡 Show Me</button>
     </div>
 
     <div id="final-overlay">
@@ -184,17 +229,24 @@
 
         // ── Hanzi Writer ──────────────────────────────────────────────────
         const isMobile = window.innerWidth <= 768;
-        const reservedHeight = isMobile ? 56 + 90 + 30 + 60 + 40 : 0;
-        const writerSize = isMobile
-            ? Math.min(window.innerWidth * 0.92, window.innerHeight - reservedHeight, 420)
-            : Math.min(window.innerWidth * 0.88, window.innerHeight * 0.46, 480);
+        const navH = isMobile ? 56 : 44;
+        const infoH = isMobile ? 100 : 90;
+        const ctrlH = isMobile ? 80 : 100;
+        const reservedHeight = navH + infoH + ctrlH;
+        const maxByHeight = window.innerHeight - reservedHeight;
+        const maxByWidth = window.innerWidth * (isMobile ? 0.92 : 0.78);
+        const writerSize = Math.min(maxByHeight, maxByWidth, isMobile ? 420 : 520);
         const writer = HanziWriter.create('writer-container', charToDraw, {
             width:  writerSize,
             height: writerSize,
             padding: 24,
             strokeColor: '#598586',
-            outlineColor: '#e0eded',
-            showHintAfterMisses: 2,
+            outlineColor: '#c8dede',
+            highlightColor: '#f3b236',
+            strokeAnimationSpeed: 0.7,
+            delayBetweenStrokes: 400,
+            showHintAfterMisses: 1,
+            highlightOnComplete: true,
         });
 
         let count = 0;
@@ -203,9 +255,7 @@
             writer.quiz({
                 onComplete: () => {
                     count++;
-                    document.getElementById('progress-bar').style.width = (count * 10) + '%';
-                    document.getElementById('stars').textContent =
-                        '⭐'.repeat(count) + '⚪'.repeat(10 - count);
+                    syncUI('⭐'.repeat(count) + '⚪'.repeat(10 - count), count * 10, count < 10 ? 'Your turn! ✏️' : 'Amazing!');
 
                     if (count < 10) {
                         confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
@@ -219,11 +269,57 @@
             });
         }
 
-        window.onload = () => {
-            document.getElementById('msg').textContent = 'Watch carefully...';
+        function showDemo() {
             writer.animateCharacter({
                 onComplete: () => {
-                    document.getElementById('msg').textContent = 'Your turn! ✏️';
+                    syncUI(document.getElementById('stars').textContent, count * 10, 'Your turn! ✏️');
+                    writer.quiz({
+                        onComplete: () => {
+                            count++;
+                            document.getElementById('progress-bar').style.width = (count * 10) + '%';
+                            document.getElementById('stars').textContent =
+                                '⭐'.repeat(count) + '⚪'.repeat(10 - count);
+                            if (count < 10) {
+                                confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+                                setTimeout(() => writer.quiz({ onComplete: arguments.callee.caller }), 800);
+                            } else {
+                                saveProgress();
+                                confetti({ particleCount: 160, spread: 75, origin: { y: 0.6 } });
+                                document.getElementById('final-overlay').style.display = 'flex';
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function isDesktop() { return window.innerWidth > 768; }
+        function syncUI(starsText, progressPct, msgText) {
+            // 移动端
+            document.getElementById('stars').textContent = starsText;
+            document.getElementById('progress-bar').style.width = progressPct + '%';
+            document.getElementById('msg').textContent = msgText;
+            // 桌面端
+            const sd = document.getElementById('stars-desktop');
+            const pb = document.getElementById('progress-bar-desktop');
+            const md = document.getElementById('msg-desktop');
+            if (sd) sd.textContent = starsText;
+            if (pb) pb.style.width = progressPct + '%';
+            if (md) md.textContent = msgText;
+        }
+        function initDesktopPanel() {
+            if (!isDesktop()) return;
+            document.getElementById('right-panel').style.display = 'flex';
+            const lbl = document.getElementById('char-label-desktop');
+            if (lbl) lbl.innerHTML = 'Write: <span style="font-size:2.8rem;font-family:var(--font-zh);vertical-align:middle;margin-left:6px;">' + charToDraw + '</span>';
+        }
+
+        window.onload = () => {
+            initDesktopPanel();
+            syncUI('⚪⚪⚪⚪⚪⚪⚪⚪⚪⚪', 0, 'Watch carefully...');
+            writer.animateCharacter({
+                onComplete: () => {
+                    syncUI('⚪'.repeat(10), 0, 'Your turn! ✏️');
                     startQuiz();
                 }
             });

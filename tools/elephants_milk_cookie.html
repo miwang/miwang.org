@@ -19,7 +19,8 @@
         * { box-sizing: border-box; }
         
         body { 
-            font-family: 'KaiTi', 'STKaiti', "LXGW WenKai Lite", serif;
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
             text-align: center; 
             background-color: var(--bg-color); 
             margin: 0; padding: 0;
@@ -30,9 +31,10 @@
 
         /* --- 回到主页按钮 (完美居中版) --- */
         .back-btn-home {
-            position: absolute;
-            top: 23px; /* 🎯 像素级修正：完美对齐右侧的控制栏按钮 */
-            left: 15px;
+            position: fixed;
+            top: 12px;
+            left: 14px;
+            z-index: 999;
             color: #555;
             text-decoration: none;
             font-size: 1rem;
@@ -50,14 +52,14 @@
 
         /* --- 顶部控制栏 --- */
         .controls { 
-            background: white; padding: 5px 15px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            background: white; padding: 6px 16px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); gap: 10px; height: 52px; 
             display: flex; justify-content: center; align-items: center; gap: 15px;
             height: 60px; flex-shrink: 0; z-index: 100;
         }
         
         button { 
-            font-family: 'KaiTi', 'STKaiti', "LXGW WenKai Lite", serif;
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
             font-size: 1rem; padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold;
             transition: transform 0.1s; 
         }
@@ -73,8 +75,7 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            padding: 10px; 
-            padding-top: 60px; /* 🎯 增加顶部留白，避开左上角按钮 */
+            padding: 50px 16px 16px; 
         }
         
         #attendance-section h1 {
@@ -84,18 +85,18 @@
         }
 
         .attendance-grid { 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 10px; 
-            max-width: 850px; 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(clamp(70px, 8vw, 110px), 1fr));
+            gap: clamp(6px, 1vw, 14px);
+            width: 100%;
+            max-width: 1400px;
         }
         
         .student-card { 
             cursor: pointer; background: white; border-radius: 12px; padding: 5px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid transparent; 
-            font-weight: bold; font-size: 1rem;
-            width: 80px; 
+            font-weight: bold; font-size: clamp(0.75rem, 1.2vw, 1rem);
+            width: 100%; 
             transition: all 0.2s;
         }
         .student-card img { 
@@ -110,11 +111,8 @@
             padding: 10px; height: calc(100vh - 60px);
         }
 
-        #status-bar {
-            flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px 5px 20px; height: 60px;
-        }
-        #turn-indicator { font-size: 1.8rem; font-weight: bold; color: #444; }
+        #status-bar { display: contents; }
+
 
         #pairs-container {
             flex-grow: 1; display: grid; gap: 1.5vh; padding: 0 10px 10px 10px;
@@ -179,18 +177,12 @@
 
     <div id="pairing-section">
         <div class="controls">
-            <button class="btn-orange" style="margin-left: 110px;" onclick="resetToAttendance()">⬅️ 重新点名</button>
             
-            <div style="flex-grow:1; font-weight:bold; color:#555; font-size: 1.5rem;">Turn & Talk</div>
-            <button class="btn-blue" onclick="reshuffle()">🔀 重新洗牌</button>
+            <button class="btn-orange" style="font-size:1rem;padding:6px 14px;white-space:nowrap;" onclick="resetToAttendance()">⬅️ 重新点名</button>
+            <button class="btn-blue" style="font-size:1rem;padding:6px 14px;white-space:nowrap;" onclick="reshuffle()">🔀 重新组合</button>
         </div>
 
-        <div id="status-bar">
-            <div id="turn-indicator">准备 (Ready?)</div>
-            <button id="action-btn" class="btn-green" style="font-size: 1.5rem; padding: 10px 30px;" onclick="toggleTurn()">
-                🥛 牛奶说 Milk Speaks
-            </button>
-        </div>
+        <div id="status-bar"><button id="turn-btn" onclick="toggleTurn()" style="flex:1;height:44px;border:none;border-radius:10px;font-size:1.3rem;font-weight:bold;cursor:pointer;transition:0.2s;background:#e8f5e9;color:#2e7d32;">准备好了吗？ 👆 点我开始</button></div>
 
         <div id="pairs-container"></div>
     </div>
@@ -230,17 +222,10 @@
         const grid = document.getElementById('student-grid');
 
         function loadSavedAttendance() {
-            const savedAbsentIds = JSON.parse(localStorage.getItem('elephantsAbsentIds')) || [];
             allStudents.forEach(student => {
-                student.isAbsent = savedAbsentIds.includes(student.id);
-            });
+                });
         }
 
-        function saveAttendance() {
-            const currentAbsentIds = allStudents.filter(s => s.isAbsent).map(s => s.id);
-            localStorage.setItem('elephantsAbsentIds', JSON.stringify(currentAbsentIds));
-        }
-        
         function renderAttendance() {
             grid.innerHTML = '';
             loadSavedAttendance(); 
@@ -253,7 +238,7 @@
                 div.onclick = () => {
                     div.classList.toggle('absent');
                     student.isAbsent = div.classList.contains('absent');
-                    saveAttendance(); 
+                    
                 };
                 grid.appendChild(div);
             });
@@ -330,25 +315,32 @@
             });
         }
 
+        let _turn = 0;
         function toggleTurn() {
-            const btn = document.getElementById('action-btn');
-            const indicator = document.getElementById('turn-indicator');
-            if (turnState === 'idle' || turnState === 'cookie') {
-                turnState = 'milk';
-                indicator.innerText = "👉 牛奶说 (Milk)";
-                indicator.style.color = "#1565C0"; 
-                btn.innerText = "换饼干Cookie说 🍪";
-                btn.className = "btn-orange";
+            const btn = document.getElementById('turn-btn');
+            if (!btn) return;
+            const isMilk = btn.style.background === 'rgb(227, 242, 253)';
+            if (!isMilk && btn.style.background !== 'rgb(255, 243, 224)') {
+                // 初始状态 -> 牛奶说
+                btn.innerText = "🥛 牛奶说  👆 点我换饼干";
+                btn.style.background = "#e3f2fd";
+                btn.style.color = "#1565C0";
                 updateClasses('speaking', 'listening');
-            } else {
-                turnState = 'cookie';
-                indicator.innerText = "👉 饼干说 (Cookie)";
-                indicator.style.color = "#E65100"; 
-                btn.innerText = "换牛奶Milk说 🥛";
-                btn.className = "btn-blue";
+            } else if (isMilk) {
+                // 牛奶说 -> 饼干说
+                btn.innerText = "🍪 饼干说  👆 点我换牛奶";
+                btn.style.background = "#fff3e0";
+                btn.style.color = "#E65100";
                 updateClasses('listening', 'speaking');
+            } else {
+                // 饼干说 -> 牛奶说
+                btn.innerText = "🥛 牛奶说  👆 点我换饼干";
+                btn.style.background = "#e3f2fd";
+                btn.style.color = "#1565C0";
+                updateClasses('speaking', 'listening');
             }
         }
+        
 
         function updateClasses(milkClass, cookieClass) {
             document.querySelectorAll('.milk-side').forEach(el => el.className = `role-box milk-side ${milkClass}`);
@@ -356,9 +348,9 @@
         }
 
         function updateTurnUI() {
-            document.getElementById('turn-indicator').innerText = "准备 (Ready?)";
-            document.getElementById('action-btn').innerText = "🥛 牛奶说 Milk Speaks";
-            document.getElementById('action-btn').className = "btn-green";
+            turnState = 0;
+            const tb = document.getElementById('turn-btn');
+            if(tb){tb.innerText="准备好了吗？ 👆 点我开始";tb.style.background="#e8f5e9";tb.style.color="#2e7d32";}
             document.querySelectorAll('.role-box').forEach(el => el.classList.remove('speaking', 'listening'));
         }
 

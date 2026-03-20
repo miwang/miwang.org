@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sentence Builder — Wang Laoshi's Space</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/sentences_data.js"></script>
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+        }
+
+        .font-zh { font-family: var(--kaiti) !important; }
+        .font-en { font-family: var(--wenkai) !important; }
+
+        body { 
+            background-color: #fff9ea; margin: 0; padding: 0;
+            display: flex; flex-direction: column; min-height: 100vh; width: 100vw;
+            position: relative;
+        }
+
+        /* 🌟 磨砂透明返回按钮 */
+        .glass-btn {
+            position: absolute; top: 20px; left: 25px; color: #444; text-decoration: none;
+            font-size: 1.2rem; font-weight: bold; z-index: 9999; 
+            background: rgba(255, 255, 255, 0.35); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 10px 28px; border-radius: 40px; 
+            border: 1.5px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; align-items: center; cursor: pointer; transition: 0.2s;
+        }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.05); }
+
+        /* --- 1. 画廊列表页：统一规格 --- */
+        #list-view { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
+        .list-header { text-align: center; padding: 65px 0 10px 0; flex-shrink: 0; }
+        .list-header h1 { font-size: 3.2rem; color: var(--main-teal); margin: 0; letter-spacing: 3px; }
+
+        #gallery-view {
+            flex: 1; display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px; padding: 15px 40px; box-sizing: border-box;
+            align-content: start;
+        }
+        .sentence-card {
+            background: white; border: 4px solid var(--main-teal); border-radius: 22px;
+            overflow: hidden; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.07); display: flex; flex-direction: column;
+        }
+        .sentence-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
+
+        .card-img-wrapper { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #fdfdfd; border-bottom: 2px solid #eee; flex-shrink: 0; }
+        .sentence-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .sentence-card .card-info { padding: 12px 10px; text-align: center; font-size: 1.1rem; font-weight: bold; color: #333; background: white; flex: 1; display: flex; align-items: center; justify-content: center; }
+
+        /* --- 2. 练习界面 --- */
+        #play-view { display: none; position: fixed; top:0; left:0; height: 100dvh; width: 100vw; flex-direction: column; align-items: center; padding: 6px 15px 10px; box-sizing: border-box; background: #fff9ea; z-index: 8000; overflow: hidden; }
+        
+        .play-top-bar { width: 100%; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; box-sizing: border-box; flex-shrink: 0; }
+        .play-back-btn { color: #444; text-decoration: none; font-size: 1.1rem; font-weight: bold; background: rgba(255,255,255,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 6px 20px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.5); cursor: pointer; transition: 0.2s; }
+        .play-back-btn:hover { background: rgba(255,255,255,0.7); }
+        .btn-action { background: #2ecc71; color: white; border: none; padding: 8px 28px; border-radius: 40px; cursor: pointer; font-size: 1.3rem; font-weight: bold; box-shadow: 0 4px 0 #27ae60; }
+
+        .image-stage { flex: 1 1 0; width: 96%; max-width: 1400px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 0; }
+        
+        .drop-zone {
+            flex: 0 0 auto; min-height: 90px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
+            border-radius: 25px; display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; align-items: flex-start; gap: 8px; padding: 10px 15px; overflow-x: hidden; overflow-y: auto;
+            transition: background 0.2s;
+        }
+        .drop-zone.active-hover { background: rgba(89, 133, 134, 0.25); border-style: solid; }
+
+        .word-pool { flex: 0 0 auto; width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; padding: 12px 25px; overflow-y: auto; }
+
+        /* 🌟 巨型积木：7.5vh */
+        .word-brick {
+            padding: 1.5vh 45px; border-radius: 20px; font-size: 7.5vh; font-weight: bold; color: #1e2e46; cursor: pointer;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.12); margin: 8px; white-space: nowrap;
+            user-select: none; touch-action: none; position: relative;
+        }
+        .word-brick.dragging { opacity: 0.6; transform: scale(1.1); z-index: 99999; position: fixed !important; pointer-events: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+        #reading-overlay { position: fixed; inset: 0; background: #fff9ea; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+        .reading-brick { padding: 4vh 60px; border-radius: 35px; font-size: 15vh; font-weight: bold; color: #1e2e46; box-shadow: 0 15px 0 rgba(0,0,0,0.1); margin: 25px; }
+
+        @media (max-width: 768px) {
+            .glass-btn { top: 10px !important; left: 10px !important; font-size: 0.85rem !important; padding: 6px 14px !important; }
+            .list-header { padding: 52px 16px 8px !important; }
+            .list-header h1 { font-size: 2rem !important; letter-spacing: 2px !important; }
+
+            #gallery-view {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+                padding: 10px 16px 24px !important;
+            }
+            .card-img-wrapper { aspect-ratio: 2 / 1 !important; }
+            .sentence-card img { object-position: center center !important; }
+            .sentence-card .card-info { padding: 10px !important; font-size: 1.1rem !important; }
+
+            #play-view {
+                padding: 4px 8px 6px !important;
+                height: 100dvh !important;
+                justify-content: flex-start !important;
+            }
+
+            .play-top-bar {
+                height: 38px !important;
+                padding: 0 4px !important;
+            }
+            .play-back-btn { font-size: 0.85rem !important; padding: 5px 12px !important; }
+            .btn-action {
+                padding: 5px 12px !important;
+                font-size: 0.8rem !important;
+                border-radius: 20px !important;
+            }
+
+            .image-stage {
+                flex: 0 0 28dvh !important;
+                width: 96% !important;
+                border-radius: 16px !important;
+                border-width: 3px !important;
+                margin-bottom: 6px !important;
+            }
+
+            .drop-zone {
+                min-height: 70px !important;
+                width: 96% !important;
+                padding: 8px 10px !important;
+                gap: 6px !important;
+                border-radius: 16px !important;
+                margin-bottom: 4px !important;
+            }
+
+            .word-pool {
+                flex: 0 0 auto !important;
+                gap: 10px !important;
+                padding: 8px !important;
+                overflow-y: auto !important;
+                align-content: flex-start !important;
+            }
+
+            .word-brick {
+                font-size: 1.6rem !important;
+                padding: 8px 14px !important;
+                border-radius: 12px !important;
+                margin: 2px !important;
+                box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important;
+            }
+        }
+
+        /* ── 标签筛选栏 ── */
+        .tag-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; padding: 0 20px; }
+        .tag-pill {
+            padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            border: 2px solid #ddd; background: white; color: #555; cursor: pointer;
+            transition: 0.2s; white-space: nowrap;
+        }
+        .tag-pill:hover { border-color: var(--main-teal); color: var(--main-teal); }
+        .tag-pill.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
+        .tag-pill.keyword { border-style: dashed; }
+        .tag-pill.keyword.active { background: #f3b236; border-color: #f3b236; color: #1e2e46; border-style: solid; }
+        .tag-section-label { font-size: 0.75rem; color: #999; align-self: center; margin: 0 4px; }
+
+        @keyframes correctFlash {
+            0%   { box-shadow: 0 0 0 0 rgba(243,178,54,0); background: transparent; }
+            20%  { box-shadow: 0 0 30px 12px rgba(243,178,54,0.9); background: rgba(243,178,54,0.15); }
+            50%  { box-shadow: 0 0 60px 20px rgba(89,133,134,0.8); background: rgba(89,133,134,0.1); }
+            80%  { box-shadow: 0 0 30px 12px rgba(243,178,54,0.6); background: rgba(243,178,54,0.1); }
+            100% { box-shadow: 0 0 0 0 rgba(243,178,54,0); background: transparent; }
+        }
+        .drop-zone.correct-flash {
+            animation: correctFlash 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="list-view">
+        <a href="../parents.html" class="glass-btn font-en">← Back to Parents Hub</a>
+        <div class="list-header">
+            <h1 class="font-en">🧩 Sentence Builder 🧩</h1>
+            <div class="tag-bar" id="tag-bar"></div>
+        </div>
+        <div id="gallery-view"></div>
+    </div>
+
+    <div id="play-view">
+        <div class="play-top-bar">
+            <div class="play-back-btn font-en" onclick="closePlay()">← Back to List</div>
+            <div id="success-controls" style="visibility: hidden; display: flex;">
+                <button class="btn-action font-en" onclick="enterReadingMode()">📖 Read Aloud</button>
+            </div>
+        </div>
+        <div class="image-stage" id="main-image"></div>
+        <div class="drop-zone" id="drop-zone"></div>
+        <div id="word-pool" class="word-pool"></div>
+    </div>
+
+    <div id="reading-overlay" onclick="this.style.display='none'">
+        <div id="full-container" style="display:flex; flex-wrap:wrap; justify-content:center;"></div>
+    </div>
+
+    <script>
+        const listView = document.getElementById('list-view');
+        const playView = document.getElementById('play-view');
+        const pool = document.getElementById('word-pool');
+        const zone = document.getElementById('drop-zone');
+        let currentLevelIdx = 0, currentData = null;
+        let activeThemeTag = null, activeKeyword = null;
+        let currentFilteredList = [];
+
+        function splitFonts(text) {
+            return text.split('').map(char => {
+                const isEn = /[a-zA-Z0-9\s\p{P}]/u.test(char);
+                return `<span class="${isEn ? 'font-en' : 'font-zh'}">${char}</span>`;
+            }).join('');
+        }
+
+        function buildTagBar() {
+            const { themeTags, keywordTags: kw } = getAllTags();
+            const bar = document.getElementById('tag-bar');
+            let html = '';
+            html += `<div class="tag-pill font-en ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">All</div>`;
+            html += `<span class="tag-section-label font-en">|</span>`;
+            themeTags.forEach(t => {
+                const def = tagDefinitions[t] || { zh: t, en: t };
+                const isActive = activeThemeTag === t;
+                html += `<div class="tag-pill font-en ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.en} <span class="font-zh" style="font-size:0.75rem;opacity:0.7;">${def.zh}</span></div>`;
+            });
+            html += `<span class="tag-section-label font-en">|</span>`;
+            kw.forEach(k => {
+                const isActive = activeKeyword === k.zh;
+                html += `<div class="tag-pill keyword ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')"><span class="font-en">${k.en}</span> <span class="font-zh" style="font-size:0.75rem;opacity:0.7;">「${k.zh}」</span></div>`;
+            });
+            bar.innerHTML = html;
+        }
+
+        function toggleThemeTag(tag) { activeThemeTag = activeThemeTag === tag ? null : tag; activeKeyword = null; refreshGallery(); }
+        function toggleKeyword(kw) { activeKeyword = activeKeyword === kw ? null : kw; activeThemeTag = null; refreshGallery(); }
+        function clearFilters() { activeThemeTag = null; activeKeyword = null; refreshGallery(); }
+
+        function refreshGallery() {
+            buildTagBar();
+            currentFilteredList = filterSentences(activeThemeTag, activeKeyword);
+            renderGalleryCards(currentFilteredList);
+        }
+
+        function renderGalleryCards(list) {
+            const gallery = document.getElementById('gallery-view');
+            if (list.length === 0) {
+                gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-en">No matching sentences</div>';
+                return;
+            }
+            gallery.innerHTML = list.map((item, i) => `
+                <div class="sentence-card" onclick="startLevel(${i})">
+                    <div class="card-img-wrapper"><img src="${item.image}" onerror="this.style.display='none'"></div>
+                    <div class="card-info font-zh">${item.words.join('')}${item.punctuation || ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function initGallery() {
+            listView.style.display = 'flex';
+            playView.style.display = 'none';
+            refreshGallery();
+        }
+
+        function startLevel(index) {
+            currentData = currentFilteredList[index];
+            if (!currentData) return;
+            listView.style.display = 'none';
+            playView.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            zone.innerHTML = ''; pool.innerHTML = '';
+            document.getElementById('success-controls').style.visibility = 'hidden';
+            document.getElementById('main-image').style.backgroundImage = `url('${currentData.image}')`;
+
+            [...currentData.words].sort(() => Math.random() - 0.5).forEach(word => {
+                const brick = document.createElement('div');
+                brick.className = 'word-brick';
+                brick.innerHTML = splitFonts(word);
+                const color = colorDictionary[word] || "#e0e0e0";
+                brick.style.backgroundColor = color;
+                brick.dataset.word = word;
+                brick.dataset.color = color;
+                addTouchLogic(brick);
+                pool.appendChild(brick);
+            });
+        }
+
+        // 多行感知：找到拖放点最近的插入位置
+        function getInsertTarget(clientX, clientY) {
+            const siblings = [...zone.querySelectorAll('.word-brick')];
+            if (siblings.length === 0) return null;
+
+            const rows = [];
+            siblings.forEach(sib => {
+                const box = sib.getBoundingClientRect();
+                const centerY = box.top + box.height / 2;
+                let row = rows.find(r => Math.abs(r.centerY - centerY) < box.height * 0.6);
+                if (!row) { row = { centerY, items: [], bottom: 0 }; rows.push(row); }
+                row.items.push(sib);
+                row.bottom = Math.max(row.bottom, box.bottom);
+            });
+            rows.sort((a, b) => a.centerY - b.centerY);
+
+            const lastRow = rows[rows.length - 1];
+            if (clientY > lastRow.bottom) return null;
+
+            let bestRow = rows[0];
+            let minDist = Infinity;
+            rows.forEach(r => {
+                const dist = Math.abs(r.centerY - clientY);
+                if (dist < minDist) { minDist = dist; bestRow = r; }
+            });
+
+            const lastItemInBest = bestRow.items[bestRow.items.length - 1];
+            const lastBox = lastItemInBest.getBoundingClientRect();
+            const isLastRow = rows.indexOf(bestRow) === rows.length - 1;
+            if (isLastRow && clientX >= lastBox.right) return null;
+
+            const nextInRow = bestRow.items.find(sib => {
+                const box = sib.getBoundingClientRect();
+                return clientX < box.left + box.width / 2;
+            });
+
+            if (nextInRow) return nextInRow;
+            const rowIdx = rows.indexOf(bestRow);
+            if (rowIdx < rows.length - 1) {
+                return rows[rowIdx + 1].items[0];
+            }
+            return null;
+        }
+
+        function addTouchLogic(el) {
+            let startX, startY;
+            const moveHandler = (e) => {
+                if (!el.classList.contains('dragging')) return;
+                e.preventDefault();
+                const touch = e.touches ? e.touches[0] : e;
+                el.style.left = (touch.clientX - startX) + 'px';
+                el.style.top = (touch.clientY - startY) + 'px';
+                const zoneRect = zone.getBoundingClientRect();
+                const isOverZone = touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
+                    touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom;
+
+                const oldIndicator = zone.querySelector('.insert-indicator');
+                if (oldIndicator) oldIndicator.remove();
+
+                if (isOverZone) {
+                    zone.classList.add('active-hover');
+                    const target = getInsertTarget(touch.clientX, touch.clientY);
+                    const indicator = document.createElement('div');
+                    indicator.className = 'insert-indicator';
+                    indicator.style.cssText = 'width:4px; min-height:40px; align-self:stretch; background:#ff6b6b; border-radius:4px; flex-shrink:0; pointer-events:none;';
+                    zone.insertBefore(indicator, target);
+                } else {
+                    zone.classList.remove('active-hover');
+                }
+            };
+
+            const endHandler = (e) => {
+                if (!el.classList.contains('dragging')) return;
+                const touch = e.changedTouches ? e.changedTouches[0] : e;
+                el.classList.remove('dragging');
+                el.style.left = ''; el.style.top = '';
+                zone.classList.remove('active-hover');
+                const indicator = zone.querySelector('.insert-indicator');
+                if (indicator) indicator.remove();
+
+                const zoneRect = zone.getBoundingClientRect();
+                const pad = 30;
+                const isInside = touch.clientX > zoneRect.left - pad && touch.clientX < zoneRect.right + pad &&
+                                 touch.clientY > zoneRect.top - pad && touch.clientY < zoneRect.bottom + pad;
+                if (isInside) {
+                    zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY));
+                } else { pool.appendChild(el); }
+                check();
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('touchmove', moveHandler);
+            };
+
+            const startHandler = (e) => {
+                const touch = e.touches ? e.touches[0] : e;
+                const rect = el.getBoundingClientRect();
+                startX = touch.clientX - rect.left + (el.offsetWidth/2);
+                startY = touch.clientY - rect.top + (el.offsetHeight/2);
+                el.classList.add('dragging');
+                el.style.left = (touch.clientX - startX) + 'px';
+                el.style.top = (touch.clientY - startY) + 'px';
+                document.addEventListener('mousemove', moveHandler, {passive: false});
+                document.addEventListener('touchmove', moveHandler, {passive: false});
+                document.addEventListener('mouseup', endHandler, {once: true});
+                document.addEventListener('touchend', endHandler, {once: true});
+            };
+            el.addEventListener('mousedown', startHandler);
+            el.addEventListener('touchstart', startHandler, {passive: false});
+        }
+
+        function autoSizeZone() {
+            const bricks = [...zone.querySelectorAll('.word-brick')];
+            if (bricks.length === 0) return;
+            const gap = 8;
+            const zonePadding = 24;
+            const isMobile = window.innerWidth <= 768;
+            const availW = zone.clientWidth - zonePadding - gap * (bricks.length - 1);
+
+            let lo = 10, hi = isMobile ? 38 : 56, best = 10;
+            while (lo <= hi) {
+                const mid = (lo + hi) >> 1;
+                bricks.forEach(b => {
+                    b.style.fontSize = mid + 'px';
+                    b.style.padding = `${Math.round(mid*0.3)}px ${Math.round(mid*0.55)}px`;
+                });
+                const totalW = bricks.reduce((s, b) => s + b.offsetWidth, 0);
+                if (totalW <= availW) { best = mid; lo = mid + 1; }
+                else hi = mid - 1;
+            }
+            bricks.forEach(b => {
+                b.style.fontSize = best + 'px';
+                b.style.padding = `${Math.round(best*0.3)}px ${Math.round(best*0.55)}px`;
+            });
+        }
+
+        function autoSizeReading() {
+            const overlay = document.getElementById('reading-overlay');
+            const bricks = [...document.querySelectorAll('.reading-brick')];
+            if (bricks.length === 0) return;
+            const availW = overlay.clientWidth * 0.95;
+            const availH = overlay.clientHeight * 0.95;
+
+            let lo = 20, hi = 200, best = 20;
+            while (lo <= hi) {
+                const mid = (lo + hi) >> 1;
+                const pad = Math.round(mid * 0.25);
+                const margin = Math.round(mid * 0.15);
+                bricks.forEach(b => {
+                    b.style.fontSize = mid + 'px';
+                    b.style.padding = `${pad}px ${Math.round(mid * 0.5)}px`;
+                    b.style.margin = margin + 'px';
+                    b.style.borderRadius = Math.round(mid * 0.25) + 'px';
+                    b.style.boxShadow = `0 ${Math.round(mid*0.1)}px 0 rgba(0,0,0,0.1)`;
+                });
+                let rowW = 0, rows = 1;
+                const brickH = bricks[0].offsetHeight + margin * 2;
+                bricks.forEach(b => {
+                    const bw = b.offsetWidth + margin * 2;
+                    if (rowW + bw > availW && rowW > 0) { rows++; rowW = bw; }
+                    else rowW += bw;
+                });
+                const totalH = rows * brickH;
+                if (totalH <= availH) { best = mid; lo = mid + 1; }
+                else hi = mid - 1;
+            }
+            const pad = Math.round(best * 0.25);
+            const margin = Math.round(best * 0.15);
+            bricks.forEach(b => {
+                b.style.fontSize = best + 'px';
+                b.style.padding = `${pad}px ${Math.round(best * 0.5)}px`;
+                b.style.margin = margin + 'px';
+                b.style.borderRadius = Math.round(best * 0.25) + 'px';
+                b.style.boxShadow = `0 ${Math.round(best*0.1)}px 0 rgba(0,0,0,0.1)`;
+            });
+        }
+
+        function check() {
+            const current = [...zone.querySelectorAll('.word-brick')].map(b => b.dataset.word).join('');
+            if (current === currentData.words.join('')) {
+                document.getElementById('success-controls').style.visibility = 'visible';
+                new Audio('../audio/correct.mp3').play().catch(()=>null);
+                const punc = currentData.punctuation || '';
+                if (punc && !zone.querySelector('.auto-punctuation')) {
+                    const puncEl = document.createElement('span');
+                    puncEl.className = 'auto-punctuation font-zh';
+                    puncEl.textContent = punc;
+                    puncEl.style.cssText = 'font-size:inherit; font-weight:bold; color:#888; align-self:center; margin-left:-4px; pointer-events:none;';
+                    zone.appendChild(puncEl);
+                }
+                zone.classList.remove('correct-flash');
+                void zone.offsetWidth;
+                zone.classList.add('correct-flash');
+                setTimeout(() => zone.classList.remove('correct-flash'), 1000);
+            }
+        }
+
+        function enterReadingMode() {
+            const container = document.getElementById('full-container');
+            container.innerHTML = '';
+            [...zone.querySelectorAll('.word-brick')].forEach(b => {
+                const rb = document.createElement('div');
+                rb.className = 'reading-brick';
+                rb.innerHTML = b.innerHTML;
+                rb.style.backgroundColor = b.dataset.color;
+                container.appendChild(rb);
+            });
+            const punc = currentData.punctuation || '';
+            if (punc) {
+                const puncEl = document.createElement('div');
+                puncEl.className = 'reading-brick font-zh';
+                puncEl.textContent = punc;
+                puncEl.style.cssText = 'background:transparent; color:#888; box-shadow:none; padding-left:0; padding-right:0; margin-left:-20px;';
+                container.appendChild(puncEl);
+            }
+            document.getElementById('reading-overlay').style.display = 'flex';
+            requestAnimationFrame(autoSizeReading);
+        }
+
+        function closePlay() { 
+            listView.style.display = 'flex'; 
+            playView.style.display = 'none'; 
+            document.body.style.overflow = '';
+        }
+        window.onload = initGallery;
+    </script>
+</body>
+</html>

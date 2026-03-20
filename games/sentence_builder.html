@@ -38,7 +38,7 @@
 
         /* --- 1. 画廊列表页：统一规格 --- */
         #list-view { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
-        .list-header { text-align: center; padding: 35px 0 10px 0; flex-shrink: 0; }
+        .list-header { text-align: center; padding: 65px 0 10px 0; flex-shrink: 0; }
         .list-header h1 { font-size: 3.2rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
 
         #gallery-view {
@@ -59,21 +59,23 @@
         .sentence-card .card-info { padding: 12px 10px; text-align: center; font-size: 1.1rem; font-weight: bold; color: #333; background: white; flex: 1; display: flex; align-items: center; justify-content: center; }
 
         /* --- 2. 练习界面 --- */
-        #play-view { display: none; position: fixed; top:0; left:0; height: 100dvh; width: 100vw; flex-direction: column; align-items: center; padding: 15px; box-sizing: border-box; background: #fff9ea; z-index: 8000; overflow: hidden; }
+        #play-view { display: none; position: fixed; top:0; left:0; height: 100dvh; width: 100vw; flex-direction: column; align-items: center; padding: 6px 15px 10px; box-sizing: border-box; background: #fff9ea; z-index: 8000; overflow: hidden; }
         
-        .play-controls { width: 100%; height: 10vh; display: flex; align-items: center; justify-content: flex-end; padding: 0 40px; box-sizing: border-box; }
-        .btn-action { background: #2ecc71; color: white; border: none; padding: 10px 35px; border-radius: 40px; cursor: pointer; font-size: 1.5rem; font-weight: bold; margin-left: 20px; box-shadow: 0 4px 0 #27ae60; }
+        .play-top-bar { width: 100%; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; box-sizing: border-box; flex-shrink: 0; }
+        .play-back-btn { color: #444; text-decoration: none; font-size: 1.1rem; font-weight: bold; background: rgba(255,255,255,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 6px 20px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.5); cursor: pointer; transition: 0.2s; }
+        .play-back-btn:hover { background: rgba(255,255,255,0.7); }
+        .btn-action { background: #2ecc71; color: white; border: none; padding: 8px 28px; border-radius: 40px; cursor: pointer; font-size: 1.3rem; font-weight: bold; box-shadow: 0 4px 0 #27ae60; }
 
-        .image-stage { flex: 0 0 35%; width: 90%; max-width: 900px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .image-stage { flex: 1 1 0; width: 96%; max-width: 1400px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 0; }
         
         .drop-zone {
-            flex: 0 0 auto; min-height: 80px; max-height: 200px; width: 90%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
+            flex: 0 0 auto; min-height: 90px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
             border-radius: 25px; display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; align-items: flex-start; gap: 8px; padding: 10px 15px; overflow-x: hidden; overflow-y: auto;
             transition: background 0.2s;
         }
         .drop-zone.active-hover { background: rgba(89, 133, 134, 0.25); border-style: solid; }
 
-        .word-pool { flex: 1; width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; padding: 25px; overflow-y: auto; }
+        .word-pool { flex: 0 0 auto; width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; padding: 12px 25px; overflow-y: auto; }
 
         /* 🌟 巨型积木：7.5vh */
         .word-brick {
@@ -87,14 +89,10 @@
         .reading-brick { padding: 4vh 60px; border-radius: 35px; font-size: 15vh; font-weight: bold; color: #1e2e46; box-shadow: 0 15px 0 rgba(0,0,0,0.1); margin: 25px; }
 
         @media (max-width: 768px) {
-            /* 返回按钮 */
-            .glass-btn { top: 12px !important; left: 12px !important; font-size: 0.9rem !important; padding: 7px 16px !important; }
-
-            /* 列表页标题留出返回按钮空间 */
-            .list-header { padding: 56px 16px 8px !important; }
+            .glass-btn { top: 10px !important; left: 10px !important; font-size: 0.85rem !important; padding: 6px 14px !important; }
+            .list-header { padding: 52px 16px 8px !important; }
             .list-header h1 { font-size: 2rem !important; letter-spacing: 3px !important; }
 
-            /* 卡片改为单列，图片改为正方形显示核心区域 */
             #gallery-view {
                 grid-template-columns: 1fr !important;
                 gap: 14px !important;
@@ -104,59 +102,48 @@
             .sentence-card img { object-position: center center !important; }
             .sentence-card .card-info { padding: 10px !important; font-size: 1.1rem !important; }
 
-            /* ── 游戏界面完整重排 ── */
             #play-view {
-                padding: 8px 8px 6px !important;
+                padding: 4px 8px 6px !important;
                 height: 100dvh !important;
                 justify-content: flex-start !important;
             }
 
-            /* 顶部控制栏：返回按钮左，成功按钮右，紧凑 */
-            .play-controls {
-                height: auto !important;
-                padding: 4px 8px 4px 0 !important;
-                min-height: 44px !important;
-                flex-shrink: 0 !important;
+            .play-top-bar {
+                height: 38px !important;
+                padding: 0 4px !important;
             }
+            .play-back-btn { font-size: 0.85rem !important; padding: 5px 12px !important; }
             .btn-action {
-                padding: 6px 14px !important;
-                font-size: 0.85rem !important;
-                margin-left: 8px !important;
+                padding: 5px 12px !important;
+                font-size: 0.8rem !important;
                 border-radius: 20px !important;
             }
 
-            /* 图片区：固定高度，不要撑太高 */
             .image-stage {
                 flex: 0 0 28dvh !important;
                 width: 96% !important;
                 border-radius: 16px !important;
                 border-width: 3px !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 6px !important;
             }
 
-            /* drop-zone：固定两行高度，视觉上始终显示两行空间 */
             .drop-zone {
-                height: 148px !important;
-                min-height: unset !important;
-                max-height: unset !important;
+                min-height: 70px !important;
                 width: 96% !important;
                 padding: 8px 10px !important;
                 gap: 6px !important;
                 border-radius: 16px !important;
-                margin-bottom: 8px !important;
-                overflow-y: hidden !important;
+                margin-bottom: 4px !important;
             }
 
-            /* 词库：剩余空间，可纵向滚动 */
             .word-pool {
-                flex: 1 !important;
+                flex: 0 0 auto !important;
                 gap: 10px !important;
-                padding: 10px 8px !important;
+                padding: 8px !important;
                 overflow-y: auto !important;
                 align-content: flex-start !important;
             }
 
-            /* 积木字号：一行约放3个词，更自然触发换行 */
             .word-brick {
                 font-size: 1.6rem !important;
                 padding: 8px 14px !important;
@@ -165,19 +152,94 @@
                 box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important;
             }
         }
+
+        /* ── 标签筛选栏 ── */
+        .tag-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; padding: 0 20px; }
+        .tag-pill {
+            padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            border: 2px solid #ddd; background: white; color: #555; cursor: pointer;
+            transition: 0.2s; white-space: nowrap;
+        }
+        .tag-pill:hover { border-color: var(--main-teal); color: var(--main-teal); }
+        .tag-pill.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
+        .tag-pill.keyword { border-style: dashed; }
+        .tag-pill.keyword.active { background: #f3b236; border-color: #f3b236; color: #1e2e46; border-style: solid; }
+        .tag-section-label { font-size: 0.75rem; color: #999; align-self: center; margin: 0 4px; }
+
+        /* ── 管理按钮 ── */
+        .mgr-toggle { background: none; border: 1px dashed #ccc; color: #999; padding: 6px 18px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .mgr-toggle:hover { color: var(--main-teal); border-color: var(--main-teal); }
+
+        /* ── 管理面板 ── */
+        .manager-box { background: white; padding: 24px; border-radius: 20px; width: 460px; max-width: 95vw; max-height: 85vh; overflow-y: auto; border: 4px solid var(--main-teal); position: relative; }
+        .mgr-title { font-size: 1.2rem; font-weight: bold; color: var(--main-teal); margin-bottom: 12px; }
+        .mgr-row { margin-bottom: 10px; }
+        .mgr-row label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 4px; }
+        .mgr-input { width: 100%; padding: 8px 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; box-sizing: border-box; }
+        .mgr-input:focus { border-color: var(--main-teal); outline: none; }
+        .mgr-tag-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        .mgr-tag-chip { padding: 4px 12px; border-radius: 14px; font-size: 0.8rem; border: 2px solid #ddd; background: white; color: #555; cursor: pointer; transition: 0.15s; }
+        .mgr-tag-chip.selected { background: var(--main-teal); color: white; border-color: var(--main-teal); }
+        .mgr-save-btn { width: 100%; padding: 10px; background: var(--main-teal); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+        .mgr-save-btn:hover { background: #4a7374; }
+        .mgr-divider { height: 1px; background: #eee; margin: 16px 0 10px; }
+        .mgr-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+        .mgr-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.85rem; }
+        .mgr-item-del { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1rem; padding: 2px 6px; }
+
+        @keyframes correctFlash {
+            0%   { box-shadow: 0 0 0 0 rgba(243,178,54,0); background: transparent; }
+            20%  { box-shadow: 0 0 30px 12px rgba(243,178,54,0.9); background: rgba(243,178,54,0.15); }
+            50%  { box-shadow: 0 0 60px 20px rgba(89,133,134,0.8); background: rgba(89,133,134,0.1); }
+            80%  { box-shadow: 0 0 30px 12px rgba(243,178,54,0.6); background: rgba(243,178,54,0.1); }
+            100% { box-shadow: 0 0 0 0 rgba(243,178,54,0); background: transparent; }
+        }
+        .drop-zone.correct-flash {
+            animation: correctFlash 1s ease-in-out;
+        }
     </style>
 </head>
 <body>
 
     <div id="list-view">
         <a href="../teachers.html" class="glass-btn font-zh">⬅️ 返回工具台</a>
-        <div class="list-header"><h1 class="font-zh">🧩 句子排排队 🧩</h1></div>
+        <div class="list-header">
+            <h1 class="font-zh">🧩 句子排排队 🧩</h1>
+            <div class="tag-bar" id="tag-bar"></div>
+        </div>
         <div id="gallery-view"></div>
+        <div style="text-align:center;padding:10px 0 20px;">
+            <button class="mgr-toggle font-zh" onclick="openManager()">⚙️ 句子管理</button>
+        </div>
+    </div>
+
+    <!-- 句子管理面板 -->
+    <div id="manager-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10001; align-items:center; justify-content:center;">
+        <div class="manager-box">
+            <button onclick="closeManager()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;">✕</button>
+            <div class="mgr-title font-zh">📝 添加新句子</div>
+            <div class="mgr-row">
+                <label class="font-zh">词语（逗号分隔）</label>
+                <input id="mgr-words" class="mgr-input font-zh" placeholder="我，喜欢，苹果">
+            </div>
+            <div class="mgr-row">
+                <label class="font-zh">图片地址</label>
+                <input id="mgr-image" class="mgr-input font-en" placeholder="../images/sentences/apple.jpg">
+            </div>
+            <div class="mgr-row">
+                <label class="font-zh">主题标签（可多选）</label>
+                <div id="mgr-tags" class="mgr-tag-grid"></div>
+            </div>
+            <button class="mgr-save-btn font-zh" onclick="saveMgrSentence()">✅ 保存句子</button>
+            <div class="mgr-divider"></div>
+            <div class="mgr-title font-zh" style="font-size:1rem;margin-top:6px;">📋 自定义句子列表</div>
+            <div id="mgr-custom-list" class="mgr-list"></div>
+        </div>
     </div>
 
     <div id="play-view">
-        <div class="glass-btn font-zh" onclick="closePlay()">⬅️ 返回列表</div>
-        <div class="play-controls">
+        <div class="play-top-bar">
+            <div class="play-back-btn font-zh" onclick="closePlay()">⬅️ 返回列表</div>
             <div id="success-controls" style="visibility: hidden; display: flex;">
                 <button class="btn-action font-zh" onclick="enterReadingMode()">📖 全屏读字</button>
             </div>
@@ -197,6 +259,8 @@
         const pool = document.getElementById('word-pool');
         const zone = document.getElementById('drop-zone');
         let currentLevelIdx = 0, currentData = null;
+        let activeThemeTag = null, activeKeyword = null;
+        let currentFilteredList = [];
 
         function splitFonts(text) {
             return text.split('').map(char => {
@@ -205,20 +269,73 @@
             }).join('');
         }
 
-        function initGallery() {
-            listView.style.display = 'flex';
-            playView.style.display = 'none';
-            document.getElementById('gallery-view').innerHTML = sentencesList.map((item, index) => `
-                <div class="sentence-card" onclick="startLevel(${index})">
-                    <div class="card-img-wrapper"><img src="${item.image}"></div>
-                    <div class="card-info font-zh">练习 ${index + 1}</div>
+        function buildTagBar() {
+            const { themeTags, keywordTags: kw } = getAllTags();
+            const bar = document.getElementById('tag-bar');
+            let html = '';
+            // 全部
+            html += `<div class="tag-pill font-zh ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">全部 All</div>`;
+            // 主题
+            html += `<span class="tag-section-label font-en">|</span>`;
+            themeTags.forEach(t => {
+                const def = tagDefinitions[t] || { zh: t, en: t };
+                const isActive = activeThemeTag === t;
+                html += `<div class="tag-pill font-zh ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.zh} <span class="font-en" style="font-size:0.75rem;opacity:0.7;">${def.en}</span></div>`;
+            });
+            // 关键词
+            html += `<span class="tag-section-label font-en">|</span>`;
+            kw.forEach(k => {
+                const isActive = activeKeyword === k.zh;
+                html += `<div class="tag-pill keyword font-zh ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')">「${k.zh}」<span class="font-en" style="font-size:0.7rem;opacity:0.7;">${k.en}</span></div>`;
+            });
+            bar.innerHTML = html;
+        }
+
+        function toggleThemeTag(tag) {
+            activeThemeTag = activeThemeTag === tag ? null : tag;
+            activeKeyword = null;
+            refreshGallery();
+        }
+        function toggleKeyword(kw) {
+            activeKeyword = activeKeyword === kw ? null : kw;
+            activeThemeTag = null;
+            refreshGallery();
+        }
+        function clearFilters() {
+            activeThemeTag = null;
+            activeKeyword = null;
+            refreshGallery();
+        }
+
+        function refreshGallery() {
+            buildTagBar();
+            currentFilteredList = filterSentences(activeThemeTag, activeKeyword);
+            renderGalleryCards(currentFilteredList);
+        }
+
+        function renderGalleryCards(list) {
+            const gallery = document.getElementById('gallery-view');
+            if (list.length === 0) {
+                gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-zh">没有匹配的句子</div>';
+                return;
+            }
+            gallery.innerHTML = list.map((item, i) => `
+                <div class="sentence-card" onclick="startLevel(${i})">
+                    <div class="card-img-wrapper"><img src="${item.image}" onerror="this.style.display='none'"></div>
+                    <div class="card-info font-zh">${item.words.join('')}${item.punctuation || ''}</div>
                 </div>
             `).join('');
         }
 
+        function initGallery() {
+            listView.style.display = 'flex';
+            playView.style.display = 'none';
+            refreshGallery();
+        }
+
         function startLevel(index) {
-            currentLevelIdx = index;
-            currentData = sentencesList[currentLevelIdx];
+            currentData = currentFilteredList[index];
+            if (!currentData) return;
             listView.style.display = 'none';
             playView.style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -234,9 +351,59 @@
                 brick.style.backgroundColor = color;
                 brick.dataset.word = word;
                 brick.dataset.color = color;
-                addTouchLogic(brick); 
+                addTouchLogic(brick);
                 pool.appendChild(brick);
             });
+        }
+
+        // ── 句子管理面板 ──
+        function openManager() {
+            document.getElementById('manager-overlay').style.display = 'flex';
+            renderMgrTags();
+            renderMgrList();
+        }
+        function closeManager() {
+            document.getElementById('manager-overlay').style.display = 'none';
+            refreshGallery(); // 刷新画廊
+        }
+        function renderMgrTags() {
+            const container = document.getElementById('mgr-tags');
+            container.innerHTML = Object.entries(tagDefinitions).map(([key, def]) =>
+                `<div class="mgr-tag-chip font-zh" data-tag="${key}" onclick="this.classList.toggle('selected')">${def.zh}</div>`
+            ).join('');
+        }
+        function renderMgrList() {
+            const list = getCustomSentences();
+            const container = document.getElementById('mgr-custom-list');
+            if (list.length === 0) {
+                container.innerHTML = '<div style="color:#999;font-size:0.85rem;text-align:center;padding:10px;" class="font-zh">暂无自定义句子</div>';
+                return;
+            }
+            container.innerHTML = list.map(s =>
+                `<div class="mgr-item">
+                    <span class="font-zh">${s.words.join(' ')}</span>
+                    <button class="mgr-item-del" onclick="deleteMgrSentence(${s._id})">✕</button>
+                </div>`
+            ).join('');
+        }
+        function saveMgrSentence() {
+            const wordsRaw = document.getElementById('mgr-words').value.trim();
+            const image = document.getElementById('mgr-image').value.trim();
+            if (!wordsRaw) { alert('请输入词语'); return; }
+            const words = wordsRaw.split(/[,，、]/).map(w => w.trim()).filter(w => w);
+            const selectedTags = [...document.querySelectorAll('#mgr-tags .mgr-tag-chip.selected')].map(el => el.dataset.tag);
+            addCustomSentence({ words, image: image || '', tags: selectedTags });
+            document.getElementById('mgr-words').value = '';
+            document.getElementById('mgr-image').value = '';
+            document.querySelectorAll('#mgr-tags .mgr-tag-chip').forEach(el => el.classList.remove('selected'));
+            renderMgrList();
+            alert('句子已保存！');
+        }
+        function deleteMgrSentence(id) {
+            if (confirm('确定删除这个句子吗？')) {
+                deleteCustomSentence(id);
+                renderMgrList();
+            }
         }
 
         // 多行感知：找到拖放点最近的插入位置
@@ -250,10 +417,16 @@
                 const box = sib.getBoundingClientRect();
                 const centerY = box.top + box.height / 2;
                 let row = rows.find(r => Math.abs(r.centerY - centerY) < box.height * 0.6);
-                if (!row) { row = { centerY, items: [] }; rows.push(row); }
+                if (!row) { row = { centerY, items: [], bottom: 0 }; rows.push(row); }
                 row.items.push(sib);
+                row.bottom = Math.max(row.bottom, box.bottom);
             });
             rows.sort((a, b) => a.centerY - b.centerY);
+
+            const lastRow = rows[rows.length - 1];
+
+            // 🌟 关键修复：拖放点在最后一行底部以下 → 直接追加末尾
+            if (clientY > lastRow.bottom) return null;
 
             // 找最近的行（Y距离最小）
             let bestRow = rows[0];
@@ -263,6 +436,12 @@
                 if (dist < minDist) { minDist = dist; bestRow = r; }
             });
 
+            // 🌟 关键修复：如果是最后一行且拖放点在该行最右侧词的右边 → 追加末尾
+            const lastItemInBest = bestRow.items[bestRow.items.length - 1];
+            const lastBox = lastItemInBest.getBoundingClientRect();
+            const isLastRow = rows.indexOf(bestRow) === rows.length - 1;
+            if (isLastRow && clientX >= lastBox.right) return null;
+
             // 在该行内按X找插入点
             const nextInRow = bestRow.items.find(sib => {
                 const box = sib.getBoundingClientRect();
@@ -270,12 +449,9 @@
             });
 
             if (nextInRow) return nextInRow;
-            // 拖到该行最右侧：插到该行最后一个词的后面
-            // 如果是最后一行，追加末尾；否则插到下一行第一个词前
-            const lastInRow = bestRow.items[bestRow.items.length - 1];
             const rowIdx = rows.indexOf(bestRow);
             if (rowIdx < rows.length - 1) {
-                return rows[rowIdx + 1].items[0]; // 插到下一行开头
+                return rows[rowIdx + 1].items[0];
             }
             return null; // 追加末尾
         }
@@ -317,8 +493,9 @@
                 if (indicator) indicator.remove();
 
                 const zoneRect = zone.getBoundingClientRect();
-                const isInside = touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
-                                 touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom;
+                const pad = 30; // 扩大30px容错范围
+                const isInside = touch.clientX > zoneRect.left - pad && touch.clientX < zoneRect.right + pad &&
+                                 touch.clientY > zoneRect.top - pad && touch.clientY < zoneRect.bottom + pad;
                 if (isInside) {
                     zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY));
                 } else { pool.appendChild(el); }
@@ -349,10 +526,11 @@
             if (bricks.length === 0) return;
             const gap = 8;
             const zonePadding = 24;
+            const isMobile = window.innerWidth <= 768;
             const availW = zone.clientWidth - zonePadding - gap * (bricks.length - 1);
 
             // 二分法：临时设字号，用 scrollWidth 测量实际宽度
-            let lo = 10, hi = 38, best = 10;
+            let lo = 10, hi = isMobile ? 38 : 56, best = 10;
             while (lo <= hi) {
                 const mid = (lo + hi) >> 1;
                 bricks.forEach(b => {
@@ -418,6 +596,20 @@
             if (current === currentData.words.join('')) {
                 document.getElementById('success-controls').style.visibility = 'visible';
                 new Audio('../audio/correct.mp3').play().catch(()=>null);
+                // 自动补标点
+                const punc = currentData.punctuation || '';
+                if (punc && !zone.querySelector('.auto-punctuation')) {
+                    const puncEl = document.createElement('span');
+                    puncEl.className = 'auto-punctuation font-zh';
+                    puncEl.textContent = punc;
+                    puncEl.style.cssText = 'font-size:inherit; font-weight:bold; color:#888; align-self:center; margin-left:-4px; pointer-events:none;';
+                    zone.appendChild(puncEl);
+                }
+                // 闪耀动画
+                zone.classList.remove('correct-flash');
+                void zone.offsetWidth;
+                zone.classList.add('correct-flash');
+                setTimeout(() => zone.classList.remove('correct-flash'), 1000);
             }
         }
 
@@ -431,6 +623,15 @@
                 rb.style.backgroundColor = b.dataset.color;
                 container.appendChild(rb);
             });
+            // 全屏也带标点
+            const punc = currentData.punctuation || '';
+            if (punc) {
+                const puncEl = document.createElement('div');
+                puncEl.className = 'reading-brick font-zh';
+                puncEl.textContent = punc;
+                puncEl.style.cssText = 'background:transparent; color:#888; box-shadow:none; padding-left:0; padding-right:0; margin-left:-20px;';
+                container.appendChild(puncEl);
+            }
             document.getElementById('reading-overlay').style.display = 'flex';
             requestAnimationFrame(autoSizeReading);
         }
