@@ -24,40 +24,30 @@
             height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* ── Header ── */
-        .top-bar {
-            height: 54px;
-            background: var(--main-teal);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 4px solid var(--accent-yellow);
-            flex-shrink: 0;
-        }
-        .top-bar a {
-            color: white; text-decoration: none;
-            font-weight: bold; font-size: 0.95rem;
+        /* ── 悬浮玻璃返回按钮 ── */
+        .glass-btn {
+            position: fixed; top: 16px; left: 20px;
+            color: #444; text-decoration: none;
+            font-size: 1rem; font-weight: 600; z-index: 9999;
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 8px 22px; border-radius: 40px;
+            border: 1.5px solid rgba(255,255,255,0.6);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            display: inline-flex; align-items: center;
+            transition: background 0.2s, transform 0.2s;
             font-family: var(--wenkai);
-            padding: 4px 10px; border-radius: 8px;
-            transition: background 0.2s;
         }
-        .top-bar a:hover { background: rgba(255,255,255,0.12); }
-        .top-bar .title {
-            color: white; font-size: 1.3rem; font-weight: bold;
-            font-family: var(--wenkai);
-            letter-spacing: 0.5px;
-        }
-        .top-bar .score-badge {
-            background: rgba(255,255,255,0.2);
-            color: white; padding: 4px 14px;
-            border-radius: 20px; font-size: 0.9rem;
-            font-weight: bold; font-family: var(--wenkai);
+        .glass-btn:hover { background: rgba(255,255,255,0.75); transform: scale(1.04); }
+        @media (max-width: 768px) {
+            .glass-btn { top: 10px; left: 12px; font-size: 0.85rem; padding: 6px 14px; }
         }
 
         /* ── Main layout ── */
         .main-area {
             flex: 1; display: flex; flex-direction: row;
             align-items: stretch; gap: 20px;
-            padding: 16px 24px; overflow: hidden;
+            padding: 60px 24px 16px; overflow: hidden;
         }
 
         .left-side {
@@ -179,11 +169,17 @@
 </head>
 <body>
 
-    <div class="top-bar">
-        <a href="../parents.html">← Back</a>
-        <span class="title">➕ Teen Numbers Addition</span>
-        <span class="score-badge" id="score-badge">🔥 0</span>
-    </div>
+    <a href="../parents.html" class="glass-btn">← Back to Parents Hub</a>
+    <div id="score-badge" style="
+        position: fixed; top: 16px; right: 20px; z-index: 9999;
+        background: rgba(255,255,255,0.55);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        color: #598586; padding: 8px 22px; border-radius: 40px;
+        font-size: 1rem; font-weight: bold;
+        border: 1.5px solid rgba(255,255,255,0.6);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        font-family: var(--wenkai);
+    ">🔥 0</div>
 
     <div class="main-area">
         <div class="left-side">

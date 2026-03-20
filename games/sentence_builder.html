@@ -69,7 +69,7 @@
         .image-stage { flex: 1 1 0; width: 96%; max-width: 1400px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 0; }
         
         .drop-zone {
-            flex: 0 0 auto; min-height: 90px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
+            flex: 0 0 auto; height: 14vh; min-height: 100px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
             border-radius: 25px; display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; align-items: flex-start; gap: 8px; padding: 10px 15px; overflow-x: hidden; overflow-y: auto;
             transition: background 0.2s;
         }
@@ -154,17 +154,26 @@
         }
 
         /* ── 标签筛选栏 ── */
-        .tag-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; padding: 0 20px; }
+        .tag-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding: 0 20px; }
+        .tag-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; }
+        .tag-row-label { font-size: 0.7rem; color: #aaa; margin-right: 4px; align-self: center; white-space: nowrap; letter-spacing: 1px; }
         .tag-pill {
-            padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
-            border: 2px solid #ddd; background: white; color: #555; cursor: pointer;
+            padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            border: 2px solid transparent; cursor: pointer;
             transition: 0.2s; white-space: nowrap;
         }
-        .tag-pill:hover { border-color: var(--main-teal); color: var(--main-teal); }
-        .tag-pill.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
-        .tag-pill.keyword { border-style: dashed; }
-        .tag-pill.keyword.active { background: #f3b236; border-color: #f3b236; color: #1e2e46; border-style: solid; }
-        .tag-section-label { font-size: 0.75rem; color: #999; align-self: center; margin: 0 4px; }
+        /* 主题标签：teal 色调 */
+        .tag-pill.theme { background: #e8f5f5; color: #4a7a7b; border-color: #c5dfdf; }
+        .tag-pill.theme:hover { background: #d0ecec; border-color: var(--main-teal); }
+        .tag-pill.theme.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
+        /* 关键词标签：金色调 */
+        .tag-pill.keyword { background: #fef9e7; color: #9a7c1e; border-color: #f5e6a3; }
+        .tag-pill.keyword:hover { background: #fdf0c8; border-color: #f3b236; }
+        .tag-pill.keyword.active { background: #f3b236; color: #1e2e46; border-color: #d4922a; }
+        /* 全部按钮 */
+        .tag-pill.all { background: #f0f0f0; color: #666; border-color: #ddd; }
+        .tag-pill.all:hover { background: #e4e4e4; }
+        .tag-pill.all.active { background: #555; color: white; border-color: #555; }
 
         /* ── 管理按钮 ── */
         .mgr-toggle { background: none; border: 1px dashed #ccc; color: #999; padding: 6px 18px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
@@ -273,21 +282,23 @@
             const { themeTags, keywordTags: kw } = getAllTags();
             const bar = document.getElementById('tag-bar');
             let html = '';
-            // 全部
-            html += `<div class="tag-pill font-zh ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">全部 All</div>`;
-            // 主题
-            html += `<span class="tag-section-label font-en">|</span>`;
+            // Row 1: 全部 + 主题标签
+            html += `<div class="tag-row">`;
+            html += `<div class="tag-pill all font-zh ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">全部 <span class="font-en" style="font-size:0.7rem;">All</span></div>`;
             themeTags.forEach(t => {
                 const def = tagDefinitions[t] || { zh: t, en: t };
                 const isActive = activeThemeTag === t;
-                html += `<div class="tag-pill font-zh ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.zh} <span class="font-en" style="font-size:0.75rem;opacity:0.7;">${def.en}</span></div>`;
+                html += `<div class="tag-pill theme font-zh ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.zh} <span class="font-en" style="font-size:0.7rem;opacity:0.7;">${def.en}</span></div>`;
             });
-            // 关键词
-            html += `<span class="tag-section-label font-en">|</span>`;
+            html += `</div>`;
+            // Row 2: 关键词标签
+            html += `<div class="tag-row">`;
+            html += `<span class="tag-row-label font-zh">按字词：</span>`;
             kw.forEach(k => {
                 const isActive = activeKeyword === k.zh;
-                html += `<div class="tag-pill keyword font-zh ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')">「${k.zh}」<span class="font-en" style="font-size:0.7rem;opacity:0.7;">${k.en}</span></div>`;
+                html += `<div class="tag-pill keyword font-zh ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')">「${k.zh}」<span class="font-en" style="font-size:0.65rem;opacity:0.7;margin-left:2px;">${k.en}</span></div>`;
             });
+            html += `</div>`;
             bar.innerHTML = html;
         }
 
@@ -599,10 +610,12 @@
                 // 自动补标点
                 const punc = currentData.punctuation || '';
                 if (punc && !zone.querySelector('.auto-punctuation')) {
+                    const lastBrick = zone.querySelector('.word-brick:last-of-type');
+                    const brickSize = lastBrick ? getComputedStyle(lastBrick).fontSize : '3rem';
                     const puncEl = document.createElement('span');
                     puncEl.className = 'auto-punctuation font-zh';
                     puncEl.textContent = punc;
-                    puncEl.style.cssText = 'font-size:inherit; font-weight:bold; color:#888; align-self:center; margin-left:-4px; pointer-events:none;';
+                    puncEl.style.cssText = `font-size:${brickSize}; font-weight:bold; color:#666; align-self:center; pointer-events:none; margin-left:2px;`;
                     zone.appendChild(puncEl);
                 }
                 // 闪耀动画

@@ -18,7 +18,7 @@ const colorDictionary = {
     "一只": "#81ecec", "到": "#81ecec", "是": "#81ecec", "十个": "#81ecec",
 
     // 副词/否定词 (紫色)
-    "一起": "#a29bfe", "不一样": "#a29bfe", "没有": "#a29bfe",
+    "一起": "#a29bfe", "不一样": "#a29bfe", "没有": "#a29bfe", "不喜欢": "#a29bfe",
 
     // 动词 (红色)
     "去": "#ff7675", "有": "#ff7675", "吃": "#ff7675",
@@ -36,7 +36,7 @@ const colorDictionary = {
     "公园": "#55efc4", "中国": "#55efc4", "月饼": "#55efc4",
     "水": "#55efc4", "饭": "#55efc4", "中文": "#55efc4",
     "一百": "#55efc4", "大头": "#55efc4",
-    "晴天": "#55efc4", "下雪": "#55efc4", "下雨": "#55efc4",
+    "晴天": "#55efc4", "下雪": "#55efc4", "下雨": "#55efc4", "刮风": "#55efc4",
     "水杯": "#55efc4", "鸟": "#55efc4",
     "铅笔": "#55efc4", "小猫": "#55efc4", "小狗": "#55efc4",
     "苹果": "#55efc4", "大奖": "#55efc4", "学校": "#55efc4",
@@ -86,7 +86,7 @@ const keywordTags = [
     { zh: "一起", en: "together" },
     { zh: "去",   en: "go" },
     { zh: "有",   en: "have" },
-    { zh: "喜欢", en: "like" },
+    { zh: "喜欢", en: "like", match: ["喜欢", "不喜欢"] },
     { zh: "会",   en: "can" },
     { zh: "要",   en: "want" },
     { zh: "和",   en: "and" },
@@ -173,6 +173,11 @@ const builtInSentences = [
     { words: ["我", "喜欢", "晴天"], image: "../images/sentences/sunny.jpg", tags: ["天气"], punctuation: "。" },
     { words: ["我", "喜欢", "下雪"], image: "../images/sentences/snowy.jpg", tags: ["天气"], punctuation: "。" },
     { words: ["我", "喜欢", "下雨"], image: "../images/sentences/rainy.jpg", tags: ["天气"], punctuation: "。" },
+    { words: ["我", "喜欢", "刮风"], image: "../images/sentences/windy.jpg", tags: ["天气"], punctuation: "。" },
+    { words: ["我", "不喜欢", "晴天"], image: "../images/sentences/no_sunny.jpg", tags: ["天气"], punctuation: "。" },
+    { words: ["我", "不喜欢", "下雪"], image: "../images/sentences/no_snowy.jpg", tags: ["天气"], punctuation: "。" },
+    { words: ["我", "不喜欢", "下雨"], image: "../images/sentences/no_rainy.jpg", tags: ["天气"], punctuation: "。" },
+    { words: ["我", "不喜欢", "刮风"], image: "../images/sentences/no_windy.jpg", tags: ["天气"], punctuation: "。" },
     { words: ["我", "喜欢", "学校"], image: "../images/sentences/like_school.jpg", tags: ["学校"], punctuation: "。" },
 
     // ── 方位 ──
@@ -236,7 +241,10 @@ function filterSentences(activeThemeTag, activeKeyword) {
         list = list.filter(s => (s.tags || []).includes(activeThemeTag));
     }
     if (activeKeyword) {
-        list = list.filter(s => s.words.includes(activeKeyword));
+        // 查找关键词定义，看是否有 match 数组
+        const kwDef = keywordTags.find(k => k.zh === activeKeyword);
+        const matchWords = (kwDef && kwDef.match) ? kwDef.match : [activeKeyword];
+        list = list.filter(s => matchWords.some(w => s.words.includes(w)));
     }
     return list;
 }

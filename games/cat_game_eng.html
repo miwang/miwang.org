@@ -20,11 +20,22 @@
             height: 100vh; user-select: none;
         }
 
-        .back-btn-home {
-            position: absolute; top: 16px; left: 20px; color: rgba(255,255,255,0.8);
-            text-decoration: none; font-size: 0.95rem; font-weight: 600; z-index: 50;
+        .glass-btn {
+            position: fixed; top: 16px; left: 20px;
+            color: rgba(255,255,255,0.9); text-decoration: none;
+            font-size: 1rem; font-weight: 600; z-index: 9999;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 8px 22px; border-radius: 40px;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: inline-flex; align-items: center;
+            transition: background 0.2s, transform 0.2s;
         }
-        .back-btn-home:hover { color: #fff; }
+        .glass-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.04); }
+        @media (max-width: 768px) {
+            .glass-btn { top: 10px; left: 12px; font-size: 0.85rem; padding: 6px 14px; }
+        }
 
         #star-container {
             position: absolute; top: 20px; right: 30px; font-size: 2rem; color: #f3b236;
@@ -103,9 +114,6 @@
         @media (max-width: 768px) {
             body { height: 100dvh; }
 
-            /* 返回按钮：手机上稍微大一点 */
-            .back-btn-home { font-size: 1rem; top: 12px; }
-
             /* 星星：游戏时右上角 */
             #star-container {
                 top: 8px !important; right: 12px !important;
@@ -143,7 +151,7 @@
 </head>
 <body>
 
-    <a href="../parents.html" class="back-btn-home">⬅️ Back to Parents Hub</a>
+    <a href="../parents.html" class="glass-btn">← Back to Parents Hub</a>
 
     <div id="star-container">
         <span class="star-icon" id="star-icon">⭐</span> x <span id="star-count">0</span>

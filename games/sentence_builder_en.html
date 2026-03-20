@@ -51,8 +51,22 @@
             background: white; border: 4px solid var(--main-teal); border-radius: 22px;
             overflow: hidden; cursor: pointer; transition: 0.3s;
             box-shadow: 0 8px 25px rgba(0,0,0,0.07); display: flex; flex-direction: column;
+            position: relative;
         }
         .sentence-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.12); }
+        .sentence-card.done { border-color: #27ae60; background: #f0faf4; }
+        .card-done-badge {
+            display: none;
+            position: absolute; top: -10px; right: -10px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #27ae60; color: white;
+            font-size: 1.1rem; font-weight: bold;
+            align-items: center; justify-content: center;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            z-index: 10;
+        }
+        .sentence-card.done .card-done-badge { display: flex; }
 
         .card-img-wrapper { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #fdfdfd; border-bottom: 2px solid #eee; flex-shrink: 0; }
         .sentence-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
@@ -69,7 +83,7 @@
         .image-stage { flex: 1 1 0; width: 96%; max-width: 1400px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 0; }
         
         .drop-zone {
-            flex: 0 0 auto; min-height: 90px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
+            flex: 0 0 auto; height: 14vh; min-height: 100px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
             border-radius: 25px; display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; align-items: flex-start; gap: 8px; padding: 10px 15px; overflow-x: hidden; overflow-y: auto;
             transition: background 0.2s;
         }
@@ -154,17 +168,23 @@
         }
 
         /* ── 标签筛选栏 ── */
-        .tag-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; padding: 0 20px; }
+        .tag-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding: 0 20px; }
+        .tag-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; }
+        .tag-row-label { font-size: 0.7rem; color: #aaa; margin-right: 4px; align-self: center; white-space: nowrap; letter-spacing: 1px; }
         .tag-pill {
-            padding: 5px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
-            border: 2px solid #ddd; background: white; color: #555; cursor: pointer;
+            padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            border: 2px solid transparent; cursor: pointer;
             transition: 0.2s; white-space: nowrap;
         }
-        .tag-pill:hover { border-color: var(--main-teal); color: var(--main-teal); }
-        .tag-pill.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
-        .tag-pill.keyword { border-style: dashed; }
-        .tag-pill.keyword.active { background: #f3b236; border-color: #f3b236; color: #1e2e46; border-style: solid; }
-        .tag-section-label { font-size: 0.75rem; color: #999; align-self: center; margin: 0 4px; }
+        .tag-pill.theme { background: #e8f5f5; color: #4a7a7b; border-color: #c5dfdf; }
+        .tag-pill.theme:hover { background: #d0ecec; border-color: var(--main-teal); }
+        .tag-pill.theme.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
+        .tag-pill.keyword { background: #fef9e7; color: #9a7c1e; border-color: #f5e6a3; }
+        .tag-pill.keyword:hover { background: #fdf0c8; border-color: #f3b236; }
+        .tag-pill.keyword.active { background: #f3b236; color: #1e2e46; border-color: #d4922a; }
+        .tag-pill.all { background: #f0f0f0; color: #666; border-color: #ddd; }
+        .tag-pill.all:hover { background: #e4e4e4; }
+        .tag-pill.all.active { background: #555; color: white; border-color: #555; }
 
         @keyframes correctFlash {
             0%   { box-shadow: 0 0 0 0 rgba(243,178,54,0); background: transparent; }
@@ -183,7 +203,7 @@
     <div id="list-view">
         <a href="../parents.html" class="glass-btn font-en">← Back to Parents Hub</a>
         <div class="list-header">
-            <h1 class="font-en">🧩 Sentence Builder 🧩</h1>
+
             <div class="tag-bar" id="tag-bar"></div>
         </div>
         <div id="gallery-view"></div>
@@ -225,18 +245,23 @@
             const { themeTags, keywordTags: kw } = getAllTags();
             const bar = document.getElementById('tag-bar');
             let html = '';
-            html += `<div class="tag-pill font-en ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">All</div>`;
-            html += `<span class="tag-section-label font-en">|</span>`;
+            // Row 1: All + theme tags
+            html += `<div class="tag-row">`;
+            html += `<div class="tag-pill all font-en ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">All</div>`;
             themeTags.forEach(t => {
                 const def = tagDefinitions[t] || { zh: t, en: t };
                 const isActive = activeThemeTag === t;
-                html += `<div class="tag-pill font-en ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.en} <span class="font-zh" style="font-size:0.75rem;opacity:0.7;">${def.zh}</span></div>`;
+                html += `<div class="tag-pill theme font-en ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.en} <span class="font-zh" style="font-size:0.7rem;opacity:0.7;">${def.zh}</span></div>`;
             });
-            html += `<span class="tag-section-label font-en">|</span>`;
+            html += `</div>`;
+            // Row 2: keyword tags
+            html += `<div class="tag-row">`;
+            html += `<span class="tag-row-label font-en">By word:</span>`;
             kw.forEach(k => {
                 const isActive = activeKeyword === k.zh;
-                html += `<div class="tag-pill keyword ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')"><span class="font-en">${k.en}</span> <span class="font-zh" style="font-size:0.75rem;opacity:0.7;">「${k.zh}」</span></div>`;
+                html += `<div class="tag-pill keyword ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')"><span class="font-en">${k.en}</span> <span class="font-zh" style="font-size:0.65rem;opacity:0.7;margin-left:2px;">「${k.zh}」</span></div>`;
             });
+            html += `</div>`;
             bar.innerHTML = html;
         }
 
@@ -250,18 +275,37 @@
             renderGalleryCards(currentFilteredList);
         }
 
+        function getSentenceKey(item) {
+            return 'sb_done_' + item.words.join('');
+        }
+        function isDone(item) {
+            return localStorage.getItem(getSentenceKey(item)) === '1';
+        }
+        function markDone(item) {
+            localStorage.setItem(getSentenceKey(item), '1');
+        }
+
         function renderGalleryCards(list) {
             const gallery = document.getElementById('gallery-view');
             if (list.length === 0) {
                 gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-en">No matching sentences</div>';
                 return;
             }
-            gallery.innerHTML = list.map((item, i) => `
-                <div class="sentence-card" onclick="startLevel(${i})">
+            // 已完成的移到最后
+            const undone = list.filter(item => !isDone(item));
+            const done   = list.filter(item =>  isDone(item));
+            const sorted = [...undone, ...done];
+
+            gallery.innerHTML = sorted.map((item) => {
+                const originalIdx = list.indexOf(item);
+                const finished = isDone(item);
+                return `
+                <div class="sentence-card${finished ? ' done' : ''}" onclick="startLevel(${originalIdx})">
+                    <div class="card-done-badge">✓</div>
                     <div class="card-img-wrapper"><img src="${item.image}" onerror="this.style.display='none'"></div>
                     <div class="card-info font-zh">${item.words.join('')}${item.punctuation || ''}</div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function initGallery() {
@@ -277,6 +321,7 @@
             playView.style.display = 'flex';
             document.body.style.overflow = 'hidden';
             zone.innerHTML = ''; pool.innerHTML = '';
+            zone.dataset.locked = ''; // 清除锁定
             document.getElementById('success-controls').style.visibility = 'hidden';
             document.getElementById('main-image').style.backgroundImage = `url('${currentData.image}')`;
 
@@ -294,8 +339,10 @@
         }
 
         // 多行感知：找到拖放点最近的插入位置
-        function getInsertTarget(clientX, clientY) {
-            const siblings = [...zone.querySelectorAll('.word-brick')];
+        function getInsertTarget(clientX, clientY, draggingEl) {
+            // 排除正在拖动的元素，避免它自身的位置干扰计算
+            const siblings = [...zone.querySelectorAll('.word-brick')]
+                .filter(s => s !== draggingEl);
             if (siblings.length === 0) return null;
 
             const rows = [];
@@ -310,7 +357,8 @@
             rows.sort((a, b) => a.centerY - b.centerY);
 
             const lastRow = rows[rows.length - 1];
-            if (clientY > lastRow.bottom) return null;
+            // 鼠标在所有词下方 → 插到末尾
+            if (clientY > lastRow.bottom + 20) return null;
 
             let bestRow = rows[0];
             let minDist = Infinity;
@@ -322,7 +370,8 @@
             const lastItemInBest = bestRow.items[bestRow.items.length - 1];
             const lastBox = lastItemInBest.getBoundingClientRect();
             const isLastRow = rows.indexOf(bestRow) === rows.length - 1;
-            if (isLastRow && clientX >= lastBox.right) return null;
+            // 鼠标在最后一行最后一词右侧 → 插到末尾
+            if (isLastRow && clientX >= lastBox.left + lastBox.width * 0.6) return null;
 
             const nextInRow = bestRow.items.find(sib => {
                 const box = sib.getBoundingClientRect();
@@ -354,7 +403,7 @@
 
                 if (isOverZone) {
                     zone.classList.add('active-hover');
-                    const target = getInsertTarget(touch.clientX, touch.clientY);
+                    const target = getInsertTarget(touch.clientX, touch.clientY, el);
                     const indicator = document.createElement('div');
                     indicator.className = 'insert-indicator';
                     indicator.style.cssText = 'width:4px; min-height:40px; align-self:stretch; background:#ff6b6b; border-radius:4px; flex-shrink:0; pointer-events:none;';
@@ -370,22 +419,30 @@
                 el.classList.remove('dragging');
                 el.style.left = ''; el.style.top = '';
                 zone.classList.remove('active-hover');
-                const indicator = zone.querySelector('.insert-indicator');
-                if (indicator) indicator.remove();
 
-                const zoneRect = zone.getBoundingClientRect();
-                const pad = 30;
-                const isInside = touch.clientX > zoneRect.left - pad && touch.clientX < zoneRect.right + pad &&
-                                 touch.clientY > zoneRect.top - pad && touch.clientY < zoneRect.bottom + pad;
-                if (isInside) {
-                    zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY));
-                } else { pool.appendChild(el); }
+                const indicator = zone.querySelector('.insert-indicator');
+                if (indicator) {
+                    // moveHandler 已确认在 zone 内，直接在 indicator 位置插入
+                    zone.insertBefore(el, indicator);
+                    indicator.remove();
+                } else {
+                    // indicator 不存在，说明松手时不在 zone 上方，退回词池
+                    const zoneRect = zone.getBoundingClientRect();
+                    const isInside = touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right &&
+                                     touch.clientY >= zoneRect.top  && touch.clientY <= zoneRect.bottom;
+                    if (isInside) {
+                        zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY, el));
+                    } else {
+                        pool.appendChild(el);
+                    }
+                }
                 check();
                 document.removeEventListener('mousemove', moveHandler);
                 document.removeEventListener('touchmove', moveHandler);
             };
 
             const startHandler = (e) => {
+                if (zone.dataset.locked === '1') return; // 答对后锁定
                 const touch = e.touches ? e.touches[0] : e;
                 const rect = el.getBoundingClientRect();
                 startX = touch.clientX - rect.left + (el.offsetWidth/2);
@@ -471,14 +528,18 @@
         function check() {
             const current = [...zone.querySelectorAll('.word-brick')].map(b => b.dataset.word).join('');
             if (current === currentData.words.join('')) {
+                zone.dataset.locked = '1'; // 锁定，不允许继续拖动
+                markDone(currentData);
                 document.getElementById('success-controls').style.visibility = 'visible';
                 new Audio('../audio/correct.mp3').play().catch(()=>null);
                 const punc = currentData.punctuation || '';
                 if (punc && !zone.querySelector('.auto-punctuation')) {
+                    const lastBrick = zone.querySelector('.word-brick:last-of-type');
+                    const brickSize = lastBrick ? getComputedStyle(lastBrick).fontSize : '3rem';
                     const puncEl = document.createElement('span');
                     puncEl.className = 'auto-punctuation font-zh';
                     puncEl.textContent = punc;
-                    puncEl.style.cssText = 'font-size:inherit; font-weight:bold; color:#888; align-self:center; margin-left:-4px; pointer-events:none;';
+                    puncEl.style.cssText = `font-size:${brickSize}; font-weight:bold; color:#666; align-self:center; pointer-events:none; margin-left:2px;`;
                     zone.appendChild(puncEl);
                 }
                 zone.classList.remove('correct-flash');
@@ -514,6 +575,7 @@
             listView.style.display = 'flex'; 
             playView.style.display = 'none'; 
             document.body.style.overflow = '';
+            refreshGallery();
         }
         window.onload = initGallery;
     </script>
