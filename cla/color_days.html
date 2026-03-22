@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Color Days - 颜色日</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-bg: #ffeaa7;
+        }
+
+        * { box-sizing: border-box; font-family: var(--wenkai) !important; user-select: none; }
+        
+        body { 
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb);
+            margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; 
+            display: flex; flex-direction: column;
+        }
+
+        /* 顶部统一导航 */
+        .top-nav {
+            height: 50px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 25px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 10; flex-shrink: 0;
+        }
+        .top-nav a { color: #333; text-decoration: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        .page-indicator { color: #333; font-size: 1.4rem; font-weight: bold; letter-spacing: 2px; }
+
+        /* 页面切换控制 */
+        .view-container { flex: 1; position: relative; width: 100%; }
+        .view { position: absolute; inset: 0; display: none; padding: 15px 25px; transition: opacity 0.3s; }
+        .view.active { display: flex; opacity: 1; }
+
+        /* --- 🌟 主页：三栏布局 (视频 - 颜色网格 - 视频) --- */
+        #home-view { flex-direction: row; justify-content: center; align-items: center; gap: 20px; }
+        
+        .video-side {
+            flex: 0 0 280px; /* 固定视频栏宽度 */
+            display: flex; flex-direction: column; gap: 15px; align-items: center;
+        }
+        .video-wrapper {
+            width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; 
+            overflow: hidden; border: 5px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .video-label { font-size: 1.2rem; font-weight: bold; color: #555; text-shadow: 1px 1px 0px white; }
+
+        .grid-layout {
+            flex: 1; max-width: 650px; display: flex; flex-direction: column; gap: 25px; 
+            background: rgba(255,255,255,0.5); padding: 30px; border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid white;
+        }
+        .heart-row { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        
+        .color-btn {
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+            transition: 0.2s; width: 100px;
+        }
+        .color-btn:hover { transform: translateY(-8px) scale(1.05); }
+        .heart-shape {
+            font-size: 4.2rem; line-height: 1; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.2));
+            margin-bottom: 5px; position: relative; display: flex; justify-content: center;
+        }
+        .day-num {
+            position: absolute; top: 15px; 
+            font-size: 1.5rem; font-weight: bold; color: white; font-family: Arial, sans-serif !important;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+        .color-name { font-size: 1.2rem; font-weight: bold; color: #555; text-shadow: 1px 1px 0px white; }
+
+        /* --- 🌟 详情页：左右双栏布局 (找一找 + 物品展示) --- */
+        #daily-view { flex-direction: column; align-items: center; background-color: #fff; transition: background-color 0.5s ease; gap: 15px; }
+        
+        .daily-title-box { font-size: 2.8rem; font-weight: bold; color: #333; margin-top: 5px; text-shadow: 2px 2px 4px rgba(255,255,255,0.8); }
+        
+        .daily-layout { display: flex; width: 100%; max-width: 1200px; flex: 1; gap: 25px; padding-bottom: 15px; }
+        
+        .section-box {
+            background: rgba(255, 255, 255, 0.85); border-radius: 25px; padding: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+            border: 4px solid rgba(255,255,255,0.6); align-items: center;
+        }
+        .box-title { font-size: 2rem; font-weight: bold; margin-bottom: 20px; color: #333; text-align: center; }
+        
+        /* 左侧：找一找计数器 (占据 40% 宽度) */
+        .finder-area { flex: 0.4; justify-content: center; }
+        .count-display { font-size: 10rem; font-weight: bold; color: #333; line-height: 1; margin: 20px 0; font-family: Arial, sans-serif !important;}
+        .ctrl-btns { display: flex; gap: 30px; }
+        .c-btn { width: 80px; height: 80px; font-size: 3rem; border-radius: 50%; border: none; background: white; box-shadow: 0 6px 15px rgba(0,0,0,0.15); cursor: pointer; color: #333; transition: 0.1s; display: flex; align-items: center; justify-content: center;}
+        .c-btn:active { transform: scale(0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* 右侧：物品展示区 (占据 60% 宽度) */
+        .items-area { flex: 0.6; }
+        #d-items-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; align-content: center; flex: 1; }
+        .item-card { 
+            background: white; border-radius: 20px; padding: 20px; width: 160px; text-align: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+            border: 3px solid #eee; transition: transform 0.2s;
+        }
+        .item-card:hover { transform: translateY(-5px); border-color: var(--accent-yellow); }
+        .item-emoji { font-size: 5.5rem; line-height: 1; }
+        .item-name { font-size: 1.5rem; font-weight: bold; margin-top: 10px; color: #555; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <a id="back-btn" onclick="goHome()" style="display:none;">⬅️ 返回主页唱儿歌</a>
+        <a id="teacher-btn" href="../teachers.html">⬅️ 工具台</a>
+        <div class="page-indicator" id="nav-title">🌈 Color Days 颜色日</div>
+        <div style="width: 100px;"></div>
+    </nav>
+
+    <div class="view-container">
+        
+        <div id="home-view" class="view active">
+            
+            <div class="video-side">
+                <div class="video-label">🎵 颜色歌 1</div>
+                <div class="video-wrapper">
+                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/ebQUaCALcuE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="grid-layout">
+                <div class="heart-row">
+                    <div class="color-btn" onclick="openDay(0)"><div class="heart-shape" style="color:#e74c3c"><span class="day-num">01</span>❤️</div><div class="color-name" style="color:#c0392b">红色日</div></div>
+                    <div class="color-btn" onclick="openDay(1)"><div class="heart-shape" style="color:#f39c12"><span class="day-num">02</span>🧡</div><div class="color-name" style="color:#d35400">橙色日</div></div>
+                    <div class="color-btn" onclick="openDay(2)"><div class="heart-shape" style="color:#f1c40f"><span class="day-num" style="color:#d35400">03</span>💛</div><div class="color-name" style="color:#f39c12">黄色日</div></div>
+                    <div class="color-btn" onclick="openDay(3)"><div class="heart-shape" style="color:#2ecc71"><span class="day-num">04</span>💚</div><div class="color-name" style="color:#27ae60">绿色日</div></div>
+                </div>
+                <div class="heart-row">
+                    <div class="color-btn" onclick="openDay(4)"><div class="heart-shape" style="color:#3498db"><span class="day-num">05</span>💙</div><div class="color-name" style="color:#2980b9">蓝色日</div></div>
+                    <div class="color-btn" onclick="openDay(5)"><div class="heart-shape" style="color:#9b59b6"><span class="day-num">06</span>💜</div><div class="color-name" style="color:#8e44ad">紫色日</div></div>
+                    <div class="color-btn" onclick="openDay(6)"><div class="heart-shape" style="color:#8d6e63"><span class="day-num">07</span>🤎</div><div class="color-name" style="color:#5d4037">棕色日</div></div>
+                    <div class="color-btn" onclick="openDay(7)"><div class="heart-shape" style="color:#2d3436"><span class="day-num">08</span>🖤</div><div class="color-name" style="color:#2d3436">黑色日</div></div>
+                </div>
+                <div class="heart-row">
+                    <div class="color-btn" onclick="openDay(8)"><div class="heart-shape" style="color:#ffffff"><span class="day-num" style="color:#333">09</span>🤍</div><div class="color-name" style="color:#7f8c8d">白色日</div></div>
+                    <div class="color-btn" onclick="openDay(9)"><div class="heart-shape" style="color:#fd79a8"><span class="day-num">10</span>🩷</div><div class="color-name" style="color:#e84393">粉色日</div></div>
+                    <div class="color-btn" onclick="openDay(10)"><div class="heart-shape" style="color:#b2bec3"><span class="day-num">11</span>🩶</div><div class="color-name" style="color:#636e72">灰色日</div></div>
+                    <div class="color-btn" onclick="openDay(11)"><div class="heart-shape" style="color:#ff9ff3"><span class="day-num">12</span>💝</div><div class="color-name" style="color:#e84393">彩虹日</div></div>
+                    <div class="color-btn" onclick="openDay(12)"><div class="heart-shape" style="color:#74b9ff"><span class="day-num">13</span>🇺🇸</div><div class="color-name" style="color:#0984e3">爱国日</div></div>
+                </div>
+            </div>
+
+            <div class="video-side">
+                <div class="video-label">🎵 颜色歌 2</div>
+                <div class="video-wrapper">
+                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/KUyWkXSL3MQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="daily-view" class="view">
+            <div class="daily-title-box" id="d-title">今天是__色日！</div>
+            <div class="daily-layout">
+                
+                <div class="finder-area section-box">
+                    <div class="box-title">👀 谁今天穿了<span id="d-find-color">__</span>色？</div>
+                    <div class="count-display" id="kid-count">0</div>
+                    <div class="ctrl-btns">
+                        <button class="c-btn" onclick="updateCount(-1)" style="color:#e74c3c">-</button>
+                        <button class="c-btn" onclick="updateCount(1)" style="color:#2ecc71">+</button>
+                    </div>
+                </div>
+
+                <div class="items-area section-box">
+                    <div class="box-title">生活中的<span id="d-item-color">__</span>色</div>
+                    <div id="d-items-grid">
+                        </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 🌟 代表物品数据
+        const daysData = [
+            { name: "红", bg: "#ffcccc", hex: "#e74c3c", items: [{e:"🍎", n:"苹果"}, {e:"🍓", n:"草莓"}, {e:"🚒", n:"消防车"}, {e:"🎈", n:"红气球"}] },
+            { name: "橙", bg: "#ffe0b2", hex: "#f39c12", items: [{e:"🍊", n:"橙子"}, {e:"🎃", n:"南瓜"}, {e:"🏀", n:"篮球"}, {e:"🥕", n:"胡萝卜"}] },
+            { name: "黄", bg: "#fff9c4", hex: "#f1c40f", items: [{e:"🍌", n:"香蕉"}, {e:"🌻", n:"向日葵"}, {e:"🐥", n:"小鸡"}, {e:"🧀", n:"奶酪"}] },
+            { name: "绿", bg: "#c8e6c9", hex: "#2ecc71", items: [{e:"🐸", n:"青蛙"}, {e:"🌳", n:"大树"}, {e:"🥦", n:"西兰花"}, {e:"🐢", n:"乌龟"}] },
+            { name: "蓝", bg: "#bbdefb", hex: "#3498db", items: [{e:"🦋", n:"蓝蝴蝶"}, {e:"👖", n:"牛仔裤"}, {e:"🐳", n:"鲸鱼"}, {e:"🫐", n:"蓝莓"}] },
+            { name: "紫", bg: "#e1bee7", hex: "#9b59b6", items: [{e:"🍇", n:"葡萄"}, {e:"🍆", n:"茄子"}, {e:"☂️", n:"雨伞"}, {e:"👾", n:"外星人"}] },
+            { name: "棕", bg: "#d7ccc8", hex: "#8d6e63", items: [{e:"🐻", n:"小熊"}, {e:"🥔", n:"土豆"}, {e:"🍩", n:"甜甜圈"}, {e:"🚪", n:"木门"}] },
+            { name: "黑", bg: "#cfd8dc", hex: "#2d3436", items: [{e:"🐈‍⬛", n:"黑猫"}, {e:"🕷️", n:"蜘蛛"}, {e:"🎹", n:"钢琴"}, {e:"🎩", n:"黑帽子"}] },
+            { name: "白", bg: "#f5f5f5", hex: "#ffffff", items: [{e:"🐑", n:"绵羊"}, {e:"☁️", n:"白云"}, {e:"🥛", n:"牛奶"}, {e:"⛄", n:"雪人"}] },
+            { name: "粉", bg: "#f8bbd0", hex: "#fd79a8", items: [{e:"🐖", n:"小猪"}, {e:"🌸", n:"樱花"}, {e:"🎀", n:"蝴蝶结"}, {e:"🦩", n:"火烈鸟"}] },
+            { name: "灰", bg: "#e0e0e0", hex: "#b2bec3", items: [{e:"🐘", n:"大象"}, {e:"🐭", n:"老鼠"}, {e:"🐺", n:"大灰狼"}, {e:"🪨", n:"石头"}] },
+            { name: "彩虹", bg: "#ffecb3", hex: "#ff9ff3", items: [{e:"🌈", n:"彩虹"}, {e:"🍭", n:"棒棒糖"}, {e:"🦄", n:"独角兽"}, {e:"🎨", n:"调色盘"}] },
+            { name: "爱国", bg: "#b3e5fc", hex: "#74b9ff", items: [{e:"🇺🇸", n:"国旗"}, {e:"🦅", n:"老鹰"}, {e:"🎆", n:"烟花"}, {e:"🗽", n:"自由女神"}] }
+        ];
+
+        let currentCount = 0;
+
+        function openDay(index) {
+            const data = daysData[index];
+            
+            // 切换视图
+            document.getElementById('home-view').classList.remove('active');
+            document.getElementById('daily-view').classList.add('active');
+            document.getElementById('teacher-btn').style.display = 'none';
+            document.getElementById('back-btn').style.display = 'block';
+
+            // 设置背景与标题
+            document.getElementById('nav-title').innerText = `🎨 今天是 ${data.name}色日！`;
+            document.getElementById('daily-view').style.backgroundColor = data.bg;
+            
+            document.getElementById('d-title').innerHTML = `🎉 今天我们找 <span style="color:${data.hex}; text-shadow: 1px 1px 0 #fff;">${data.name}</span> 色！`;
+            document.getElementById('d-find-color').innerText = data.name;
+            document.getElementById('d-find-color').style.color = data.hex;
+            document.getElementById('d-item-color').innerText = data.name;
+            document.getElementById('d-item-color').style.color = data.hex;
+
+            // 渲染代表物品 (扩大空间后，加了第四个物品)
+            const grid = document.getElementById('d-items-grid');
+            grid.innerHTML = "";
+            data.items.forEach(item => {
+                grid.innerHTML += `
+                    <div class="item-card">
+                        <div class="item-emoji">${item.e}</div>
+                        <div class="item-name">${item.n}</div>
+                    </div>
+                `;
+            });
+
+            // 重置计数器
+            currentCount = 0;
+            document.getElementById('kid-count').innerText = currentCount;
+            document.getElementById('kid-count').style.color = data.hex === "#ffffff" ? "#333" : data.hex;
+        }
+
+        function goHome() {
+            // 暂停视频播放（通过重新加载 iframe src 实现）
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                const src = iframe.src;
+                iframe.src = src; 
+            });
+
+            document.getElementById('daily-view').classList.remove('active');
+            document.getElementById('home-view').classList.add('active');
+            document.getElementById('teacher-btn').style.display = 'block';
+            document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('nav-title').innerText = "🌈 Color Days 颜色日";
+        }
+
+        function updateCount(amt) {
+            currentCount = Math.max(0, currentCount + amt);
+            const counter = document.getElementById('kid-count');
+            counter.innerText = currentCount;
+            
+            counter.style.transform = "scale(1.2)";
+            setTimeout(() => counter.style.transform = "scale(1)", 150);
+        }
+    </script>
+</body>
+</html>

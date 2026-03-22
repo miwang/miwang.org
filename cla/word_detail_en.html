@@ -20,30 +20,34 @@
 
         body { background-color: var(--bg); margin: 0; font-family: var(--font-en); }
 
-        /* ── 悬浮玻璃返回按钮 ── */
-        .glass-btn {
-            position: fixed; top: 16px; left: 20px;
-            color: #444; text-decoration: none;
-            font-size: 1rem; font-weight: 600; z-index: 9999;
-            background: rgba(255,255,255,0.55);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding: 8px 22px; border-radius: 40px;
-            border: 1.5px solid rgba(255,255,255,0.6);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
-            display: inline-flex; align-items: center;
-            transition: background 0.2s, transform 0.2s;
-            font-family: var(--font-en);
+        /* ── Nav (合并版) ── */
+        .nav-top {
+            background: var(--teal); padding: 0 20px;
+            height: 56px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; border-bottom: 5px solid var(--accent);
         }
-        .glass-btn:hover { background: rgba(255,255,255,0.75); transform: scale(1.04); }
+        .nav-top a {
+            color: #fff; text-decoration: none;
+            font-weight: 600; font-size: 0.95rem;
+            white-space: nowrap;
+        }
+        .nav-top a:hover { opacity: 0.8; }
+        .nav-title { color: white; font-weight: 700; font-size: 1.2rem; }
+        .nav-spacer { width: 120px; }
+
         @media (max-width: 768px) {
-            .glass-btn { top: 10px; left: 12px; font-size: 0.85rem; padding: 6px 14px; }
+            .nav-top { height: 56px; }
+            .nav-top a { font-size: 0.9rem; }
+            .nav-title { font-size: 1rem; }
+            .nav-spacer { width: 80px; }
             .char-header { padding: 16px; gap: 12px; margin-bottom: 20px; }
             .phrase-text { font-size: 3rem; }
             .img-top { height: 160px; }
             .container { margin: 16px auto; }
         }
 
-        .container { width: 95%; max-width: 900px; margin: 28px auto; padding-top: 48px; }
+        .container { width: 95%; max-width: 900px; margin: 28px auto; }
 
         /* ── Character card with audio/image ── */
         .char-card-wrap {
@@ -176,7 +180,11 @@
 </head>
 <body>
 
-    <a href="words_and_phrases_en.html" class="glass-btn font-en">← Back to Sight Words</a>
+    <nav class="nav-top">
+        <a href="words_and_phrases_en.html">⬅️ Back to Sight Words</a>
+        <span class="nav-title">Word Study 📖</span>
+        <div class="nav-spacer"></div>
+    </nav>
 
     <div class="container">
         <div class="char-header">
@@ -251,7 +259,7 @@
             const pyNoTone = getPinyinNoTone(targetChar).replace(/ /g, '');
             document.getElementById('char-pinyin').textContent = py;
             const charImg = document.getElementById('char-img');
-            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(pyNoTone)}.png`;
+            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(pyNoTone)}.webp`;
             charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
 
             // Hanzi Writer stroke animation
@@ -267,7 +275,7 @@
                 data.phrases.map(p => `
                     <div class="phrase-card" onclick="speak('${p.replace(/'/g, "\\'")}')">
                         <div class="img-top" id="img-wrap-${encodeURIComponent(p)}">
-                            <img src="../images/sight_words_phrases/${encodeURIComponent(p)}.png"
+                            <img src="../images/sight_words_phrases/${encodeURIComponent(p)}.webp"
                                  class="phrase-img"
                                  onerror="this.closest('.img-top').classList.add('no-img'); this.remove();">
                         </div>
