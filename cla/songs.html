@@ -385,7 +385,7 @@
             } else if (e.target !== bubble) { bubble.style.display = 'none'; }
         };
         function makeHardWord() {
-            const { pinyin } = pinyinPro; const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".png";
+            const { pinyin } = pinyinPro; const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".webp";
             const imgFile = prompt(`加注图片文件名:`, autoName);
             if (imgFile) { let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); d[selectedText] = imgFile; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); bubble.style.display = 'none'; renderSlide(); }
         }

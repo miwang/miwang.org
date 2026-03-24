@@ -167,7 +167,7 @@
             const pyNoTone = getPinyinNoTone(targetChar).replace(/ /g, '');
             document.getElementById('char-pinyin').textContent = py;
             const charImg = document.getElementById('char-img');
-            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(pyNoTone)}.png`;
+            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(pyNoTone)}.webp`;
             charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
 
             HanziWriter.create('character-target', targetChar, {
@@ -178,7 +178,7 @@
             container.innerHTML = data.phrases.map(p => `
                 <div class="phrase-card" onclick="speak('${p}')">
                     <div class="img-top">
-                        <img src="../images/sight_words_phrases/${p}.png" class="phrase-img">
+                        <img src="../images/sight_words_phrases/${p}.webp" class="phrase-img">
                     </div>
                     <div class="text-bottom">
                         <div class="phrase-text">${p}</div>

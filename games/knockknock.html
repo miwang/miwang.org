@@ -118,7 +118,7 @@
         window.onload = () => {
             const grid = document.getElementById('memory-grid');
             grid.innerHTML = members.map(m => `
-                <div class="memory-card"><img src="../images/family/${encodeURIComponent(m)}.png"><p>${m}</p></div>
+                <div class="memory-card"><img src="../images/family/${encodeURIComponent(m)}.webp"><p>${m}</p></div>
             `).join('');
 
             const container = document.getElementById('btn-container');

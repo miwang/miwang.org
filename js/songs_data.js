@@ -8,7 +8,7 @@ const songsData = [
     {
         id: "guyongzhe",
         title: "孤勇者 (Lonely Warrior)",
-        cover: "guyongzhe.jpg", // 🌟 对应 images/songs/guyongzhe.jpg
+        cover: "guyongzhe.webp", // 🌟 对应 images/songs/guyongzhe.webp
         youtubeId: "Je6r_DqkPqU",
         startTime: 0,
         lyrics: [
@@ -63,7 +63,7 @@ const songsData = [
     {
         id: "xiaopingguo",
         title: "小苹果 (Little Apple)",
-        cover: "xiaopingguo.png",
+        cover: "xiaopingguo.webp",
         youtubeId: "6Fkb9FIUO-A",
         startTime: 0,
         lyrics: [
@@ -111,7 +111,7 @@ const songsData = [
     {
         id: "qingchun",
         title: "青春修炼手册 (Practice Book)",
-        cover: "qingchun.jpg",
+        cover: "qingchun.webp",
         youtubeId: "uIoJUkWMYkc",
         startTime: 0,
         lyrics: [
@@ -180,7 +180,7 @@ const songsData = [
     {
         id: "chuntian",
         title: "春天在哪里 (Where is Spring)",
-        cover: "chuntian.jpg",
+        cover: "chuntian.webp",
         youtubeId: "YCGVuC_629E",
         startTime: 0,
         lyrics: [
@@ -218,7 +218,7 @@ const songsData = [
     {
         id: "mengbao",
         title: "萌宝过大年 (New Year Celebration)",
-        cover: "mengbao.jpg",
+        cover: "mengbao.webp",
         youtubeId: "q5mitD4khxo",
         startTime: 7,
         lyrics: [
@@ -264,7 +264,7 @@ const songsData = [
     {
         id: "shangxuege",
         title: "上学歌 (Going to School)",
-        cover: "shangxuege.jpg",
+        cover: "shangxuege.webp",
         youtubeId: "vulOTUcnMug",
         startTime: 0,
         lyrics: [

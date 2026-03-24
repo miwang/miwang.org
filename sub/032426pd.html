@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用几何拼板拼小鸭子 | Build a Duck</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: #FDF9F1;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        h2 {
+            color: #666;
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap; /* 关键修复：允许换行，防止被挤压消失 */
+            justify-content: center;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        .palette {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 200px;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .palette-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .shape-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: grab;
+            user-select: none;
+        }
+        .shape-btn p {
+            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .shape-btn span {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        .canvas-container {
+            flex-grow: 1;
+            min-width: 500px;
+            min-height: 600px; /* 关键修复：强制最低高度 */
+            background-color: white;
+            background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
+            background-size: 40px 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #eaeaea; /* 加上外边框，确保区域清晰可见 */
+            position: relative;
+            overflow: hidden;
+        }
+        .duck-outline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .draggable-shape {
+            position: absolute;
+            cursor: grab;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            transform-origin: center center;
+            transition: transform 0.1s;
+        }
+        .draggable-shape:active {
+            cursor: grabbing;
+        }
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-family: inherit;
+        }
+        .btn-clear { background-color: #fff; color: #333; }
+        .btn-clear:hover { background-color: #f0f0f0; }
+        .btn-finish { background-color: #4CAF50; color: white; border-color: #4CAF50; }
+        .btn-finish:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+
+    <h1>用几何拼板拼小鸭子</h1>
+    <h2>Build a Duck with Pattern Blocks</h2>
+
+    <div class="container">
+        <div class="palette" id="palette">
+            <div class="palette-title">几何拼板<br>(Pattern Blocks)</div>
+            
+            <div class="shape-btn" draggable="true" data-type="hexagon">
+                <svg width="60" height="60" viewBox="-2 -2 104 90.6">
+                    <polygon points="25,0 75,0 100,43.3 75,86.6 25,86.6 0,43.3" fill="#FFD700" stroke="#333" stroke-width="2"/>
+                </svg>
+                <p>六边形<br><span>Hexagon</span></p>
+            </div>
+
+            <div class="shape-btn" draggable="true" data-type="trapezoid">
+                <svg width="60" height="30" viewBox="-2 -2 104 47.3">
+                    <polygon points="25,0 75,0 100,43.3 0,43.3" fill="#FF0000" stroke="#333" stroke-width="2"/>
+                </svg>
+                <p>梯形<br><span>Trapezoid</span></p>
+            </div>
+
+            <div class="shape-btn" draggable="true" data-type="rhombus-blue">
+                <svg width="50" height="60" viewBox="-2 -2 79 90.6">
+                    <polygon points="25,0 75,43.3 50,86.6 0,43.3" fill="#0000FF" stroke="#333" stroke-width="2"/>
+                </svg>
+                <p>菱形<br><span>Rhombus</span></p>
+            </div>
+
+            <div class="shape-btn" draggable="true" data-type="triangle">
+                <svg width="60" height="50" viewBox="-2 -2 54 47.3">
+                    <polygon points="25,0 50,43.3 0,43.3" fill="#008000" stroke="#333" stroke-width="2"/>
+                </svg>
+                <p>正三角形<br><span>Triangle</span></p>
+            </div>
+
+            <div class="shape-btn" draggable="true" data-type="square">
+                <svg width="50" height="50" viewBox="-2 -2 54 54">
+                    <rect x="0" y="0" width="50" height="50" fill="#FFA500" stroke="#333" stroke-width="2"/>
+                </svg>
+                <p>正方形<br><span>Square</span></p>
+            </div>
+            
+            <div class="shape-btn" draggable="true" data-type="rhombus-tan">
+                <svg width="25" height="60" viewBox="-2 -2 30 100.6">
+                    <polygon points="13,0 26,48.3 13,96.6 0,48.3" fill="#D2B48C" stroke="#333" stroke-width="2"/>
+                </svg>
+                <p>细菱形<br><span>Tan Rhombus</span></p>
+            </div>
+        </div>
+
+        <div class="canvas-container" id="canvas">
+            <svg class="duck-outline" viewBox="0 0 600 450" preserveAspectRatio="xMidYMid meet">
+                <g transform="translate(100, 50)"> <polygon points="225,91.7 325,91.7 350,135 325,178.3 425,178.3 400,221.6 425,264.9 225,264.9 200,221.6 225,178.3 175,178.3 200,135" fill="none" stroke="#888" stroke-width="4" stroke-dasharray="6,6"/>
+                    <polygon points="275,264.9 300,308.2 250,308.2" fill="none" stroke="#888" stroke-width="4" stroke-dasharray="6,6"/>
+                    <polygon points="375,264.9 400,308.2 350,308.2" fill="none" stroke="#888" stroke-width="4" stroke-dasharray="6,6"/>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-clear" onclick="clearCanvas()">清空画布 / Clear</button>
+        <button class="btn-finish" onclick="celebrate()">我拼好了！/ Done!</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const shapeSVGs = {
+            'hexagon': '<svg width="104" height="90.6" viewBox="-2 -2 104 90.6"><polygon points="25,0 75,0 100,43.3 75,86.6 25,86.6 0,43.3" fill="#FFD700" stroke="#333" stroke-width="2"/></svg>',
+            'trapezoid': '<svg width="104" height="47.3" viewBox="-2 -2 104 47.3"><polygon points="25,0 75,0 100,43.3 0,43.3" fill="#FF0000" stroke="#333" stroke-width="2"/></svg>',
+            'rhombus-blue': '<svg width="79" height="90.6" viewBox="-2 -2 79 90.6"><polygon points="25,0 75,43.3 50,86.6 0,43.3" fill="#0000FF" stroke="#333" stroke-width="2"/></svg>',
+            'triangle': '<svg width="54" height="47.3" viewBox="-2 -2 54 47.3"><polygon points="25,0 50,43.3 0,43.3" fill="#008000" stroke="#333" stroke-width="2"/></svg>',
+            'square': '<svg width="54" height="54" viewBox="-2 -2 54 54"><rect x="0" y="0" width="50" height="50" fill="#FFA500" stroke="#333" stroke-width="2"/></svg>',
+            'rhombus-tan': '<svg width="30" height="100.6" viewBox="-2 -2 30 100.6"><polygon points="13,0 26,48.3 13,96.6 0,48.3" fill="#D2B48C" stroke="#333" stroke-width="2"/></svg>'
+        };
+
+        // 拖拽逻辑
+        document.querySelectorAll('.shape-btn').forEach(btn => {
+            btn.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('type', e.target.closest('.shape-btn').dataset.type);
+            });
+        });
+
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+        });
+
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const type = e.dataTransfer.getData('type');
+            if (type && shapeSVGs[type]) {
+                createShapeOnCanvas(type, e.clientX, e.clientY);
+            }
+        });
+
+        let activeDragElement = null;
+        let offsetX = 0, offsetY = 0;
+
+        function createShapeOnCanvas(type, clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const shapeDiv = document.createElement('div');
+            shapeDiv.className = 'draggable-shape';
+            shapeDiv.innerHTML = shapeSVGs[type];
+            shapeDiv.dataset.rotation = 0;
+            
+            shapeDiv.style.left = (clientX - rect.left - 25) + 'px'; 
+            shapeDiv.style.top = (clientY - rect.top - 25) + 'px';
+            
+            // 点击旋转 30 度
+            shapeDiv.addEventListener('click', (e) => {
+                if (!shapeDiv.dataset.dragging) {
+                    let rotation = parseInt(shapeDiv.dataset.rotation) + 30;
+                    shapeDiv.dataset.rotation = rotation;
+                    shapeDiv.style.transform = `rotate(${rotation}deg)`;
+                }
+            });
+
+            // 在画布上移动
+            shapeDiv.addEventListener('mousedown', (e) => {
+                activeDragElement = shapeDiv;
+                shapeDiv.dataset.dragging = "true";
+                const shapeRect = shapeDiv.getBoundingClientRect();
+                offsetX = e.clientX - shapeRect.left;
+                offsetY = e.clientY - shapeRect.top;
+                shapeDiv.style.zIndex = 1000; 
+            });
+
+            canvas.appendChild(shapeDiv);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (activeDragElement) {
+                const rect = canvas.getBoundingClientRect();
+                let x = e.clientX - rect.left - offsetX;
+                let y = e.clientY - rect.top - offsetY;
+                activeDragElement.style.left = x + 'px';
+                activeDragElement.style.top = y + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (activeDragElement) {
+                setTimeout(() => { activeDragElement.dataset.dragging = ""; }, 50);
+                activeDragElement.style.zIndex = 1;
+                activeDragElement = null;
+            }
+        });
+
+        function clearCanvas() {
+            const shapes = canvas.querySelectorAll('.draggable-shape');
+            shapes.forEach(shape => shape.remove());
+        }
+
+        function celebrate() {
+            alert("太棒了！小鸭子拼好了！ Quack quack! Great job!");
+        }
+    </script>
+</body>
+</html>
