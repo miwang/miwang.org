@@ -81,6 +81,7 @@ header {
 /* page indicator dots */
 .dots {
   display: flex; gap: 6px; align-items: center;
+  flex-wrap: wrap; justify-content: flex-end; max-width: 60%;
 }
 .dot {
   width: 9px; height: 9px; border-radius: 50%;
@@ -89,7 +90,7 @@ header {
 .dot.active { background: var(--teal); transform: scale(1.35); }
 .dot.done   { background: var(--mint); }
 
-/* ── TABS (now a row of small pills) ── */
+/* ── TABS ── */
 nav {
   flex-shrink: 0;
   display: flex; justify-content: center; gap: 6px;
@@ -122,7 +123,7 @@ nav {
 .panel.active { display: flex; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
 
-/* ── PREV / NEXT nav arrows within each panel ── */
+/* ── PREV / NEXT ── */
 .pnav {
   position: absolute; bottom: 10px; right: 0;
   display: flex; gap: 8px; z-index: 10;
@@ -151,7 +152,6 @@ nav {
   width: 100%; gap: 24px; padding-bottom: 44px;
 }
 
-/* big word display */
 .big-word {
   font-size: 90px; font-weight: bold; line-height: 1;
   padding: 18px 44px; border-radius: 28px;
@@ -165,7 +165,6 @@ nav {
 
 .tap-hint { font-size: 16px; color: #bbb; margin-top: -8px; }
 
-/* sentence display */
 .sentence-box {
   background: white; border-radius: 20px;
   padding: 18px 32px; font-size: 28px; color: #444;
@@ -176,7 +175,6 @@ nav {
 .sentence-box .kw  { color: var(--orange); font-weight: bold; }
 .sentence-box .kw2 { color: var(--mint);   font-weight: bold; }
 
-/* image-style emoji pair */
 .pair-card {
   background: white; border-radius: 24px;
   padding: 24px 28px; text-align: center;
@@ -196,7 +194,6 @@ nav {
   box-shadow: 0 4px 0 #e8b800;
 }
 
-/* label banner */
 .label-banner {
   font-size: 44px; font-weight: bold;
   padding: 8px 36px; border-radius: 50px;
@@ -204,15 +201,14 @@ nav {
 .lb-same { color: #0e9488; background: #ccfbf5; border: 2.5px solid var(--mint); }
 .lb-diff { color: #c2410c; background: #ffe2cf; border: 2.5px solid var(--orange); }
 
-/* apple row */
 .apple-row { display: flex; gap: 10px; align-items: center; }
 .apple { font-size: 62px; transition: transform .2s; cursor: default; }
 .apple:hover { transform: scale(1.12); }
 
 /* ═══════════════════════
-   COMPARE GAME
+   GAMES CSS
 ═══════════════════════ */
-.cmp-wrap {
+.cmp-wrap, .match-wrap, .sort-wrap {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   width: 100%; gap: 12px; padding-bottom: 44px;
@@ -239,20 +235,8 @@ nav {
 .same-btn { background:#ccfbf5; border-color:var(--mint);   color:#0e9488; }
 .diff-btn { background:#ffe2cf; border-color:var(--orange);  color:#c2410c; }
 .ans-btn:hover { transform:scale(1.06); }
-@keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
-@keyframes shake  { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
 
-/* ═══════════════════════
-   MATCH GAME
-═══════════════════════ */
-.match-wrap {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  width:100%; gap:10px; padding-bottom:44px;
-}
-.match-board {
-  display:grid; grid-template-columns:repeat(4,1fr);
-  gap:14px; width:100%; max-width:480px;
-}
+.match-board { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; width:100%; max-width:480px; }
 .mcard {
   aspect-ratio:1; background:var(--teal); border-radius:18px;
   display:flex; align-items:center; justify-content:center;
@@ -270,13 +254,6 @@ nav {
 .match-hint { font-size:15px; color:#aaa; }
 .match-status { font-size:19px; color:#666; min-height:28px; }
 
-/* ═══════════════════════
-   SORT GAME
-═══════════════════════ */
-.sort-wrap {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  width:100%; gap:10px; padding-bottom:44px;
-}
 .sort-pool {
   display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
   background:white; border-radius:16px; padding:10px 16px;
@@ -300,7 +277,6 @@ nav {
 .bitems{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;min-height:48px;}
 .sort-msg{font-size:18px;color:#666;min-height:24px;text-align:center;}
 
-/* reset btn */
 .reset-btn {
   font-family:var(--fn); font-size:14px; padding:7px 22px; border-radius:50px;
   background:white; border:2px solid var(--teal); color:var(--teal);
@@ -308,7 +284,6 @@ nav {
 }
 .reset-btn:hover{background:var(--teal);color:white;transform:translateY(-1px);}
 
-/* celebrate */
 .celebrate{
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   font-size:72px;z-index:999;pointer-events:none;animation:cAnim 1.2s forwards;
@@ -323,8 +298,6 @@ nav {
 </head>
 <body>
 <div id="app">
-
-  <!-- HEADER -->
   <header>
     <div class="title-pill">
       <span class="t-same">一样</span>
@@ -333,13 +306,8 @@ nav {
     </div>
     <div class="dots" id="dots"></div>
   </header>
-
-  <!-- TABS -->
   <nav id="nav"></nav>
-
-  <!-- CONTENT -->
   <div class="content" id="content"></div>
-
 </div>
 
 <script>
@@ -358,23 +326,18 @@ const PAGES = [
           <radialGradient id="ag1" cx="35%" cy="30%"><stop offset="0%" stop-color="white" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent"/></radialGradient>
           <radialGradient id="ag2" cx="35%" cy="30%"><stop offset="0%" stop-color="white" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent"/></radialGradient>
         </defs>
-        <!-- Apple L -->
         <g transform="translate(30,8)">
           <ellipse cx="45" cy="68" rx="38" ry="46" fill="#e74c3c"/>
           <ellipse cx="45" cy="68" rx="38" ry="46" fill="url(#ag1)"/>
           <path d="M45 22 Q52 4 62 8" stroke="#27ae60" stroke-width="4" stroke-linecap="round" fill="none"/>
           <ellipse cx="63" cy="7" rx="10" ry="6" fill="#27ae60" transform="rotate(-20,63,7)"/>
-          <ellipse cx="28" cy="44" rx="8" ry="13" fill="white" opacity="0.22" transform="rotate(-20,28,44)"/>
         </g>
-        <!-- = sign -->
         <text x="170" y="80" text-anchor="middle" font-size="48" fill="#4ECDC4" font-weight="bold" font-family="sans-serif">=</text>
-        <!-- Apple R -->
         <g transform="translate(210,8)">
           <ellipse cx="45" cy="68" rx="38" ry="46" fill="#e74c3c"/>
           <ellipse cx="45" cy="68" rx="38" ry="46" fill="url(#ag2)"/>
           <path d="M45 22 Q52 4 62 8" stroke="#27ae60" stroke-width="4" stroke-linecap="round" fill="none"/>
           <ellipse cx="63" cy="7" rx="10" ry="6" fill="#27ae60" transform="rotate(-20,63,7)"/>
-          <ellipse cx="28" cy="44" rx="8" ry="13" fill="white" opacity="0.22" transform="rotate(-20,28,44)"/>
         </g>
       </svg>
       <div style="background:#ccfbf5;border:2.5px solid #4ECDC4;border-radius:50px;padding:7px 28px;font-size:19px;color:#0e9488;font-weight:bold">
@@ -392,50 +355,18 @@ const PAGES = [
         <defs>
           <radialGradient id="bg1" cx="35%" cy="30%"><stop offset="0%" stop-color="white" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent"/></radialGradient>
         </defs>
-        <!-- Apple -->
         <g transform="translate(20,8)">
           <ellipse cx="45" cy="68" rx="38" ry="46" fill="#e74c3c"/>
           <ellipse cx="45" cy="68" rx="38" ry="46" fill="url(#bg1)"/>
           <path d="M45 22 Q52 4 62 8" stroke="#27ae60" stroke-width="4" stroke-linecap="round" fill="none"/>
           <ellipse cx="63" cy="7" rx="10" ry="6" fill="#27ae60" transform="rotate(-20,63,7)"/>
-          <ellipse cx="28" cy="44" rx="8" ry="13" fill="white" opacity="0.22" transform="rotate(-20,28,44)"/>
         </g>
-        <!-- ≠ sign -->
         <text x="170" y="80" text-anchor="middle" font-size="48" fill="#FF6B35" font-weight="bold" font-family="sans-serif">≠</text>
-        <!-- Yellow Apple -->
         <g transform="translate(215,8)">
-          <defs>
-            <radialGradient id="yag" cx="35%" cy="30%"><stop offset="0%" stop-color="white" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-          </defs>
-          <!-- body: slightly wider than tall, with top dimple -->
-          <path d="M45 22
-                   Q20 22 10 45
-                   Q2  65  8 85
-                   Q18 112 45 114
-                   Q72 112 82 85
-                   Q88 65  80 45
-                   Q70 22 55 22
-                   Q51 16 48 18
-                   Q45 16 42 18
-                   Q39 22 45 22 Z"
-                fill="#f4c430"/>
-          <path d="M45 22
-                   Q20 22 10 45
-                   Q2  65  8 85
-                   Q18 112 45 114
-                   Q72 112 82 85
-                   Q88 65  80 45
-                   Q70 22 55 22
-                   Q51 16 48 18
-                   Q45 16 42 18
-                   Q39 22 45 22 Z"
-                fill="url(#yag)"/>
-          <!-- stem -->
+          <defs><radialGradient id="yag" cx="35%" cy="30%"><stop offset="0%" stop-color="white" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
+          <path d="M45 22 Q20 22 10 45 Q2 65 8 85 Q18 112 45 114 Q72 112 82 85 Q88 65 80 45 Q70 22 55 22 Q51 16 48 18 Q45 16 42 18 Q39 22 45 22 Z" fill="#f4c430"/>
           <path d="M48 18 Q50 4 58 6" stroke="#5a3e1b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-          <!-- leaf -->
           <ellipse cx="60" cy="5" rx="10" ry="6" fill="#27ae60" transform="rotate(-25,60,5)"/>
-          <!-- shine -->
-          <ellipse cx="28" cy="44" rx="8" ry="13" fill="white" opacity="0.22" transform="rotate(-20,28,44)"/>
         </g>
       </svg>
       <div style="background:#ffe2cf;border:2.5px solid #FF6B35;border-radius:50px;padding:7px 28px;font-size:19px;color:#c2410c;font-weight:bold">
@@ -449,13 +380,9 @@ const PAGES = [
     <div class="center-col">
       <div class="label-banner lb-same">一样的苹果</div>
       <div class="apple-row">
-        <span class="apple" title="绿苹果">🍏</span>
-        <span class="apple" title="绿苹果">🍏</span>
-        <span class="apple" title="绿苹果">🍏</span>
+        <span class="apple">🍏</span><span class="apple">🍏</span><span class="apple">🍏</span>
       </div>
-      <div class="sentence-box">
-        这三个苹果的颜色<span class="kw2">一样</span>。
-      </div>
+      <div class="sentence-box">这三个苹果的颜色<span class="kw2">一样</span>。</div>
     </div>
   `},
 
@@ -464,13 +391,55 @@ const PAGES = [
     <div class="center-col">
       <div class="label-banner lb-diff">不一样的苹果</div>
       <div class="apple-row">
-        <span class="apple">🍏</span>
-        <span class="apple">🍋</span>
-        <span class="apple">🍎</span>
+        <span class="apple">🍏</span><span class="apple">🍋</span><span class="apple">🍎</span>
       </div>
-      <div class="sentence-box">
-        这三个苹果的颜色<span class="kw">不一样</span>。
+      <div class="sentence-box">这三个苹果的颜色<span class="kw">不一样</span>。</div>
+    </div>
+  `},
+
+  // ── 新增 1：一样的香蕉 ──
+  { tab:'🍌 香蕉', build: () => `
+    <div class="center-col">
+      <div class="label-banner lb-same">一样的香蕉</div>
+      <div class="apple-row">
+        <span class="apple">🍌</span><span class="apple">🍌</span>
       </div>
+      <div class="sentence-box">这两个香蕉<span class="kw2">一样</span>。</div>
+    </div>
+  `},
+
+  // ── 新增 2：一样的小狗 ──
+  { tab:'🐶 小狗', build: () => `
+    <div class="center-row">
+      <div class="pair-card"><span class="pe">🐶</span><span class="pl">小狗</span></div>
+      <div class="pair-card"><span class="pe">🐶</span><span class="pl">小狗</span></div>
+    </div>
+    <div style="position:absolute;bottom:60px;width:100%;display:flex;justify-content:center">
+      <div class="sentence-box">这两只小狗<span class="kw2">一样</span>。</div>
+    </div>
+  `},
+
+  // ── 新增 3：不一样的动物 ──
+  { tab:'🐱🐶 动物', build: () => `
+    <div class="center-row">
+      <div class="pair-card"><span class="pe">🐶</span><span class="pl">小狗</span></div>
+      <div class="vs-badge" style="flex-shrink:0">比</div>
+      <div class="pair-card"><span class="pe">🐱</span><span class="pl">小猫</span></div>
+    </div>
+    <div style="position:absolute;bottom:60px;width:100%;display:flex;justify-content:center">
+      <div class="sentence-box">小狗和小猫<span class="kw">不一样</span>。</div>
+    </div>
+  `},
+
+  // ── 新增 4：不一样的车 ──
+  { tab:'🚗 车', build: () => `
+    <div class="center-row">
+      <div class="pair-card"><span class="pe">🚗</span><span class="pl">汽车</span></div>
+      <div class="vs-badge" style="flex-shrink:0">比</div>
+      <div class="pair-card"><span class="pe">🚲</span><span class="pl">自行车</span></div>
+    </div>
+    <div style="position:absolute;bottom:60px;width:100%;display:flex;justify-content:center">
+      <div class="sentence-box">汽车和自行车<span class="kw">不一样</span>。</div>
     </div>
   `},
 
@@ -504,8 +473,8 @@ const PAGES = [
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
           <div style="font-size:15px;color:#aaa;letter-spacing:2px">衣服</div>
           <div style="display:flex;gap:16px">
-            <div class="pair-card"><span class="pe">👗</span><span class="pl">我的衣服</span></div>
-            <div class="pair-card"><span class="pe">👗</span><span class="pl">妈妈的衣服</span></div>
+            <div class="pair-card"><span class="pe">👗</span><span class="pl">我的</span></div>
+            <div class="pair-card"><span class="pe">👗</span><span class="pl">妈妈的</span></div>
           </div>
           <div class="label-banner lb-same" style="font-size:24px;padding:5px 24px">一样 🟰</div>
         </div>
@@ -513,15 +482,13 @@ const PAGES = [
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
           <div style="font-size:15px;color:#aaa;letter-spacing:2px">鞋子</div>
           <div style="display:flex;gap:16px">
-            <div class="pair-card"><span class="pe">👠</span><span class="pl">我的鞋子</span></div>
-            <div class="pair-card"><span class="pe">👟</span><span class="pl">妈妈的鞋子</span></div>
+            <div class="pair-card"><span class="pe">👠</span><span class="pl">我的</span></div>
+            <div class="pair-card"><span class="pe">👟</span><span class="pl">妈妈的</span></div>
           </div>
           <div class="label-banner lb-diff" style="font-size:24px;padding:5px 24px">不一样 ❌</div>
         </div>
       </div>
-      <div class="sentence-box">
-        我和妈妈的衣服<span class="kw2">一样</span>，鞋子<span class="kw">不一样</span>。
-      </div>
+      <div class="sentence-box">衣服<span class="kw2">一样</span>，鞋子<span class="kw">不一样</span>。</div>
     </div>
   `},
 
@@ -602,13 +569,11 @@ function buildNav() {
   nav.innerHTML = '';
   dotsEl.innerHTML = '';
   PAGES.forEach((p, i) => {
-    // tab button
     const btn = document.createElement('button');
     btn.className = 'tab' + (i === current ? ' active' : '');
     btn.textContent = p.tab;
     btn.onclick = () => goTo(i);
     nav.appendChild(btn);
-    // dot
     const d = document.createElement('div');
     d.className = 'dot' + (i === current ? ' active' : (seen.has(i) ? ' done' : ''));
     d.onclick = () => goTo(i);
@@ -638,7 +603,6 @@ function goTo(i) {
   buildNav();
 }
 
-// ── INIT ──
 buildNav();
 renderPanel(0);
 
@@ -652,13 +616,14 @@ function speak(t) {
 }
 
 // ══════════════════════════════════════════════════════
-//  COMPARE GAME (page 9)
+//  COMPARE GAME (已加入新元素)
 // ══════════════════════════════════════════════════════
-// Items strictly from the PDF slides
 const CMP = [
   {a:'🍏',la:'绿苹果', b:'🍏',lb:'绿苹果', same:true },
   {a:'🍏',la:'绿苹果', b:'🍎',lb:'红苹果',  same:false},
-  {a:'🍋',la:'黄苹果', b:'🍎',lb:'红苹果',  same:false},
+  {a:'🍌',la:'香蕉',   b:'🍌',lb:'香蕉',    same:true },
+  {a:'🐶',la:'小狗',   b:'🐱',lb:'小猫',    same:false},
+  {a:'🚗',la:'汽车',   b:'🚲',lb:'自行车',  same:false},
   {a:'👦',la:'我',     b:'👦',lb:'哥哥',    same:true },
   {a:'👦',la:'我',     b:'👧',lb:'姐姐',    same:false},
   {a:'👗',la:'我的衣服',b:'👗',lb:'妈妈的衣服',same:true},
@@ -691,9 +656,9 @@ function checkAns(isSame) {
 }
 
 // ══════════════════════════════════════════════════════
-//  MATCH GAME (page 10)
+//  MATCH GAME
 // ══════════════════════════════════════════════════════
-const ME=['🍏','🍎','👗','👠'];
+const ME=['🍏','🍎','🍌','🐶','🚗'];
 let flipped=[],mCount=0,canFlip=true;
 
 function initMatch() {
@@ -703,6 +668,10 @@ function initMatch() {
   const board=document.getElementById('matchBoard');
   if(!board)return;
   board.innerHTML='';
+  // ME contains 5 unique emojis, duplicating them makes 10 cards.
+  // Board grid might need to be adjusted or just display 10. Let's keep the CSS grid-template-columns at 4, or adjust.
+  // With 10 items, maybe a 5x2 grid is better. Let's inject a style tweak here just in case.
+  board.style.gridTemplateColumns = 'repeat(5, 1fr)';
   const pairs=[...ME,...ME].sort(()=>Math.random()-.5);
   pairs.forEach(e=>{
     const c=document.createElement('div'); c.className='mcard';
@@ -734,16 +703,15 @@ function flip(c) {
 }
 
 // ══════════════════════════════════════════════════════
-//  SORT GAME (page 11)
+//  SORT GAME
 // ══════════════════════════════════════════════════════
-// Pairs directly from PDF: apples (same color / diff color), people (same / diff), clothing
 const SI=[
   {id:'s1',emoji:'🍏🍏',label:'两个绿苹果',ok:'same'},
-  {id:'s2',emoji:'🍎🍏',label:'红·绿苹果', ok:'diff'},
-  {id:'s3',emoji:'👦👦',label:'我和哥哥',  ok:'same'},
-  {id:'s4',emoji:'👦👧',label:'我和姐姐',  ok:'diff'},
-  {id:'s5',emoji:'👗👗',label:'我们的衣服', ok:'same'},
-  {id:'s6',emoji:'👗👠',label:'衣服·鞋子', ok:'diff'},
+  {id:'s2',emoji:'🍎🍏',label:'红绿苹果', ok:'diff'},
+  {id:'s3',emoji:'🐶🐶',label:'两只小狗',  ok:'same'},
+  {id:'s4',emoji:'🐶🐱',label:'小猫小狗',  ok:'diff'},
+  {id:'s5',emoji:'🚗🚗',label:'两辆汽车',  ok:'same'},
+  {id:'s6',emoji:'🚗🚲',label:'汽车自行车',ok:'diff'},
 ];
 let sAns={};
 
