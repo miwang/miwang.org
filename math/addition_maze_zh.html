@@ -128,7 +128,6 @@
             height: 100%;
         }
 
-        /* Target Number Box Styling */
         .target-box { text-align: center; }
         .target-label { font-size: 1.8em; font-weight: bold; display: block; color: var(--text); }
         #current-target { font-size: 3.5em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; }
@@ -148,22 +147,37 @@
             .game-area { flex: 1; padding: 20px; background: #E3F2FD; display: flex; height: 100vh; overflow: hidden; }
         }
 
+        /* 修复后的手机端自适应布局 */
         @media (max-width: 899px) {
-            .page.active.app-container { display: flex; flex-direction: column; height: 100vh; }
+            .page.active.app-container { 
+                display: flex; 
+                flex-direction: column; 
+                height: 100vh; 
+                width: 100vw; 
+                align-items: stretch; /* 强制填满屏幕宽度，解除紧凑状态 */
+                justify-content: flex-start;
+            }
             .sidebar {
                 background: var(--bg);
-                /* 增加顶部留白，防止和玻璃按钮重叠 */
-                padding: 65px 15px 15px; 
+                /* 增加顶部 Padding 到 70px，彻底避开返回按钮 */
+                padding: 70px 15px 15px; 
                 border-bottom: 4px solid var(--primary);
                 display: flex; flex-direction: column; gap: 12px;
-                flex-shrink: 0; align-items: center;
+                flex-shrink: 0; align-items: center; width: 100%;
             }
             .target-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0; }
             .target-label { font-size: 1.3em; display: inline; }
             #current-target { font-size: 2em; display: inline; margin-top: 0; text-shadow: 1px 1px 0px white; }
             .controls { display: flex; flex-direction: row; gap: 10px; width: 100%; justify-content: center; }
-            .btn { flex: 1; padding: 12px 10px; font-size: 1rem; max-width: 180px; }
-            .game-area { flex: 1; padding: 10px; background: #E3F2FD; display: flex; min-height: 0; }
+            .btn { flex: 1; padding: 12px 5px; font-size: 1rem; max-width: 160px; }
+            .game-area { 
+                flex: 1; 
+                padding: 10px; 
+                background: #E3F2FD; 
+                display: flex; 
+                min-height: 0; 
+                width: 100%; 
+            }
         }
 
         .btn {
@@ -183,7 +197,7 @@
         .cell {
             background-color: var(--cell-bg); border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
-            font-size: clamp(1.1rem, 3.5vmin, 2rem); font-weight: bold;
+            font-size: clamp(1rem, 4vw, 2rem); font-weight: bold; /* 字体随手机宽度自动放大 */
             cursor: pointer; position: relative;
             box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1); width: 100%; height: 100%;
             overflow: visible; transition: transform 0.1s, background-color 0.3s;
@@ -319,7 +333,6 @@
             document.getElementById('start-page').classList.remove('active');
             document.getElementById('game-page').classList.add('active');
             
-            // 响应式魔法：如果是手机竖屏，列数减少为5列，避免拥挤
             if (window.innerWidth < 900) {
                 rows = 8;
                 cols = 5; 
