@@ -77,7 +77,7 @@
         }
         .image-stage { 
             flex: 2.2 1 500px; max-width: 1200px; 
-            background: white no-repeat center center / cover; 
+            background: white no-repeat center center / contain; 
             border: 5px solid var(--main-teal); border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
         }
         .drop-zone-wrapper { flex: 0 0 auto; width: 100%; display: flex; justify-content: center; }
@@ -100,7 +100,6 @@
         }
         .word-brick.dragging { opacity: 0.6; transform: scale(1.1); z-index: 99999; position: fixed !important; pointer-events: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transition: none; }
 
-        /* ── 全屏朗读界面 ── */
         #reading-overlay { position: fixed; inset: 0; background: #fff9ea; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         
         .reading-char-box {
@@ -240,10 +239,10 @@
             }).join('');
         }
 
-        // 🌟 智能颜色生成器
+        // 去掉 window，直接读取文件里的字典
         function getColorForWord(word) {
-            if (window.colorDictionary && window.colorDictionary[word]) {
-                return window.colorDictionary[word];
+            if (typeof colorDictionary !== 'undefined' && colorDictionary[word]) {
+                return colorDictionary[word];
             }
             let hash = 0;
             for (let i = 0; i < word.length; i++) {
@@ -253,35 +252,28 @@
             return `hsl(${hue}, 65%, 88%)`; 
         }
 
-        // 🌟 动态提取后台的标签和单词
-        function getDynamicTags() {
-            let themes = new Set();
-            let keywords = new Set();
-            allSentences.forEach(s => {
-                if (s.tags) s.tags.forEach(t => themes.add(t));
-                if (s.words) s.words.forEach(w => keywords.add(w));
-            });
-            const globalTags = window.tagDefinitions || {};
-            const themeTags = Array.from(themes);
-            const keywordTags = Array.from(keywords).slice(0, 15).map(w => {
-                return { zh: w, en: (globalTags[w] ? globalTags[w].en : w) };
-            });
-            return { themeTags, keywordTags };
-        }
-
+        // 🌟 1. 恢复：严格使用 js/sentences_data.js 中的合理分类定义
         function buildTagBar() {
-            const { themeTags, keywordTags: kw } = getDynamicTags();
+            // 修复：去掉 window. 前缀
+            const themeKeys = typeof tagDefinitions !== 'undefined' ? Object.keys(tagDefinitions) : [];
+            const kw = typeof keywordTags !== 'undefined' ? keywordTags : [];
             const bar = document.getElementById('tag-bar');
+            
             let html = `<div class="tag-row">`;
             html += `<div class="tag-pill all font-zh ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">全部 <span class="font-en" style="font-size:0.7rem;">All</span></div>`;
-            themeTags.forEach(t => {
+            
+            themeKeys.forEach(t => {
                 const isActive = activeThemeTag === t;
-                const enLabel = (window.tagDefinitions && window.tagDefinitions[t]) ? window.tagDefinitions[t].en : t;
-                html += `<div class="tag-pill theme font-zh ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${t} <span class="font-en" style="font-size:0.7rem;opacity:0.7;">${enLabel}</span></div>`;
+                const def = tagDefinitions[t];
+                // 中文版：中文 + 英文
+                html += `<div class="tag-pill theme font-zh ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.zh} <span class="font-en" style="font-size:0.7rem;opacity:0.7;">${def.en}</span></div>`;
             });
+            
             html += `</div><div class="tag-row"><span class="tag-row-label font-zh">按字词：</span>`;
+            
             kw.forEach(k => {
                 const isActive = activeKeyword === k.zh;
+                // 中文版：中文 + 英文
                 html += `<div class="tag-pill keyword font-zh ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')">「${k.zh}」<span class="font-en" style="font-size:0.65rem;opacity:0.7;margin-left:2px;">${k.en}</span></div>`;
             });
             html += `</div>`;
@@ -292,11 +284,24 @@
         function toggleKeyword(kw) { activeKeyword = activeKeyword === kw ? null : kw; activeThemeTag = null; refreshGallery(); }
         function clearFilters() { activeThemeTag = null; activeKeyword = null; refreshGallery(); }
 
+        // 🌟 2. 恢复：支持 "match: ['喜欢', '不喜欢']" 的智能过滤逻辑
         function refreshGallery() {
             buildTagBar();
             currentFilteredList = allSentences.filter(s => {
-                const matchTheme = !activeThemeTag || (s.tags && s.tags.includes(activeThemeTag));
-                const matchKeyword = !activeKeyword || (s.words && s.words.includes(activeKeyword));
+                let matchTheme = true;
+                if (activeThemeTag) {
+                    matchTheme = s.tags && s.tags.includes(activeThemeTag);
+                }
+                let matchKeyword = true;
+                if (activeKeyword) {
+                    // 修复：去掉 window. 前缀
+                    const kwDef = (typeof keywordTags !== 'undefined' ? keywordTags : []).find(k => k.zh === activeKeyword);
+                    if (kwDef && kwDef.match) {
+                        matchKeyword = kwDef.match.some(m => s.words.includes(m));
+                    } else {
+                        matchKeyword = s.words && s.words.includes(activeKeyword);
+                    }
+                }
                 return matchTheme && matchKeyword;
             });
             renderGalleryCards(currentFilteredList);
@@ -305,7 +310,7 @@
         function renderGalleryCards(list) {
             const gallery = document.getElementById('gallery-view');
             if (list.length === 0) {
-                gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-zh">暂无句子数据，请在后台发布！</div>';
+                gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-zh">没有匹配的句子</div>';
                 return;
             }
             gallery.innerHTML = list.map((item, i) => `
@@ -316,7 +321,6 @@
             `).join('');
         }
 
-        // 🌟 纯净：从 CMS JSON 抓取数据
         function initData() {
             fetch('../data/sentences.json')
                 .then(res => {
@@ -589,7 +593,7 @@
             document.body.style.overflow = '';
         }
 
-        // 🌟 纯净：页面加载时抓取云端数据
+        // 🌟 启动时抓取 CMS 数据
         window.onload = initData;
     </script>
 </body>
