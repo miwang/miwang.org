@@ -1,0 +1,27 @@
+backend:
+  name: git-gateway
+  branch: main # 确保这是你 GitHub 的主分支名字，通常是 main 或 master
+
+media_folder: "images/books" # 你在后台上传的插图会自动存到这个文件夹
+public_folder: "/images/books" # 网页引用图片的路径
+
+collections:
+  - name: "picture_books"
+    label: "绘本库管理"
+    folder: "data/books" # 你在后台填写的绘本信息，会自动在这里生成 JSON/Markdown 文件
+    create: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    fields:
+      - { label: "绘本名称", name: "title", widget: "string" }
+      - { label: "阅读级别", name: "level", widget: "select", options: ["Novice Low (L1)", "Novice Mid (L2)", "Novice High (L3)"] }
+      - { label: "话题分类", name: "topic", widget: "select", options: ["动物与自然", "家庭与朋友", "节日与文化", "学校生活", "食物与购物"] }
+      - label: "核心词汇标签 (按回车添加多个)"
+        name: "vocab_tags"
+        widget: "list"
+      - label: "绘本页面内容"
+        name: "pages"
+        widget: "list"
+        fields:
+          - { label: "本页插图", name: "image", widget: "image" }
+          - { label: "中文句子", name: "text", widget: "string" }
+          - { label: "拼音 (可选)", name: "pinyin", widget: "string", required: false }

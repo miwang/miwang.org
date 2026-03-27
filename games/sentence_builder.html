@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>句子排排队 - MECC Task Focused</title>
+    <title>句子排排队</title>
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
     <script src="../js/sentences_data.js"></script>
@@ -36,7 +36,7 @@
         }
         .glass-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.05); }
 
-        /* --- 1. 画廊列表页：统一规格 --- */
+        /* --- 1. 画廊列表页 --- */
         #list-view { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
         .list-header { text-align: center; padding: 65px 0 10px 0; flex-shrink: 0; }
         .list-header h1 { font-size: 3.2rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
@@ -66,121 +66,91 @@
         .play-back-btn:hover { background: rgba(255,255,255,0.7); }
         .btn-action { background: #2ecc71; color: white; border: none; padding: 8px 28px; border-radius: 40px; cursor: pointer; font-size: 1.3rem; font-weight: bold; box-shadow: 0 4px 0 #27ae60; }
 
-        .image-stage { flex: 1 1 0; width: 96%; max-width: 1400px; background: white no-repeat center center / contain; border: 5px solid var(--main-teal); border-radius: 30px; margin-bottom: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); min-height: 0; }
-        
+        /* 🌟 布局：控制图片被压缩，给予侧边更多空间防止滚动条 */
+        .play-layout { 
+            display: flex; flex-direction: column; width: 100%; flex: 1; gap: 15px; 
+            padding: 10px 20px; box-sizing: border-box; min-height: 0; overflow: hidden;
+        }
+        .desktop-top-row { 
+            display: flex; flex-direction: row; flex: 1; gap: 15px; min-height: 0; justify-content: center; width: 100%;
+        }
+        .side-pool { 
+            flex: 1.2 1 200px; max-width: 380px; /* 增加词语池空间 */
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; overflow-y: auto; overflow-x: hidden;
+            padding: 10px; box-sizing: border-box;
+        }
+        .image-stage { 
+            flex: 2.2 1 500px; max-width: 1200px; /* 适当压缩图片横向占比 */
+            background: white no-repeat center center / cover; 
+            border: 5px solid var(--main-teal); border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+        .drop-zone-wrapper { 
+            flex: 0 0 auto; width: 100%; display: flex; justify-content: center; 
+        }
+        /* 彻底干掉横向拖动条，依靠内部算法智能缩放 */
         .drop-zone {
-            flex: 0 0 auto; height: 14vh; min-height: 100px; width: 96%; background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal);
-            border-radius: 25px; display: flex; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; align-items: flex-start; gap: 8px; padding: 10px 15px; overflow-x: hidden; overflow-y: auto;
-            transition: background 0.2s;
+            height: 14vh; min-height: 90px; width: 100%; max-width: 1800px; 
+            background: rgba(89, 133, 134, 0.08); border: 3px dashed var(--main-teal); border-radius: 25px; 
+            display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; 
+            gap: 8px; padding: 10px 15px; box-sizing: border-box; transition: background 0.2s; overflow: hidden; /* 强制无滚动条 */
         }
         .drop-zone.active-hover { background: rgba(89, 133, 134, 0.25); border-style: solid; }
 
-        .word-pool { flex: 0 0 auto; width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; padding: 12px 25px; overflow-y: auto; }
-
-        /* 🌟 巨型积木：7.5vh */
+        /* 🌟 巨型积木：使用智能响应式大小 */
         .word-brick {
-            padding: 1.5vh 45px; border-radius: 20px; font-size: 7.5vh; font-weight: bold; color: #1e2e46; cursor: pointer;
-            box-shadow: 0 10px 0 rgba(0,0,0,0.12); margin: 8px; white-space: nowrap;
-            user-select: none; touch-action: none; position: relative;
+            padding: clamp(10px, 1.5vh, 20px) clamp(16px, 2.5vw, 45px); /* 响应式内边距 */
+            border-radius: 20px; 
+            font-size: clamp(1.5rem, 3vw + 0.5rem, 4.5rem); /* 根据屏幕自动计算大小，再也不会挤爆 */
+            font-weight: bold; color: #1e2e46; cursor: pointer;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.12); margin: 0; white-space: nowrap; flex-shrink: 0;
+            user-select: none; touch-action: none; position: relative; transition: font-size 0.2s, padding 0.2s;
+            max-width: 100%; box-sizing: border-box; /* 保证它绝对不会溢出自己的父容器 */
         }
-        .word-brick.dragging { opacity: 0.6; transform: scale(1.1); z-index: 99999; position: fixed !important; pointer-events: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .word-brick.dragging { opacity: 0.6; transform: scale(1.1); z-index: 99999; position: fixed !important; pointer-events: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transition: none; }
 
         #reading-overlay { position: fixed; inset: 0; background: #fff9ea; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         .reading-brick { padding: 4vh 60px; border-radius: 35px; font-size: 15vh; font-weight: bold; color: #1e2e46; box-shadow: 0 15px 0 rgba(0,0,0,0.1); margin: 25px; }
+        .reading-hint { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; color: #888; letter-spacing: 2px; pointer-events: none; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
         /* ── 全屏朗读界面的发音按钮 ── */
         .tts-btn {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            border: 3px solid var(--main-teal);
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s, background 0.2s;
-            z-index: 10001; /* 确保在全屏层之上 */
+            position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px); border: 3px solid var(--main-teal); border-radius: 50%;
+            width: 60px; height: 60px; font-size: 30px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.2s, background 0.2s; z-index: 10001;
         }
-
-        .tts-btn:hover { 
-            transform: scale(1.1); 
-            background: #fff; 
-        }
-
-        .tts-btn:active { 
-            transform: scale(0.95); 
-        }
+        .tts-btn:hover { transform: scale(1.1); background: #fff; }
+        .tts-btn:active { transform: scale(0.95); }
 
         @media (max-width: 768px) {
-            .tts-btn { top: 20px; left: 20px; width: 45px; height: 45px; font-size: 22px; border-width: 2px; }
+            .tts-btn { top: 10px; left: 10px; width: 45px; height: 45px; font-size: 22px; border-width: 2px; }
+            .reading-hint { font-size: 1rem; bottom: 20px; }
             .glass-btn { top: 10px !important; left: 10px !important; font-size: 0.85rem !important; padding: 6px 14px !important; }
             .list-header { padding: 52px 16px 8px !important; }
             .list-header h1 { font-size: 2rem !important; letter-spacing: 3px !important; }
 
-            #gallery-view {
-                grid-template-columns: 1fr !important;
-                gap: 14px !important;
-                padding: 10px 16px 24px !important;
-            }
+            #gallery-view { grid-template-columns: 1fr !important; gap: 14px !important; padding: 10px 16px 24px !important; }
             .card-img-wrapper { aspect-ratio: 2 / 1 !important; }
             .sentence-card img { object-position: center center !important; }
             .sentence-card .card-info { padding: 10px !important; font-size: 1.1rem !important; }
 
-            #play-view {
-                padding: 4px 8px 6px !important;
-                height: 100dvh !important;
-                justify-content: flex-start !important;
-            }
+            #play-view { padding: 4px 8px 6px !important; height: 100dvh !important; justify-content: flex-start !important; }
+            .play-top-bar { height: 38px !important; padding: 0 4px !important; }
+            .btn-action { padding: 5px 12px !important; font-size: 0.8rem !important; border-radius: 20px !important; }
 
-            .play-top-bar {
-                height: 38px !important;
-                padding: 0 4px !important;
-            }
-            .play-back-btn { font-size: 0.85rem !important; padding: 5px 12px !important; }
-            .btn-action {
-                padding: 5px 12px !important;
-                font-size: 0.8rem !important;
-                border-radius: 20px !important;
-            }
+            /* 手机端精巧布局 */
+            .play-layout { display: flex; flex-direction: column; padding: 5px; gap: 5px; }
+            .desktop-top-row { display: contents; } 
+            .image-stage { order: 1; flex: 0 0 28dvh !important; border-radius: 16px !important; border-width: 3px !important; min-height: 28dvh; }
+            .drop-zone-wrapper { order: 2; padding: 0; }
+            .drop-zone { height: 10vh !important; min-height: 70px !important; padding: 5px 10px !important; gap: 4px !important; border-radius: 16px !important; }
+            #word-pool-left { order: 3; flex-direction: row; flex-wrap: wrap; padding: 5px; max-width: none; flex: 0 0 auto; min-height: unset; justify-content: center; overflow: visible; }
+            #word-pool-right { order: 4; flex-direction: row; flex-wrap: wrap; padding: 0 5px 5px; max-width: none; flex: 0 0 auto; min-height: unset; justify-content: center; overflow: visible; }
 
-            .image-stage {
-                flex: 0 0 28dvh !important;
-                width: 96% !important;
-                border-radius: 16px !important;
-                border-width: 3px !important;
-                margin-bottom: 6px !important;
-            }
-
-            .drop-zone {
-                min-height: 70px !important;
-                width: 96% !important;
-                padding: 8px 10px !important;
-                gap: 6px !important;
-                border-radius: 16px !important;
-                margin-bottom: 4px !important;
-            }
-
-            .word-pool {
-                flex: 0 0 auto !important;
-                gap: 10px !important;
-                padding: 8px !important;
-                overflow-y: auto !important;
-                align-content: flex-start !important;
-            }
-
-            .word-brick {
-                font-size: 1.6rem !important;
-                padding: 8px 14px !important;
-                border-radius: 12px !important;
-                margin: 2px !important;
-                box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important;
+            .word-brick { 
+                font-size: clamp(1.2rem, 4.5vw, 2rem) !important; 
+                padding: 8px 16px !important; border-radius: 12px !important; margin: 4px !important; box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important; 
             }
         }
 
@@ -188,29 +158,20 @@
         .tag-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding: 0 20px; }
         .tag-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; }
         .tag-row-label { font-size: 0.7rem; color: #aaa; margin-right: 4px; align-self: center; white-space: nowrap; letter-spacing: 1px; }
-        .tag-pill {
-            padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
-            border: 2px solid transparent; cursor: pointer;
-            transition: 0.2s; white-space: nowrap;
-        }
-        /* 主题标签：teal 色调 */
+        .tag-pill { padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 2px solid transparent; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .tag-pill.theme { background: #e8f5f5; color: #4a7a7b; border-color: #c5dfdf; }
         .tag-pill.theme:hover { background: #d0ecec; border-color: var(--main-teal); }
         .tag-pill.theme.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
-        /* 关键词标签：金色调 */
         .tag-pill.keyword { background: #fef9e7; color: #9a7c1e; border-color: #f5e6a3; }
         .tag-pill.keyword:hover { background: #fdf0c8; border-color: #f3b236; }
         .tag-pill.keyword.active { background: #f3b236; color: #1e2e46; border-color: #d4922a; }
-        /* 全部按钮 */
         .tag-pill.all { background: #f0f0f0; color: #666; border-color: #ddd; }
         .tag-pill.all:hover { background: #e4e4e4; }
         .tag-pill.all.active { background: #555; color: white; border-color: #555; }
 
-        /* ── 管理按钮 ── */
+        /* ── 管理按钮 & 面板 ── */
         .mgr-toggle { background: none; border: 1px dashed #ccc; color: #999; padding: 6px 18px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
         .mgr-toggle:hover { color: var(--main-teal); border-color: var(--main-teal); }
-
-        /* ── 管理面板 ── */
         .manager-box { background: white; padding: 24px; border-radius: 20px; width: 460px; max-width: 95vw; max-height: 85vh; overflow-y: auto; border: 4px solid var(--main-teal); position: relative; }
         .mgr-title { font-size: 1.2rem; font-weight: bold; color: var(--main-teal); margin-bottom: 12px; }
         .mgr-row { margin-bottom: 10px; }
@@ -234,9 +195,7 @@
             80%  { box-shadow: 0 0 30px 12px rgba(243,178,54,0.6); background: rgba(243,178,54,0.1); }
             100% { box-shadow: 0 0 0 0 rgba(243,178,54,0); background: transparent; }
         }
-        .drop-zone.correct-flash {
-            animation: correctFlash 1s ease-in-out;
-        }
+        .drop-zone.correct-flash { animation: correctFlash 1s ease-in-out; }
     </style>
 </head>
 <body>
@@ -283,20 +242,29 @@
                 <button class="btn-action font-zh" onclick="enterReadingMode()">📖 全屏读字</button>
             </div>
         </div>
-        <div class="image-stage" id="main-image"></div>
-        <div class="drop-zone" id="drop-zone"></div>
-        <div id="word-pool" class="word-pool"></div>
+        <div class="play-layout">
+            <div class="desktop-top-row">
+                <div id="word-pool-left" class="side-pool"></div>
+                <div class="image-stage" id="main-image"></div>
+                <div id="word-pool-right" class="side-pool"></div>
+            </div>
+            <div class="drop-zone-wrapper">
+                <div class="drop-zone" id="drop-zone"></div>
+            </div>
+        </div>
     </div>
 
     <div id="reading-overlay" onclick="this.style.display='none'">
         <button class="tts-btn" onclick="event.stopPropagation(); readCurrentSentence();" title="朗读句子">🔊</button>
-        <div id="full-container" style="display:flex; flex-wrap:wrap; justify-content:center;"></div>
+        <div id="full-container" style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center;"></div>
+        <div class="reading-hint font-zh">点击任意位置返回</div>
     </div>
 
     <script>
         const listView = document.getElementById('list-view');
         const playView = document.getElementById('play-view');
-        const pool = document.getElementById('word-pool');
+        const leftPool = document.getElementById('word-pool-left');
+        const rightPool = document.getElementById('word-pool-right');
         const zone = document.getElementById('drop-zone');
         let currentLevelIdx = 0, currentData = null;
         let activeThemeTag = null, activeKeyword = null;
@@ -313,7 +281,6 @@
             const { themeTags, keywordTags: kw } = getAllTags();
             const bar = document.getElementById('tag-bar');
             let html = '';
-            // Row 1: 全部 + 主题标签
             html += `<div class="tag-row">`;
             html += `<div class="tag-pill all font-zh ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">全部 <span class="font-en" style="font-size:0.7rem;">All</span></div>`;
             themeTags.forEach(t => {
@@ -322,7 +289,6 @@
                 html += `<div class="tag-pill theme font-zh ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.zh} <span class="font-en" style="font-size:0.7rem;opacity:0.7;">${def.en}</span></div>`;
             });
             html += `</div>`;
-            // Row 2: 关键词标签
             html += `<div class="tag-row">`;
             html += `<span class="tag-row-label font-zh">按字词：</span>`;
             kw.forEach(k => {
@@ -333,21 +299,9 @@
             bar.innerHTML = html;
         }
 
-        function toggleThemeTag(tag) {
-            activeThemeTag = activeThemeTag === tag ? null : tag;
-            activeKeyword = null;
-            refreshGallery();
-        }
-        function toggleKeyword(kw) {
-            activeKeyword = activeKeyword === kw ? null : kw;
-            activeThemeTag = null;
-            refreshGallery();
-        }
-        function clearFilters() {
-            activeThemeTag = null;
-            activeKeyword = null;
-            refreshGallery();
-        }
+        function toggleThemeTag(tag) { activeThemeTag = activeThemeTag === tag ? null : tag; activeKeyword = null; refreshGallery(); }
+        function toggleKeyword(kw) { activeKeyword = activeKeyword === kw ? null : kw; activeThemeTag = null; refreshGallery(); }
+        function clearFilters() { activeThemeTag = null; activeKeyword = null; refreshGallery(); }
 
         function refreshGallery() {
             buildTagBar();
@@ -373,6 +327,9 @@
             listView.style.display = 'flex';
             playView.style.display = 'none';
             refreshGallery();
+            window.addEventListener('resize', () => {
+                if (playView.style.display === 'flex') { autoSizeZone(); }
+            });
         }
 
         function startLevel(index) {
@@ -381,12 +338,13 @@
             listView.style.display = 'none';
             playView.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            zone.innerHTML = ''; pool.innerHTML = '';
-            zone.dataset.locked = ''; // 重置锁定状态
+            zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = '';
+            zone.dataset.locked = '';
             document.getElementById('success-controls').style.visibility = 'hidden';
             document.getElementById('main-image').style.backgroundImage = `url('${currentData.image}')`;
 
-            [...currentData.words].sort(() => Math.random() - 0.5).forEach(word => {
+            const shuffledWords = [...currentData.words].sort(() => Math.random() - 0.5);
+            shuffledWords.forEach((word, idx) => {
                 const brick = document.createElement('div');
                 brick.className = 'word-brick';
                 brick.innerHTML = splitFonts(word);
@@ -394,40 +352,30 @@
                 brick.style.backgroundColor = color;
                 brick.dataset.word = word;
                 brick.dataset.color = color;
+                brick.dataset.pool = idx % 2 === 0 ? 'left' : 'right';
                 addTouchLogic(brick);
-                pool.appendChild(brick);
+                
+                if (idx % 2 === 0) {
+                    leftPool.appendChild(brick);
+                } else {
+                    rightPool.appendChild(brick);
+                }
             });
+            autoSizeZone();
         }
 
         // ── 句子管理面板 ──
-        function openManager() {
-            document.getElementById('manager-overlay').style.display = 'flex';
-            renderMgrTags();
-            renderMgrList();
-        }
-        function closeManager() {
-            document.getElementById('manager-overlay').style.display = 'none';
-            refreshGallery(); // 刷新画廊
-        }
+        function openManager() { document.getElementById('manager-overlay').style.display = 'flex'; renderMgrTags(); renderMgrList(); }
+        function closeManager() { document.getElementById('manager-overlay').style.display = 'none'; refreshGallery(); }
         function renderMgrTags() {
             const container = document.getElementById('mgr-tags');
-            container.innerHTML = Object.entries(tagDefinitions).map(([key, def]) =>
-                `<div class="mgr-tag-chip font-zh" data-tag="${key}" onclick="this.classList.toggle('selected')">${def.zh}</div>`
-            ).join('');
+            container.innerHTML = Object.entries(tagDefinitions).map(([key, def]) => `<div class="mgr-tag-chip font-zh" data-tag="${key}" onclick="this.classList.toggle('selected')">${def.zh}</div>`).join('');
         }
         function renderMgrList() {
             const list = getCustomSentences();
             const container = document.getElementById('mgr-custom-list');
-            if (list.length === 0) {
-                container.innerHTML = '<div style="color:#999;font-size:0.85rem;text-align:center;padding:10px;" class="font-zh">暂无自定义句子</div>';
-                return;
-            }
-            container.innerHTML = list.map(s =>
-                `<div class="mgr-item">
-                    <span class="font-zh">${s.words.join(' ')}</span>
-                    <button class="mgr-item-del" onclick="deleteMgrSentence(${s._id})">✕</button>
-                </div>`
-            ).join('');
+            if (list.length === 0) { container.innerHTML = '<div style="color:#999;font-size:0.85rem;text-align:center;padding:10px;" class="font-zh">暂无自定义句子</div>'; return; }
+            container.innerHTML = list.map(s => `<div class="mgr-item"><span class="font-zh">${s.words.join(' ')}</span><button class="mgr-item-del" onclick="deleteMgrSentence(${s._id})">✕</button></div>`).join('');
         }
         function saveMgrSentence() {
             const wordsRaw = document.getElementById('mgr-words').value.trim();
@@ -436,69 +384,66 @@
             const words = wordsRaw.split(/[,，、]/).map(w => w.trim()).filter(w => w);
             const selectedTags = [...document.querySelectorAll('#mgr-tags .mgr-tag-chip.selected')].map(el => el.dataset.tag);
             addCustomSentence({ words, image: image || '', tags: selectedTags });
-            document.getElementById('mgr-words').value = '';
-            document.getElementById('mgr-image').value = '';
+            document.getElementById('mgr-words').value = ''; document.getElementById('mgr-image').value = '';
             document.querySelectorAll('#mgr-tags .mgr-tag-chip').forEach(el => el.classList.remove('selected'));
-            renderMgrList();
-            alert('句子已保存！');
+            renderMgrList(); alert('句子已保存！');
         }
-        function deleteMgrSentence(id) {
-            if (confirm('确定删除这个句子吗？')) {
-                deleteCustomSentence(id);
-                renderMgrList();
-            }
-        }
+        function deleteMgrSentence(id) { if (confirm('确定删除这个句子吗？')) { deleteCustomSentence(id); renderMgrList(); } }
 
-        // 🌟 修复：多行感知，引入从英文版同步的拖动判定逻辑
         function getInsertTarget(clientX, clientY, draggingEl) {
-            // 排除正在拖动的元素，避免它自身的位置干扰计算
-            const siblings = [...zone.querySelectorAll('.word-brick')]
-                .filter(s => s !== draggingEl);
+            const siblings = [...zone.querySelectorAll('.word-brick')].filter(s => s !== draggingEl && !s.classList.contains('auto-punctuation'));
             if (siblings.length === 0) return null;
 
-            // 按行分组
-            const rows = [];
-            siblings.forEach(sib => {
-                const box = sib.getBoundingClientRect();
-                const centerY = box.top + box.height / 2;
-                let row = rows.find(r => Math.abs(r.centerY - centerY) < box.height * 0.6);
-                if (!row) { row = { centerY, items: [], bottom: 0 }; rows.push(row); }
-                row.items.push(sib);
-                row.bottom = Math.max(row.bottom, box.bottom);
-            });
-            rows.sort((a, b) => a.centerY - b.centerY);
-
-            const lastRow = rows[rows.length - 1];
-
-            // 鼠标在所有词下方 → 插到末尾
-            if (clientY > lastRow.bottom + 20) return null;
-
-            // 找最近的行（Y距离最小）
-            let bestRow = rows[0];
-            let minDist = Infinity;
-            rows.forEach(r => {
-                const dist = Math.abs(r.centerY - clientY);
-                if (dist < minDist) { minDist = dist; bestRow = r; }
-            });
-
-            // 鼠标在最后一行最后一词右侧 → 插到末尾
-            const lastItemInBest = bestRow.items[bestRow.items.length - 1];
-            const lastBox = lastItemInBest.getBoundingClientRect();
-            const isLastRow = rows.indexOf(bestRow) === rows.length - 1;
-            if (isLastRow && clientX >= lastBox.left + lastBox.width * 0.6) return null;
-
-            // 在该行内按X找插入点
-            const nextInRow = bestRow.items.find(sib => {
+            // 由于强制单行，仅比对水平位置即可
+            const nextInRow = siblings.find(sib => {
                 const box = sib.getBoundingClientRect();
                 return clientX < box.left + box.width / 2;
             });
+            return nextInRow || null; 
+        }
 
-            if (nextInRow) return nextInRow;
-            const rowIdx = rows.indexOf(bestRow);
-            if (rowIdx < rows.length - 1) {
-                return rows[rowIdx + 1].items[0];
+        // 🌟 核心升级：智能宽度检测算法（保证单行）
+        function autoSizeZone() {
+            const bricks = [...zone.querySelectorAll('.word-brick')];
+            if (bricks.length === 0) return;
+
+            const isMobile = window.innerWidth <= 768;
+            const maxFontSize = isMobile ? 32 : 65; 
+            const minFontSize = 12; 
+            
+            const zonePadding = 30; // 左右总内边距
+            const gap = isMobile ? 4 : 8; // 积木间距
+            // 额外扣除40px作为标点符号可能加入的缓冲带，彻底防爆表
+            const availW = zone.clientWidth - zonePadding - (bricks.length - 1) * gap - 40;
+
+            // 清除之前的 max-width 以获取最真实的文字所需宽度
+            bricks.forEach(b => { b.style.maxWidth = 'none'; });
+
+            let lo = minFontSize, hi = maxFontSize, best = minFontSize;
+            
+            // 二分查找能完美塞入单行的最大字号
+            while (lo <= hi) {
+                const mid = Math.floor((lo + hi) / 2);
+                bricks.forEach(b => {
+                    b.style.fontSize = mid + 'px';
+                    b.style.padding = `${Math.round(mid*0.25)}px ${Math.round(mid*0.5)}px`;
+                });
+                const totalW = bricks.reduce((s, b) => s + b.scrollWidth, 0);
+                
+                if (totalW <= availW) {
+                    best = mid;
+                    lo = mid + 1; // 还能更大，往上找
+                } else {
+                    hi = mid - 1; // 溢出了，往小找
+                }
             }
-            return null; // 追加末尾
+
+            // 应用计算出的最佳比例
+            bricks.forEach(b => {
+                b.style.fontSize = best + 'px';
+                b.style.padding = `${Math.round(best*0.25)}px ${Math.round(best*0.5)}px`;
+                b.style.maxWidth = ''; // 恢复样式表的 max-width
+            });
         }
 
         function addTouchLogic(el) {
@@ -509,9 +454,11 @@
                 const touch = e.touches ? e.touches[0] : e;
                 el.style.left = (touch.clientX - startX) + 'px';
                 el.style.top = (touch.clientY - startY) + 'px';
+                
                 const zoneRect = zone.getBoundingClientRect();
-                const isOverZone = touch.clientX > zoneRect.left && touch.clientX < zoneRect.right &&
-                    touch.clientY > zoneRect.top && touch.clientY < zoneRect.bottom;
+                const hitSlop = 80; 
+                const isOverZone = touch.clientX > zoneRect.left - hitSlop && touch.clientX < zoneRect.right + hitSlop &&
+                                   touch.clientY > zoneRect.top - hitSlop && touch.clientY < zoneRect.bottom + hitSlop;
 
                 const oldIndicator = zone.querySelector('.insert-indicator');
                 if (oldIndicator) oldIndicator.remove();
@@ -521,7 +468,7 @@
                     const target = getInsertTarget(touch.clientX, touch.clientY, el);
                     const indicator = document.createElement('div');
                     indicator.className = 'insert-indicator';
-                    indicator.style.cssText = 'width:4px; min-height:40px; align-self:stretch; background:#ff6b6b; border-radius:4px; flex-shrink:0; pointer-events:none;';
+                    indicator.style.cssText = 'width:4px; min-height:40px; align-self:stretch; background:#ff6b6b; border-radius:4px; flex-shrink:0; pointer-events:none; margin: 0 4px;';
                     zone.insertBefore(indicator, target);
                 } else {
                     zone.classList.remove('active-hover');
@@ -537,34 +484,40 @@
 
                 const indicator = zone.querySelector('.insert-indicator');
                 if (indicator) {
-                    // moveHandler 已确认在 zone 内，直接在 indicator 位置插入
                     zone.insertBefore(el, indicator);
                     indicator.remove();
                 } else {
-                    // indicator 不存在，说明松手时不在 zone 上方，退回词池
                     const zoneRect = zone.getBoundingClientRect();
-                    const isInside = touch.clientX >= zoneRect.left && touch.clientX <= zoneRect.right &&
-                                     touch.clientY >= zoneRect.top  && touch.clientY <= zoneRect.bottom;
+                    const hitSlop = 80; 
+                    const isInside = touch.clientX >= zoneRect.left - hitSlop && touch.clientX <= zoneRect.right + hitSlop &&
+                                     touch.clientY >= zoneRect.top - hitSlop  && touch.clientY <= zoneRect.bottom + hitSlop;
                     if (isInside) {
                         zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY, el));
                     } else {
-                        pool.appendChild(el);
+                        // 如果被扔回左右两侧的词池，清除缩放，让它依靠 CSS clamp 自然恢复原本大小
+                        el.style.fontSize = ''; el.style.padding = ''; el.style.maxWidth = '';
+                        if (el.dataset.pool === 'left') leftPool.appendChild(el);
+                        else rightPool.appendChild(el);
                     }
                 }
+                autoSizeZone(); // 有棋子进出，立即启动智能缩放检测
                 check();
                 document.removeEventListener('mousemove', moveHandler);
                 document.removeEventListener('touchmove', moveHandler);
             };
 
             const startHandler = (e) => {
-                if (zone.dataset.locked === '1') return; // 答对后锁定
+                if (zone.dataset.locked === '1') return;
                 const touch = e.touches ? e.touches[0] : e;
                 const rect = el.getBoundingClientRect();
-                startX = touch.clientX - rect.left + (el.offsetWidth/2);
-                startY = touch.clientY - rect.top + (el.offsetHeight/2);
+                
+                startX = touch.clientX - rect.left;
+                startY = touch.clientY - rect.top;
+                
                 el.classList.add('dragging');
                 el.style.left = (touch.clientX - startX) + 'px';
                 el.style.top = (touch.clientY - startY) + 'px';
+                
                 document.addEventListener('mousemove', moveHandler, {passive: false});
                 document.addEventListener('touchmove', moveHandler, {passive: false});
                 document.addEventListener('mouseup', endHandler, {once: true});
@@ -574,41 +527,13 @@
             el.addEventListener('touchstart', startHandler, {passive: false});
         }
 
-        function autoSizeZone() {
-            const bricks = [...zone.querySelectorAll('.word-brick')];
-            if (bricks.length === 0) return;
-            const gap = 8;
-            const zonePadding = 24;
-            const isMobile = window.innerWidth <= 768;
-            const availW = zone.clientWidth - zonePadding - gap * (bricks.length - 1);
-
-            // 二分法：临时设字号，用 scrollWidth 测量实际宽度
-            let lo = 10, hi = isMobile ? 38 : 56, best = 10;
-            while (lo <= hi) {
-                const mid = (lo + hi) >> 1;
-                bricks.forEach(b => {
-                    b.style.fontSize = mid + 'px';
-                    b.style.padding = `${Math.round(mid*0.3)}px ${Math.round(mid*0.55)}px`;
-                });
-                // 强制 reflow 后测量
-                const totalW = bricks.reduce((s, b) => s + b.offsetWidth, 0);
-                if (totalW <= availW) { best = mid; lo = mid + 1; }
-                else hi = mid - 1;
-            }
-            bricks.forEach(b => {
-                b.style.fontSize = best + 'px';
-                b.style.padding = `${Math.round(best*0.3)}px ${Math.round(best*0.55)}px`;
-            });
-        }
-
         function autoSizeReading() {
             const overlay = document.getElementById('reading-overlay');
             const bricks = [...document.querySelectorAll('.reading-brick')];
             if (bricks.length === 0) return;
             const availW = overlay.clientWidth * 0.95;
-            const availH = overlay.clientHeight * 0.95;
+            const availH = overlay.clientHeight * 0.85;
 
-            // 二分法：找最大字号，让所有词换行后总高度 <= availH
             let lo = 20, hi = 200, best = 20;
             while (lo <= hi) {
                 const mid = (lo + hi) >> 1;
@@ -621,7 +546,6 @@
                     b.style.borderRadius = Math.round(mid * 0.25) + 'px';
                     b.style.boxShadow = `0 ${Math.round(mid*0.1)}px 0 rgba(0,0,0,0.1)`;
                 });
-                // 模拟换行：按行累计宽度，统计总行数和高度
                 let rowW = 0, rows = 1;
                 const brickH = bricks[0].offsetHeight + margin * 2;
                 bricks.forEach(b => {
@@ -647,10 +571,12 @@
         function check() {
             const current = [...zone.querySelectorAll('.word-brick')].map(b => b.dataset.word).join('');
             if (current === currentData.words.join('')) {
-                zone.dataset.locked = '1'; // 锁定，不允许继续拖动
+                zone.dataset.locked = '1';
                 document.getElementById('success-controls').style.visibility = 'visible';
                 new Audio('../audio/correct.mp3').play().catch(()=>null);
-                // 自动补标点
+                
+                autoSizeZone(); // 在标点生成前最后整理一次完美排版
+
                 const punc = currentData.punctuation || '';
                 if (punc && !zone.querySelector('.auto-punctuation')) {
                     const lastBrick = zone.querySelector('.word-brick:last-of-type');
@@ -658,10 +584,9 @@
                     const puncEl = document.createElement('span');
                     puncEl.className = 'auto-punctuation font-zh';
                     puncEl.textContent = punc;
-                    puncEl.style.cssText = `font-size:${brickSize}; font-weight:bold; color:#666; align-self:center; pointer-events:none; margin-left:2px;`;
+                    puncEl.style.cssText = `font-size:${brickSize}; font-weight:bold; color:#666; align-self:center; pointer-events:none; flex-shrink:0; margin-left:2px;`;
                     zone.appendChild(puncEl);
                 }
-                // 闪耀动画
                 zone.classList.remove('correct-flash');
                 void zone.offsetWidth;
                 zone.classList.add('correct-flash');
@@ -679,7 +604,6 @@
                 rb.style.backgroundColor = b.dataset.color;
                 container.appendChild(rb);
             });
-            // 全屏也带标点
             const punc = currentData.punctuation || '';
             if (punc) {
                 const puncEl = document.createElement('div');
@@ -692,16 +616,12 @@
             requestAnimationFrame(autoSizeReading);
         }
 
-        // ── 语音朗读功能 ──
         function readCurrentSentence() {
-            if (!currentData || !('speechSynthesis' in window)) {
-                alert("抱歉，您的浏览器不支持语音朗读功能。");
-                return;
-            }
-            window.speechSynthesis.cancel(); // 停止之前的发音
+            if (!currentData || !('speechSynthesis' in window)) { alert("抱歉，您的浏览器不支持语音朗读功能。"); return; }
+            window.speechSynthesis.cancel();
             const textToRead = currentData.words.join('') + (currentData.punctuation || '');
             const utterance = new SpeechSynthesisUtterance(textToRead);
-            utterance.lang = 'zh-CN'; // 强制使用中文朗读
+            utterance.lang = 'zh-CN';
             utterance.rate = 0.85; 
             utterance.pitch = 1.0; 
             window.speechSynthesis.speak(utterance);

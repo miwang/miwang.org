@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🃏 汉字连连看 🧠 (明牌满屏版)</title>
+
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+
+<style>
+    /* 🌟 全系统统一字体 */
+    :root {
+        --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        --wenkai: "LXGW WenKai Lite", sans-serif;
+    }
+    * { box-sizing: border-box; font-family: var(--kaiti) !important; }
+    
+    /* 🌟 核心优化：锁死在一屏内，禁用滚动，全盘使用 vh/vw 根据屏幕高度自动计算 */
+    body { 
+        background-color: #fff9ea; margin: 0; 
+        height: 100vh; width: 100vw; 
+        overflow: hidden; /* 绝对禁止滚动条 */
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    /* 🌟 磨砂返回按钮 */
+    .back-btn-home {
+        position: fixed; top: 2vh; left: 2vw; color: #555; text-decoration: none;
+        font-size: 2.2vh; font-weight: bold; z-index: 50; 
+        background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
+        padding: 1vh 1.5vw; border-radius: 40px; border: 1.5px solid rgba(255,255,255,0.6);
+        transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .back-btn-home:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.8); }
+
+    /* ================= 选字设置页面 ================= */
+    #setup-view {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: transparent; width: 95vw; height: 100vh;
+    }
+    #setup-view h1 { color: #598586; margin: 0 0 1vh 0; font-size: 4.5vh; letter-spacing: 2px; }
+    #setup-view .instructions { color: #666; margin: 0 0 2vh 0; font-size: 2vh; line-height: 1.4; text-align: center; }
+    
+    .controls { margin-bottom: 2vh; display: flex; gap: 1vw; justify-content: center; }
+    .controls .btn {
+        padding: 1vh 2vw; font-size: 2.2vh; background-color: #f8f9fa; color: #555;
+        border: 2px solid #ddd; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;
+    }
+    .controls .btn:hover { background-color: #eee; transform: translateY(-2px); }
+    .controls .btn.start-btn { background-color: #2ecc71; color: white; border-color: #27ae60; box-shadow: 0 4px 0 #27ae60; }
+    .controls .btn.start-btn:active { transform: translateY(2px); box-shadow: none; }
+
+    /* 🌟 字库网格：完美适配 1280x720 的 13列 宽高 */
+    #char-grid {
+        display: grid; 
+        grid-template-columns: repeat(13, 1fr); 
+        gap: 0.6vw; justify-content: center;
+        padding: 2vh 1.5vw; background: rgba(89, 133, 134, 0.05); 
+        border-radius: 16px; width: 92vw; max-width: 1200px; border: 2px dashed #598586;
+    }
+    .char-card {
+        aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
+        font-size: 4vh; background-color: white; color: #333; border-radius: 1vh;
+        cursor: pointer; transition: all 0.2s; border: 2px solid #eee; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05); user-select: none;
+    }
+    .char-card.selected { background-color: #74b9ff; color: white; border: 3px solid #fbc531; transform: scale(1.05); z-index: 2; box-shadow: 0 6px 15px rgba(116, 185, 255, 0.4); }
+
+    /* ================= 游戏主界面 ================= */
+    #game-view {
+        display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center;
+    }
+    
+    /* 计分板宽度与棋盘对齐 */
+    .game-header { display: flex; justify-content: space-between; width: 85vh; margin-bottom: 2vh; font-size: 2.8vh; color: #598586; font-weight: bold; }
+    
+    /* 🌟 游戏棋盘核心：强行锁定 6列 x 5行，宽高直接根据屏幕高度百分比定死，绝不超宽超高 */
+    #memory-board { 
+        display: grid; 
+        grid-template-columns: repeat(6, 13.5vh); /* 每张牌宽 13.5% 屏幕高度 */
+        grid-template-rows: repeat(5, 13.5vh);    /* 每张牌高 13.5% 屏幕高度 */
+        gap: 1.5vh; 
+        justify-content: center; align-content: center;
+        background-color: rgba(89, 133, 134, 0.08); padding: 2.5vh; border-radius: 20px;
+    }
+
+    .memory-card {
+        width: 100%; height: 100%;
+        perspective: 1000px; cursor: pointer;
+    }
+    .memory-card-inner {
+        width: 100%; height: 100%; position: relative;
+        transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+        transform-style: preserve-3d;
+    }
+    .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
+    .memory-card.matched { visibility: hidden; opacity: 0; cursor: default; }
+
+    .memory-card-front, .memory-card-back {
+        width: 100%; height: 100%; position: absolute;
+        backface-visibility: hidden; display: flex; justify-content: center; align-items: center;
+        border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .memory-card-front {
+        background-color: #598586; color: white;
+        font-size: 6vh; /* 根据屏幕高度自适应字号 */
+        border: 2px solid #4a6f70;
+    }
+    .memory-card-front:hover { background-color: #6a9c9d; }
+
+    .memory-card-back {
+        background-color: #fff; color: #333;
+        font-size: 7.5vh; 
+        transform: rotateY(180deg);
+        border: 3px solid #74b9ff; transition: all 0.3s ease;
+    }
+
+    .memory-card.active-pick .memory-card-back {
+        border: 4px solid #fbc531; box-shadow: 0 0 20px rgba(251, 197, 49, 0.8);
+        background-color: #fffdf5; transform: rotateY(180deg) scale(1.05); 
+    }
+
+    /* 动画保持不变 */
+    @keyframes matchSuccessPulse { 0% { transform: scale(1); opacity: 1; filter: blur(0); } 40% { transform: scale(1.15); opacity: 0.9; filter: blur(1px); } 100% { transform: scale(1.05); opacity: 0; filter: blur(3px); visibility: hidden; } }
+    .memory-card.match-success-anim { animation: matchSuccessPulse 0.6s cubic-bezier(0.4, 0.2, 0.2, 1) forwards; pointer-events: none; }
+    @keyframes matchFailShake { 0%, 100% { transform: translateX(0); } 15%, 45%, 75% { transform: translateX(-5px); } 30%, 60%, 90% { transform: translateX(5px); } }
+    .memory-card.match-fail-anim { animation: matchFailShake 0.5s ease forwards; }
+
+    /* 胜利弹窗 */
+    #trophy-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+    .trophy-icon { font-size: 15vh; animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+    @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    .overlay-text { color: white; font-size: 8vh; font-weight: bold; margin: 2vh 0; }
+
+    @media (max-width: 768px) {
+        body { overflow-y: auto; overflow-x: hidden; justify-content: flex-start; }
+        #setup-view { height: auto; padding-top: 8vh; }
+        #game-view { height: auto; padding-top: 8vh; padding-bottom: 5vh; }
+        #memory-board { grid-template-columns: repeat(5, 17vw); grid-template-rows: repeat(6, 17vw); width: 95vw; padding: 3vw; }
+        .memory-card-front { font-size: 8vw; }
+        .memory-card-back { font-size: 10vw; border-width: 2px; }
+        .game-header { width: 90vw; font-size: 4vw; }
+    }
+</style>
+</head>
+<body>
+
+    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
+
+    <div id="setup-view">
+        <h1 class="font-zh">🃏 汉字连连看 🧠</h1>
+        <div class="instructions font-zh">
+            规则：<span style="color: #ff4757; font-weight: bold;">需准确选择 15 个字！</span><br>
+            <span style="color: #598586;">点击翻开卡片，选出两个相同的字即可消除。<br>找错的字会一直亮着（明牌模式），方便反复认读！</span>
+        </div>
+        
+        <div class="controls">
+            <button class="btn font-zh" onclick="selectAll()">全选</button>
+            <button class="btn font-zh" onclick="clearAll()">清空</button>
+            <button class="btn start-btn font-zh" onclick="startGame()">开始挑战</button>
+        </div>
+        <div id="char-grid"></div>
+    </div>
+
+    <div id="game-view">
+        <div class="game-header font-zh">
+            <div id="matches-counter">找到对子: 0 / 15</div>
+            <div id="moves-counter">匹配尝试: 0</div>
+        </div>
+        
+        <div id="memory-board"></div>
+        
+        <button class="btn font-zh" style="margin-top:3vh; padding: 1.5vh 3vw; font-size: 2.5vh; border-radius: 40px; cursor: pointer; border: 2px solid #ddd; background: #f8f9fa;" onclick="showSetup()">← 返回修改字库</button>
+    </div>
+
+    <div id="trophy-overlay" onclick="closeTrophy()">
+        <div class="trophy-icon">🎯</div>
+        <div class="overlay-text font-zh" id="overlay-msg">太厉害了！</div>
+        <div style="color:rgba(255,255,255,0.6); font-size: 3vh;">点击任意位置继续</div>
+    </div>
+
+<script>
+    const sounds = {
+        flip: new Audio("https://cdn.jsdelivr.net/gh/scisun/public_assets/sounds/card_flip.mp3"), 
+        success: new Audio("https://cdn.jsdelivr.net/gh/scisun/public_assets/sounds/match_success.mp3"), 
+        fail: new Audio("https://cdn.jsdelivr.net/gh/scisun/public_assets/sounds/match_fail.mp3") 
+    };
+    [sounds.flip, sounds.success, sounds.fail].forEach(sound => sound.load());
+
+    const allChars = [
+        '四','大','我','手','上','爱','和','长','五','小','会','口','下','天','土','太',
+        '六','日','不','头','左','白','木','门','七','月','飞','目','右','的','叶','也',
+        '八','几','个','耳','中','山','花','九','多','你','人','看','水','十','少','有',
+        '要','是','了','去'
+    ];
+    
+    function loadSavedWords() { return JSON.parse(localStorage.getItem('memoryMatch15_TeacherWords')) || []; }
+    function saveWords(wordsArray) { localStorage.setItem('memoryMatch15_TeacherWords', JSON.stringify(wordsArray)); }
+
+    let gameCards = [];
+    let activeCards = []; 
+    let matchedPairs = 0;
+    let totalPairs = 0; 
+    let moves = 0;
+    let lockBoard = false; 
+
+    window.onload = () => {
+        const grid = document.getElementById('char-grid');
+        const savedWords = loadSavedWords();
+        allChars.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'char-card font-zh';
+            card.innerText = char;
+            if (savedWords.includes(char)) card.classList.add('selected');
+            card.onclick = () => card.classList.toggle('selected');
+            grid.appendChild(card);
+        });
+    };
+
+    function selectAll() { document.querySelectorAll('.char-card').forEach(card => card.classList.add('selected')); }
+    function clearAll() { document.querySelectorAll('.char-card').forEach(card => card.classList.remove('selected')); }
+    function showSetup() { document.getElementById('game-view').style.display = 'none'; document.getElementById('setup-view').style.display = 'flex'; }
+
+    function startGame() {
+        const selected = document.querySelectorAll('.char-card.selected');
+        let words = Array.from(selected).map(el => el.innerText);
+        
+        if (words.length < 15) { 
+            alert(`请先在字库中选满 15 个字！\n当前已选 ${words.length} 个。`); 
+            return; 
+        }
+        if (words.length > 15) {
+            alert(`你选了 ${words.length} 个字，系统将自动使用前 15 个字进行游戏。`);
+            words = words.slice(0, 15); 
+        }
+        
+        saveWords(words); 
+        totalPairs = words.length; 
+        matchedPairs = 0;
+        moves = 0;
+        activeCards = [];
+        lockBoard = false;
+        
+        updateScoreboard();
+
+        document.getElementById('setup-view').style.display = 'none';
+        document.getElementById('game-view').style.display = 'flex';
+        
+        gameCards = [...words, ...words];
+        gameCards.sort(() => Math.random() - 0.5);
+
+        renderBoard();
+    }
+
+    function renderBoard() {
+        const board = document.getElementById('memory-board');
+        board.innerHTML = '';
+        
+        gameCards.forEach((char, index) => {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            card.dataset.char = char;
+            
+            card.innerHTML = `
+                <div class="memory-card-inner">
+                    <div class="memory-card-front font-zh">❓</div>
+                    <div class="memory-card-back font-zh">${char}</div>
+                </div>
+            `;
+            
+            card.onclick = () => processClick(card);
+            board.appendChild(card);
+        });
+    }
+
+    function processClick(card) {
+        if (lockBoard || card.classList.contains('matched') || card.classList.contains('active-pick')) return;
+
+        if (!card.classList.contains('flipped')) {
+            sounds.flip.play().catch(e => console.warn(e));
+            card.classList.add('flipped');
+        } else {
+            sounds.flip.play().catch(e => console.warn(e));
+        }
+
+        card.classList.add('active-pick');
+        activeCards.push(card);
+
+        if (activeCards.length === 2) {
+            moves++;
+            updateScoreboard();
+            checkForMatch();
+        }
+    }
+
+    function checkForMatch() {
+        let isMatch = activeCards[0].dataset.char === activeCards[1].dataset.char;
+
+        if (isMatch) {
+            disableCards();
+        } else {
+            unselectCards();
+        }
+    }
+
+    function disableCards() {
+        lockBoard = true;
+        sounds.success.play().catch(e => console.warn(e));
+
+        const card1 = activeCards[0];
+        const card2 = activeCards[1];
+        
+        setTimeout(() => {
+            card1.classList.remove('active-pick');
+            card2.classList.remove('active-pick');
+            card1.classList.add('match-success-anim');
+            card2.classList.add('match-success-anim');
+            
+            card1.classList.add('matched');
+            card2.classList.add('matched');
+
+            activeCards = [];
+            lockBoard = false;
+            
+            matchedPairs++;
+            updateScoreboard();
+            
+            if (matchedPairs === totalPairs) {
+                setTimeout(showTrophy, 800); 
+            }
+        }, 300); 
+    }
+
+    function unselectCards() {
+        lockBoard = true;
+        sounds.fail.play().catch(e => console.warn(e));
+
+        const card1 = activeCards[0];
+        const card2 = activeCards[1];
+        
+        setTimeout(() => {
+            card1.classList.add('match-fail-anim');
+            card2.classList.add('match-fail-anim');
+        }, 50);
+
+        setTimeout(() => {
+            card1.classList.remove('active-pick', 'match-fail-anim');
+            card2.classList.remove('active-pick', 'match-fail-anim');
+            
+            activeCards = [];
+            lockBoard = false;
+        }, 650); 
+    }
+
+    function updateScoreboard() {
+        document.getElementById('matches-counter').innerText = `找到对子: ${matchedPairs} / ${totalPairs}`;
+        document.getElementById('moves-counter').innerText = `匹配尝试: ${moves}`;
+    }
+
+    function showTrophy() { 
+        document.getElementById('overlay-msg').innerText = `太厉害了！全部找齐！`; 
+        document.getElementById('trophy-overlay').style.display = 'flex'; 
+    }
+    function closeTrophy() { document.getElementById('trophy-overlay').style.display = 'none'; }
+</script>
+</body>
+</html>

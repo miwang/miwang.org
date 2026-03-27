@@ -17,171 +17,102 @@
             --incorrect: #E57373;
             --text: #333;
         }
-        * { box-sizing: border-box; }
         
-        body {
-            background-color: #ECEFF1;
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh; 
-            width: 100vw;
+        /* 强制重置，消灭一切系统自带白边 */
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
             overflow: hidden; 
+            background-color: #ECEFF1;
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            user-select: none;
         }
 
-        /* ── 悬浮玻璃返回按钮 ── */
         .glass-btn {
             position: fixed; top: 16px; left: 20px;
             color: #444; text-decoration: none;
             font-size: 1rem; font-weight: 600; z-index: 9999;
-            background: rgba(255,255,255,0.55);
+            background: rgba(255,255,255,0.65);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding: 8px 22px; border-radius: 40px;
-            border: 1.5px solid rgba(255,255,255,0.6);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            padding: 10px 22px; border-radius: 40px;
+            border: 1.5px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: inline-flex; align-items: center;
             transition: background 0.2s, transform 0.2s;
-            font-family: inherit;
         }
-        .glass-btn:hover { background: rgba(255,255,255,0.75); transform: scale(1.04); }
+        .glass-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.04); }
         @media (max-width: 768px) {
-            .glass-btn { top: 12px; left: 12px; font-size: 0.85rem; padding: 6px 14px; }
+            .glass-btn { top: 10px; left: 10px; font-size: 0.85rem; padding: 6px 14px; }
         }
 
-        .page { display: none; width: 100%; height: 100%; }
-        .page.active { display: flex; justify-content: center; align-items: center; }
+        /* 强制页面占满全屏，无视外部任何容器 */
+        .page { 
+            display: none; 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
+        }
+        .page.active { display: flex; }
 
         /* ================= 开始页面 ================= */
+        #start-page { justify-content: center; align-items: center; background-color: #ECEFF1; overflow-y: auto;}
         #start-page-content {
-            text-align: center;
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 1000px;
-            margin-top: 40px; 
-            max-height: 90vh;
-            overflow-y: auto;
+            text-align: center; background: white; padding: 40px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%; max-width: 1000px;
         }
-        h1 { color: var(--primary); text-shadow: 1px 1px 3px rgba(0,0,0,0.1); margin-top: 0; }
-        .number-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-        @media (max-width: 600px) {
-            .number-grid { grid-template-columns: repeat(4, 1fr); }
-            h1 { font-size: 1.6em; }
-        }
+        h1 { color: var(--primary); margin-top: 0; }
+        .number-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 15px; margin-top: 20px; }
+        @media (max-width: 600px) { .number-grid { grid-template-columns: repeat(4, 1fr); gap: 10px;} h1 { font-size: 1.6em; } }
+        
         .num-btn {
-            background-color: white;
-            border: 3px solid var(--primary);
-            border-radius: 12px;
-            font-size: 1.8em;
-            padding: 15px 0;
-            cursor: pointer;
-            position: relative;
+            background-color: white; border: 3px solid var(--primary); border-radius: 12px;
+            font-size: 1.8em; padding: 15px 0; cursor: pointer; position: relative;
             transition: transform 0.2s, background 0.2s;
-            font-family: inherit;
         }
         .num-btn:hover { transform: scale(1.05); background-color: var(--selected); }
-        .num-btn.completed { background-color: var(--correct); border-color: #388E3C; color: white; }
-        .completed-badge {
-            position: absolute;
-            top: -8px; right: -8px;
-            background: #FFEB3B;
-            border-radius: 50%;
-            width: 25px; height: 25px;
-            font-size: 0.6em; line-height: 25px;
-            border: 2px solid #333;
-            display: none;
-            color: #333;
-        }
-        .num-btn.completed .completed-badge { display: block; }
-
-        .btn-reset {
-            margin-top: 25px;
-            background: transparent;
-            border: 1px dashed #B0BEC5;
-            color: #78909C;
-            padding: 8px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.2s;
-            font-family: inherit;
-            display: inline-block;
-        }
-        .btn-reset:hover { background: #FFEBEE; color: #E53935; border-color: #E53935; }
 
         /* ================= 游戏页面 ================= */
-        .app-container {
-            background: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 100%;
-            height: 100%;
+        #game-page { background: #E3F2FD; flex-direction: row; }
+        
+        .sidebar {
+            width: 260px; background: var(--bg); padding: 80px 20px 30px; 
+            display: flex; flex-direction: column; align-items: center;
+            border-right: 4px solid var(--primary); flex-shrink: 0;
+            height: 100%; /* 绝对顶天立地 */
+        }
+        .target-box { text-align: center; margin-bottom: 30px; }
+        .target-label { font-size: 1.6em; font-weight: bold; display: block; color: var(--text); }
+        #current-target { font-size: 4em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; }
+        .controls { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: auto; }
+
+        .game-area { 
+            flex: 1; padding: 25px; 
+            display: flex; flex-direction: column; 
+            height: 100%; overflow: hidden; 
         }
 
-        .target-box { text-align: center; }
-        .target-label { font-size: 1.8em; font-weight: bold; display: block; color: var(--text); }
-        #current-target { font-size: 3.5em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; }
-
-        @media (min-width: 900px) {
-            .page.active.app-container {
-                display: flex; flex-direction: row; width: 100vw; height: 100vh;
-                max-width: 100%; border-radius: 0; overflow: hidden;
-            }
-            .sidebar {
-                width: 250px; background: var(--bg); padding: 70px 20px 30px; 
-                display: flex; flex-direction: column; align-items: center;
-                border-right: 4px solid var(--primary); flex-shrink: 0;
-            }
-            .target-box { margin-bottom: 30px; }
-            .controls { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: auto; }
-            .game-area { flex: 1; padding: 20px; background: #E3F2FD; display: flex; height: 100vh; overflow: hidden; }
+        #maze-container {
+            flex: 1; display: grid; gap: 4px; background: #FFB74D; padding: 8px;
+            border-radius: 12px; width: 100%; height: 100%; 
         }
 
-        /* 修复后的手机端自适应布局 */
         @media (max-width: 899px) {
-            .page.active.app-container { 
-                display: flex; 
-                flex-direction: column; 
-                height: 100vh; 
-                width: 100vw; 
-                align-items: stretch; /* 强制填满屏幕宽度，解除紧凑状态 */
-                justify-content: flex-start;
-            }
+            #game-page { flex-direction: column; }
             .sidebar {
-                background: var(--bg);
-                /* 增加顶部 Padding 到 70px，彻底避开返回按钮 */
-                padding: 70px 15px 15px; 
-                border-bottom: 4px solid var(--primary);
-                display: flex; flex-direction: column; gap: 12px;
-                flex-shrink: 0; align-items: center; width: 100%;
+                width: 100%; height: auto; padding: 60px 15px 15px; 
+                border-right: none; border-bottom: 4px solid var(--primary);
             }
-            .target-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0; }
-            .target-label { font-size: 1.3em; display: inline; }
-            #current-target { font-size: 2em; display: inline; margin-top: 0; text-shadow: 1px 1px 0px white; }
-            .controls { display: flex; flex-direction: row; gap: 10px; width: 100%; justify-content: center; }
-            .btn { flex: 1; padding: 12px 5px; font-size: 1rem; max-width: 160px; }
-            .game-area { 
-                flex: 1; 
-                padding: 10px; 
-                background: #E3F2FD; 
-                display: flex; 
-                min-height: 0; 
-                width: 100%; 
-            }
+            .target-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 10px; }
+            .target-label { font-size: 1.2em; display: inline; }
+            #current-target { font-size: 2em; display: inline; margin-top: 0; }
+            .controls { display: flex; flex-direction: row; gap: 10px; justify-content: center; margin-top: 0; }
+            .btn { flex: 1; max-width: 160px; }
+            .game-area { padding: 10px; }
         }
 
         .btn {
-            padding: 15px; font-size: 1.3em; border-radius: 12px; border: none;
+            padding: 15px; font-size: 1.2em; border-radius: 12px; border: none;
             cursor: pointer; font-weight: bold; text-align: center; font-family: inherit;
             transition: transform 0.1s;
         }
@@ -189,23 +120,20 @@
         .back-btn { background-color: #9E9E9E; color: white; }
         .check-btn { background-color: #4CAF50; color: white; box-shadow: 0 4px 0 #388E3C; }
 
-        /* 迷宫网格 */
-        #maze-container {
-            display: grid; gap: 5px; background: #FFB74D; padding: 8px;
-            border-radius: 12px; width: 100%; height: 100%; 
-        }
+        /* 修复抖动：强制所有格子不论在什么状态下，都有 3px 的边框 */
         .cell {
-            background-color: var(--cell-bg); border-radius: 6px;
+            background-color: var(--cell-bg); border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-size: clamp(1rem, 4vw, 2rem); font-weight: bold; /* 字体随手机宽度自动放大 */
+            font-size: clamp(1.2rem, 3.5vw, 2.2rem); font-weight: bold;
             cursor: pointer; position: relative;
-            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1); width: 100%; height: 100%;
-            overflow: visible; transition: transform 0.1s, background-color 0.3s;
+            border: 3px solid transparent; /* 永远存在的透明边框，占好物理空间 */
+            box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s, background-color 0.2s, border-color 0.2s;
         }
-        .cell:active { box-shadow: none; transform: translateY(2px) scale(0.95); }
-        .cell.selected { background-color: var(--selected); border: 2px solid #FBC02D; z-index: 5; }
-        .cell.correct { background-color: var(--correct); color: white; box-shadow: none; border: none; }
-        .cell.incorrect { background-color: var(--incorrect); color: white; box-shadow: none; border: none; }
+        .cell:active { transform: translateY(2px) scale(0.96); box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1); }
+        .cell.selected { background-color: var(--selected); border-color: #FBC02D; z-index: 5; }
+        .cell.correct { background-color: var(--correct); color: white; border-color: transparent; }
+        .cell.incorrect { background-color: var(--incorrect); color: white; border-color: transparent; }
         
         /* 智能提示箭头 */
         .hint-arrow { position: absolute; font-size: 1.5rem; color: #1976D2; pointer-events: none; z-index: 10; }
@@ -219,7 +147,6 @@
         @keyframes pointLeft { from { left: -15px; } to { left: -25px; } }
         @keyframes pointRight { from { right: -15px; } to { right: -25px; } }
 
-        /* ====== 互动动画 ====== */
         .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-2px, 0, 0); }
@@ -228,7 +155,6 @@
             40%, 60% { transform: translate3d(6px, 0, 0); }
         }
 
-        /* 自定义通关弹窗 */
         #celebration-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.6); z-index: 10000; 
@@ -253,6 +179,11 @@
             .modal-content p { font-size: 1.3rem; }
         }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 数字与算式使用 LXGW，楷体不做数字 */
+        .cell, #current-target, .num-btn {
+            font-family: "LXGW WenKai Lite", system-ui, sans-serif !important;
+        }
     </style>
 </head>
 <body>
@@ -261,14 +192,13 @@
 
     <div id="start-page" class="page active">
         <div id="start-page-content">
-            <h1>🔢 找一找，画一画颜色！</h1>
-            <p>选择一个数字，系统将为你自动生成全新的专属迷宫</p>
+            <h1>🔢 数学加法迷宫</h1>
+            <p>选择一个数字，走出迷宫</p>
             <div class="number-grid" id="number-grid"></div>
-            <button class="btn-reset" onclick="clearProgress()">🗑️ 清除所有进度</button>
         </div>
     </div>
 
-    <div id="game-page" class="page app-container">
+    <div id="game-page" class="page">
         <div class="sidebar">
             <div class="target-box">
                 <span class="target-label">目标数字</span>
@@ -288,7 +218,7 @@
         <div class="modal-content">
             <h1>🌟 太棒啦！ 🌟</h1>
             <p>你成功走出了数字 <span id="win-number" style="color:#E65100; font-size: 2.5rem; font-weight:bold;"></span> 的迷宫！</p>
-            <button class="modal-btn" onclick="closeCelebration()">继续挑战</button>
+            <button class="modal-btn" onclick="closeCelebration()">查看迷宫</button>
         </div>
     </div>
 
@@ -297,18 +227,40 @@
         let rows = 8;
         let cols = 11; 
         let endCellPos = {r: rows-1, c: cols-1};
+        function playSuccessSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const melody = [
+                    { freq: 523.25, t: 0.00, dur: 0.18 },
+                    { freq: 659.25, t: 0.16, dur: 0.18 },
+                    { freq: 783.99, t: 0.32, dur: 0.18 },
+                    { freq: 1046.50, t: 0.48, dur: 0.60 },
+                ];
+                melody.forEach(({ freq, t, dur }) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const s = ctx.currentTime + t;
+                    gain.gain.setValueAtTime(0, s);
+                    gain.gain.linearRampToValueAtTime(0.35, s + 0.03);
+                    gain.gain.linearRampToValueAtTime(0.25, s + dur - 0.05);
+                    gain.gain.linearRampToValueAtTime(0, s + dur);
+                    osc.start(s);
+                    osc.stop(s + dur + 0.01);
+                });
+            } catch(e) { console.log("音效播放失败:", e); }
+        }
 
         function init() {
             const grid = document.getElementById('number-grid');
             grid.innerHTML = '';
-            const completedStr = localStorage.getItem('mazeProgress');
-            const completedArr = completedStr ? JSON.parse(completedStr) : [];
-
             for (let i = 5; i <= 20; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'num-btn';
-                if (completedArr.includes(i)) btn.classList.add('completed');
-                btn.innerHTML = `${i} <div class="completed-badge">⭐</div>`;
+                btn.innerHTML = i;
                 btn.onclick = () => startGame(i);
                 grid.appendChild(btn);
             }
@@ -318,13 +270,6 @@
             document.getElementById('start-page').classList.add('active');
             document.getElementById('game-page').classList.remove('active');
             init(); 
-        }
-
-        function clearProgress() {
-            if(confirm("确定要清除所有的通关小星星吗？")) {
-                localStorage.removeItem('mazeProgress');
-                init();
-            }
         }
 
         function startGame(num) {
@@ -484,16 +429,12 @@
 
             const endCell = document.querySelector(`.cell[data-row="${endCellPos.r}"][data-col="${endCellPos.c}"]`);
             if (!hasWrong && endCell && endCell.classList.contains('correct')) {
-                let completedArr = JSON.parse(localStorage.getItem('mazeProgress') || '[]');
-                if (!completedArr.includes(currentTarget)) {
-                    completedArr.push(currentTarget);
-                    localStorage.setItem('mazeProgress', JSON.stringify(completedArr));
-                }
                 triggerCelebration();
             }
         }
 
         function triggerCelebration() {
+            playSuccessSound();
             document.getElementById('win-number').innerText = currentTarget;
             document.getElementById('celebration-modal').style.display = 'flex';
             
@@ -516,7 +457,6 @@
 
         function closeCelebration() {
             document.getElementById('celebration-modal').style.display = 'none';
-            showStartPage();
         }
 
         window.onload = init;

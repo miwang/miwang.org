@@ -1,30 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>A-Maze-ing Fluency - Addition Challenge</title>
+    <title>我爱迷宫 - 智能减法挑战</title>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            --primary: #FF9800;
-            --bg: #FFF3E0;
+            --primary: #5C6BC0;
+            --bg: #EDE7F6;
             --cell-bg: #ffffff;
-            --selected: #FFE082;
+            --selected: #C5CAE9;
             --correct: #81C784;
             --incorrect: #E57373;
             --text: #333;
         }
-        
+
         * { box-sizing: border-box; }
         html, body {
             margin: 0; padding: 0;
             width: 100vw; height: 100vh; height: 100dvh;
-            overflow: hidden; 
+            overflow: hidden;
             background-color: #ECEFF1;
-            font-family: "LXGW WenKai Lite", system-ui, sans-serif;
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
             user-select: none;
         }
 
@@ -45,67 +45,60 @@
             .glass-btn { top: 10px; left: 10px; font-size: 0.85rem; padding: 6px 14px; }
         }
 
-        .page { 
-            display: none; 
+        .page {
+            display: none;
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             width: 100vw; height: 100vh; height: 100dvh;
         }
         .page.active { display: flex; }
 
-        /* ================= Start Page ================= */
-        #start-page { justify-content: center; align-items: center; background-color: #ECEFF1; overflow-y: auto;}
+        /* ================= 开始页面 ================= */
+        #start-page { justify-content: center; align-items: center; background-color: #ECEFF1; overflow-y: auto; }
         #start-page-content {
             text-align: center; background: white; padding: 40px;
             border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 90%; max-width: 1000px;
+            width: 90%; max-width: 700px;
         }
         h1 { color: var(--primary); margin-top: 0; }
-        .number-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 15px; margin-top: 20px; }
-        @media (max-width: 600px) { .number-grid { grid-template-columns: repeat(4, 1fr); gap: 10px;} h1 { font-size: 1.6em; } }
-        
+        .number-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-top: 20px; }
+        @media (max-width: 600px) { .number-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; } h1 { font-size: 1.6em; } }
+
         .num-btn {
             background-color: white; border: 3px solid var(--primary); border-radius: 12px;
             font-size: 1.8em; padding: 15px 0; cursor: pointer; position: relative;
             transition: transform 0.2s, background 0.2s;
         }
         .num-btn:hover { transform: scale(1.05); background-color: var(--selected); }
-        .num-btn.completed { background-color: var(--correct); border-color: #388E3C; color: white; }
-        .completed-badge {
-            position: absolute; top: -8px; right: -8px; background: #FFEB3B; border-radius: 50%;
-            width: 25px; height: 25px; font-size: 0.6em; line-height: 25px; border: 2px solid #333;
-            display: none; color: #333;
-        }
-        .num-btn.completed .completed-badge { display: block; }
 
-        /* ================= Game Page ================= */
-        #game-page { background: #E3F2FD; flex-direction: row; }
-        
+        /* ================= 游戏页面 ================= */
+        #game-page { background: #E8EAF6; flex-direction: row; }
+
         .sidebar {
-            width: 260px; background: var(--bg); padding: 80px 20px 30px; 
+            width: 260px; background: var(--bg); padding: 80px 20px 30px;
             display: flex; flex-direction: column; align-items: center;
             border-right: 4px solid var(--primary); flex-shrink: 0;
-            height: 100%; 
+            height: 100%;
         }
         .target-box { text-align: center; margin-bottom: 30px; }
         .target-label { font-size: 1.6em; font-weight: bold; display: block; color: var(--text); }
-        #current-target { font-size: 4em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; }
+        #current-target { font-size: 4em; color: #283593; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; }
         .controls { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: auto; }
 
-        .game-area { 
-            flex: 1; padding: 25px; 
-            display: flex; flex-direction: column; 
-            height: 100%; overflow: hidden; 
+        .game-area {
+            flex: 1; padding: 25px;
+            display: flex; flex-direction: column;
+            height: 100%; overflow: hidden;
         }
 
         #maze-container {
-            flex: 1; display: grid; gap: 4px; background: #FFB74D; padding: 8px;
-            border-radius: 12px; width: 100%; height: 100%; 
+            flex: 1; display: grid; gap: 4px; background: #7986CB; padding: 8px;
+            border-radius: 12px; width: 100%; height: 100%;
         }
 
         @media (max-width: 899px) {
             #game-page { flex-direction: column; }
             .sidebar {
-                width: 100%; height: auto; padding: 60px 15px 15px; 
+                width: 100%; height: auto; padding: 60px 15px 15px;
                 border-right: none; border-bottom: 4px solid var(--primary);
             }
             .target-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 10px; }
@@ -125,21 +118,20 @@
         .back-btn { background-color: #9E9E9E; color: white; }
         .check-btn { background-color: #4CAF50; color: white; box-shadow: 0 4px 0 #388E3C; }
 
-        /* Stable Cells */
         .cell {
             background-color: var(--cell-bg); border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-size: clamp(1.2rem, 3.5vw, 2.2rem); font-weight: bold;
+            font-size: clamp(0.75rem, 1.8vw, 1.35rem); font-weight: bold;
             cursor: pointer; position: relative;
-            border: 3px solid transparent; 
+            border: 3px solid transparent;
             box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
             transition: transform 0.1s, background-color 0.2s, border-color 0.2s;
         }
         .cell:active { transform: translateY(2px) scale(0.96); box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1); }
-        .cell.selected { background-color: var(--selected); border-color: #FBC02D; z-index: 5; }
+        .cell.selected { background-color: var(--selected); border-color: #5C6BC0; z-index: 5; }
         .cell.correct { background-color: var(--correct); color: white; border-color: transparent; }
         .cell.incorrect { background-color: var(--incorrect); color: white; border-color: transparent; }
-        
+
         .hint-arrow { position: absolute; font-size: 1.5rem; color: #1976D2; pointer-events: none; z-index: 10; }
         .hint-top { left: calc(50% - 12px); animation: pointUp 0.6s infinite alternate; }
         .hint-bottom { left: calc(50% - 12px); transform: rotate(180deg); animation: pointDown 0.6s infinite alternate; }
@@ -161,7 +153,7 @@
 
         #celebration-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.6); z-index: 10000; 
+            background: rgba(0, 0, 0, 0.6); z-index: 10000;
             justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
         .modal-content {
@@ -173,26 +165,31 @@
         .modal-content p { font-size: 1.8rem; margin-bottom: 30px; }
         .modal-btn {
             background: var(--primary); color: white; font-size: 1.5rem; padding: 15px 40px;
-            border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 6px 0 #E65100;
+            border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 6px 0 #283593;
             font-weight: bold; font-family: inherit;
         }
-        .modal-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #E65100; }
+        .modal-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #283593; }
         @media (max-width: 600px) {
             .modal-content { padding: 30px 20px; width: 90%; }
             .modal-content h1 { font-size: 2.5rem; }
             .modal-content p { font-size: 1.3rem; }
         }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 数字与算式使用 LXGW，楷体不做数字 */
+        .cell, #current-target, .num-btn {
+            font-family: "LXGW WenKai Lite", system-ui, sans-serif !important;
+        }
     </style>
 </head>
 <body>
 
-    <a href="../parents.html" class="glass-btn">← Back to Parents Hub</a>
+    <a href="../teachers.html" class="glass-btn">⬅️ 返回工具台</a>
 
     <div id="start-page" class="page active">
         <div id="start-page-content">
-            <h1>🔢 Find the Path!</h1>
-            <p>Select a number to start your custom addition maze.</p>
+            <h1>➖ 找一找，画一画颜色！</h1>
+            <p>选择一个数字，系统将为你自动生成全新的专属迷宫</p>
             <div class="number-grid" id="number-grid"></div>
         </div>
     </div>
@@ -200,12 +197,12 @@
     <div id="game-page" class="page">
         <div class="sidebar">
             <div class="target-box">
-                <span class="target-label">Target Number</span>
+                <span class="target-label">目标数字</span>
                 <span id="current-target">5</span>
             </div>
             <div class="controls">
-                <button class="btn check-btn" onclick="checkAnswers()">Check Answers ✔️</button>
-                <button class="btn back-btn" onclick="showStartPage()">Pick Another</button>
+                <button class="btn check-btn" onclick="checkAnswers()">检查答案 ✔️</button>
+                <button class="btn back-btn" onclick="showStartPage()">重新选</button>
             </div>
         </div>
         <div class="game-area">
@@ -215,18 +212,18 @@
 
     <div id="celebration-modal">
         <div class="modal-content">
-            <h1>🌟 Amazing! 🌟</h1>
-            <p>You made it through the number <span id="win-number" style="color:#E65100; font-size: 2.5rem; font-weight:bold;"></span> maze!</p>
-            <button class="modal-btn" onclick="closeCelebration()">View Maze</button>
+            <h1>🌟 太棒啦！ 🌟</h1>
+            <p>你成功走出了数字 <span id="win-number" style="color:#283593; font-size: 2.5rem; font-weight:bold;"></span> 的迷宫！</p>
+            <button class="modal-btn" onclick="closeCelebration()">查看迷宫</button>
         </div>
     </div>
 
     <script>
         let currentTarget = 0;
         let rows = 8;
-        let cols = 11; 
-        let endCellPos = {r: rows-1, c: cols-1};
-        const storageKey = 'mazeProgressEN'; 
+        let cols = 11;
+        let endCellPos = { r: rows - 1, c: cols - 1 };
+
         function playSuccessSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -251,20 +248,16 @@
                     osc.start(s);
                     osc.stop(s + dur + 0.01);
                 });
-            } catch(e) { console.log("Audio play failed:", e); }
+            } catch(e) { console.log("音效播放失败:", e); }
         }
 
         function init() {
             const grid = document.getElementById('number-grid');
             grid.innerHTML = '';
-            const completedStr = localStorage.getItem(storageKey);
-            const completedArr = completedStr ? JSON.parse(completedStr) : [];
-
-            for (let i = 5; i <= 20; i++) {
+            for (let i = 0; i <= 10; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'num-btn';
-                if (completedArr.includes(i)) btn.classList.add('completed');
-                btn.innerHTML = `${i} <div class="completed-badge">⭐</div>`;
+                btn.innerHTML = i;
                 btn.onclick = () => startGame(i);
                 grid.appendChild(btn);
             }
@@ -273,7 +266,7 @@
         function showStartPage() {
             document.getElementById('start-page').classList.add('active');
             document.getElementById('game-page').classList.remove('active');
-            init(); 
+            init();
         }
 
         function startGame(num) {
@@ -281,15 +274,15 @@
             document.getElementById('current-target').innerText = num;
             document.getElementById('start-page').classList.remove('active');
             document.getElementById('game-page').classList.add('active');
-            
+
             if (window.innerWidth < 900) {
                 rows = 8;
-                cols = 5; 
+                cols = 5;
             } else {
                 rows = 8;
-                cols = 11; 
+                cols = 11;
             }
-            endCellPos = {r: rows-1, c: cols-1};
+            endCellPos = { r: rows - 1, c: cols - 1 };
 
             const generatedData = generateMazeData(num, rows, cols);
             renderMaze(generatedData);
@@ -298,39 +291,40 @@
         function generateMazeData(target, rCount, cCount) {
             let data = Array(rCount).fill(0).map(() => Array(cCount).fill(null));
             let path = [];
-            
+
             let r = 0, c = 0;
             path.push(`${r},${c}`);
-            while(r < rCount - 1 || c < cCount - 1) {
+            while (r < rCount - 1 || c < cCount - 1) {
                 let moves = [];
-                if(r < rCount - 1) moves.push({dr: 1, dc: 0}); 
-                if(c < cCount - 1) moves.push({dr: 0, dc: 1}); 
+                if (r < rCount - 1) moves.push({ dr: 1, dc: 0 });
+                if (c < cCount - 1) moves.push({ dr: 0, dc: 1 });
                 let move = moves[Math.floor(Math.random() * moves.length)];
                 r += move.dr;
                 c += move.dc;
                 path.push(`${r},${c}`);
             }
 
-            for(let i=0; i<rCount; i++) {
-                for(let j=0; j<cCount; j++) {
+            for (let i = 0; i < rCount; i++) {
+                for (let j = 0; j < cCount; j++) {
                     const isCorrectNode = path.includes(`${i},${j}`);
-                    let sum = isCorrectNode ? target : generateWrongSum(target);
-                    let num1 = Math.floor(Math.random() * (sum + 1));
-                    let num2 = sum - num1;
-                    data[i][j] = { text: `${num1}+${num2}`, sum: sum };
+                    let diff = isCorrectNode ? target : generateWrongDiff(target);
+                    // num1 - num2 = diff，保持数字在友好范围（0–20）
+                    let num2 = Math.floor(Math.random() * 11);          // 0–10
+                    let num1 = diff + num2;
+                    if (num1 > 20) { num1 = 20; num2 = num1 - diff; }  // 上限截断
+                    data[i][j] = { text: `${num1}−${num2}`, sum: diff };
                 }
             }
             return data;
         }
 
-        function generateWrongSum(target) {
-            let wrongSum = target;
-            while(wrongSum === target) {
+        function generateWrongDiff(target) {
+            let wrongDiff = target;
+            while (wrongDiff === target || wrongDiff < 0 || wrongDiff > 10) {
                 let offset = Math.floor(Math.random() * 7) - 3;
-                wrongSum = target + offset;
-                if(wrongSum < 0) wrongSum = target + 1;
+                wrongDiff = target + offset;
             }
-            return wrongSum;
+            return wrongDiff;
         }
 
         function renderMaze(data) {
@@ -357,11 +351,11 @@
         function handleCellClick(cell, r, c) {
             if (cell.classList.contains('correct')) {
                 updateHints(r, c, cell);
-                return; 
+                return;
             }
 
             if (cell.classList.contains('selected') || cell.classList.contains('incorrect')) {
-                cell.classList.remove('selected', 'incorrect', 'shake'); 
+                cell.classList.remove('selected', 'incorrect', 'shake');
                 clearHints();
             } else {
                 cell.classList.add('selected');
@@ -381,7 +375,7 @@
             directions.forEach(dir => {
                 const nr = r + dir.dr;
                 const nc = c + dir.dc;
-                
+
                 if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
                     const neighbor = document.querySelector(`.cell[data-row="${nr}"][data-col="${nc}"]`);
                     if (neighbor && !neighbor.classList.contains('correct') && !neighbor.classList.contains('selected')) {
@@ -404,13 +398,13 @@
             let hasSelected = false;
 
             const cells = document.querySelectorAll('.cell.selected, .cell.incorrect');
-            
+
             cells.forEach(cell => {
                 hasSelected = true;
                 const sum = parseInt(cell.dataset.sum);
-                
+
                 cell.classList.remove('shake');
-                
+
                 if (sum === currentTarget) {
                     cell.classList.remove('selected', 'incorrect');
                     cell.classList.add('correct');
@@ -433,11 +427,6 @@
 
             const endCell = document.querySelector(`.cell[data-row="${endCellPos.r}"][data-col="${endCellPos.c}"]`);
             if (!hasWrong && endCell && endCell.classList.contains('correct')) {
-                let completedArr = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                if (!completedArr.includes(currentTarget)) {
-                    completedArr.push(currentTarget);
-                    localStorage.setItem(storageKey, JSON.stringify(completedArr));
-                }
                 triggerCelebration();
             }
         }
@@ -446,18 +435,18 @@
             playSuccessSound();
             document.getElementById('win-number').innerText = currentTarget;
             document.getElementById('celebration-modal').style.display = 'flex';
-            
+
             var duration = 3 * 1000;
             var end = Date.now() + duration;
 
             (function frame() {
                 confetti({
                     particleCount: 5, angle: 60, spread: 55, origin: { x: 0 },
-                    colors: ['#FF9800', '#81C784', '#2196F3', '#FFEB3B', '#E57373']
+                    colors: ['#5C6BC0', '#81C784', '#9C27B0', '#FFEB3B', '#E57373']
                 });
                 confetti({
                     particleCount: 5, angle: 120, spread: 55, origin: { x: 1 },
-                    colors: ['#FF9800', '#81C784', '#2196F3', '#FFEB3B', '#E57373']
+                    colors: ['#5C6BC0', '#81C784', '#9C27B0', '#FFEB3B', '#E57373']
                 });
 
                 if (Date.now() < end) requestAnimationFrame(frame);

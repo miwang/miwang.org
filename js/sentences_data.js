@@ -10,7 +10,7 @@ const colorDictionary = {
     "爸爸": "#ffeaa7", "妈妈": "#ffeaa7",
     "哥哥": "#ffeaa7", "姐姐": "#ffeaa7", "妹妹": "#ffeaa7", "弟弟": "#ffeaa7",
     "家人": "#ffeaa7", "人": "#ffeaa7",
-    "爷爷": "#ffeaa7", "奶奶": "#ffeaa7", "老师": "#ffeaa7",
+    "爷爷": "#ffeaa7", "奶奶": "#ffeaa7", "老师": "#ffeaa7", "小朋友": "#ffeaa7",
 
     // 连词/助词/量词/数词 (青色)
     "和": "#81ecec", "的": "#81ecec",
@@ -194,7 +194,11 @@ const builtInSentences = [
     { words: ["你", "喜欢", "什么颜色"], image: "../images/sentences/fav_color.webp", tags: ["颜色", "问答"], punctuation: "？" },
     { words: ["我的", "生日", "是", "二月", "十四日"], image: "../images/sentences/my_birthday.webp", tags: ["日期", "自我介绍"], punctuation: "。" },
     { words: ["我", "有", "一个", "红色的", "水杯"], image: "../images/sentences/red_cup.webp", tags: ["颜色"], punctuation: "。" },
-    { words: ["我", "看见", "一只", "红色的", "鸟"], image: "../images/sentences/red_bird.webp", tags: ["颜色", "动物"], punctuation: "。" }
+    { words: ["我", "看见", "一只", "红色的", "鸟"], image: "../images/sentences/red_bird.webp", tags: ["颜色", "动物"], punctuation: "。" },
+
+    // ── 学校 ──
+    { words: ["学校", "有", "老师"], image: "../images/sentences/school_teacher.webp", tags: ["学校"], punctuation: "。" },
+    { words: ["学校", "有", "小朋友"], image: "../images/sentences/school_children.webp", tags: ["学校"], punctuation: "。" }
 ];
 
 // 🌟 5. 自定义句子管理 (localStorage)
