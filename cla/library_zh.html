@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的中文绘本图书馆</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* 迷宫页面同款的毛玻璃返回按钮样式 */
+        .glass-btn {
+            position: fixed; top: 16px; left: 20px;
+            color: #444; text-decoration: none;
+            font-size: 1rem; font-weight: 600; z-index: 9999;
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 10px 22px; border-radius: 40px;
+            border: 1.5px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: inline-flex; align-items: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .glass-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.04); }
+        
+        /* 专为悬浮按钮留出空间的 Header */
+        .library-header {
+            padding-top: 75px !important;
+            padding-bottom: 25px !important;
+        }
+
+        @media (max-width: 768px) {
+            .glass-btn { top: 10px; left: 10px; font-size: 0.85rem; padding: 6px 14px; }
+            .library-header { padding-top: 60px !important; }
+        }
+
+        /* 网格与书籍卡片样式 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .book-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .book-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+        .book-cover {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background-color: #eaeaea; 
+            display: block;
+        }
+        .book-info { padding: 15px; }
+        .book-level {
+            display: inline-block;
+            background-color: #f0a832;
+            color: #1a2740;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .book-tags {
+            font-size: 0.85rem;
+            color: #4e8a8b;
+            line-height: 1.6;
+        }
+        /* 下拉菜单样式 */
+        .filter-select {
+            padding: 8px 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin: 0 5px;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="fade-in">
+
+    <a href="../teachers.html" class="glass-btn font-zh">⬅️ 返回工具台</a>
+
+    <div class="header library-header">
+        <h1 class="font-zh" style="margin: 0;">📚 中文分级绘本馆</h1>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <select id="filter-level" class="filter-select font-en" onchange="applyFilters()">
+            <option value="all">All Levels</option>
+            <option value="Novice Low (L1)">Novice Low (L1)</option>
+            <option value="Novice Mid (L2)">Novice Mid (L2)</option>
+            <option value="Novice High (L3)">Novice High (L3)</option>
+        </select>
+        <select id="filter-topic" class="filter-select font-zh" onchange="applyFilters()">
+            <option value="all" class="font-en">所有话题</option>
+            <option value="动物与自然">动物与自然</option>
+            <option value="家庭与朋友">家庭与朋友</option>
+            <option value="学校生活">学校生活</option>
+            <option value="节日与文化">节日与文化</option>
+            <option value="食物与购物">食物与购物</option>
+        </select>
+    </div>
+
+    <div id="book-grid" class="grid-container"></div>
+
+    <script>
+        let allBooks = []; 
+        const gridContainer = document.getElementById('book-grid');
+
+        fetch('/data/books.json')
+            .then(response => {
+                if (!response.ok) throw new Error("暂时没有找到书籍数据。");
+                return response.json();
+            })
+            .then(data => {
+                allBooks = (data.book_list || []).map((book, index) => {
+                    return { ...book, originalId: index };
+                });
+                applyFilters();
+            })
+            .catch(error => {
+                gridContainer.innerHTML = `<p class="font-zh" style="text-align:center; width:100%;">${error.message}</p>`;
+            });
+
+        function applyFilters() {
+            const selectedLevel = document.getElementById('filter-level').value;
+            const selectedTopic = document.getElementById('filter-topic').value;
+
+            const filteredBooks = allBooks.filter(book => {
+                const matchLevel = (selectedLevel === 'all' || book.level === selectedLevel);
+                const matchTopic = (selectedTopic === 'all' || book.topic === selectedTopic);
+                return matchLevel && matchTopic;
+            });
+
+            renderGrid(filteredBooks);
+        }
+
+        function renderGrid(booksToShow) {
+            gridContainer.innerHTML = ''; 
+
+            if (booksToShow.length === 0) {
+                gridContainer.innerHTML = "<p class='font-zh' style='text-align:center; width: 100%;'>没有找到符合条件的绘本哦。</p>";
+                return;
+            }
+
+            booksToShow.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+
+                card.innerHTML = `
+                    <img class="book-cover" src="${book.coverImage || 'https://via.placeholder.com/220x220?text=无封面'}" alt="${book.title} 封面">
+                    <div class="book-info">
+                        <div class="book-level font-en">${book.level}</div>
+                        <h3 class="book-title font-zh">${book.title}</h3>
+                        <div class="book-tags font-zh">🏷️ ${book.topic}<br>📝 ${book.vocab_tags || '无'}</div>
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    window.location.href = `reader.html?id=${book.originalId}`;
+                };
+
+                gridContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绘本阅读</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f3f7; /* 统一底色 */
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .book-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .page-counter {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .book-image {
+            max-width: 90%;
+            max-height: 55vh;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            object-fit: contain;
+            background-color: #eaeaea;
+        }
+        /* 句子展示区 */
+        .book-text {
+            margin-top: 30px;
+            font-size: 2.8rem;
+            text-align: center;
+            line-height: 1.4;
+            color: #1a2740;
+        }
+        footer {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 20px 30px 40px;
+        }
+        /* 覆盖 btn 的 disabled 状态 */
+        .nav-btn:disabled {
+            background-color: #bdc3c7 !important;
+            color: #fff !important;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+    </style>
+</head>
+<body class="fade-in">
+
+    <header>
+        <a href="library_zh.html" class="back-btn font-zh">← 返回图书馆</a>
+        <h2 class="book-title font-zh" id="display-title">加载中...</h2>
+        <div class="page-counter font-en" id="display-counter">1 / 1</div>
+    </header>
+
+    <main>
+        <img class="book-image" id="display-image" src="" alt="绘本插图" onerror="this.src='https://via.placeholder.com/800x600?text=暂无插图'">
+        <div class="book-text phrase-text" id="display-text">加载中...</div>
+        
+        <button id="btn-speak" class="btn font-zh" onclick="speakText()" style="margin-top: 20px; border-radius: 20px;">
+            🔊 读给我听
+        </button>
+    </main>
+
+    <footer>
+        <button class="btn font-zh nav-btn" id="btn-prev" onclick="goPrev()">上一页</button>
+        <button class="btn font-zh nav-btn" id="btn-next" onclick="goNext()">下一页</button>
+    </footer>
+
+    <script>
+        let currentBookData = null;
+        let currentPageIndex = 0;
+
+        const titleEl = document.getElementById('display-title');
+        const counterEl = document.getElementById('display-counter');
+        const imageEl = document.getElementById('display-image');
+        const textEl = document.getElementById('display-text');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+
+        if (bookId === null) {
+            textEl.textContent = "未找到书籍编号。";
+        } else {
+            fetch('/data/books.json')
+                .then(response => response.json())
+                .then(data => {
+                    const booksList = data.book_list || [];
+                    currentBookData = booksList[bookId]; 
+                    
+                    if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) {
+                        renderPage(); 
+                    } else {
+                        textEl.textContent = "这本书的内容为空哦。";
+                    }
+                })
+                .catch(err => {
+                    textEl.textContent = "数据加载失败。";
+                });
+        }
+
+        function renderPage() {
+            const totalPages = currentBookData.pages.length;
+            const currentPage = currentBookData.pages[currentPageIndex];
+
+            titleEl.textContent = currentBookData.title;
+            counterEl.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+            
+            imageEl.src = currentPage.image || 'https://via.placeholder.com/800x600?text=无图';
+            textEl.textContent = currentPage.text;
+
+            btnPrev.disabled = (currentPageIndex === 0);
+            btnNext.disabled = (currentPageIndex === totalPages - 1);
+        }
+
+        function goPrev() {
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                renderPage();
+            }
+        }
+
+        function goNext() {
+            if (currentPageIndex < currentBookData.pages.length - 1) {
+                currentPageIndex++;
+                renderPage();
+            }
+        }
+
+        function speakText() {
+            const textToRead = textEl.textContent;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = 'zh-CN'; 
+                utterance.rate = 0.8;     
+                
+                // 触发你的 success-anim 动画
+                const btnSpeak = document.getElementById('btn-speak');
+                btnSpeak.classList.remove('success-anim');
+                void btnSpeak.offsetWidth; // 触发重绘
+                btnSpeak.classList.add('success-anim');
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("抱歉，您的浏览器不支持语音朗读功能。");
+            }
+        }
+    </script>
+
+</body>
+</html>
