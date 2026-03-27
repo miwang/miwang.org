@@ -12,6 +12,23 @@
           "image": "/images/books/sight-words.png"
         }
       ]
+    },
+    {
+      "title": "一起",
+      "level": "Novice Mid (L2)",
+      "topic": "家庭与朋友",
+      "vocab_tags": "和，一起，去",
+      "coverImage": "/images/books/together.png",
+      "pages": [
+        {
+          "image": "/images/books/moon_trip.webp",
+          "text": "我和爸爸一起去月球。"
+        },
+        {
+          "image": "/images/books/waterpark.webp",
+          "text": "我和妈妈一起去水上乐园。"
+        }
+      ]
     }
   ]
 }
