@@ -116,6 +116,9 @@
     <main>
         <img class="book-image" id="display-image" src="" alt="绘本插图" onerror="this.src='https://via.placeholder.com/800x600?text=暂无插图'">
         <div class="book-text" id="display-text">加载中...</div>
+        <button id="btn-speak" onclick="speakText()" style="margin-top: 20px; padding: 10px 20px; font-size: 1.2rem; background-color: #f1c40f; border: none; border-radius: 20px; cursor: pointer; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    🔊 读给我听
+</button>
     </main>
 
     <footer>
@@ -184,6 +187,24 @@ function goNext() {
     if (currentPageIndex < currentBookData.pages.length - 1) {
         currentPageIndex++;
         renderPage();
+    }
+}
+// 调用浏览器自带的语音功能
+function speakText() {
+    const textToRead = textEl.textContent; // 获取当前页面的句子
+    
+    // 检查浏览器是否支持语音
+    if ('speechSynthesis' in window) {
+        // 先停止当前正在播放的声音，防止重叠
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.lang = 'zh-CN'; // 设定为中文普通话
+        utterance.rate = 0.8;     // 语速调慢一点点（0.8），非常适合沉浸式课堂的学生听
+        
+        window.speechSynthesis.speak(utterance);
+    } else {
+        alert("抱歉，您的浏览器不支持语音朗读功能。");
     }
 }
     </script>
