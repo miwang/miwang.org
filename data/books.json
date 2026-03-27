@@ -8,12 +8,32 @@
       "coverImage": "/images/books/together.png",
       "pages": [
         {
-          "image": "/images/books/moon_trip.webp",
+          "image": "/images/sentences/moon_trip.webp",
           "text": "我和爸爸一起去月球。"
         },
         {
-          "image": "/images/books/waterpark.webp",
+          "image": "/images/sentences/waterpark.webp",
           "text": "我和妈妈一起去水上乐园。"
+        },
+        {
+          "text": "我和哥哥一起去公园。",
+          "image": "/images/sentences/park.webp"
+        },
+        {
+          "text": "我和姐姐一起去迪士尼。",
+          "image": "/images/sentences/disney.webp"
+        },
+        {
+          "text": "我和弟弟一起去游泳。",
+          "image": "/images/sentences/swimming.webp"
+        },
+        {
+          "image": "/images/sentences/mooncake.webp",
+          "text": "我和妹妹一起吃月饼。"
+        },
+        {
+          "text": "我和家人一起去中国。",
+          "image": "/images/sentences/china.webp"
         }
       ]
     }
