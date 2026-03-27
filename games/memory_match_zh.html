@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🃏 汉字连连看 🧠 (明牌满屏版)</title>
+<title>🃏 汉字连连看 🧠 (精简说明大字版)</title>
 
 <link rel="icon" type="image/png" href="../favicon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
@@ -16,17 +16,17 @@
     }
     * { box-sizing: border-box; font-family: var(--kaiti) !important; }
     
-    /* 🌟 核心优化：锁死在一屏内，禁用滚动，全盘使用 vh/vw 根据屏幕高度自动计算 */
+    /* 🌟 核心：强行锁定 100vh 一屏显示，绝不出现滚动条 */
     body { 
         background-color: #fff9ea; margin: 0; 
         height: 100vh; width: 100vw; 
-        overflow: hidden; /* 绝对禁止滚动条 */
+        overflow: hidden; 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
 
-    /* 🌟 磨砂返回按钮 */
+    /* 🌟 返回按钮 */
     .back-btn-home {
-        position: fixed; top: 2vh; left: 2vw; color: #555; text-decoration: none;
+        position: absolute; top: 2.5vh; left: 2vw; color: #555; text-decoration: none;
         font-size: 2.2vh; font-weight: bold; z-index: 50; 
         background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
         padding: 1vh 1.5vw; border-radius: 40px; border: 1.5px solid rgba(255,255,255,0.6);
@@ -39,29 +39,40 @@
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         background: transparent; width: 95vw; height: 100vh;
     }
-    #setup-view h1 { color: #598586; margin: 0 0 1vh 0; font-size: 4.5vh; letter-spacing: 2px; }
-    #setup-view .instructions { color: #666; margin: 0 0 2vh 0; font-size: 2vh; line-height: 1.4; text-align: center; }
     
-    .controls { margin-bottom: 2vh; display: flex; gap: 1vw; justify-content: center; }
+    /* 🌟 标题字号调大，常规流布局 */
+    #setup-view h1 { 
+        color: #598586; margin: 0 0 1.5vh 0; font-size: 5vh; letter-spacing: 2px; 
+    }
+
+    /* 🌟 说明文字字号调大 */
+    #setup-view .instructions { 
+        color: #666; margin: 0 0 2.5vh 0; font-size: 3vh; line-height: 1.6; text-align: center; 
+    }
+    
+    .controls { margin-bottom: 3vh; display: flex; gap: 1.5vw; justify-content: center; }
+    
+    /* 🌟 按钮及内部文字字号调大 */
     .controls .btn {
-        padding: 1vh 2vw; font-size: 2.2vh; background-color: #f8f9fa; color: #555;
+        padding: 1.5vh 3vw; font-size: 3vh; background-color: #f8f9fa; color: #555;
         border: 2px solid #ddd; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;
     }
     .controls .btn:hover { background-color: #eee; transform: translateY(-2px); }
     .controls .btn.start-btn { background-color: #2ecc71; color: white; border-color: #27ae60; box-shadow: 0 4px 0 #27ae60; }
     .controls .btn.start-btn:active { transform: translateY(2px); box-shadow: none; }
 
-    /* 🌟 字库网格：完美适配 1280x720 的 13列 宽高 */
+    /* 🌟 字库网格：保持巨大不被压缩 */
     #char-grid {
         display: grid; 
         grid-template-columns: repeat(13, 1fr); 
-        gap: 0.6vw; justify-content: center;
-        padding: 2vh 1.5vw; background: rgba(89, 133, 134, 0.05); 
-        border-radius: 16px; width: 92vw; max-width: 1200px; border: 2px dashed #598586;
+        gap: 0.7vw; justify-content: center; align-content: center;
+        padding: 2.5vh 1.5vw; background: rgba(89, 133, 134, 0.05); 
+        border-radius: 16px; width: 94vw; max-width: 1250px; border: 2px dashed #598586;
     }
     .char-card {
         aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
-        font-size: 4vh; background-color: white; color: #333; border-radius: 1vh;
+        font-size: 4.8vh; 
+        background-color: white; color: #333; border-radius: 1.2vh;
         cursor: pointer; transition: all 0.2s; border: 2px solid #eee; 
         box-shadow: 0 4px 8px rgba(0,0,0,0.05); user-select: none;
     }
@@ -72,14 +83,13 @@
         display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center;
     }
     
-    /* 计分板宽度与棋盘对齐 */
-    .game-header { display: flex; justify-content: space-between; width: 85vh; margin-bottom: 2vh; font-size: 2.8vh; color: #598586; font-weight: bold; }
+    .game-header { display: flex; justify-content: space-between; width: 85vh; margin-bottom: 2vh; font-size: 3vh; color: #598586; font-weight: bold; }
     
-    /* 🌟 游戏棋盘核心：强行锁定 6列 x 5行，宽高直接根据屏幕高度百分比定死，绝不超宽超高 */
+    /* 🌟 游戏棋盘：锁定 6列 x 5行 */
     #memory-board { 
         display: grid; 
-        grid-template-columns: repeat(6, 13.5vh); /* 每张牌宽 13.5% 屏幕高度 */
-        grid-template-rows: repeat(5, 13.5vh);    /* 每张牌高 13.5% 屏幕高度 */
+        grid-template-columns: repeat(6, 12.5vh); 
+        grid-template-rows: repeat(5, 12.5vh);    
         gap: 1.5vh; 
         justify-content: center; align-content: center;
         background-color: rgba(89, 133, 134, 0.08); padding: 2.5vh; border-radius: 20px;
@@ -105,14 +115,14 @@
     
     .memory-card-front {
         background-color: #598586; color: white;
-        font-size: 6vh; /* 根据屏幕高度自适应字号 */
+        font-size: 6vh; 
         border: 2px solid #4a6f70;
     }
     .memory-card-front:hover { background-color: #6a9c9d; }
 
     .memory-card-back {
         background-color: #fff; color: #333;
-        font-size: 7.5vh; 
+        font-size: 7vh; 
         transform: rotateY(180deg);
         border: 3px solid #74b9ff; transition: all 0.3s ease;
     }
@@ -122,7 +132,7 @@
         background-color: #fffdf5; transform: rotateY(180deg) scale(1.05); 
     }
 
-    /* 动画保持不变 */
+    /* 动画 */
     @keyframes matchSuccessPulse { 0% { transform: scale(1); opacity: 1; filter: blur(0); } 40% { transform: scale(1.15); opacity: 0.9; filter: blur(1px); } 100% { transform: scale(1.05); opacity: 0; filter: blur(3px); visibility: hidden; } }
     .memory-card.match-success-anim { animation: matchSuccessPulse 0.6s cubic-bezier(0.4, 0.2, 0.2, 1) forwards; pointer-events: none; }
     @keyframes matchFailShake { 0%, 100% { transform: translateX(0); } 15%, 45%, 75% { transform: translateX(-5px); } 30%, 60%, 90% { transform: translateX(5px); } }
@@ -135,13 +145,14 @@
     .overlay-text { color: white; font-size: 8vh; font-weight: bold; margin: 2vh 0; }
 
     @media (max-width: 768px) {
-        body { overflow-y: auto; overflow-x: hidden; justify-content: flex-start; }
-        #setup-view { height: auto; padding-top: 8vh; }
-        #game-view { height: auto; padding-top: 8vh; padding-bottom: 5vh; }
+        body { overflow-y: auto; overflow-x: hidden; justify-content: flex-start; height: auto; position: static; }
+        .back-btn-home { position: fixed; top: 2vh; left: 2vw; }
+        #setup-view { height: auto; justify-content: flex-start; padding-top: 10vh; }
+        #game-view { height: auto; padding-top: 10vh; padding-bottom: 5vh; justify-content: flex-start; }
         #memory-board { grid-template-columns: repeat(5, 17vw); grid-template-rows: repeat(6, 17vw); width: 95vw; padding: 3vw; }
         .memory-card-front { font-size: 8vw; }
         .memory-card-back { font-size: 10vw; border-width: 2px; }
-        .game-header { width: 90vw; font-size: 4vw; }
+        .game-header { width: 90vw; font-size: 4vw; margin-top: 2vh; }
     }
 </style>
 </head>
@@ -151,9 +162,10 @@
 
     <div id="setup-view">
         <h1 class="font-zh">🃏 汉字连连看 🧠</h1>
+        
         <div class="instructions font-zh">
-            规则：<span style="color: #ff4757; font-weight: bold;">需准确选择 15 个字！</span><br>
-            <span style="color: #598586;">点击翻开卡片，选出两个相同的字即可消除。<br>找错的字会一直亮着（明牌模式），方便反复认读！</span>
+            <span style="color: #ff4757; font-weight: bold;">规则：选择 15 个字开始。</span><br>
+            <span style="color: #598586;">点击翻开卡片，选出两个相同的字即可消除。</span>
         </div>
         
         <div class="controls">
@@ -276,15 +288,10 @@
     }
 
     function processClick(card) {
-        if (lockBoard || card.classList.contains('matched') || card.classList.contains('active-pick')) return;
+        if (lockBoard || card.classList.contains('matched') || card.classList.contains('flipped')) return;
 
-        if (!card.classList.contains('flipped')) {
-            sounds.flip.play().catch(e => console.warn(e));
-            card.classList.add('flipped');
-        } else {
-            sounds.flip.play().catch(e => console.warn(e));
-        }
-
+        sounds.flip.play().catch(e => console.warn(e));
+        card.classList.add('flipped');
         card.classList.add('active-pick');
         activeCards.push(card);
 
@@ -346,12 +353,12 @@
         }, 50);
 
         setTimeout(() => {
-            card1.classList.remove('active-pick', 'match-fail-anim');
-            card2.classList.remove('active-pick', 'match-fail-anim');
+            card1.classList.remove('active-pick', 'match-fail-anim', 'flipped');
+            card2.classList.remove('active-pick', 'match-fail-anim', 'flipped');
             
             activeCards = [];
             lockBoard = false;
-        }, 650); 
+        }, 800); 
     }
 
     function updateScoreboard() {
