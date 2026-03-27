@@ -42,7 +42,7 @@
         #gallery-view {
             flex: 1; display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 20px; padding: 15px 40px; box-sizing: border-box;
+            gap: 20px; padding: 15px 40px 40px; box-sizing: border-box;
             align-content: start;
         }
         .sentence-card {
@@ -85,7 +85,7 @@
         }
         .image-stage { 
             flex: 2.2 1 500px; max-width: 1200px; 
-            background: white no-repeat center center / cover; 
+            background: white no-repeat center center / contain; 
             border: 5px solid var(--main-teal); border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
         }
         .drop-zone-wrapper { flex: 0 0 auto; width: 100%; display: flex; justify-content: center; }
@@ -110,22 +110,16 @@
 
         #reading-overlay { position: fixed; inset: 0; background: #fff9ea; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         
-        /* 🌟 恢复背景颜色的独立字框 */
         .reading-char-box {
             display: flex; justify-content: center; align-items: center;
             aspect-ratio: 1 / 1;
-            border: 2px solid rgba(0,0,0,0.05); /* 添加柔和的边线 */
-            box-sizing: border-box;
-            border-radius: 12px;
-            color: #1e2e46;
-            font-weight: bold;
-            transition: all 0.2s;
+            border: 2px solid rgba(0,0,0,0.05); 
+            box-sizing: border-box; border-radius: 12px;
+            color: #1e2e46; font-weight: bold; transition: all 0.2s;
         }
         .punctuation-box {
-            border: none !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            color: #888 !important;
+            border: none !important; background: transparent !important;
+            box-shadow: none !important; color: #888 !important;
         }
 
         .reading-hint { 
@@ -242,6 +236,8 @@
         const zone = document.getElementById('drop-zone');
         let currentLevelIdx = 0, currentData = null;
         let activeThemeTag = null, activeKeyword = null;
+        
+        let allSentences = []; 
         let currentFilteredList = [];
 
         function splitFonts(text) {
@@ -251,20 +247,45 @@
             }).join('');
         }
 
+        // 🌟 智能颜色生成器
+        function getColorForWord(word) {
+            if (window.colorDictionary && window.colorDictionary[word]) {
+                return window.colorDictionary[word];
+            }
+            let hash = 0;
+            for (let i = 0; i < word.length; i++) {
+                hash = word.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash % 360);
+            return `hsl(${hue}, 65%, 88%)`; 
+        }
+
+        function getDynamicTags() {
+            let themes = new Set();
+            let keywords = new Set();
+            allSentences.forEach(s => {
+                if (s.tags) s.tags.forEach(t => themes.add(t));
+                if (s.words) s.words.forEach(w => keywords.add(w));
+            });
+            const globalTags = window.tagDefinitions || {};
+            const themeTags = Array.from(themes);
+            const keywordTags = Array.from(keywords).slice(0, 15).map(w => {
+                return { zh: w, en: (globalTags[w] ? globalTags[w].en : w) };
+            });
+            return { themeTags, keywordTags };
+        }
+
         function buildTagBar() {
-            const { themeTags, keywordTags: kw } = getAllTags();
+            const { themeTags, keywordTags: kw } = getDynamicTags();
             const bar = document.getElementById('tag-bar');
-            let html = '';
-            html += `<div class="tag-row">`;
+            let html = `<div class="tag-row">`;
             html += `<div class="tag-pill all font-en ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()">All</div>`;
             themeTags.forEach(t => {
-                const def = tagDefinitions[t] || { zh: t, en: t };
                 const isActive = activeThemeTag === t;
-                html += `<div class="tag-pill theme font-en ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${def.en} <span class="font-zh" style="font-size:0.7rem;opacity:0.7;">${def.zh}</span></div>`;
+                const enLabel = (window.tagDefinitions && window.tagDefinitions[t]) ? window.tagDefinitions[t].en : t;
+                html += `<div class="tag-pill theme font-en ${isActive ? 'active' : ''}" onclick="toggleThemeTag('${t}')">${enLabel} <span class="font-zh" style="font-size:0.7rem;opacity:0.7;">${t}</span></div>`;
             });
-            html += `</div>`;
-            html += `<div class="tag-row">`;
-            html += `<span class="tag-row-label font-en">By word:</span>`;
+            html += `</div><div class="tag-row"><span class="tag-row-label font-en">By word:</span>`;
             kw.forEach(k => {
                 const isActive = activeKeyword === k.zh;
                 html += `<div class="tag-pill keyword ${isActive ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')"><span class="font-en">${k.en}</span> <span class="font-zh" style="font-size:0.65rem;opacity:0.7;margin-left:2px;">「${k.zh}」</span></div>`;
@@ -279,7 +300,11 @@
 
         function refreshGallery() {
             buildTagBar();
-            currentFilteredList = filterSentences(activeThemeTag, activeKeyword);
+            currentFilteredList = allSentences.filter(s => {
+                const matchTheme = !activeThemeTag || (s.tags && s.tags.includes(activeThemeTag));
+                const matchKeyword = !activeKeyword || (s.words && s.words.includes(activeKeyword));
+                return matchTheme && matchKeyword;
+            });
             renderGalleryCards(currentFilteredList);
         }
 
@@ -290,7 +315,7 @@
         function renderGalleryCards(list) {
             const gallery = document.getElementById('gallery-view');
             if (list.length === 0) {
-                gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-en">No matching sentences</div>';
+                gallery.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-en">No sentences found. Please add them in the CMS.</div>';
                 return;
             }
             const undone = list.filter(item => !isDone(item));
@@ -307,6 +332,28 @@
                     <div class="card-info font-zh">${item.words.join('')}${item.punctuation || ''}</div>
                 </div>`;
             }).join('');
+        }
+
+        // 🌟 纯净：从 CMS JSON 抓取数据
+        function initData() {
+            fetch('../data/sentences.json')
+                .then(res => {
+                    if (!res.ok) throw new Error("Data file not found");
+                    return res.json();
+                })
+                .then(data => {
+                    const list = data.sentence_list || [];
+                    allSentences = list.map(item => ({
+                        words: item.words ? item.words.split(/[,，、]/).map(w => w.trim()).filter(w => w) : [],
+                        punctuation: item.punctuation || "",
+                        image: item.image || "",
+                        tags: item.tags ? item.tags.split(/[,，、]/).map(t => t.trim()).filter(t => t) : []
+                    }));
+                    initGallery();
+                })
+                .catch(err => {
+                    document.getElementById('gallery-view').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-en">Failed to load data. Have you published sentences in the CMS?</div>';
+                });
         }
 
         function initGallery() {
@@ -327,14 +374,17 @@
             zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = '';
             zone.dataset.locked = ''; 
             document.getElementById('success-controls').style.visibility = 'hidden';
-            document.getElementById('main-image').style.backgroundImage = `url('${currentData.image}')`;
+            
+            let imgPath = currentData.image;
+            if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) { imgPath = '/' + imgPath; }
+            document.getElementById('main-image').style.backgroundImage = `url('${imgPath}')`;
 
             const shuffledWords = [...currentData.words].sort(() => Math.random() - 0.5);
             shuffledWords.forEach((word, idx) => {
                 const brick = document.createElement('div');
                 brick.className = 'word-brick';
                 brick.innerHTML = splitFonts(word);
-                const color = colorDictionary[word] || "#e0e0e0";
+                const color = getColorForWord(word);
                 brick.style.backgroundColor = color;
                 brick.dataset.word = word;
                 brick.dataset.color = color;
@@ -552,12 +602,11 @@
             container.innerHTML = '';
             
             currentData.words.forEach(word => {
-                const color = colorDictionary[word] || "#e0e0e0";
+                const color = getColorForWord(word);
                 Array.from(word).forEach(char => {
                     const box = document.createElement('div');
                     box.className = 'reading-char-box';
                     box.innerHTML = splitFonts(char);
-                    // 🌟 核心修复：为独立的字框填充满词语对应的背景色
                     box.style.backgroundColor = color;
                     container.appendChild(box);
                 });
@@ -592,7 +641,9 @@
             document.body.style.overflow = '';
             refreshGallery();
         }
-        window.onload = initGallery;
+
+        // 🌟 启动时抓取 CMS 数据
+        window.onload = initData;
     </script>
 </body>
 </html>
