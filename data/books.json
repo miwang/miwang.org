@@ -1,0 +1,17 @@
+{
+  "book_list": [
+    {
+      "title": "我喜欢学校",
+      "level": "Novice Mid (L2)",
+      "topic": "学校生活",
+      "vocab_tags": "喜欢，学校",
+      "coverImage": "/images/books/happy-chinese-new-year-lion-dance-illustration-56005687-1-.webp",
+      "pages": [
+        {
+          "text": "我喜欢学校。",
+          "image": "/images/books/sight-words.png"
+        }
+      ]
+    }
+  ]
+}
