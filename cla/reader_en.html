@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Picture Book Reader</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
     <style>
         body {
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh;
             background-color: #f0f3f7;
             margin: 0;
+            overflow: hidden; /* 锁定页面高度 */
         }
         header {
             display: flex;
@@ -20,6 +23,7 @@
             padding: 15px 30px;
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-shrink: 0; 
         }
         .book-title {
             font-size: 1.2rem;
@@ -37,18 +41,19 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px 20px;
+            overflow-y: auto; /* 核心：允许主内容区域滚动 */
         }
         .book-image {
             max-width: 90%;
-            max-height: 55vh;
+            max-height: 45vh; /* 控制图片高度 */
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             object-fit: contain;
             background-color: #eaeaea;
         }
         .book-text {
-            margin-top: 30px;
+            margin-top: 20px;
             font-size: 2.8rem;
             text-align: center;
             line-height: 1.4;
@@ -58,7 +63,9 @@
             display: flex;
             justify-content: center;
             gap: 40px;
-            padding: 20px 30px 40px;
+            padding: 15px 30px 20px; 
+            background-color: #f0f3f7;
+            flex-shrink: 0; /* 永远固定在底部 */
         }
         .nav-btn:disabled {
             background-color: #bdc3c7 !important;
@@ -77,7 +84,7 @@
     </header>
 
     <main>
-        <img class="book-image" id="display-image" src="" alt="Illustration" onerror="this.src='https://via.placeholder.com/800x600?text=No+Image'">
+        <img class="book-image" id="display-image" src="" alt="Illustration">
         <div class="book-text phrase-text" id="display-text">Loading...</div>
         
         <button id="btn-speak" class="btn font-en" onclick="speakText()" style="margin-top: 20px; border-radius: 20px;">
@@ -104,13 +111,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const bookId = urlParams.get('id');
 
-        // 更健壮的错误排查机制
         if (bookId === null) {
-            textEl.textContent = "Please return to the library and select a book first.";
-            textEl.classList.remove('phrase-text');
-            textEl.classList.add('font-en');
+            textEl.textContent = "Please select a book from the library first.";
+            textEl.classList.replace('phrase-text', 'font-en');
         } else {
-            // 2. 修复了本地抓取 JSON 数据的相对路径
             fetch('../data/books.json')
                 .then(response => {
                     if(!response.ok) throw new Error("Data not found");
@@ -124,16 +128,18 @@
                         renderPage(); 
                     } else {
                         textEl.textContent = "This book is currently empty.";
-                        textEl.classList.remove('phrase-text');
-                        textEl.classList.add('font-en');
+                        textEl.classList.replace('phrase-text', 'font-en');
                     }
                 })
                 .catch(err => {
-                    textEl.textContent = "Failed to load data. Are you using Live Server?";
-                    textEl.classList.remove('phrase-text');
-                    textEl.classList.add('font-en');
+                    textEl.textContent = "Failed to load data.";
+                    textEl.classList.replace('phrase-text', 'font-en');
                 });
         }
+
+        imageEl.onerror = function() {
+            this.style.display = 'none';
+        };
 
         function renderPage() {
             const totalPages = currentBookData.pages.length;
@@ -142,7 +148,17 @@
             titleEl.textContent = currentBookData.title;
             counterEl.textContent = `${currentPageIndex + 1} / ${totalPages}`;
             
-            imageEl.src = currentPage.image || 'https://via.placeholder.com/800x600?text=No+Image';
+            let imgSrc = currentPage.image;
+            if (imgSrc) {
+                if (!imgSrc.startsWith('/') && !imgSrc.startsWith('http')) {
+                    imgSrc = '/' + imgSrc;
+                }
+                imageEl.src = imgSrc;
+                imageEl.style.display = 'block'; 
+            } else {
+                imageEl.style.display = 'none'; 
+            }
+
             textEl.textContent = currentPage.text;
 
             btnPrev.disabled = (currentPageIndex === 0);

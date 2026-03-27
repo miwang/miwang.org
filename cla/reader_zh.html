@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>绘本阅读</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>绘本阅读 - 中文分级绘本馆</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
     <style>
         body {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background-color: #f0f3f7; /* 统一底色 */
+            height: 100dvh; /* 兼容手机浏览器的真实高度 */
+            background-color: #f0f3f7;
+            margin: 0;
+            overflow: hidden; /* 锁定整个页面，防止出现全局大滚动条 */
         }
         header {
             display: flex;
@@ -19,6 +23,7 @@
             padding: 15px 30px;
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-shrink: 0; /* 保证头部不被挤压 */
         }
         .book-title {
             font-size: 1.2rem;
@@ -36,19 +41,19 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px 20px;
+            overflow-y: auto; /* 如果内容太长，只在中间区域出现滚动条 */
         }
         .book-image {
             max-width: 90%;
-            max-height: 55vh;
+            max-height: 45vh; /* 稍微缩小图片最大占比，给下方留出空间 */
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             object-fit: contain;
             background-color: #eaeaea;
         }
-        /* 句子展示区 */
         .book-text {
-            margin-top: 30px;
+            margin-top: 20px;
             font-size: 2.8rem;
             text-align: center;
             line-height: 1.4;
@@ -58,9 +63,10 @@
             display: flex;
             justify-content: center;
             gap: 40px;
-            padding: 20px 30px 40px;
+            padding: 15px 30px 20px; /* 调整底部边距 */
+            background-color: #f0f3f7;
+            flex-shrink: 0; /* 保证底部翻页栏永远固定在最下方，不被挤没 */
         }
-        /* 覆盖 btn 的 disabled 状态 */
         .nav-btn:disabled {
             background-color: #bdc3c7 !important;
             color: #fff !important;
@@ -72,13 +78,13 @@
 <body class="fade-in">
 
     <header>
-        <a href="library_zh.html" class="back-btn font-zh">← 返回图书馆</a>
+        <a href="library.html" class="back-btn font-zh">⬅️ 返回图书馆</a>
         <h2 class="book-title font-zh" id="display-title">加载中...</h2>
         <div class="page-counter font-en" id="display-counter">1 / 1</div>
     </header>
 
     <main>
-        <img class="book-image" id="display-image" src="" alt="绘本插图" onerror="this.src='https://via.placeholder.com/800x600?text=暂无插图'">
+        <img class="book-image" id="display-image" src="" alt="绘本插图">
         <div class="book-text phrase-text" id="display-text">加载中...</div>
         
         <button id="btn-speak" class="btn font-zh" onclick="speakText()" style="margin-top: 20px; border-radius: 20px;">
@@ -106,10 +112,14 @@
         const bookId = urlParams.get('id');
 
         if (bookId === null) {
-            textEl.textContent = "未找到书籍编号。";
+            textEl.textContent = "未找到书籍编号。请从图书馆重新进入。";
+            textEl.classList.replace('phrase-text', 'font-en');
         } else {
-            fetch('/data/books.json')
-                .then(response => response.json())
+            fetch('../data/books.json')
+                .then(response => {
+                    if(!response.ok) throw new Error("Data not found");
+                    return response.json();
+                })
                 .then(data => {
                     const booksList = data.book_list || [];
                     currentBookData = booksList[bookId]; 
@@ -117,13 +127,20 @@
                     if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) {
                         renderPage(); 
                     } else {
-                        textEl.textContent = "这本书的内容为空哦。";
+                        textEl.textContent = "这本书的内容还在路上哦。";
+                        textEl.classList.replace('phrase-text', 'font-en');
                     }
                 })
                 .catch(err => {
-                    textEl.textContent = "数据加载失败。";
+                    textEl.textContent = "数据加载失败，请重试。";
+                    textEl.classList.replace('phrase-text', 'font-en');
                 });
         }
+
+        // 图片加载失败直接隐藏，拒绝转圈圈
+        imageEl.onerror = function() {
+            this.style.display = 'none';
+        };
 
         function renderPage() {
             const totalPages = currentBookData.pages.length;
@@ -132,7 +149,18 @@
             titleEl.textContent = currentBookData.title;
             counterEl.textContent = `${currentPageIndex + 1} / ${totalPages}`;
             
-            imageEl.src = currentPage.image || 'https://via.placeholder.com/800x600?text=无图';
+            // 智能图片路径处理
+            let imgSrc = currentPage.image;
+            if (imgSrc) {
+                if (!imgSrc.startsWith('/') && !imgSrc.startsWith('http')) {
+                    imgSrc = '/' + imgSrc;
+                }
+                imageEl.src = imgSrc;
+                imageEl.style.display = 'block'; 
+            } else {
+                imageEl.style.display = 'none'; 
+            }
+
             textEl.textContent = currentPage.text;
 
             btnPrev.disabled = (currentPageIndex === 0);
@@ -161,10 +189,9 @@
                 utterance.lang = 'zh-CN'; 
                 utterance.rate = 0.8;     
                 
-                // 触发你的 success-anim 动画
                 const btnSpeak = document.getElementById('btn-speak');
                 btnSpeak.classList.remove('success-anim');
-                void btnSpeak.offsetWidth; // 触发重绘
+                void btnSpeak.offsetWidth;
                 btnSpeak.classList.add('success-anim');
 
                 window.speechSynthesis.speak(utterance);
