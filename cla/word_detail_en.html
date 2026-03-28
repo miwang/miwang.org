@@ -195,7 +195,7 @@
                 </div>
                 <div class="char-card-wrap">
                     <div class="char-img-box" id="char-img-box">
-                        <img id="char-img" src="" alt="">
+                        <img id="char-img" alt="">
                     </div>
                     <div class="char-pinyin" id="char-pinyin"></div>
                     <button class="char-play-btn" onclick="speakChar()">🔊 Listen</button>
@@ -233,13 +233,11 @@
             if (window.pinyinPro) return window.pinyinPro.pinyin(char, { toneType: 'symbol' });
             return '';
         }
-        function getPinyinNoTone(char) {
-            if (window.pinyinPro) return window.pinyinPro.pinyin(char, { toneType: 'none' });
-            return '';
-        }
+
+        // 修改为直接使用汉字播放音频
         function speakChar() {
-            const pinyin = getPinyinNoTone(targetChar).replace(/ /g, '');
-            const audio = new Audio(`../audio/chars/${encodeURIComponent(pinyin)}.mp3`);
+            // 直接读取以汉字命名的音频文件
+            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(targetChar)}.mp3`);
             audio.play().catch(() => {
                 const msg = new SpeechSynthesisUtterance(targetChar);
                 msg.lang = 'zh-CN';
@@ -256,10 +254,9 @@
 
             // 拼音和单字图片
             const py = getCharPinyin(targetChar);
-            const pyNoTone = getPinyinNoTone(targetChar).replace(/ /g, '');
             document.getElementById('char-pinyin').textContent = py;
             const charImg = document.getElementById('char-img');
-            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(pyNoTone)}.webp`;
+            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
             charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
 
             // Hanzi Writer stroke animation
