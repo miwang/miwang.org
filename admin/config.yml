@@ -90,3 +90,22 @@ collections:
                 name: "lyrics"
                 widget: "text"
                 hint: "直接粘贴整首歌词！换行就按回车。如果需要分段落，请在空白行输入 ---"
+# ======== 4. 高频四会字配置 ========
+  - name: "sight_words"
+    label: "🔤 高频四会字"
+    files:
+      - label: "四会字库"
+        name: "sight_words_data"
+        file: "data/sight_words.json"
+        editor:
+          preview: false
+        fields:
+          - label: "四会字列表"
+            name: "sight_words_list"
+            widget: "list"
+            collapsed: true
+            summary: "{{fields.char}} - {{fields.week}}"
+            fields:
+              - { label: "汉字", name: "char", widget: "string" }
+              - { label: "教学月份", name: "week", widget: "select", options: ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"] }
+              - { label: "扩展词组/句子", name: "phrases", widget: "string", hint: "请用逗号隔开，例如：四月, 四岁, 四只小猫" }
