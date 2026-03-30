@@ -2,25 +2,29 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "images/books" # 所有的图片统一存放在这里
-public_folder: "/images/books"
+# 这是一个保底的全局图库设置，防错用
+media_folder: "images" 
+public_folder: "/images"
 
 collections:
   # ======== 1. 绘本馆配置 ========
   - name: "library"
     label: "📚 分级绘本馆"
+    # 🌟 专门为绘本指定的图片上传和读取路径
+    media_folder: "images/books"
+    public_folder: "/images/books"
     files:
       - label: "全部绘本数据"
         name: "books"
         file: "data/books.json"
         editor:
-          preview: false # 🌟 关闭右侧预览面板，视野更开阔
+          preview: false
         fields:
           - label: "绘本书单"
             name: "book_list"
             widget: "list"
-            collapsed: true # 🌟 默认折叠列表
-            summary: "{{fields.title}} - {{fields.level}}" # 🌟 折叠时显示标题和级别
+            collapsed: true 
+            summary: "{{fields.title}} - {{fields.level}}" 
             fields:
               - { label: "绘本名称", name: "title", widget: "string" }
               - { label: "阅读级别", name: "level", widget: "select", options: ["Novice Low (L1)", "Novice Mid (L2)", "Novice High (L3)"] }
@@ -31,14 +35,17 @@ collections:
                 name: "pages"
                 widget: "list"
                 collapsed: true
-                summary: "句子: {{fields.text}}"
+                summary: "句子: {{fields.text}}" 
                 fields:
-                  - { label: "本页插图", name: "image", widget: "image", required: false, hint: "可以使用 Insert from URL 复用已有图片路径" }
+                  - { label: "本页插图", name: "image", widget: "image", required: false, hint: "可以点击 Insert from URL 复用已有图片路径" }
                   - { label: "中文句子", name: "text", widget: "string" }
 
-  # ======== 2. 句子排排队配置 (全新添加) ========
+  # ======== 2. 句子排排队配置 ========
   - name: "sentences"
     label: "🧩 句子排排队"
+    # 🌟 专门为句子排排队指定的图片上传和读取路径
+    media_folder: "images/sentences"
+    public_folder: "/images/sentences"
     files:
       - label: "全部句子库"
         name: "sentences_data"
@@ -50,9 +57,9 @@ collections:
             name: "sentence_list"
             widget: "list"
             collapsed: true
-            summary: "句子: {{fields.words}}"
+            summary: "{{fields.words}}"
             fields:
               - { label: "词语切分", name: "words", widget: "string", hint: "按词语切分，用逗号隔开。例如：我,喜欢,吃,苹果" }
               - { label: "标点符号", name: "punctuation", widget: "string", hint: "例如：。 或者是 ？（没有可不填）", required: false }
-              - { label: "配图", name: "image", widget: "image", required: false, hint: "可以使用 Insert from URL 复用已有图片路径" }
-              - { label: "主题标签", name: "tags", widget: "string", hint: "用逗号隔开，用于顶部分类。例如：食物与购物, 动物与自然", required: false }
+              - { label: "配图", name: "image", widget: "image", required: false, hint: "可以点击 Insert from URL 复用已有图片路径" }
+              - { label: "主题标签", name: "tags", widget: "string", hint: "用逗号隔开，用于顶部分类。例如：动物与自然, 食物与购物", required: false }
