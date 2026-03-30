@@ -1,80 +1,466 @@
 {
   "sentence_list": [
-    { "words": "我,和,爸爸,一起,去,月球", "image": "../images/sentences/moon_trip.webp", "tags": "家人,出去玩", "punctuation": "。" },
-    { "words": "我,和,妈妈,一起,去,水上乐园", "image": "../images/sentences/waterpark.webp", "tags": "家人,出去玩", "punctuation": "。" },
-    { "words": "我,和,姐姐,一起,去,迪士尼", "image": "../images/sentences/disney.webp", "tags": "家人,出去玩", "punctuation": "。" },
-    { "words": "我,和,哥哥,一起,去,公园", "image": "../images/sentences/park.webp", "tags": "家人,出去玩", "punctuation": "。" },
-    { "words": "我,和,家人,一起,去,中国", "image": "../images/sentences/china.webp", "tags": "家人,出去玩", "punctuation": "。" },
-    { "words": "我,和,弟弟,一起,去,游泳", "image": "../images/sentences/swimming.webp", "tags": "家人,出去玩", "punctuation": "。" },
-    { "words": "我,家,有,五,个,人", "image": "../images/sentences/family_5.webp", "tags": "家人,自我介绍", "punctuation": "。" },
-    { "words": "我,和,妹妹,一起,吃,月饼", "image": "../images/sentences/mooncake.webp", "tags": "家人,食物", "punctuation": "。" },
-    { "words": "我,爱,我的,家人", "image": "../images/sentences/love_family.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,有,两个,妈妈", "image": "../images/sentences/two_moms.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,有,两个,爸爸", "image": "../images/sentences/two_dads.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,有,一个,姐姐", "image": "../images/sentences/have_sister.webp", "tags": "家人,自我介绍", "punctuation": "。" },
-    { "words": "我,有,一个,弟弟", "image": "../images/sentences/have_didi.webp", "tags": "家人,自我介绍", "punctuation": "。" },
-    { "words": "我,有,一个,妹妹", "image": "../images/sentences/have_meimei.webp", "tags": "家人,自我介绍", "punctuation": "。" },
-    { "words": "我,有,一个,哥哥", "image": "../images/sentences/have_gege.webp", "tags": "家人,自我介绍", "punctuation": "。" },
-    { "words": "我,和,姐姐,不一样", "image": "../images/sentences/diff_jiejie.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,和,哥哥,不一样", "image": "../images/sentences/diff_gege.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,爱,我的,爸爸", "image": "../images/sentences/love_dad.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,爱,我的,妈妈", "image": "../images/sentences/love_mom.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,爱,我的,哥哥", "image": "../images/sentences/love_gege.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,爱,我的,姐姐", "image": "../images/sentences/love_jiejie.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,爱,我的,弟弟", "image": "../images/sentences/love_didi.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "我,爱,我的,妹妹", "image": "../images/sentences/love_meimei.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,爸爸", "image": "../images/sentences/this_dad.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,妈妈", "image": "../images/sentences/this_mom.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,弟弟", "image": "../images/sentences/this_didi.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,妹妹", "image": "../images/sentences/this_meimei.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,哥哥", "image": "../images/sentences/this_gege.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,姐姐", "image": "../images/sentences/this_jiejie.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,爷爷", "image": "../images/sentences/this_yeye.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,奶奶", "image": "../images/sentences/this_nainai.webp", "tags": "家人", "punctuation": "。" },
-    { "words": "这是,我的,老师", "image": "../images/sentences/this_teacher.webp", "tags": "家人,学校", "punctuation": "。" },
-    { "words": "你,叫,什么,名字", "image": "../images/sentences/whats_your_name.webp", "tags": "自我介绍,问答", "punctuation": "？" },
-    { "words": "你,几岁", "image": "../images/sentences/how_old.webp", "tags": "自我介绍,问答", "punctuation": "？" },
-    { "words": "我,六岁", "image": "../images/sentences/i_am_six.webp", "tags": "自我介绍", "punctuation": "。" },
-    { "words": "我,要,喝,水", "image": "../images/sentences/drink_water.webp", "tags": "食物", "punctuation": "。" },
-    { "words": "我,要,吃,饭", "image": "../images/sentences/eat_rice.webp", "tags": "食物", "punctuation": "。" },
-    { "words": "我,要,上厕所", "image": "../images/sentences/bathroom.webp", "tags": "学校", "punctuation": "。" },
-    { "words": "我,要,拿,大奖", "image": "../images/sentences/win_prize.webp", "tags": "学校", "punctuation": "。" },
-    { "words": "我,要,洗手", "image": "../images/sentences/wash_hands.webp", "tags": "学校", "punctuation": "。" },
-    { "words": "我,会,说,中文", "image": "../images/sentences/speak_chinese.webp", "tags": "自我介绍,能力", "punctuation": "。" },
-    { "words": "我,会,数,到,一百", "image": "../images/sentences/count_100.webp", "tags": "自我介绍,能力", "punctuation": "。" },
-    { "words": "我,会,游泳", "image": "../images/sentences/can_swim.webp", "tags": "能力", "punctuation": "。" },
-    { "words": "我,会,唱歌", "image": "../images/sentences/can_sing.webp", "tags": "能力", "punctuation": "。" },
-    { "words": "我,会,走", "image": "../images/sentences/can_walk.webp", "tags": "能力", "punctuation": "。" },
-    { "words": "我,相信,我,会,飞", "image": "../images/sentences/believe_fly.webp", "tags": "能力", "punctuation": "。" },
-    { "words": "我,有,一个,大头", "image": "../images/sentences/big_head.webp", "tags": "自我介绍,身体", "punctuation": "。" },
-    { "words": "我,有,两个,大眼睛", "image": "../images/sentences/big_eyes.webp", "tags": "身体", "punctuation": "。" },
-    { "words": "我,有,两个,大耳朵", "image": "../images/sentences/big_ears.webp", "tags": "身体", "punctuation": "。" },
-    { "words": "我,有,两个,铅笔", "image": "../images/sentences/two_pencils.webp", "tags": "学校", "punctuation": "。" },
-    { "words": "我,有,一个,小猫", "image": "../images/sentences/have_cat.webp", "tags": "动物", "punctuation": "。" },
-    { "words": "我,没有,小狗", "image": "../images/sentences/no_dog.webp", "tags": "动物", "punctuation": "。" },
-    { "words": "头上,有,十个,苹果", "image": "../images/sentences/apples_head.webp", "tags": "食物", "punctuation": "。" },
-    { "words": "我,喜欢,晴天", "image": "../images/sentences/sunny.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,喜欢,下雪", "image": "../images/sentences/snowy.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,喜欢,下雨", "image": "../images/sentences/rainy.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,喜欢,刮风", "image": "../images/sentences/windy.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,不喜欢,晴天", "image": "../images/sentences/no_sunny.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,不喜欢,下雪", "image": "../images/sentences/no_snowy.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,不喜欢,下雨", "image": "../images/sentences/no_rainy.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,不喜欢,刮风", "image": "../images/sentences/no_windy.webp", "tags": "天气", "punctuation": "。" },
-    { "words": "我,喜欢,学校", "image": "../images/sentences/like_school.webp", "tags": "学校", "punctuation": "。" },
-    { "words": "老师,在,哪里", "image": "../images/sentences/where_teacher.webp", "tags": "方位,问答,学校", "punctuation": "？" },
-    { "words": "小猫,在,哪里", "image": "../images/sentences/where_cat.webp", "tags": "方位,问答,动物", "punctuation": "？" },
-    { "words": "小猫,在,上面", "image": "../images/sentences/cat_up.webp", "tags": "方位,动物", "punctuation": "。" },
-    { "words": "小猫,在,下面", "image": "../images/sentences/cat_down.webp", "tags": "方位,动物", "punctuation": "。" },
-    { "words": "小猫,在,左边", "image": "../images/sentences/cat_left.webp", "tags": "方位,动物", "punctuation": "。" },
-    { "words": "小猫,在,右边", "image": "../images/sentences/cat_right.webp", "tags": "方位,动物", "punctuation": "。" },
-    { "words": "小猫,在,中间", "image": "../images/sentences/cat_middle.webp", "tags": "方位,动物", "punctuation": "。" },
-    { "words": "你的,生日,是,几月,几日", "image": "../images/sentences/when_birthday.webp", "tags": "日期,问答", "punctuation": "？" },
-    { "words": "你,喜欢,什么颜色", "image": "../images/sentences/fav_color.webp", "tags": "颜色,问答", "punctuation": "？" },
-    { "words": "我的,生日,是,二月,十四日", "image": "../images/sentences/my_birthday.webp", "tags": "日期,自我介绍", "punctuation": "。" },
-    { "words": "我,有,一个,红色的,水杯", "image": "../images/sentences/red_cup.webp", "tags": "颜色", "punctuation": "。" },
-    { "words": "我,看见,一只,红色的,鸟", "image": "../images/sentences/red_bird.webp", "tags": "颜色,动物", "punctuation": "。" },
-    { "words": "学校,有,老师", "image": "../images/sentences/school_teacher.webp", "tags": "学校", "punctuation": "。" },
-    { "words": "学校,有,小朋友", "image": "../images/sentences/school_children.webp", "tags": "学校", "punctuation": "。" }
+    {
+      "words": "我,和,爸爸,一起,去,月球",
+      "image": "../images/sentences/moon_trip.webp",
+      "tags": "家人,出去玩",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,妈妈,一起,去,水上乐园",
+      "image": "../images/sentences/waterpark.webp",
+      "tags": "家人,出去玩",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,姐姐,一起,去,迪士尼",
+      "image": "../images/sentences/disney.webp",
+      "tags": "家人,出去玩",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,哥哥,一起,去,公园",
+      "image": "../images/sentences/park.webp",
+      "tags": "家人,出去玩",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,家人,一起,去,中国",
+      "image": "../images/sentences/china.webp",
+      "tags": "家人,出去玩",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,弟弟,一起,去,游泳",
+      "image": "../images/sentences/swimming.webp",
+      "tags": "家人,出去玩",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,家,有,五,个,人",
+      "image": "../images/sentences/family_5.webp",
+      "tags": "家人,自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,妹妹,一起,吃,月饼",
+      "image": "../images/sentences/mooncake.webp",
+      "tags": "家人,食物",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,家人",
+      "image": "../images/sentences/love_family.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,两个,妈妈",
+      "image": "../images/sentences/two_moms.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,两个,爸爸",
+      "image": "../images/sentences/two_dads.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,姐姐",
+      "image": "../images/sentences/have_sister.webp",
+      "tags": "家人,自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,弟弟",
+      "image": "../images/sentences/have_didi.webp",
+      "tags": "家人,自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,妹妹",
+      "image": "../images/sentences/have_meimei.webp",
+      "tags": "家人,自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,哥哥",
+      "image": "../images/sentences/have_gege.webp",
+      "tags": "家人,自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,姐姐,不一样",
+      "image": "../images/sentences/diff_jiejie.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,和,哥哥,不一样",
+      "image": "../images/sentences/diff_gege.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,爸爸",
+      "image": "../images/sentences/love_dad.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,妈妈",
+      "image": "../images/sentences/love_mom.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,哥哥",
+      "image": "../images/sentences/love_gege.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,姐姐",
+      "image": "../images/sentences/love_jiejie.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,弟弟",
+      "image": "../images/sentences/love_didi.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,爱,我的,妹妹",
+      "image": "../images/sentences/love_meimei.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,爸爸",
+      "image": "../images/sentences/this_dad.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,妈妈",
+      "image": "../images/sentences/this_mom.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,弟弟",
+      "image": "../images/sentences/this_didi.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,妹妹",
+      "image": "../images/sentences/this_meimei.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,哥哥",
+      "image": "../images/sentences/this_gege.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,姐姐",
+      "image": "../images/sentences/this_jiejie.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,爷爷",
+      "image": "../images/sentences/this_yeye.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,奶奶",
+      "image": "../images/sentences/this_nainai.webp",
+      "tags": "家人",
+      "punctuation": "。"
+    },
+    {
+      "words": "这是,我的,老师",
+      "image": "../images/sentences/this_teacher.webp",
+      "tags": "家人,学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "你,叫,什么,名字",
+      "image": "../images/sentences/whats_your_name.webp",
+      "tags": "自我介绍,问答",
+      "punctuation": "？"
+    },
+    {
+      "words": "你,几岁",
+      "image": "../images/sentences/how_old.webp",
+      "tags": "自我介绍,问答",
+      "punctuation": "？"
+    },
+    {
+      "words": "我,六岁",
+      "image": "../images/sentences/i_am_six.webp",
+      "tags": "自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,要,喝,水",
+      "image": "../images/sentences/drink_water.webp",
+      "tags": "食物",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,要,吃,饭",
+      "image": "../images/sentences/eat_rice.webp",
+      "tags": "食物",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,要,上厕所",
+      "image": "../images/sentences/bathroom.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,要,拿,大奖",
+      "image": "../images/sentences/win_prize.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,要,洗手",
+      "image": "../images/sentences/wash_hands.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,会,说,中文",
+      "image": "../images/sentences/speak_chinese.webp",
+      "tags": "自我介绍,能力",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,会,数,到,一百",
+      "image": "../images/sentences/count_100.webp",
+      "tags": "自我介绍,能力",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,会,游泳",
+      "image": "../images/sentences/can_swim.webp",
+      "tags": "能力",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,会,唱歌",
+      "image": "../images/sentences/can_sing.webp",
+      "tags": "能力",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,会,走",
+      "image": "../images/sentences/can_walk.webp",
+      "tags": "能力",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,相信,我,会,飞",
+      "image": "../images/sentences/believe_fly.webp",
+      "tags": "能力",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,大头",
+      "image": "../images/sentences/big_head.webp",
+      "tags": "自我介绍,身体",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,两个,大眼睛",
+      "image": "../images/sentences/big_eyes.webp",
+      "tags": "身体",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,两个,大耳朵",
+      "image": "../images/sentences/big_ears.webp",
+      "tags": "身体",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,两个,铅笔",
+      "image": "../images/sentences/two_pencils.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,小猫",
+      "image": "../images/sentences/have_cat.webp",
+      "tags": "动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,没有,小狗",
+      "image": "../images/sentences/no_dog.webp",
+      "tags": "动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "头上,有,十个,苹果",
+      "image": "../images/sentences/apples_head.webp",
+      "tags": "食物",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,喜欢,晴天",
+      "image": "../images/sentences/sunny.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,喜欢,下雪",
+      "image": "../images/sentences/snowy.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,喜欢,下雨",
+      "image": "../images/sentences/rainy.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,喜欢,刮风",
+      "image": "../images/sentences/windy.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,不喜欢,晴天",
+      "image": "../images/sentences/no_sunny.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,不喜欢,下雪",
+      "image": "../images/sentences/no_snowy.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,不喜欢,下雨",
+      "image": "../images/sentences/no_rainy.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,不喜欢,刮风",
+      "image": "../images/sentences/no_windy.webp",
+      "tags": "天气",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,喜欢,学校",
+      "image": "../images/sentences/like_school.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "老师,在,哪里",
+      "image": "../images/sentences/where_teacher.webp",
+      "tags": "方位,问答,学校",
+      "punctuation": "？"
+    },
+    {
+      "words": "小猫,在,哪里",
+      "image": "../images/sentences/where_cat.webp",
+      "tags": "方位,问答,动物",
+      "punctuation": "？"
+    },
+    {
+      "words": "小猫,在,上面",
+      "image": "../images/sentences/cat_up.webp",
+      "tags": "方位,动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "小猫,在,下面",
+      "image": "../images/sentences/cat_down.webp",
+      "tags": "方位,动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "小猫,在,左边",
+      "image": "../images/sentences/cat_left.webp",
+      "tags": "方位,动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "小猫,在,右边",
+      "image": "../images/sentences/cat_right.webp",
+      "tags": "方位,动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "小猫,在,中间",
+      "image": "../images/sentences/cat_middle.webp",
+      "tags": "方位,动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "你的,生日,是,几月,几日",
+      "image": "../images/sentences/when_birthday.webp",
+      "tags": "日期,问答",
+      "punctuation": "？"
+    },
+    {
+      "words": "你,喜欢,什么颜色",
+      "image": "../images/sentences/fav_color.webp",
+      "tags": "颜色,问答",
+      "punctuation": "？"
+    },
+    {
+      "words": "我的,生日,是,二月,十四日",
+      "image": "../images/sentences/my_birthday.webp",
+      "tags": "日期,自我介绍",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,有,一个,红色的,水杯",
+      "image": "../images/sentences/red_cup.webp",
+      "tags": "颜色",
+      "punctuation": "。"
+    },
+    {
+      "words": "我,看见,一只,红色的,鸟",
+      "image": "../images/sentences/red_bird.webp",
+      "tags": "颜色,动物",
+      "punctuation": "。"
+    },
+    {
+      "words": "学校,有,老师",
+      "image": "../images/sentences/school_teacher.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "学校,有,小朋友",
+      "image": "../images/sentences/school_children.webp",
+      "tags": "学校",
+      "punctuation": "。"
+    },
+    {
+      "words": "学校,有,校长",
+      "punctuation": "。",
+      "tags": "学校",
+      "image": "/images/books/school_principal.webp"
+    }
   ]
 }
