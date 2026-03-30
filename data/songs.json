@@ -55,6 +55,14 @@
       "lyrics": "头 肩膀 膝盖 脚 膝盖 脚\n头 肩膀 膝盖 脚 膝盖 脚\n眼睛 耳朵 嘴和鼻子\n头 肩膀 膝盖 脚 膝盖 脚",
       "cover": "/images/songs/head_and_shoulders.webp",
       "youtubeId": "5-PCV5rVv8o"
+    },
+    {
+      "startTime": 0,
+      "id": "tianqige",
+      "title": "天气歌 (What's the weather like)",
+      "cover": "/images/songs/tianqige.webp",
+      "youtubeId": "tyo3Rzbtl3w",
+      "lyrics": "天气怎么样 天气怎么样 今天天气怎么样"
     }
   ]
 }
