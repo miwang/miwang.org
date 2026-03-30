@@ -10,8 +10,8 @@ collections:
   # ======== 1. 绘本馆配置 ========
   - name: "library"
     label: "📚 分级绘本馆"
-    # 🌟 专门为绘本指定的图片上传和读取路径
-    media_folder: "images/books"
+    # 🌟 加上了斜杠，锁定在根目录！
+    media_folder: "/images/books"
     public_folder: "/images/books"
     files:
       - label: "全部绘本数据"
@@ -43,8 +43,8 @@ collections:
   # ======== 2. 句子排排队配置 ========
   - name: "sentences"
     label: "🧩 句子排排队"
-    # 🌟 专门为句子排排队指定的图片上传和读取路径
-    media_folder: "images/sentences"
+    # 🌟 加上了斜杠，锁定在根目录！
+    media_folder: "/images/sentences"
     public_folder: "/images/sentences"
     files:
       - label: "全部句子库"
@@ -63,10 +63,12 @@ collections:
               - { label: "标点符号", name: "punctuation", widget: "string", hint: "例如：。 或者是 ？（没有可不填）", required: false }
               - { label: "配图", name: "image", widget: "image", required: false, hint: "可以点击 Insert from URL 复用已有图片路径" }
               - { label: "主题标签", name: "tags", widget: "string", hint: "用逗号隔开，用于顶部分类。例如：动物与自然, 食物与购物", required: false }
- # ======== 3. 儿歌点唱机配置 ========
+
+  # ======== 3. 儿歌点唱机配置 ========
   - name: "songs"
     label: "🎵 儿歌点唱机"
-    media_folder: "images/songs"
+    # 🌟 加上了斜杠，锁定在根目录！
+    media_folder: "/images/songs"
     public_folder: "/images/songs"
     files:
       - label: "全部儿歌库"
@@ -90,9 +92,13 @@ collections:
                 name: "lyrics"
                 widget: "text"
                 hint: "直接粘贴整首歌词！换行就按回车。如果需要分段落，请在空白行输入 ---"
-# ======== 4. 高频四会字配置 ========
+
+  # ======== 4. 高频四会字配置 ========
   - name: "sight_words"
     label: "🔤 高频四会字"
+    # 🌟 加上了斜杠，锁定在根目录！
+    media_folder: "/images/sight_words_phrases"
+    public_folder: "/images/sight_words_phrases"
     files:
       - label: "四会字库"
         name: "sight_words_data"
