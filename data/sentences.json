@@ -458,9 +458,9 @@
     },
     {
       "words": "学校,有,校长",
-      "punctuation": "",
+      "image": "../images/sentences/school_principal.webp",
       "tags": "学校",
-      "image": "../images/sentences/school_principal.webp"
+      "punctuation": "。"
     }
   ]
 }
