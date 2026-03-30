@@ -63,3 +63,30 @@ collections:
               - { label: "标点符号", name: "punctuation", widget: "string", hint: "例如：。 或者是 ？（没有可不填）", required: false }
               - { label: "配图", name: "image", widget: "image", required: false, hint: "可以点击 Insert from URL 复用已有图片路径" }
               - { label: "主题标签", name: "tags", widget: "string", hint: "用逗号隔开，用于顶部分类。例如：动物与自然, 食物与购物", required: false }
+ # ======== 3. 儿歌点唱机配置 ========
+  - name: "songs"
+    label: "🎵 儿歌点唱机"
+    media_folder: "images/songs"
+    public_folder: "/images/songs"
+    files:
+      - label: "全部儿歌库"
+        name: "songs_data"
+        file: "data/songs.json"
+        editor:
+          preview: false
+        fields:
+          - label: "儿歌列表"
+            name: "song_list"
+            widget: "list"
+            collapsed: true
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "歌曲唯一ID", name: "id", widget: "string", hint: "必须是纯英文无空格，例如：guyongzhe" }
+              - { label: "歌曲名称", name: "title", widget: "string", hint: "例如：孤勇者 (Lonely Warrior)" }
+              - { label: "封面图片", name: "cover", widget: "image", required: false }
+              - { label: "YouTube ID", name: "youtubeId", widget: "string", hint: "视频链接 v= 后面的字母，例如：Je6r_DqkPqU" }
+              - { label: "开始时间(秒)", name: "startTime", widget: "number", value_type: "int", default: 0 }
+              - label: "完整歌词"
+                name: "lyrics"
+                widget: "text"
+                hint: "直接粘贴整首歌词！换行就按回车。如果需要分段落，请在空白行输入 ---"

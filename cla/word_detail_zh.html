@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <script src="https://unpkg.com/pinyin-pro"></script>
     <style>
-        /* 🌟 1. 植入万能楷体序列，锁定 Safari 渲染 */
         :root {
             --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
         }
@@ -53,6 +52,7 @@
             display: flex; align-items: center; justify-content: center;
         }
         .char-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .img-top.no-img, .char-img-box.no-img { background: #f4f9f9; }
         .char-pinyin { font-size: 1.2rem; color: #598586; font-weight: 600; letter-spacing: 1px; font-family: "LXGW WenKai Lite", sans-serif !important; }
         .char-play-btn {
             background: #598586; color: white; padding: 7px 22px; border-radius: 30px;
@@ -124,11 +124,9 @@
         <div id="phrases-container" class="phrase-list"></div>
     </div>
 
-    <script src="../js/sight_words_data.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const targetChar = params.get('char');
-        const data = fullWordData.find(d => d.char === targetChar);
 
         let xiaoxiao = null;
         function loadVoices() {
@@ -145,9 +143,7 @@
             return '';
         }
 
-        // 修改为直接使用汉字播放音频
         function speakChar() {
-            // 直接读取以汉字命名的音频文件
             const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(targetChar)}.mp3`);
             audio.play().catch(() => {
                 const msg = new SpeechSynthesisUtterance(targetChar);
@@ -159,40 +155,52 @@
             });
         }
 
-        if (data) {
-            // 拼音和单字图片
-            const py = getCharPinyin(targetChar);
-            document.getElementById('char-pinyin').textContent = py;
-            const charImg = document.getElementById('char-img');
-            charImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
-            charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
+        // 🌟 核心：从云端拉取数据并渲染
+        fetch('../data/sight_words.json')
+            .then(res => res.json())
+            .then(dataObj => {
+                const list = dataObj.sight_words_list || [];
+                const data = list.find(d => d.char === targetChar);
 
-            HanziWriter.create('character-target', targetChar, {
-                width: 140, height: 140, padding: 10, strokeColor: '#e74c3c', outlineColor: '#f3f3f3', delayBetweenAnimations: 2000
-            }).animateCharacter();
+                if (data) {
+                    const py = getCharPinyin(targetChar);
+                    document.getElementById('char-pinyin').textContent = py;
+                    const charImg = document.getElementById('char-img');
+                    charImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
+                    charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
 
-            const container = document.getElementById('phrases-container');
-            container.innerHTML = data.phrases.map(p => `
-                <div class="phrase-card" onclick="speak('${p}')">
-                    <div class="img-top">
-                        <img src="../images/sight_words_phrases/${p}.webp" class="phrase-img">
-                    </div>
-                    <div class="text-bottom">
-                        <div class="phrase-text">${p}</div>
-                        <div class="play-btn-mock">🔊 听一听</div>
-                    </div>
-                </div>
-            `).join('');
-        }
+                    HanziWriter.create('character-target', targetChar, {
+                        width: 140, height: 140, padding: 10, strokeColor: '#e74c3c', outlineColor: '#f3f3f3', delayBetweenAnimations: 2000
+                    }).animateCharacter();
+
+                    // 自动将逗号隔开的字符串转换成数组
+                    let phraseArray = [];
+                    if (data.phrases) {
+                        phraseArray = data.phrases.split(/[,，、]/).map(p => p.trim()).filter(p => p);
+                    }
+
+                    const container = document.getElementById('phrases-container');
+                    container.innerHTML = phraseArray.map(p => `
+                        <div class="phrase-card" onclick="speak('${p}')">
+                            <div class="img-top">
+                                <img src="../images/sight_words_phrases/${p}.webp" class="phrase-img" onerror="this.closest('.img-top').classList.add('no-img'); this.remove();">
+                            </div>
+                            <div class="text-bottom">
+                                <div class="phrase-text">${p}</div>
+                                <div class="play-btn-mock">🔊 听一听</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(err => console.error("加载数据失败", err));
 
         function goToTracing() { 
-            // 🌟 练习路径向上跳两级
             if(targetChar) window.location.href = `tracing_zh.html?char=${encodeURIComponent(targetChar)}&from=detail`; 
         }
 
         function speak(text) { 
             window.speechSynthesis.cancel(); 
-            // 🌟 音频路径向上跳一级
             const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`);
             audio.play().catch(() => { 
                 const msg = new SpeechSynthesisUtterance(text);

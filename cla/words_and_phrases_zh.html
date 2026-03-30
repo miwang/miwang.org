@@ -76,7 +76,7 @@
         <div class="progress-summary">
             <div class="summary-text">
                 <h2 id="summary-title">学习进度</h2>
-                <p id="summary-detail">加油，继续努力练习！</p>
+                <p id="summary-detail">加载中...</p>
             </div>
             <div style="text-align: right;">
                 <div class="bar-container">
@@ -89,12 +89,11 @@
         <div id="main-content"></div>
     </div>
 
-    <script src="../js/sight_words_data.js"></script>
     <script>
         const content = document.getElementById('main-content');
         const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
 
-        // 🌟 双语转换映射表：确保 March 自动变三月
+        // 🌟 双语转换映射表
         const monthMap = {
             "January": "一月", "February": "二月", "March": "三月", "April": "四月",
             "May": "五月", "June": "六月", "July": "七月", "August": "八月",
@@ -111,60 +110,72 @@
         const currentMonthEn = monthNamesEn[now.getMonth()];
         const currentMonthZh = monthNamesZh[now.getMonth()];
 
-        const labels = [];
-        fullWordData.forEach(item => {
-            if (!labels.includes(item.week)) { labels.push(item.week); }
-        });
+        // 🌟 核心：从云端拉取数据
+        fetch('../data/sight_words.json')
+            .then(res => res.json())
+            .then(dataObj => {
+                const fullWordData = dataObj.sight_words_list || [];
+                
+                const labels = [];
+                fullWordData.forEach(item => {
+                    if (!labels.includes(item.week)) { labels.push(item.week); }
+                });
 
-        // 智能匹配：在数据中寻找本月（支持中英文匹配）
-        let displayLabel = currentMonthZh; 
-        let thisPeriodChars = fullWordData.filter(d => d.week === currentMonthEn || d.week === currentMonthZh);
+                let displayLabel = currentMonthZh; 
+                let thisPeriodChars = fullWordData.filter(d => d.week === currentMonthEn || d.week === currentMonthZh);
 
-        // 如果本月没字，显示最后一组
-        if (thisPeriodChars.length === 0 && labels.length > 0) {
-            const lastLabel = labels[labels.length - 1];
-            displayLabel = monthMap[lastLabel] || lastLabel; 
-            thisPeriodChars = fullWordData.filter(d => d.week === lastLabel);
-        }
+                if (thisPeriodChars.length === 0 && labels.length > 0) {
+                    const lastLabel = labels[labels.length - 1];
+                    displayLabel = monthMap[lastLabel] || lastLabel; 
+                    thisPeriodChars = fullWordData.filter(d => d.week === lastLabel);
+                }
 
-        if (thisPeriodChars.length > 0) {
-            const completedCount = thisPeriodChars.filter(d => progress[d.char] === 'completed').length;
-            const percentage = Math.round((completedCount / thisPeriodChars.length) * 100) || 0;
-            
-            document.getElementById('top-bar-fill').style.width = percentage + '%';
-            document.getElementById('top-pct').innerText = percentage + '%';
-            document.getElementById('summary-title').innerText = `${displayLabel} 学习进度`;
-            document.getElementById('summary-detail').innerText = `本阶段已掌握 ${completedCount} / ${thisPeriodChars.length} 个汉字 ✅`;
-        }
+                if (thisPeriodChars.length > 0) {
+                    const completedCount = thisPeriodChars.filter(d => progress[d.char] === 'completed').length;
+                    const percentage = Math.round((completedCount / thisPeriodChars.length) * 100) || 0;
+                    
+                    document.getElementById('top-bar-fill').style.width = percentage + '%';
+                    document.getElementById('top-pct').innerText = percentage + '%';
+                    document.getElementById('summary-title').innerText = `${displayLabel} 学习进度`;
+                    document.getElementById('summary-detail').innerText = `本阶段已掌握 ${completedCount} / ${thisPeriodChars.length} 个汉字 ✅`;
+                } else {
+                    document.getElementById('summary-detail').innerText = `加油，继续努力练习！`;
+                }
 
-        content.innerHTML = labels.map(label => {
-            const charsInGroup = fullWordData.filter(item => item.week === label);
-            const labelTitle = monthMap[label] || label; 
-            return `
-                <div class="week-section">
-                    <div class="week-title">${labelTitle}</div>
-                    <div class="char-grid">
-                        ${charsInGroup.map(item => {
-                            const isDone = progress[item.char] === 'completed';
-                            return `
-                                <a href="word_detail_zh.html?char=${encodeURIComponent(item.char)}" class="char-card" onclick="saveScroll()">
-                                    <span class="badge-done" style="display: ${isDone ? 'flex' : 'none'}">✅</span>
-                                    <span class="char-text">${item.char}</span>
-                                </a>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
-        }).join('');
-        // ── Scroll position save & restore ──
+                content.innerHTML = labels.map(label => {
+                    const charsInGroup = fullWordData.filter(item => item.week === label);
+                    const labelTitle = monthMap[label] || label; 
+                    return `
+                        <div class="week-section">
+                            <div class="week-title">${labelTitle}</div>
+                            <div class="char-grid">
+                                ${charsInGroup.map(item => {
+                                    const isDone = progress[item.char] === 'completed';
+                                    return `
+                                        <a href="word_detail_zh.html?char=${encodeURIComponent(item.char)}" class="char-card" onclick="saveScroll()">
+                                            <span class="badge-done" style="display: ${isDone ? 'flex' : 'none'}">✅</span>
+                                            <span class="char-text">${item.char}</span>
+                                        </a>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // ── 数据加载完毕后恢复滚动条位置 ──
+                const savedScroll = sessionStorage.getItem('wap_zh_scroll');
+                if (savedScroll !== null) {
+                    window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+                    sessionStorage.removeItem('wap_zh_scroll');
+                }
+            })
+            .catch(err => {
+                content.innerHTML = '<div style="text-align:center; padding: 40px; color:#999; font-size:1.1rem;">未能加载数据，请确保后台配置正常！</div>';
+            });
+
         function saveScroll() {
             sessionStorage.setItem('wap_zh_scroll', window.scrollY);
-        }
-        const savedScroll = sessionStorage.getItem('wap_zh_scroll');
-        if (savedScroll !== null) {
-            window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
-            sessionStorage.removeItem('wap_zh_scroll');
         }
     </script>
 </body>

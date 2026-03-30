@@ -6,25 +6,22 @@
     <title>我们来唱歌 - MECC Final Edition</title>
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
-    <script src="../js/songs_data.js"></script>
     <script src="https://unpkg.com/pinyin-pro"></script>
 
     <style>
         :root {
-            /* STKaiti 第一：macOS/Safari 楷体；KaiTi：Windows 楷体；LXGW 兜底 */
+            /* 🌟 修复：恢复正确的 CSS 变量定义语法 */
             --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
             --wenkai: "LXGW WenKai Lite", sans-serif;
             --main-teal: #598586;
             --accent-yellow: #f3b236;
         }
 
-        /* 🌟 暴力锁定：所有带 font-zh 的标签强制楷体 */
         .font-zh, [class*="font-zh"] { font-family: var(--kaiti) !important; font-weight: bold; }
         .font-en, [class*="font-en"] { font-family: var(--wenkai) !important; }
 
         body { background-color: #fff9ea; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* 磨砂返回按钮 */
         .back-btn-capsule {
             position: absolute; top: 20px; left: 20px; color: #555; text-decoration: none;
             font-size: 1.1rem; font-weight: bold; z-index: 5000; 
@@ -36,7 +33,6 @@
         .list-header { text-align: center; padding: 30px 0 10px 0; flex-shrink: 0; }
         .list-header h1 { font-size: 3.5rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
 
-        /* 🌟 列表页：强制卡片整齐 */
         #gallery-view {
             flex: 1; overflow-y: auto; display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -54,10 +50,9 @@
         .song-info { flex: 1; padding: 6px 10px; text-align: center; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
         .song-info h3 { margin: 0; font-size: 1rem; color: #333; line-height: 1.3; }
 
-        /* 🌟 播放页设计 */
         #play-view { display: none; height: 100vh; flex-direction: column; background: #fff9ea; z-index: 2000; position: relative; }
         .play-header { min-height: 12vh; background: var(--main-teal); display: flex; align-items: center; justify-content: space-between; border-bottom: 0.6vh solid var(--accent-yellow); padding: 0 20px; gap: 12px; }
-        .play-back-btn { flex-shrink: 0; color: white; cursor: pointer; font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.4); transition: 0.2s; white-space: nowrap; font-family: var(--kaiti); }
+        .play-back-btn { flex-shrink: 0; color: white; cursor: pointer; font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.4); transition: 0.2s; white-space: nowrap; }
         .play-back-btn:hover { background: rgba(255,255,255,0.35); }
         .play-header-spacer { flex-shrink: 0; visibility: hidden; padding: 8px 18px; font-size: 1rem; white-space: nowrap; }
         .lyrics-panel { flex: 1; display: flex; flex-direction: column; background: white; margin: 1.5vh; border-radius: 4vh; overflow: hidden; }
@@ -66,25 +61,9 @@
         .pagination-controls { height: 12vh; display: flex; justify-content: center; align-items: center; gap: 8vw; background: #fff; border-top: 1px solid #f0f0f0; }
         .page-btn { background: var(--accent-yellow); border: none; padding: 1.5vh 8vw; border-radius: 20px; font-size: 4vh; cursor: pointer; box-shadow: 0 0.6vh 0 #d49a2a; touch-action: manipulation; }
 
-        /* 🌟 悬浮图片容器：带删除按钮 */
-        #hover-img-container { 
-            position: fixed; display: none; z-index: 10000; padding: 10px;
-            pointer-events: auto; /* 必须允许点击，否则点不到删除按钮 */
-        }
-        #global-hover-img { 
-            max-height: 40vh; max-width: 420px; 
-            border: 6px solid var(--accent-yellow); border-radius: 20px; 
-            background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
-        }
-        /* 🗑️ 红色删除小按钮 */
-        .btn-delete-item {
-            position: absolute; top: 0px; right: 0px; 
-            background: #e74c3c; color: white; border: 3px solid white;
-            width: 45px; height: 45px; border-radius: 50%;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 10001; transition: 0.2s;
-        }
+        #hover-img-container { position: fixed; display: none; z-index: 10000; padding: 10px; pointer-events: auto; }
+        #global-hover-img { max-height: 40vh; max-width: 420px; border: 6px solid var(--accent-yellow); border-radius: 20px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        .btn-delete-item { position: absolute; top: 0px; right: 0px; background: #e74c3c; color: white; border: 3px solid white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10001; transition: 0.2s; }
         .btn-delete-item:hover { transform: scale(1.1); background: #c0392b; }
 
         .hover-word { border-bottom: 0.8vh dashed var(--main-teal); cursor: pointer; display: inline-block; }
@@ -94,71 +73,24 @@
         #selection-bubble { position: fixed; display: none; background: rgba(89, 133, 134, 0.95); color: white; padding: 10px 25px; border-radius: 50px; cursor: pointer; z-index: 9999; font-size: 1.2rem; font-weight: bold; border: 2px solid white; backdrop-filter: blur(5px); }
 
         .admin-bar { background: white; margin: 10px 50px 20px 50px; padding: 12px; border-radius: 20px; border: 2px dashed var(--main-teal); display: flex; justify-content: center; gap: 20px; align-items: center; flex-shrink: 0; }
-        .admin-btn { background: var(--main-teal); color: white; border: none; padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 1rem; font-family: var(--kaiti); }
+        .admin-btn { background: var(--main-teal); color: white; border: none; padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 1rem; }
 
         @media (max-width: 768px) {
-            /* ── 列表页 ── */
             .list-header { padding: 56px 16px 6px !important; }
             .list-header h1 { font-size: 2rem !important; letter-spacing: 2px !important; }
-
-            #gallery-view {
-                grid-template-columns: 1fr 1fr !important;
-                grid-auto-rows: auto !important;
-                gap: 14px !important;
-                padding: 10px 14px !important;
-            }
-            /* 卡片固定统一高度，封面占固定高度，歌名区固定高度不撑开 */
+            #gallery-view { grid-template-columns: 1fr 1fr !important; grid-auto-rows: auto !important; gap: 14px !important; padding: 10px 14px !important; }
             .song-card { height: 220px !important; }
             .card-img-wrapper { height: 150px !important; flex-shrink: 0 !important; }
-            .song-info { 
-                height: 70px !important; flex-shrink: 0 !important; 
-                overflow: hidden !important; padding: 6px 8px !important;
-            }
-            .song-info h3 { 
-                font-size: 0.9rem !important; 
-                display: -webkit-box !important; -webkit-line-clamp: 2 !important; 
-                -webkit-box-orient: vertical !important; overflow: hidden !important;
-                line-height: 1.3 !important;
-            }
-
-            .admin-bar {
-                margin: 6px 12px 10px !important;
-                padding: 6px 8px !important;
-                gap: 6px !important;
-                flex-wrap: nowrap !important;
-                justify-content: center !important;
-                align-items: center !important;
-            }
+            .song-info { height: 70px !important; flex-shrink: 0 !important; overflow: hidden !important; padding: 6px 8px !important; }
+            .song-info h3 { font-size: 0.9rem !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; line-height: 1.3 !important; }
+            .admin-bar { margin: 6px 12px 10px !important; padding: 6px 8px !important; gap: 6px !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: center !important; }
             .admin-bar span { font-size: 0.75rem !important; white-space: nowrap !important; }
             .admin-btn { padding: 5px 8px !important; font-size: 0.75rem !important; white-space: nowrap !important; }
-
-            /* ── 歌词页 ── */
             .play-header { min-height: auto !important; padding: 10px 12px !important; gap: 8px !important; }
             .play-back-btn { font-size: 0.85rem !important; padding: 6px 12px !important; }
-            #song-title { 
-                font-size: clamp(0.7rem, 2.8vw, 1rem) !important; 
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-            }
-
-            /* 歌词：不换行，字号自适应最长行 */
-            .lyric-line { 
-                font-size: clamp(1.4rem, 6vw, 2rem) !important;
-                white-space: nowrap !important;
-                margin: 0.4em 0 !important;
-                width: 100% !important;
-                text-align: center !important;
-                overflow: hidden !important;
-                text-overflow: clip !important;
-                transform-origin: center !important;
-            }
-
-            .pagination-controls {
-                height: auto !important;
-                padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important;
-                gap: 6vw !important;
-            }
+            #song-title { font-size: clamp(0.7rem, 2.8vw, 1rem) !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+            .lyric-line { font-size: clamp(1.4rem, 6vw, 2rem) !important; white-space: nowrap !important; margin: 0.4em 0 !important; width: 100% !important; text-align: center !important; overflow: hidden !important; text-overflow: clip !important; transform-origin: center !important; }
+            .pagination-controls { height: auto !important; padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important; gap: 6vw !important; }
             .page-btn { padding: 10px 10vw !important; font-size: 1.6rem !important; }
             #page-indicator { font-size: 1.4rem !important; }
         }
@@ -172,10 +104,10 @@
         <div id="gallery-view"></div>
         <div class="admin-bar font-zh">
             <span>数据中心：</span>
-            <button class="admin-btn" onclick="exportData()">💾 导出备份</button>
-            <button class="admin-btn" onclick="document.getElementById('fileInput').click()">📂 导入备份</button>
+            <button class="admin-btn font-zh" onclick="exportData()">💾 导出备份</button>
+            <button class="admin-btn font-zh" onclick="document.getElementById('fileInput').click()">📂 导入备份</button>
             <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
-            <button class="admin-btn" style="background:#e74c3c;" onclick="resetAll()">🗑️ 清空所有记录</button>
+            <button class="admin-btn font-zh" style="background:#e74c3c;" onclick="resetAll()">🗑️ 清空所有记录</button>
         </div>
     </div>
 
@@ -195,7 +127,7 @@
         </div>
     </div>
 
-    <div id="selection-bubble" onmousedown="makeHardWord()">🖼️ 加注图片</div>
+    <div id="selection-bubble" class="font-zh" onmousedown="makeHardWord()">🖼️ 加注图片</div>
     
     <div id="hover-img-container" onmouseenter="keepImg()" onmouseleave="hideImg()">
         <button class="btn-delete-item" id="delete-item-btn">🗑️</button>
@@ -203,6 +135,8 @@
     </div>
 
     <script>
+        let songsData = [];
+
         function formatText(text, isLyrics = false) {
             if (!text) return "";
             return text.split('').map(char => {
@@ -226,40 +160,83 @@
 
         let currentSong = null, currentSlides = [], currentSlideIndex = 0, selectedText = "", hideTimer = null;
 
-        function initGallery() {
+        function initData() {
             document.getElementById('main-title').innerHTML = formatText("🎶 我们来唱歌 🎶");
-            document.getElementById('gallery-view').innerHTML = songsData.map((song, index) => `
-                <div class="song-card" onclick="startLevel(${index})">
-                    <div class="card-img-wrapper"><img src="../images/songs/${song.cover}" onerror="this.style.display='none';"></div>
-                    <div class="song-info"><h3>${formatText(song.title)}</h3></div>
-                </div>
-            `).join('');
+            fetch('../data/songs.json')
+                .then(res => {
+                    if (!res.ok) throw new Error("无法读取数据文件");
+                    return res.json();
+                })
+                .then(data => {
+                    const list = data.song_list || [];
+                    songsData = list.map(song => {
+                        let lyricsArray = [];
+                        if (song.lyrics) {
+                            lyricsArray = song.lyrics.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                        }
+                        return { ...song, lyrics: lyricsArray };
+                    });
+                    initGallery();
+                })
+                .catch(err => {
+                    document.getElementById('gallery-view').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-zh">未能加载儿歌数据，请确保后台配置正常！</div>';
+                });
         }
 
+        function initGallery() {
+            if (songsData.length === 0) return;
+            document.getElementById('gallery-view').innerHTML = songsData.map((song, index) => {
+                let imgPath = song.cover || '';
+                if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) { imgPath = '/' + imgPath; }
+                return `
+                <div class="song-card" onclick="startLevel(${index})">
+                    <div class="card-img-wrapper"><img src="${imgPath}" onerror="this.style.display='none';"></div>
+                    <div class="song-info"><h3>${formatText(song.title)}</h3></div>
+                </div>`;
+            }).join('');
+        }
+
+        // 🌟 核心升级：智能自动断页功能
         function startLevel(idx) {
             currentSong = songsData[idx]; listView.style.display = 'none'; playView.style.display = 'flex';
             document.getElementById('song-title').innerHTML = formatText(currentSong.title);
-            currentSlides = []; let temp = [];
-            currentSong.lyrics.forEach(l => {
-                if(l === "---") { currentSlides.push({type:'text', content:temp}); temp = []; }
-                else { temp.push(l); }
-            });
-            if(temp.length) currentSlides.push({type:'text', content:temp});
-            currentSlides.push({type:'video', content:currentSong.youtubeId});
+            currentSlides = []; 
+            let temp = [];
+            
+            // 智能判断：检测老师有没有手动输入分隔符
+            const hasManualBreaks = currentSong.lyrics.some(l => l === "---");
+
+            if (hasManualBreaks) {
+                // 模式 A：老师输入了 ---，完全听老师的节奏
+                currentSong.lyrics.forEach(l => {
+                    if(l === "---") { currentSlides.push({type:'text', content:temp}); temp = []; }
+                    else { temp.push(l); }
+                });
+                if(temp.length) currentSlides.push({type:'text', content:temp});
+            } else {
+                // 模式 B：老师没输入，系统自动每 4 行分成一页，保护基本乐句节奏
+                currentSong.lyrics.forEach((l, index) => {
+                    temp.push(l);
+                    // 凑满4行，或者已经是最后一行了，就打包成一页
+                    if (temp.length === 4 || index === currentSong.lyrics.length - 1) {
+                        currentSlides.push({type:'text', content:temp});
+                        temp = [];
+                    }
+                });
+            }
+
+            if (currentSong.youtubeId) {
+                currentSlides.push({type:'video', content:currentSong.youtubeId});
+            }
             currentSlideIndex = 0; renderSlide();
         }
 
-        // 🌟 手机端断行：优先用 mobile 字段，否则按标点自动拆
         function getMobileLines(lineData) {
-            // 如果数据是对象且有 mobile 字段，直接用
             if (typeof lineData === 'object' && lineData.mobile) return lineData.mobile;
             const text = typeof lineData === 'object' ? lineData.pc : lineData;
-            // 超过12字才考虑拆行
             if (text.length <= 12) return [text];
-            // 按「，。！？；」拆，保留标点在前段末尾
             const segs = text.split(/(?<=[，。！？；、,!?;])/);
-            if (segs.length <= 1) return [text]; // 没有标点，不拆
-            // 合并太短的片段（<3字）到前一段
+            if (segs.length <= 1) return [text]; 
             const result = [];
             let buf = '';
             segs.forEach(seg => {
@@ -282,9 +259,7 @@
                 const isMobile = window.innerWidth <= 768;
 
                 slide.content.forEach(lineData => {
-                    // 取实际文字（兼容字符串和 {pc, mobile} 对象）
                     const lineText = typeof lineData === 'object' ? lineData.pc : lineData;
-                    // 手机端拆行，桌面端直接用原行
                     const renderLines = isMobile ? getMobileLines(lineData) : [lineText];
 
                     renderLines.forEach(line => {
@@ -305,8 +280,7 @@
                         });
 
                         const div = document.createElement('div');
-                        div.className = 'lyric-line';
-                        // 手机端：按行字数动态调字号，保证不换行又尽量大
+                        div.className = 'lyric-line font-zh';
                         if (isMobile) {
                             const vw = window.innerWidth;
                             const availPx = vw * 0.86;
@@ -335,17 +309,17 @@
             document.getElementById('page-indicator').innerText = `${currentSlideIndex + 1} / ${currentSlides.length}`;
         }
 
-        // 🌟 核心：显示逻辑（边界保护 + 延迟消失）
         function showImg(e, src, word) {
             clearTimeout(hideTimer);
-            globalImg.src = `../images/songs/${src}`;
+            let imgPath = src;
+            if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) { imgPath = '/' + imgPath; }
+            globalImg.src = imgPath;
             imgContainer.style.display = 'block';
             const rect = e.target.getBoundingClientRect();
             
-            // 延迟一点获取高度，确保图片加载后计算
             setTimeout(() => {
                 let topPos = rect.top - imgContainer.offsetHeight - 10;
-                if (topPos < 10) topPos = rect.bottom + 10; // 顶天了就向下弹
+                if (topPos < 10) topPos = rect.bottom + 10; 
 
                 let leftPos = rect.left;
                 if (leftPos + imgContainer.offsetWidth > window.innerWidth) leftPos = window.innerWidth - imgContainer.offsetWidth - 20;
@@ -368,7 +342,6 @@
         function keepImg() { clearTimeout(hideTimer); }
         function hideImg() { imgContainer.style.display = 'none'; }
 
-        // 其他逻辑保持不变...
         function toggleChar(e, el, char) {
             e.stopPropagation(); const newState = !el.classList.contains('red-word');
             localStorage.setItem(`mecc_red_${currentSong.id}_${char}`, newState);
@@ -386,7 +359,7 @@
         };
         function makeHardWord() {
             const { pinyin } = pinyinPro; const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".webp";
-            const imgFile = prompt(`加注图片文件名:`, autoName);
+            const imgFile = prompt(`请填写后台的图片路径:`, `/images/songs/${autoName}`);
             if (imgFile) { let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); d[selectedText] = imgFile; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); bubble.style.display = 'none'; renderSlide(); }
         }
         function closePlay() { playView.style.display = 'none'; listView.style.display = 'flex'; bubble.style.display = 'none'; }
@@ -396,7 +369,7 @@
         function prevPage() { if(currentSlideIndex > 0) { currentSlideIndex--; renderSlide(); } }
         function nextPage() { if(currentSlideIndex < currentSlides.length - 1) { currentSlideIndex++; renderSlide(); } }
 
-        window.onload = initGallery;
+        window.onload = initData;
     </script>
 </body>
 </html>

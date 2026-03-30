@@ -134,7 +134,7 @@
         <div class="progress-summary">
             <div class="summary-text">
                 <h2 id="summary-title">Learning Journey</h2>
-                <p id="summary-detail">Keep practicing!</p>
+                <p id="summary-detail">Loading...</p>
             </div>
             <div>
                 <div class="bar-container">
@@ -150,65 +150,76 @@
 
     <div class="footer">Created with ❤️ by Wang Laoshi</div>
 
-    <script src="../js/sight_words_data.js"></script>
     <script>
         const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
-
-        const labels = [];
-        fullWordData.forEach(item => {
-            if (!labels.includes(item.week)) labels.push(item.week);
-        });
-
         const monthNames = ["January","February","March","April","May","June",
                             "July","August","September","October","November","December"];
         const currentMonthName = monthNames[new Date().getMonth()];
 
-        let displayLabel = currentMonthName;
-        let thisPeriodChars = fullWordData.filter(d => d.week === currentMonthName);
+        // 🌟 Fetching data from the cloud
+        fetch('../data/sight_words.json')
+            .then(res => res.json())
+            .then(dataObj => {
+                const fullWordData = dataObj.sight_words_list || [];
+                
+                const labels = [];
+                fullWordData.forEach(item => {
+                    if (!labels.includes(item.week)) labels.push(item.week);
+                });
 
-        if (thisPeriodChars.length === 0 && labels.length > 0) {
-            displayLabel = labels[labels.length - 1];
-            thisPeriodChars = fullWordData.filter(d => d.week === displayLabel);
-        }
+                let displayLabel = currentMonthName;
+                let thisPeriodChars = fullWordData.filter(d => d.week === currentMonthName);
 
-        if (thisPeriodChars.length > 0) {
-            const done = thisPeriodChars.filter(d => progress[d.char] === 'completed').length;
-            const pct  = Math.round((done / thisPeriodChars.length) * 100) || 0;
-            document.getElementById('top-bar-fill').style.width = pct + '%';
-            document.getElementById('top-pct').textContent = pct + '%';
-            document.getElementById('summary-title').textContent = `${displayLabel} Progress`;
-            document.getElementById('summary-detail').textContent =
-                `${done} of ${thisPeriodChars.length} characters mastered ✅`;
-        }
+                if (thisPeriodChars.length === 0 && labels.length > 0) {
+                    displayLabel = labels[labels.length - 1];
+                    thisPeriodChars = fullWordData.filter(d => d.week === displayLabel);
+                }
 
-        document.getElementById('main-content').innerHTML = labels.map(label => {
-            const chars = fullWordData.filter(d => d.week === label);
-            return `
-                <div class="week-section">
-                    <div class="week-title">${label}</div>
-                    <div class="char-grid">
-                        ${chars.map(item => {
-                            const isDone = progress[item.char] === 'completed';
-                            return `
-                                <a href="word_detail_en.html?char=${encodeURIComponent(item.char)}"
-                                   class="char-card${isDone ? ' done' : ''}"
-                                   onclick="saveScroll()">
-                                    <div class="badge-done">✓</div>
-                                    <span class="char-text">${item.char}</span>
-                                </a>`;
-                        }).join('')}
-                    </div>
-                </div>`;
-        }).join('');
+                if (thisPeriodChars.length > 0) {
+                    const done = thisPeriodChars.filter(d => progress[d.char] === 'completed').length;
+                    const pct  = Math.round((done / thisPeriodChars.length) * 100) || 0;
+                    document.getElementById('top-bar-fill').style.width = pct + '%';
+                    document.getElementById('top-pct').textContent = pct + '%';
+                    document.getElementById('summary-title').textContent = `${displayLabel} Progress`;
+                    document.getElementById('summary-detail').textContent =
+                        `${done} of ${thisPeriodChars.length} characters mastered ✅`;
+                } else {
+                    document.getElementById('summary-detail').textContent = "Keep practicing!";
+                }
 
-        // ── Scroll position save & restore ──
+                document.getElementById('main-content').innerHTML = labels.map(label => {
+                    const chars = fullWordData.filter(d => d.week === label);
+                    return `
+                        <div class="week-section">
+                            <div class="week-title">${label}</div>
+                            <div class="char-grid">
+                                ${chars.map(item => {
+                                    const isDone = progress[item.char] === 'completed';
+                                    return `
+                                        <a href="word_detail_en.html?char=${encodeURIComponent(item.char)}"
+                                           class="char-card${isDone ? ' done' : ''}"
+                                           onclick="saveScroll()">
+                                            <div class="badge-done">✓</div>
+                                            <span class="char-text">${item.char}</span>
+                                        </a>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                }).join('');
+
+                // ── Restore scroll after data is loaded ──
+                const savedScroll = sessionStorage.getItem('wap_en_scroll');
+                if (savedScroll !== null) {
+                    window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+                    sessionStorage.removeItem('wap_en_scroll');
+                }
+            })
+            .catch(err => {
+                document.getElementById('main-content').innerHTML = '<div style="text-align:center; padding: 40px; color:#999; font-size:1.1rem;">Failed to load data. Have you published sight words in the CMS?</div>';
+            });
+
         function saveScroll() {
             sessionStorage.setItem('wap_en_scroll', window.scrollY);
-        }
-        const savedScroll = sessionStorage.getItem('wap_en_scroll');
-        if (savedScroll !== null) {
-            window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
-            sessionStorage.removeItem('wap_en_scroll');
         }
     </script>
 </body>
