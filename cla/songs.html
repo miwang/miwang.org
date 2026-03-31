@@ -187,7 +187,14 @@
             if (songsData.length === 0) return;
             document.getElementById('gallery-view').innerHTML = songsData.map((song, index) => {
                 let imgPath = song.cover || '';
-                if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) { imgPath = '/' + imgPath; }
+                
+                // 🌟 路径防呆处理，防止因为后台填错路径导致 404
+                if (imgPath && imgPath.startsWith('/')) {
+                    imgPath = '..' + imgPath; 
+                } else if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('../')) {
+                    imgPath = '../' + imgPath;
+                }
+
                 return `
                 <div class="song-card" onclick="startLevel(${index})">
                     <div class="card-img-wrapper"><img src="${imgPath}" onerror="this.style.display='none';"></div>
@@ -196,7 +203,7 @@
             }).join('');
         }
 
-        // 🌟 核心升级：智能自动断页功能
+        // 🌟 核心升级：智能自动断页功能 + 视频起始时间修复
         function startLevel(idx) {
             currentSong = songsData[idx]; listView.style.display = 'none'; playView.style.display = 'flex';
             document.getElementById('song-title').innerHTML = formatText(currentSong.title);
@@ -225,8 +232,13 @@
                 });
             }
 
+            // 🌟 修复 Bug 1：将 startTime 传递给视频页面
             if (currentSong.youtubeId) {
-                currentSlides.push({type:'video', content:currentSong.youtubeId});
+                currentSlides.push({
+                    type: 'video', 
+                    content: currentSong.youtubeId,
+                    startTime: currentSong.startTime || 0
+                });
             }
             currentSlideIndex = 0; renderSlide();
         }
@@ -304,7 +316,9 @@
                     });
                 });
             } else {
-                lyricsContent.innerHTML = `<div style="width:90%; height:80%; border-radius:20px; overflow:hidden; border:8px solid var(--main-teal);"><iframe src="https://www.youtube-nocookie.com/embed/${slide.content}?rel=0" style="width:100%; height:100%; border:none;" allowfullscreen></iframe></div>`;
+                // 🌟 修复 Bug 1：如果有 startTime，拼接到视频网址里去
+                const startParam = slide.startTime > 0 ? `&start=${slide.startTime}` : '';
+                lyricsContent.innerHTML = `<div style="width:90%; height:80%; border-radius:20px; overflow:hidden; border:8px solid var(--main-teal);"><iframe src="https://www.youtube-nocookie.com/embed/${slide.content}?rel=0${startParam}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe></div>`;
             }
             document.getElementById('page-indicator').innerText = `${currentSlideIndex + 1} / ${currentSlides.length}`;
         }
@@ -362,7 +376,15 @@
             const imgFile = prompt(`请填写后台的图片路径:`, `/images/songs/${autoName}`);
             if (imgFile) { let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); d[selectedText] = imgFile; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); bubble.style.display = 'none'; renderSlide(); }
         }
-        function closePlay() { playView.style.display = 'none'; listView.style.display = 'flex'; bubble.style.display = 'none'; }
+
+        // 🌟 修复 Bug 2：返回列表时，强制清空页面内容（切断视频声音）
+        function closePlay() { 
+            playView.style.display = 'none'; 
+            listView.style.display = 'flex'; 
+            bubble.style.display = 'none'; 
+            lyricsContent.innerHTML = ''; 
+        }
+
         function exportData() { const data = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('mecc_')) data[k] = localStorage.getItem(k); } const blob = new Blob([JSON.stringify(data)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `mecc_songs_backup.json`; a.click(); }
         function importData(event) { const file = event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { const data = JSON.parse(e.target.result); Object.keys(data).forEach(key => localStorage.setItem(key, data[key])); alert("导入成功！"); location.reload(); }; reader.readAsText(file); }
         function resetAll() { if(confirm("确定清空吗？")) { Object.keys(localStorage).forEach(k => k.startsWith('mecc_') && localStorage.removeItem(k)); location.reload(); } }
