@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生字学习 - MECC</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <script src="https://unpkg.com/pinyin-pro"></script>
+    <style>
+        :root {
+            --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        }
+
+        body { background-color: #f8fafc; margin: 0; font-family: var(--kaiti-font) !important; }
+        
+        .nav-top {
+            background: #598586; padding: 0 20px;
+            height: 56px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 5px solid #f3b236; flex-shrink: 0;
+        }
+        .nav-top a { color: #fff; text-decoration: none; font-weight: bold; font-size: 1rem; font-family: var(--kaiti-font) !important; white-space: nowrap; }
+        .nav-top a:hover { opacity: 0.8; }
+        .nav-title { color: white; font-weight: bold; font-size: 1.2rem; font-family: var(--kaiti-font) !important; }
+        .nav-spacer { width: 80px; }
+        @media (max-width: 768px) {
+            .nav-top a { font-size: 0.85rem; }
+            .nav-title { font-size: 1rem; }
+            .nav-spacer { width: 50px; }
+            .phrase-text { font-size: 3rem; }
+            .img-top { height: 180px; }
+            .container { margin: 16px auto; }
+        }
+        
+        .container { width: 95%; max-width: 900px; margin: 30px auto; }
+
+        .char-header { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; 
+            margin-bottom: 40px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+        
+        #character-target { 
+            background: #fff9ea; width: 140px; height: 140px; border-radius: 12px; border: 2px solid #ffeaa7; cursor: pointer;
+        }
+
+        .char-card-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .char-img-box {
+            width: 120px; height: 120px; border-radius: 14px; overflow: hidden;
+            background: #f4f9f9; border: 2px solid #ffeaa7;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .char-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .img-top.no-img, .char-img-box.no-img { background: #f4f9f9; }
+        .char-pinyin { font-size: 1.2rem; color: #598586; font-weight: 600; letter-spacing: 1px; font-family: "LXGW WenKai Lite", sans-serif !important; }
+        .char-play-btn {
+            background: #598586; color: white; padding: 7px 22px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; border: none;
+            font-family: var(--kaiti-font) !important; transition: background 0.2s;
+        }
+        .char-play-btn:hover { background: #457273; }
+
+        .practice-btn { 
+            display: inline-block; margin-top: 15px; padding: 12px 35px; 
+            background: #f3b236; color: #1e2e46; border-radius: 50px; 
+            font-size: 1.1rem; font-weight: 700; box-shadow: 0 4px 0 #d49a2a; 
+            cursor: pointer; text-align: center; user-select: none; transition: 0.2s;
+            font-family: var(--kaiti-font) !important; white-space: nowrap;
+        }
+        .practice-btn:hover { background: #1e2e46; color: #f3b236; box-shadow: 0 4px 0 #000; transform: translateY(-2px); }
+        
+        .phrase-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+
+        .phrase-card { 
+            background: white; border-radius: 25px; overflow: hidden; 
+            display: flex; flex-direction: column; align-items: center;
+            border: 1px solid #e2e8f0; transition: 0.3s; cursor: pointer; padding-bottom: 30px;
+        }
+        
+        .img-top { width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; padding: 25px; box-sizing: border-box; }
+        .phrase-img { max-width: 95%; max-height: 95%; object-fit: contain; pointer-events: none; }
+        
+        .text-bottom { display: flex; flex-direction: column; align-items: center; padding: 10px 20px; }
+        
+        .phrase-text { font-size: 5rem; color: #1e2e46; margin-bottom: 15px; line-height: 1.1; font-family: var(--kaiti-font) !important; }
+        
+        .play-btn-mock { 
+            background: #598586; color: white; padding: 12px 40px; border-radius: 50px; 
+            font-weight: bold; font-size: 1rem; display: inline-block; cursor: pointer; text-align: center;
+            font-family: var(--kaiti-font) !important;
+        }
+
+        @media (max-width: 500px) {
+            .phrase-list { grid-template-columns: 1fr; }
+            .phrase-text { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-top">
+        <a href="words_and_phrases_zh.html">⬅️ 返回四会字索引</a>
+        <span class="nav-title">生字研习 📖</span>
+        <div class="nav-spacer"></div>
+    </nav>
+
+    <div class="container">
+        <div class="char-header">
+            <div style="display:flex; gap:28px; align-items:center; flex-wrap:wrap; justify-content:center;">
+                <div class="char-card-wrap">
+                    <div id="character-target" onclick="goToTracing()"></div>
+                    <h2 style="margin:4px 0 0; color:#1e2e46; font-weight:bold; font-family:var(--kaiti-font);">汉字小达人</h2>
+                </div>
+                <div class="char-card-wrap">
+                    <div class="char-img-box" id="char-img-box">
+                        <img id="char-img" alt="">
+                    </div>
+                    <div class="char-pinyin" id="char-pinyin"></div>
+                    <button class="char-play-btn" onclick="speakChar()">🔊 听一听</button>
+                </div>
+            </div>
+            <div class="practice-btn" onclick="goToTracing()">✍️ 点击练习笔顺</div>
+        </div>
+        <div id="phrases-container" class="phrase-list"></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const targetChar = params.get('char');
+
+        let xiaoxiao = null;
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao'));
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        const pinyinOverride = { '长': 'cháng', '会': 'huì', '了': 'le', '和': 'hé', '看': 'kàn', '大': 'dà' };
+        function getCharPinyin(char) {
+            if (pinyinOverride[char]) return pinyinOverride[char];
+            if (window.pinyinPro) return window.pinyinPro.pinyin(char, { toneType: 'symbol' });
+            return '';
+        }
+
+        function speakChar() {
+            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(targetChar)}.mp3`);
+            audio.play().catch(() => {
+                const msg = new SpeechSynthesisUtterance(targetChar);
+                msg.lang = 'zh-CN';
+                if (!xiaoxiao) { const v = window.speechSynthesis.getVoices(); xiaoxiao = v.find(x => x.name.includes('Xiaoxiao')); }
+                if (xiaoxiao) msg.voice = xiaoxiao;
+                msg.rate = 0.85;
+                window.speechSynthesis.speak(msg);
+            });
+        }
+
+        // 🌟 核心：从云端拉取数据并渲染
+        fetch('../data/sight_words.json')
+            .then(res => res.json())
+            .then(dataObj => {
+                const list = dataObj.sight_words_list || [];
+                const data = list.find(d => d.char === targetChar);
+
+                if (data) {
+                    const py = getCharPinyin(targetChar);
+                    document.getElementById('char-pinyin').textContent = py;
+                    const charImg = document.getElementById('char-img');
+                    charImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
+                    charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
+
+                    HanziWriter.create('character-target', targetChar, {
+                        width: 140, height: 140, padding: 10, strokeColor: '#e74c3c', outlineColor: '#f3f3f3', delayBetweenAnimations: 2000
+                    }).animateCharacter();
+
+                    // 自动将逗号隔开的字符串转换成数组
+                    let phraseArray = [];
+                    if (data.phrases) {
+                        phraseArray = data.phrases.split(/[,，、]/).map(p => p.trim()).filter(p => p);
+                    }
+
+                    const container = document.getElementById('phrases-container');
+                    container.innerHTML = phraseArray.map(p => `
+                        <div class="phrase-card" onclick="speak('${p}')">
+                            <div class="img-top">
+                                <img src="../images/sight_words_phrases/${p}.webp" class="phrase-img" onerror="this.closest('.img-top').classList.add('no-img'); this.remove();">
+                            </div>
+                            <div class="text-bottom">
+                                <div class="phrase-text">${p}</div>
+                                <div class="play-btn-mock">🔊 听一听</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(err => console.error("加载数据失败", err));
+
+        function goToTracing() { 
+            if(targetChar) window.location.href = `tracing_zh.html?char=${encodeURIComponent(targetChar)}&from=detail`; 
+        }
+
+        function speak(text) { 
+            window.speechSynthesis.cancel(); 
+            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`);
+            audio.play().catch(() => { 
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                if (!xiaoxiao) {
+                    const voices = window.speechSynthesis.getVoices();
+                    xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao'));
+                }
+                if (xiaoxiao) msg.voice = xiaoxiao;
+                msg.rate = 0.85; 
+                window.speechSynthesis.speak(msg); 
+            }); 
+        }
+    </script>
+</body>
+</html>
