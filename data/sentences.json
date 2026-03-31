@@ -461,6 +461,12 @@
       "image": "../images/sentences/school_principal.webp",
       "tags": "学校",
       "punctuation": "。"
+    },
+    {
+      "words": "学校,有,护士",
+      "punctuation": "。",
+      "image": "/images/sentences/school_nurse.webp",
+      "tags": "学校"
     }
   ]
 }
