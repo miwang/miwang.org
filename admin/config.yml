@@ -115,3 +115,32 @@ collections:
               - { label: "汉字", name: "char", widget: "string" }
               - { label: "教学月份", name: "week", widget: "select", options: ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"] }
               - { label: "扩展词组/句子", name: "phrases", widget: "string", hint: "请用逗号隔开，例如：四月, 四岁, 四只小猫" }
+
+  # ======== 5. 古诗与顺口溜配置 ========
+  - name: "poems"
+    label: "📜 古诗与顺口溜"
+    # 🌟 加上了斜杠，锁定在根目录！
+    media_folder: "/images/poems"
+    public_folder: "/images/poems"
+    files:
+      - label: "古诗顺口溜库"
+        name: "poems_data"
+        file: "data/poems.json"
+        editor:
+          preview: false
+        fields:
+          - label: "诗词列表"
+            name: "poem_list"
+            widget: "list"
+            collapsed: true
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "唯一ID", name: "id", widget: "string", hint: "必须是纯英文无空格，例如：jingyesi" }
+              - { label: "标题", name: "title", widget: "string", hint: "例如：静夜思 (李白)" }
+              - { label: "封面图片", name: "cover", widget: "image", required: false }
+              - { label: "YouTube ID", name: "youtubeId", widget: "string", hint: "视频链接 v= 后面的字母，没有可不填", required: false }
+              - { label: "开始时间(秒)", name: "startTime", widget: "number", value_type: "int", default: 0, required: false }
+              - label: "诗词内容"
+                name: "lyrics"
+                widget: "text"
+                hint: "直接粘贴整首古诗或顺口溜！换行就按回车。"

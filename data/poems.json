@@ -1,0 +1,20 @@
+{
+  "poem_list": [
+    {
+      "id": "jingyesi",
+      "title": "静夜思 (李白)",
+      "cover": "",
+      "lyrics": "床前明月光，\n疑是地上霜。\n举头望明月，\n低头思故乡。",
+      "youtubeId": "",
+      "startTime": 0
+    },
+    {
+      "id": "dengguanquelou",
+      "title": "登鹳雀楼 (王之涣)",
+      "cover": "",
+      "lyrics": "白日依山尽，\n黄河入海流。\n欲穷千里目，\n更上一层楼。",
+      "youtubeId": "",
+      "startTime": 0
+    }
+  ]
+}

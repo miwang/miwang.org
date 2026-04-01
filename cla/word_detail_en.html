@@ -10,203 +10,219 @@
     <script src="https://unpkg.com/pinyin-pro"></script>
     <style>
         :root {
-            --teal:      #598586;
-            --accent:    #f3b236;
-            --primary:   #1e2e46;
-            --bg:        #f4f9f9;
-            --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
-            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
+            --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --english-font: "LXGW WenKai Lite", sans-serif;
         }
 
-        body { background-color: var(--bg); margin: 0; font-family: var(--font-en); }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { 
+            height: 100%;
+            overflow: hidden;
+        }
+        body { 
+            background-color: #d4e4e4; 
+            font-family: var(--kaiti-font) !important; 
+        }
+        
         .nav-top {
-            background: var(--teal); padding: 0 20px;
-            height: 56px; box-sizing: border-box;
+            background: #598586; 
+            padding: 0 20px;
+            height: 56px;
+            box-sizing: border-box;
             display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0; border-bottom: 5px solid var(--accent);
+            flex-shrink: 0;
+            border-bottom: 5px solid #f3b236;
+            z-index: 1000;
         }
-        .nav-top a {
-            color: #fff; text-decoration: none;
-            font-weight: 600; font-size: 0.95rem;
-            white-space: nowrap;
+        .nav-top a { 
+            color: #fff; text-decoration: none; font-weight: bold; 
+            font-size: 0.95rem; font-family: var(--english-font) !important; white-space: nowrap;
         }
         .nav-top a:hover { opacity: 0.8; }
-        .nav-title { color: white; font-weight: 700; font-size: 1.2rem; }
-        .nav-spacer { width: 120px; }
+        .nav-title { color: white; font-weight: bold; font-size: 1.1rem; font-family: var(--english-font) !important; }
+        .nav-spacer { width: 80px; }
 
-        @media (max-width: 768px) {
-            .nav-top { height: 56px; }
-            .nav-top a { font-size: 0.9rem; }
-            .nav-title { font-size: 1rem; }
-            .nav-spacer { width: 80px; }
-            .char-header { padding: 16px; gap: 12px; margin-bottom: 20px; }
-            .phrase-text { font-size: 3rem; }
-            .img-top { height: 160px; }
-            .container { margin: 16px auto; }
+        .orbit-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 56px);
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 100%, #eef5f5 0%, #d4e4e4 70%); 
         }
 
-        .container { width: 95%; max-width: 900px; margin: 28px auto; }
+        .fan-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+        .lines-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .connect-line {
+            stroke: #9bb8b8; stroke-width: 2.5; stroke-dasharray: 6, 6;
+            opacity: 0.8; fill: none;
+        }
 
-        .char-card-wrap {
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
+        .center-char {
+            position: absolute;
+            bottom: 20px; 
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50; 
+            width: 170px; height: 170px; 
         }
-        .char-img-box {
-            width: 120px; height: 120px; border-radius: 14px; overflow: hidden;
-            background: #f4f9f9; border: 2px solid #e0eded;
-            display: flex; align-items: center; justify-content: center;
+
+        .char-circle {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: white;
+            border: 8px solid #f3b236;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15); 
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .char-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .img-top.no-img, .char-img-box.no-img { background: #f4f9f9; }
-        
+        .char-circle:hover { transform: scale(1.05); box-shadow: 0 -6px 30px rgba(243,178,54,0.3); }
+
+        .char-bg-img {
+            position: absolute;
+            width: 90%; height: 90%;
+            object-fit: contain; opacity: 0.15;
+            z-index: 0; pointer-events: none;
+        }
+
         .char-pinyin {
-            font-size: 1.2rem; color: var(--teal); font-weight: 600;
-            font-family: var(--font-en); letter-spacing: 1px;
-        }
-        .char-play-btn {
-            background: var(--teal); color: white;
-            padding: 7px 22px; border-radius: 30px;
-            font-size: 0.9rem; font-weight: bold; cursor: pointer;
-            font-family: var(--font-en); border: none;
-            transition: background 0.2s;
-        }
-        .char-play-btn:hover { background: #457273; }
-
-        .char-header {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 18px; margin-bottom: 32px;
-            background: white; padding: 28px; border-radius: 20px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            position: relative; font-size: 1.35rem; color: #598586;
+            font-weight: 600; font-family: var(--english-font) !important;
+            z-index: 2; 
+            margin-bottom: -8px; /* 🌟 往中心收拢 */
         }
 
         #character-target {
-            background: #fff9ea; width: 140px; height: 140px;
-            border-radius: 12px; border: 2px solid #ffeaa7; cursor: pointer;
+            position: relative; z-index: 10; 
+            width: 90px; height: 90px; /* 🌟 写字板稍微缩小10px，腾出纵向空间 */
         }
 
-        .char-label {
-            font-family: var(--font-zh);
-            font-size: 1.1rem; color: var(--primary);
-            letter-spacing: 2px; margin: 0;
+        .char-hint {
+            position: relative; font-size: 0.8rem; color: #999;
+            font-weight: bold; z-index: 2; 
+            margin-top: -8px; /* 🌟 往中心收拢，远离圆弧底部 */
+            font-family: var(--english-font) !important;
+            white-space: nowrap;
         }
 
-        .practice-btn {
-            display: inline-block; padding: 11px 32px;
-            background: var(--accent); color: var(--primary);
-            border-radius: 50px; font-size: 1rem; font-weight: 700;
-            box-shadow: 0 4px 0 #d49a2a;
-            cursor: pointer; text-align: center;
-            user-select: none; transition: 0.2s;
-            font-family: var(--font-en);
-        }
-        .practice-btn:hover {
-            background: var(--primary); color: var(--accent);
-            box-shadow: 0 4px 0 #000; transform: translateY(-2px);
-        }
-
-        .phrase-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .phrase-card {
-            background: white; border-radius: 20px; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center;
-            border: 2px solid transparent;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-            cursor: pointer; padding-bottom: 24px;
-        }
-        .phrase-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-            border-color: var(--accent);
-        }
-
-        .img-top {
-            width: 100%; height: 220px;
+        .char-play-btn {
+            position: absolute;
+            top: -5px; right: -5px; 
+            z-index: 60;
+            width: 42px; height: 42px;
+            border-radius: 50%; background: #e74c3c;
+            color: white; border: 4px solid white;
+            cursor: pointer; font-size: 18px;
             display: flex; align-items: center; justify-content: center;
-            padding: 20px; box-sizing: border-box;
-            background: #fafafa;
+            box-shadow: 0 4px 10px rgba(231,76,60,0.3); transition: 0.2s;
         }
-        .phrase-img {
-            max-width: 95%; max-height: 95%;
-            object-fit: contain; pointer-events: none;
+        .char-play-btn:hover { background: #c0392b; transform: scale(1.15) rotate(5deg); }
+
+        .phrase-node {
+            position: absolute; 
+            cursor: pointer; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20; 
+            transform: translate(-50%, -50%); 
+            perspective: 1000px; 
+        }
+        .phrase-node:hover { 
+            transform: translate(-50%, -50%) scale(1.15); 
+            z-index: 100 !important; 
         }
 
-        .text-bottom {
-            display: flex; flex-direction: column;
-            align-items: center; padding: 10px 20px 0;
+        .flip-card-inner {
+            position: relative;
+            width: 100%; height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 50%;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        }
+        
+        .phrase-node:hover .flip-card-inner {
+            box-shadow: 0 8px 25px rgba(243,178,54,0.4);
         }
 
-        .phrase-text {
-            font-family: var(--font-zh);
-            font-size: 4.5rem; color: var(--primary);
-            margin-bottom: 14px; line-height: 1.1; text-align: center;
+        .is-flipped { transform: rotateY(180deg); }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; 
+            backface-visibility: hidden;         
+            border-radius: 50%;
+            border: 5px solid #d0dede;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .phrase-node:hover .flip-card-front,
+        .phrase-node:hover .flip-card-back {
+            border-color: #f3b236;
         }
 
-        .play-btn {
-            background: var(--teal); color: white;
-            padding: 10px 32px; border-radius: 50px;
-            font-weight: bold; font-size: 0.95rem;
-            display: inline-block; cursor: pointer;
-            font-family: var(--font-en);
-            transition: background 0.2s;
+        .flip-card-front {
+            background: linear-gradient(135deg, #ffffff 0%, #f4f9f9 100%);
+            color: #1e2e46;
+            font-weight: bold;
+            font-family: var(--kaiti-font) !important;
         }
-        .play-btn:hover { background: #457273; }
 
-        .footer { padding: 26px; text-align: center; color: #888; font-size: 0.85rem; }
+        .flip-card-back { transform: rotateY(180deg); }
+        .phrase-img { width: 85%; height: 85%; object-fit: contain; }
 
         @media (max-width: 600px) {
-            .phrase-list { grid-template-columns: 1fr; }
-            .phrase-text { font-size: 3.5rem; }
-            .img-top { height: 180px; }
-        }
-        @media (min-width: 1200px) {
-            .phrase-list { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+            .center-char { width: 130px; height: 130px; bottom: 10px; }
+            .char-circle { border-width: 5px; }
+            /* 🌟 移动端也同步等比例缩小并收拢 */
+            #character-target { width: 65px; height: 65px; }
+            .char-pinyin { font-size: 1.1rem; margin-bottom: -5px; }
+            .char-hint { font-size: 0.7rem; margin-top: -5px; }
+            .char-play-btn { width: 36px; height: 36px; top: -8px; right: -8px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
-
     <nav class="nav-top">
-        <a href="words_and_phrases_en.html">⬅️ Back to Sight Words</a>
+        <a href="words_and_phrases_en.html">⬅ Back to Sight Words</a>
         <span class="nav-title">Word Study 📖</span>
         <div class="nav-spacer"></div>
     </nav>
 
-    <div class="container">
-        <div class="char-header">
-            <div style="display:flex; gap:28px; align-items:center; flex-wrap:wrap; justify-content:center;">
-                <div class="char-card-wrap">
-                    <div id="character-target" onclick="goToTracing()"></div>
-                    <p class="char-label" id="char-label"></p>
-                </div>
-                <div class="char-card-wrap">
-                    <div class="char-img-box" id="char-img-box">
-                        <img id="char-img" alt="">
-                    </div>
-                    <div class="char-pinyin" id="char-pinyin"></div>
-                    <button class="char-play-btn" onclick="speakChar()">🔊 Listen</button>
-                </div>
+    <div class="orbit-container" id="orbit-container">
+        <svg class="fan-layer" id="fan-layer"></svg>
+        <svg class="lines-layer" id="lines-layer"></svg>
+
+        <div class="center-char" id="center-char">
+            <div class="char-circle" onclick="goToTracing()">
+                <img id="char-bg-img" class="char-bg-img" alt="">
+                <div class="char-pinyin" id="char-pinyin"></div>
+                <div id="character-target"></div>
+                <div class="char-hint">✍️ Click to Write</div>
             </div>
-            <div class="practice-btn" onclick="goToTracing()">✍️ Click to Practice Writing</div>
+            <button class="char-play-btn" onclick="event.stopPropagation(); speakChar();">🔊</button>
         </div>
-        <div id="phrases-container" class="phrase-list"></div>
+
+        <div id="phrases-container"></div>
     </div>
 
-    <div class="footer">Created with ❤️ by Wang Laoshi</div>
-
     <script>
-        const params     = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.search);
         const targetChar = params.get('char');
 
-        let preferredVoice = null;
+        let xiaoxiao = null;
         function loadVoices() {
             const voices = window.speechSynthesis.getVoices();
-            preferredVoice = voices.find(v => v.name.includes('Xiaoxiao'))
-                          || voices.find(v => v.lang.startsWith('zh'));
+            xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao')) || voices.find(v => v.lang.startsWith('zh'));
         }
         window.speechSynthesis.onvoiceschanged = loadVoices;
         loadVoices();
@@ -223,14 +239,152 @@
             audio.play().catch(() => {
                 const msg = new SpeechSynthesisUtterance(targetChar);
                 msg.lang = 'zh-CN';
-                if (!preferredVoice) loadVoices();
-                if (preferredVoice) msg.voice = preferredVoice;
+                if (!xiaoxiao) { const v = window.speechSynthesis.getVoices(); xiaoxiao = v.find(x => x.name.includes('Xiaoxiao')) || v.find(x => x.lang.startsWith('zh')); }
+                if (xiaoxiao) msg.voice = xiaoxiao;
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
             });
         }
 
-        // 🌟 Fetching data from the cloud
+        function renderPhrases(phraseArray) {
+            const container = document.getElementById('orbit-container');
+            const phrasesContainer = document.getElementById('phrases-container');
+            const linesSvg = document.getElementById('lines-layer');
+            const fanSvg = document.getElementById('fan-layer');
+            
+            const W = container.clientWidth;
+            const H = container.clientHeight;
+            const isMobile = window.innerWidth <= 600;
+
+            const cx = W / 2;
+            const charRadius = isMobile ? 65 : 85; 
+            const bottomOffset = isMobile ? 10 : 20;
+            const cy = H - bottomOffset - charRadius; 
+
+            const count = phraseArray.length;
+            if (count === 0) return;
+
+            const safeSide = isMobile ? 50 : 60; 
+            const safeTop = isMobile ? 80 : 90;  
+            
+            let maxRadius = Math.min(cx - safeSide, cy - safeTop);
+            if (count >= 8) maxRadius = Math.min(cx - 30, cy - 70); 
+            
+            const minRadius = isMobile ? 150 : 210; 
+            if (maxRadius < minRadius + 40) maxRadius = minRadius + 40;
+
+            let startAngle = 180;
+            let endAngle = 0;
+            
+            if (count === 1) { startAngle = 90; endAngle = 90; }
+            else if (count <= 3) { startAngle = 135; endAngle = 45; } 
+            else if (count <= 5) { startAngle = 150; endAngle = 30; }
+            else if (count <= 7) { startAngle = 165; endAngle = 15; }
+            
+            const angleStep = count > 1 ? (startAngle - endAngle) / (count - 1) : 0;
+
+            const depthFactors = [];
+            if (count <= 4) {
+                for(let i=0; i<count; i++) depthFactors.push(1.0); 
+            } else if (count <= 6) {
+                for(let i=0; i<count; i++) depthFactors.push(i % 2 === 0 ? 1.0 : 0.65); 
+            } else {
+                for(let i=0; i<count; i++) {
+                    const mod = i % 3;
+                    if (mod === 0) depthFactors.push(1.0);       
+                    else if (mod === 1) depthFactors.push(0.40); 
+                    else depthFactors.push(0.80);                
+                }
+            }
+
+            const fanOuterR = maxRadius + 85; 
+            const fanInnerR = charRadius + 20; 
+            
+            const p1x = cx + fanOuterR * Math.cos((startAngle + 5) * Math.PI / 180);
+            const p1y = cy - fanOuterR * Math.sin((startAngle + 5) * Math.PI / 180);
+            const p2x = cx + fanOuterR * Math.cos((endAngle - 5) * Math.PI / 180);
+            const p2y = cy - fanOuterR * Math.sin((endAngle - 5) * Math.PI / 180);
+            const p3x = cx + fanInnerR * Math.cos((endAngle - 5) * Math.PI / 180);
+            const p3y = cy - fanInnerR * Math.sin((endAngle - 5) * Math.PI / 180);
+            const p4x = cx + fanInnerR * Math.cos((startAngle + 5) * Math.PI / 180);
+            const p4y = cy - fanInnerR * Math.sin((startAngle + 5) * Math.PI / 180);
+
+            const spanAngle = (startAngle + 5) - (endAngle - 5);
+            const largeArc = spanAngle > 180 ? 1 : 0;
+
+            let fanHTML = '';
+            if (count > 1) {
+                fanHTML += `<path d="M ${p4x} ${p4y} L ${p1x} ${p1y} A ${fanOuterR} ${fanOuterR} 0 ${largeArc} 1 ${p2x} ${p2y} L ${p3x} ${p3y} A ${fanInnerR} ${fanInnerR} 0 ${largeArc} 0 ${p4x} ${p4y} Z" 
+                            fill="rgba(255, 252, 245, 0.65)" stroke="#e6c27a" stroke-width="4" />`;
+                
+                const ribCount = count * 2 + 1;
+                for (let i = 0; i < ribCount; i++) {
+                    const ribAngle = startAngle + 5 - i * ((startAngle - endAngle + 10) / (ribCount - 1));
+                    const rad = ribAngle * Math.PI / 180;
+                    const rx1 = cx + (charRadius - 10) * Math.cos(rad);
+                    const ry1 = cy - (charRadius - 10) * Math.sin(rad);
+                    const rx2 = cx + (fanOuterR - 5) * Math.cos(rad);
+                    const ry2 = cy - (fanOuterR - 5) * Math.sin(rad);
+                    fanHTML += `<line x1="${rx1}" y1="${ry1}" x2="${rx2}" y2="${ry2}" stroke="rgba(230, 194, 122, 0.4)" stroke-width="3" stroke-linecap="round" />`;
+                }
+            }
+            fanSvg.innerHTML = fanHTML;
+
+            linesSvg.innerHTML = '';
+            phrasesContainer.innerHTML = '';
+            
+            phraseArray.forEach((phrase, i) => {
+                const angleDeg = startAngle - i * angleStep;
+                const angleRad = angleDeg * Math.PI / 180;
+
+                const f = depthFactors[i];
+                const currentR = minRadius + (maxRadius - minRadius) * f;
+
+                const x = cx + currentR * Math.cos(angleRad);
+                const y = cy - currentR * Math.sin(angleRad); 
+
+                const scaleFactor = 0.9 + (f * 0.35); 
+                const baseImgSize = isMobile ? 110 : 155; 
+                const imgSize = baseImgSize * scaleFactor;
+                const fontSize = (isMobile ? 1.4 : 1.9) * scaleFactor;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+                line.setAttribute('x2', x); line.setAttribute('y2', y);
+                line.setAttribute('class', 'connect-line');
+                linesSvg.appendChild(line);
+                
+                const node = document.createElement('div');
+                node.className = 'phrase-node';
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+                node.style.width = imgSize + 'px';
+                node.style.height = imgSize + 'px';
+                node.style.zIndex = Math.round(f * 10) + 20; 
+                
+                node.onclick = () => {
+                    speak(phrase);
+                    const innerCard = node.querySelector('.flip-card-inner');
+                    innerCard.classList.toggle('is-flipped');
+                };
+                
+                node.innerHTML = `
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front" style="border-width:${5*scaleFactor}px;">
+                            <span style="font-size:${fontSize}rem; line-height: 1.2;">${phrase}</span>
+                        </div>
+                        <div class="flip-card-back" style="border-width:${5*scaleFactor}px;">
+                            <img src="../images/sight_words_phrases/${encodeURIComponent(phrase)}.webp" 
+                                 class="phrase-img" alt="${phrase}"
+                                 onerror="this.parentElement.style.background='#f0f5f5'; this.remove();">
+                        </div>
+                    </div>
+                `;
+                
+                phrasesContainer.appendChild(node);
+            });
+        }
+
         fetch('../data/sight_words.json')
             .then(res => res.json())
             .then(dataObj => {
@@ -238,20 +392,21 @@
                 const data = list.find(d => d.char === targetChar);
 
                 if (data) {
-                    document.title = `${targetChar} — Word Study`;
-                    document.getElementById('char-label').textContent = targetChar;
-
                     const py = getCharPinyin(targetChar);
                     document.getElementById('char-pinyin').textContent = py;
-                    const charImg = document.getElementById('char-img');
-                    charImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
-                    charImg.onerror = () => document.getElementById('char-img-box').classList.add('no-img');
 
+                    const bgImg = document.getElementById('char-bg-img');
+                    bgImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
+                    bgImg.onerror = () => { bgImg.style.display = 'none'; };
+
+                    document.getElementById('character-target').innerHTML = ''; 
+                    
+                    // 🌟 动态匹配画板尺寸，保证脚本和CSS尺寸严丝合缝
+                    const writerSize = window.innerWidth <= 600 ? 65 : 90;
                     HanziWriter.create('character-target', targetChar, {
-                        width: 140, height: 140, padding: 10,
-                        strokeColor: '#598586',
-                        outlineColor: '#e8f0f0',
-                        delayBetweenAnimations: 2000
+                        width: writerSize, height: writerSize, padding: 5, 
+                        strokeColor: '#e74c3c', outlineColor: '#e0e0e0',
+                        delayBetweenAnimations: 1500
                     }).animateCharacter();
 
                     let phraseArray = [];
@@ -259,40 +414,37 @@
                         phraseArray = data.phrases.split(/[,，、]/).map(p => p.trim()).filter(p => p);
                     }
 
-                    document.getElementById('phrases-container').innerHTML =
-                        phraseArray.map(p => `
-                            <div class="phrase-card" onclick="speak('${p.replace(/'/g, "\\'")}')">
-                                <div class="img-top" id="img-wrap-${encodeURIComponent(p)}">
-                                    <img src="../images/sight_words_phrases/${encodeURIComponent(p)}.webp"
-                                         class="phrase-img"
-                                         onerror="this.closest('.img-top').classList.add('no-img'); this.remove();">
-                                </div>
-                                <div class="text-bottom">
-                                    <div class="phrase-text">${p}</div>
-                                    <div class="play-btn">🔊 Listen</div>
-                                </div>
-                            </div>`
-                        ).join('');
+                    if (phraseArray.length > 0) {
+                        renderPhrases(phraseArray);
+                    }
                 }
             })
             .catch(err => console.error("Error loading sight words:", err));
 
-        function goToTracing() {
-            if (targetChar)
-                window.location.href = `tracing_en.html?char=${encodeURIComponent(targetChar)}&from=detail`;
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => location.reload(), 200);
+        });
+
+        function goToTracing() { 
+            if(targetChar) window.location.href = `tracing_en.html?char=${encodeURIComponent(targetChar)}&from=detail`; 
         }
 
-        function speak(text) {
-            window.speechSynthesis.cancel();
+        function speak(text) { 
+            window.speechSynthesis.cancel(); 
             const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`);
-            audio.play().catch(() => {
+            audio.play().catch(() => { 
                 const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-CN';
-                if (!preferredVoice) loadVoices();
-                if (preferredVoice) msg.voice = preferredVoice;
-                msg.rate = 0.9;
-                window.speechSynthesis.speak(msg);
-            });
+                if (!xiaoxiao) {
+                    const voices = window.speechSynthesis.getVoices();
+                    xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao')) || voices.find(v => v.lang.startsWith('zh'));
+                }
+                if (xiaoxiao) msg.voice = xiaoxiao;
+                msg.rate = 0.85; 
+                window.speechSynthesis.speak(msg); 
+            }); 
         }
     </script>
 </body>

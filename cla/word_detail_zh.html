@@ -11,150 +11,216 @@
     <style>
         :root {
             --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
-            --main-teal: #598586;
-            --accent-yellow: #f3b236;
-            --bg-color: #f4f9f9;
+            --english-font: "LXGW WenKai Lite", sans-serif;
         }
 
-        /* 🌟 彻底锁死一屏，绝不出现滚动条 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { 
+            height: 100%;
+            overflow: hidden;
+        }
         body { 
-            background-color: var(--bg-color); margin: 0; 
+            background-color: #d4e4e4; 
             font-family: var(--kaiti-font) !important; 
-            overflow: hidden; 
-            display: flex; flex-direction: column; height: 100vh;
         }
         
+        /* 🌟 修复导航栏高度与样式统一 */
         .nav-top {
-            background: var(--main-teal); padding: 0 20px;
-            height: 56px; box-sizing: border-box;
+            background: #598586; 
+            padding: 0 20px;
+            height: 56px; /* 恢复统一的 56px */
+            box-sizing: border-box; /* 确保边框计算统一 */
+            flex-shrink: 0;
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 5px solid var(--accent-yellow); flex-shrink: 0;
+            border-bottom: 5px solid #f3b236;
             z-index: 1000;
         }
-        .nav-top a { color: #fff; text-decoration: none; font-weight: bold; font-size: 1rem; font-family: var(--kaiti-font) !important; white-space: nowrap; }
+        .nav-top a { 
+            color: #fff; text-decoration: none; font-weight: bold; 
+            font-size: 0.95rem; font-family: var(--kaiti-font) !important; white-space: nowrap;
+        }
         .nav-top a:hover { opacity: 0.8; }
-        .nav-title { color: white; font-weight: bold; font-size: 1.2rem; font-family: var(--kaiti-font) !important; }
+        .nav-title { color: white; font-weight: bold; font-size: 1.1rem; font-family: var(--kaiti-font) !important; }
         .nav-spacer { width: 80px; }
-        
-        @media (max-width: 768px) {
-            .nav-top a { font-size: 0.85rem; }
-            .nav-title { font-size: 1rem; }
-            .nav-spacer { width: 50px; }
-        }
 
-        /* 🌟 动态空间区域 */
-        .sunburst-area {
-            flex: 1; position: relative;
-            background: radial-gradient(circle, #ffffff 0%, #e6f0f0 100%);
+        .orbit-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 56px); /* 同步减去导航栏的 56px */
             overflow: hidden;
-            /* 移除了所有的写死高度，完全交给屏幕剩余空间 */
+            background: radial-gradient(circle at 50% 100%, #eef5f5 0%, #d4e4e4 70%); 
         }
 
-        /* ── 中心主字节点 (变得更小、更精致) ── */
-        .center-node {
+        .fan-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+        .lines-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .connect-line {
+            stroke: #9bb8b8; stroke-width: 2.5; stroke-dasharray: 6, 6;
+            opacity: 0.8; fill: none;
+        }
+
+        .center-char {
             position: absolute;
-            top: 50%; left: 50%; /* 绝对居中 */
-            transform: translate(-50%, -50%);
-            width: 120px; height: 120px; /* 🌟 再次缩小，腾出空间 */
-            background: white; border-radius: 50%;
-            border: 6px solid var(--accent-yellow);
-            box-shadow: 0 8px 25px rgba(89,133,134,0.3);
+            bottom: 20px; 
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50; 
+            width: 170px; height: 170px; 
+        }
+
+        .char-circle {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: white;
+            border: 8px solid #f3b236;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 50;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15); 
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .center-node:hover {
-            transform: translate(-50%, -50%) scale(1.08);
-            box-shadow: 0 12px 35px rgba(89,133,134,0.4); border-color: #e74c3c;
-        }
-        
-        .center-pinyin { font-family: "LXGW WenKai Lite", sans-serif !important; font-size: 1.05rem; color: var(--main-teal); font-weight: bold; margin-bottom: 0px; }
-        #character-target { width: 70px; height: 70px; } 
-        .center-hint { font-size: 0.8rem; color: #999; font-weight: bold; margin-top: 0px; }
+        .char-circle:hover { transform: scale(1.05); box-shadow: 0 -6px 30px rgba(243,178,54,0.3); }
 
-        .audio-badge {
-            position: absolute; top: -6px; right: -6px;
-            width: 36px; height: 36px; border-radius: 50%;
-            background: #e74c3c; color: white; border: 3px solid white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-            transition: 0.2s; z-index: 60;
-        }
-        .audio-badge:hover { transform: scale(1.15) rotate(5deg); background: #c0392b; }
-        .audio-badge svg { width: 16px; height: 16px; fill: white; } 
-
-        /* ── 环绕的词组节点 ── */
-        .orbit-wrapper {
+        .char-bg-img {
             position: absolute;
-            top: 50%; left: 50%; 
-            transform: rotate(var(--angle)) translateY(calc(-1 * var(--radius))) rotate(calc(-1 * var(--angle)));
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-        }
-        .orbit-wrapper:hover {
-            transform: rotate(var(--angle)) translateY(calc(-1 * var(--radius))) rotate(calc(-1 * var(--angle))) scale(1.15);
-            z-index: 100;
+            width: 90%; height: 90%;
+            object-fit: contain; opacity: 0.15;
+            z-index: 0; pointer-events: none;
         }
 
-        .orbit-content {
+        .char-pinyin {
+            position: relative; font-size: 1.35rem; color: #598586;
+            font-weight: 600; font-family: var(--english-font) !important;
+            z-index: 2; margin-bottom: -5px;
+        }
+
+        #character-target {
+            position: relative; z-index: 10; 
+            width: 100px; height: 100px;
+        }
+
+        .char-hint {
+            position: relative; font-size: 0.95rem; color: #999;
+            font-weight: bold; z-index: 2; margin-top: -5px;
+        }
+
+        .char-play-btn {
+            position: absolute;
+            top: -5px; right: -5px; 
+            z-index: 60;
+            width: 42px; height: 42px;
+            border-radius: 50%; background: #e74c3c;
+            color: white; border: 4px solid white;
+            cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(231,76,60,0.3); transition: 0.2s;
+        }
+        .char-play-btn:hover { background: #c0392b; transform: scale(1.15) rotate(5deg); }
+
+        /* 🌟 互动记忆闪卡外层容器 */
+        .phrase-node {
+            position: absolute; 
+            cursor: pointer; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20; 
             transform: translate(-50%, -50%); 
-            display: flex; flex-direction: column; align-items: center;
-            cursor: pointer;
+            /* 开启 3D 透视视距 */
+            perspective: 1000px; 
+        }
+        .phrase-node:hover { 
+            transform: translate(-50%, -50%) scale(1.15); 
+            z-index: 100 !important; 
         }
 
-        .orbit-img {
-            width: 95px; height: 95px; /* 调整到黄金比例 */
-            border-radius: 50%; object-fit: cover;
-            border: 4px solid white;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-            background: white; transition: 0.3s;
+        /* 🌟 闪卡内层（承载正反面，负责翻转动作） */
+        .flip-card-inner {
+            position: relative;
+            width: 100%; height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 50%;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
         }
         
-        .orbit-text {
-            margin-top: 6px;
-            font-size: 1.2rem; font-weight: bold; color: #1e2e46; 
-            background: rgba(255, 255, 255, 0.85);
-            padding: 4px 14px; border-radius: 20px;
-            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            white-space: nowrap; border: 1px solid rgba(255,255,255,0.5);
+        .phrase-node:hover .flip-card-inner {
+            box-shadow: 0 8px 25px rgba(243,178,54,0.4);
+        }
+
+        /* 点击后触发翻转 */
+        .is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* 🌟 正面和反面的通用样式 */
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;         /* 翻转后隐藏背面 */
+            border-radius: 50%;
+            border: 5px solid #d0dede;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .phrase-node:hover .flip-card-front,
+        .phrase-node:hover .flip-card-back {
+            border-color: #f3b236;
+        }
+
+        /* 🌟 正面：只显示文字 */
+        .flip-card-front {
+            background: linear-gradient(135deg, #ffffff 0%, #f4f9f9 100%);
+            color: #1e2e46;
+            font-weight: bold;
+            font-family: var(--kaiti-font) !important;
+        }
+
+        /* 🌟 反面：显示图片 */
+        .flip-card-back {
+            transform: rotateY(180deg); /* 初始状态是反过来的 */
+        }
+        .phrase-img { 
+            width: 85%; height: 85%; object-fit: contain; 
         }
 
         @media (max-width: 600px) {
-            .center-node { width: 100px; height: 100px; border-width: 4px; }
-            #character-target { width: 55px; height: 55px; }
-            .center-pinyin { font-size: 0.9rem; }
-            .center-hint { font-size: 0.7rem; }
-            .orbit-img { width: 75px; height: 75px; border-width: 3px; }
-            .orbit-text { font-size: 1.05rem; padding: 2px 10px; }
-            .audio-badge { width: 30px; height: 30px; top: -4px; right: -4px; }
-            .audio-badge svg { width: 13px; height: 13px; }
+            .center-char { width: 130px; height: 130px; bottom: 10px; }
+            .char-circle { border-width: 5px; }
+            #character-target { width: 75px; height: 75px; }
+            .char-play-btn { width: 36px; height: 36px; top: -8px; right: -8px; font-size: 14px; }
+            .char-pinyin { font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
     <nav class="nav-top">
-        <a href="words_and_phrases_zh.html">⬅️ 返回四会字索引</a>
+        <a href="words_and_phrases_zh.html">⬅ 返回四会字索引</a>
         <span class="nav-title">生字研习 📖</span>
         <div class="nav-spacer"></div>
     </nav>
 
-    <div class="sunburst-area" id="sunburst-area">
-        
-        <div class="center-node" onclick="goToTracing()">
-            <div class="audio-badge" onclick="speakChar(event)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z"/>
-                    <path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z"/>
-                </svg>
+    <div class="orbit-container" id="orbit-container">
+        <svg class="fan-layer" id="fan-layer"></svg>
+        <svg class="lines-layer" id="lines-layer"></svg>
+
+        <div class="center-char" id="center-char">
+            <div class="char-circle" onclick="goToTracing()">
+                <img id="char-bg-img" class="char-bg-img" alt="">
+                <div class="char-pinyin" id="char-pinyin"></div>
+                <div id="character-target"></div>
+                <div class="char-hint">✍️ 点击书写</div>
             </div>
-            <div class="center-pinyin" id="char-pinyin"></div>
-            <div id="character-target"></div>
-            <div class="center-hint">✍️ 点击书写</div>
+            <button class="char-play-btn" onclick="event.stopPropagation(); speakChar();">🔊</button>
         </div>
 
-        <div id="orbit-container"></div>
+        <div id="phrases-container"></div>
     </div>
 
     <script>
@@ -176,16 +242,155 @@
             return '';
         }
 
-        function speakChar(event) {
-            event.stopPropagation(); 
+        function speakChar() {
             const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(targetChar)}.mp3`);
             audio.play().catch(() => {
                 const msg = new SpeechSynthesisUtterance(targetChar);
                 msg.lang = 'zh-CN';
-                if (!xiaoxiao) loadVoices();
+                if (!xiaoxiao) { const v = window.speechSynthesis.getVoices(); xiaoxiao = v.find(x => x.name.includes('Xiaoxiao')); }
                 if (xiaoxiao) msg.voice = xiaoxiao;
                 msg.rate = 0.85;
                 window.speechSynthesis.speak(msg);
+            });
+        }
+
+        function renderPhrases(phraseArray) {
+            const container = document.getElementById('orbit-container');
+            const phrasesContainer = document.getElementById('phrases-container');
+            const linesSvg = document.getElementById('lines-layer');
+            const fanSvg = document.getElementById('fan-layer');
+            
+            const W = container.clientWidth;
+            const H = container.clientHeight;
+            const isMobile = window.innerWidth <= 600;
+
+            const cx = W / 2;
+            const charRadius = isMobile ? 65 : 85; 
+            const bottomOffset = isMobile ? 10 : 20;
+            const cy = H - bottomOffset - charRadius; 
+
+            const count = phraseArray.length;
+            if (count === 0) return;
+
+            // 1. 安全边距，给翻转预留点空间
+            const safeSide = isMobile ? 50 : 60; 
+            const safeTop = isMobile ? 80 : 90;  
+            
+            let maxRadius = Math.min(cx - safeSide, cy - safeTop);
+            if (count >= 8) maxRadius = Math.min(cx - 30, cy - 70); 
+            
+            const minRadius = isMobile ? 150 : 210; 
+            if (maxRadius < minRadius + 40) maxRadius = minRadius + 40;
+
+            let startAngle = 180;
+            let endAngle = 0;
+            
+            if (count === 1) { startAngle = 90; endAngle = 90; }
+            else if (count <= 3) { startAngle = 135; endAngle = 45; } 
+            else if (count <= 5) { startAngle = 150; endAngle = 30; }
+            else if (count <= 7) { startAngle = 165; endAngle = 15; }
+            
+            const angleStep = count > 1 ? (startAngle - endAngle) / (count - 1) : 0;
+
+            const depthFactors = [];
+            if (count <= 4) {
+                for(let i=0; i<count; i++) depthFactors.push(1.0); 
+            } else if (count <= 6) {
+                for(let i=0; i<count; i++) depthFactors.push(i % 2 === 0 ? 1.0 : 0.65); 
+            } else {
+                for(let i=0; i<count; i++) {
+                    const mod = i % 3;
+                    if (mod === 0) depthFactors.push(1.0);       
+                    else if (mod === 1) depthFactors.push(0.40); 
+                    else depthFactors.push(0.80);                
+                }
+            }
+
+            const fanOuterR = maxRadius + 85; 
+            const fanInnerR = charRadius + 20; 
+            
+            const p1x = cx + fanOuterR * Math.cos((startAngle + 5) * Math.PI / 180);
+            const p1y = cy - fanOuterR * Math.sin((startAngle + 5) * Math.PI / 180);
+            const p2x = cx + fanOuterR * Math.cos((endAngle - 5) * Math.PI / 180);
+            const p2y = cy - fanOuterR * Math.sin((endAngle - 5) * Math.PI / 180);
+            const p3x = cx + fanInnerR * Math.cos((endAngle - 5) * Math.PI / 180);
+            const p3y = cy - fanInnerR * Math.sin((endAngle - 5) * Math.PI / 180);
+            const p4x = cx + fanInnerR * Math.cos((startAngle + 5) * Math.PI / 180);
+            const p4y = cy - fanInnerR * Math.sin((startAngle + 5) * Math.PI / 180);
+
+            const spanAngle = (startAngle + 5) - (endAngle - 5);
+            const largeArc = spanAngle > 180 ? 1 : 0;
+
+            let fanHTML = '';
+            if (count > 1) {
+                fanHTML += `<path d="M ${p4x} ${p4y} L ${p1x} ${p1y} A ${fanOuterR} ${fanOuterR} 0 ${largeArc} 1 ${p2x} ${p2y} L ${p3x} ${p3y} A ${fanInnerR} ${fanInnerR} 0 ${largeArc} 0 ${p4x} ${p4y} Z" 
+                            fill="rgba(255, 252, 245, 0.65)" stroke="#e6c27a" stroke-width="4" />`;
+                
+                const ribCount = count * 2 + 1;
+                for (let i = 0; i < ribCount; i++) {
+                    const ribAngle = startAngle + 5 - i * ((startAngle - endAngle + 10) / (ribCount - 1));
+                    const rad = ribAngle * Math.PI / 180;
+                    const rx1 = cx + (charRadius - 10) * Math.cos(rad);
+                    const ry1 = cy - (charRadius - 10) * Math.sin(rad);
+                    const rx2 = cx + (fanOuterR - 5) * Math.cos(rad);
+                    const ry2 = cy - (fanOuterR - 5) * Math.sin(rad);
+                    fanHTML += `<line x1="${rx1}" y1="${ry1}" x2="${rx2}" y2="${ry2}" stroke="rgba(230, 194, 122, 0.4)" stroke-width="3" stroke-linecap="round" />`;
+                }
+            }
+            fanSvg.innerHTML = fanHTML;
+
+            linesSvg.innerHTML = '';
+            phrasesContainer.innerHTML = '';
+            
+            phraseArray.forEach((phrase, i) => {
+                const angleDeg = startAngle - i * angleStep;
+                const angleRad = angleDeg * Math.PI / 180;
+
+                const f = depthFactors[i];
+                const currentR = minRadius + (maxRadius - minRadius) * f;
+
+                const x = cx + currentR * Math.cos(angleRad);
+                const y = cy - currentR * Math.sin(angleRad); 
+
+                const scaleFactor = 0.9 + (f * 0.35); 
+                const baseImgSize = isMobile ? 110 : 155; 
+                const imgSize = baseImgSize * scaleFactor;
+                const fontSize = (isMobile ? 1.4 : 1.9) * scaleFactor;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+                line.setAttribute('x2', x); line.setAttribute('y2', y);
+                line.setAttribute('class', 'connect-line');
+                linesSvg.appendChild(line);
+                
+                const node = document.createElement('div');
+                node.className = 'phrase-node';
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+                node.style.width = imgSize + 'px';
+                node.style.height = imgSize + 'px';
+                node.style.zIndex = Math.round(f * 10) + 20; 
+                
+                node.onclick = () => {
+                    speak(phrase);
+                    const innerCard = node.querySelector('.flip-card-inner');
+                    innerCard.classList.toggle('is-flipped');
+                };
+                
+                node.innerHTML = `
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front" style="border-width:${5*scaleFactor}px;">
+                            <span style="font-size:${fontSize}rem; line-height: 1.2;">${phrase}</span>
+                        </div>
+                        <div class="flip-card-back" style="border-width:${5*scaleFactor}px;">
+                            <img src="../images/sight_words_phrases/${encodeURIComponent(phrase)}.webp" 
+                                 class="phrase-img" alt="${phrase}"
+                                 onerror="this.parentElement.style.background='#f0f5f5'; this.remove();">
+                        </div>
+                    </div>
+                `;
+                
+                phrasesContainer.appendChild(node);
             });
         }
 
@@ -196,12 +401,18 @@
                 const data = list.find(d => d.char === targetChar);
 
                 if (data) {
-                    document.getElementById('char-pinyin').textContent = getCharPinyin(targetChar);
+                    const py = getCharPinyin(targetChar);
+                    document.getElementById('char-pinyin').textContent = py;
 
-                    const writerSize = window.innerWidth <= 600 ? 55 : 70;
+                    const bgImg = document.getElementById('char-bg-img');
+                    bgImg.src = `../images/sight_words_phrases/${encodeURIComponent(targetChar)}.webp`;
+                    bgImg.onerror = () => { bgImg.style.display = 'none'; };
+
+                    document.getElementById('character-target').innerHTML = ''; 
                     HanziWriter.create('character-target', targetChar, {
-                        width: writerSize, height: writerSize, padding: 0, 
-                        strokeColor: '#e74c3c', outlineColor: '#f3f3f3', delayBetweenAnimations: 3000
+                        width: 100, height: 100, padding: 5, 
+                        strokeColor: '#e74c3c', outlineColor: '#e0e0e0',
+                        delayBetweenAnimations: 1500
                     }).animateCharacter();
 
                     let phraseArray = [];
@@ -209,43 +420,18 @@
                         phraseArray = data.phrases.split(/[,，、]/).map(p => p.trim()).filter(p => p);
                     }
 
-                    const total = phraseArray.length;
-                    const container = document.getElementById('sunburst-area');
-                    
-                    // 🌟 终极防遮挡雷达：根据屏幕的真实高度，计算绝对安全的半径
-                    const containerHeight = container.clientHeight;
-                    const containerWidth = container.clientWidth;
-                    
-                    // 留出 85px 的缓冲高度（图片的一半+文字的高度+边缘缝隙），确保绝对不碰壁
-                    const safeV = (containerHeight / 2) - 85; 
-                    const safeH = (containerWidth / 2) - 75;      
-                    
-                    // 理想半径
-                    const idealRadius = total > 5 ? 220 : 180;
-                    
-                    // 取屏幕能承受的最大安全值
-                    let radius = Math.min(safeV, safeH, idealRadius);
-                    
-                    // 兜底值：如果遇到极端扁屏，允许轻微靠近中心，但绝不缩小到撞车
-                    radius = Math.max(radius, 110); 
-
-                    let html = '';
-                    phraseArray.forEach((p, index) => {
-                        const angle = (index / total) * 360; 
-                        
-                        html += `
-                            <div class="orbit-wrapper" style="--angle: ${angle}deg; --radius: ${radius}px;">
-                                <div class="orbit-content" onclick="speak('${p}')">
-                                    <img src="../images/sight_words_phrases/${p}.webp" class="orbit-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'><circle cx=\\'50\\' cy=\\'50\\' r=\\'50\\' fill=\\'%23e0eded\\'/><text x=\\'50\\' y=\\'55\\' font-size=\\'20\\' text-anchor=\\'middle\\' fill=\\'%23598586\\'>暂无图</text></svg>'">
-                                    <div class="orbit-text">${p}</div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    document.getElementById('orbit-container').innerHTML = html;
+                    if (phraseArray.length > 0) {
+                        renderPhrases(phraseArray);
+                    }
                 }
             })
             .catch(err => console.error("加载数据失败", err));
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => location.reload(), 200);
+        });
 
         function goToTracing() { 
             if(targetChar) window.location.href = `tracing_zh.html?char=${encodeURIComponent(targetChar)}&from=detail`; 
@@ -257,7 +443,10 @@
             audio.play().catch(() => { 
                 const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-CN';
-                if (!xiaoxiao) loadVoices();
+                if (!xiaoxiao) {
+                    const voices = window.speechSynthesis.getVoices();
+                    xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao'));
+                }
                 if (xiaoxiao) msg.voice = xiaoxiao;
                 msg.rate = 0.85; 
                 window.speechSynthesis.speak(msg); 
