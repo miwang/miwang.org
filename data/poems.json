@@ -3,7 +3,7 @@
     {
       "id": "jingyesi",
       "title": "静夜思 (李白)",
-      "cover": "",
+      "cover": "/images/poems/jingyesi.webp",
       "lyrics": "床前明月光，\n疑是地上霜。\n举头望明月，\n低头思故乡。",
       "youtubeId": "",
       "startTime": 0
@@ -11,10 +11,45 @@
     {
       "id": "dengguanquelou",
       "title": "登鹳雀楼 (王之涣)",
-      "cover": "",
+      "cover": "/images/poems/dengguanquelou.webp",
       "lyrics": "白日依山尽，\n黄河入海流。\n欲穷千里目，\n更上一层楼。",
       "youtubeId": "",
       "startTime": 0
+    },
+    {
+      "startTime": 0,
+      "id": "shigexiaopengyou",
+      "title": "十个小朋友",
+      "cover": "/images/poems/shigexiaopengyou.webp",
+      "youtubeId": "1oUXG01bP0M",
+      "lyrics": "一个两个三个小朋友\n四个五个六个小朋友\n七个八个九个小朋友\n十个印第安小朋友"
+    },
+    {
+      "startTime": 0,
+      "id": "datou",
+      "title": "我有大头",
+      "cover": "/images/poems/datou.webp",
+      "lyrics": "大头到头\n下雨不愁\n人家有伞\n我有大头"
+    },
+    {
+      "startTime": 0,
+      "id": "xiaofeiji",
+      "title": "小飞机",
+      "cover": "/images/poems/xiaofeiji.webp",
+      "lyrics": "一二三四五六七\n我有一架小飞机\n七六五四三二一\n我的飞机飞第一"
+    },
+    {
+      "startTime": 0,
+      "id": "xuehua",
+      "title": "雪花",
+      "lyrics": "一片两片三四片，\n五片六片七八片。\n九片十片无数片，\n飞入水中都不见。",
+      "cover": "/images/poems/xuehua.webp"
+    },
+    {
+      "startTime": 0,
+      "id": "honghua",
+      "title": "红花红花几月开？",
+      "lyrics": "红花红花几月开？\n一月开！\n一月不开几月开？\n二月开！\n二月不开几月开？\n三月开！\n三月不开几月开？\n四月开！\n四月不开几月开？\n五月开！\n五月不开几月开？\n六月开！\n六月不开几月开？\n七月开！\n七月不开几月开？\n八月开！"
     }
   ]
 }
