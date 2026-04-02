@@ -1,0 +1,53 @@
+/* css/common_nav.css */
+:root {
+    --nav-font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+    --nav-font-en: "LXGW WenKai Lite", sans-serif;
+    --nav-color: #333333;
+}
+
+/* 🌟 极简返回链接：仅图标和文字，无背景 */
+.common-back-link {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--nav-color);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s ease;
+    background: transparent;
+    border: none;
+}
+
+.common-back-link:hover {
+    opacity: 0.6;
+}
+
+/* 中文版字体 */
+.common-back-link span {
+    font-family: var(--nav-font-zh) !important;
+}
+
+/* 英文版字体适配 */
+.common-back-link.en span {
+    font-family: var(--nav-font-en) !important;
+}
+
+/* 统一图标样式（仿照您满意的简洁圆圈箭头） */
+.common-back-link svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* 移动端间距微调 */
+@media (max-width: 768px) {
+    .common-back-link {
+        top: 15px;
+        left: 15px;
+        font-size: 0.95rem;
+    }
+}
