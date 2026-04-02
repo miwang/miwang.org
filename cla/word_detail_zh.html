@@ -24,29 +24,28 @@
             font-family: var(--kaiti-font) !important; 
         }
         
-        /* 🌟 修复导航栏高度与样式统一 */
         .nav-top {
             background: #598586; 
             padding: 0 20px;
-            height: 56px; /* 恢复统一的 56px */
-            box-sizing: border-box; /* 确保边框计算统一 */
-            flex-shrink: 0;
+            height: 56px;
+            box-sizing: border-box;
             display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
             border-bottom: 5px solid #f3b236;
             z-index: 1000;
         }
         .nav-top a { 
             color: #fff; text-decoration: none; font-weight: bold; 
-            font-size: 0.95rem; font-family: var(--kaiti-font) !important; white-space: nowrap;
+            font-size: 0.95rem; font-family: var(--english-font) !important; white-space: nowrap;
         }
         .nav-top a:hover { opacity: 0.8; }
-        .nav-title { color: white; font-weight: bold; font-size: 1.1rem; font-family: var(--kaiti-font) !important; }
+        .nav-title { color: white; font-weight: bold; font-size: 1.1rem; font-family: var(--english-font) !important; }
         .nav-spacer { width: 80px; }
 
         .orbit-container {
             position: relative;
             width: 100%;
-            height: calc(100vh - 56px); /* 同步减去导航栏的 56px */
+            height: calc(100vh - 56px);
             overflow: hidden;
             background: radial-gradient(circle at 50% 100%, #eef5f5 0%, #d4e4e4 70%); 
         }
@@ -66,9 +65,7 @@
 
         .center-char {
             position: absolute;
-            bottom: 20px; 
-            left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%); 
             z-index: 50; 
             width: 170px; height: 170px; 
         }
@@ -79,11 +76,11 @@
             background: white;
             border: 8px solid #f3b236;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
             cursor: pointer; position: relative; overflow: hidden;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .char-circle:hover { transform: scale(1.05); box-shadow: 0 -6px 30px rgba(243,178,54,0.3); }
+        .char-circle:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(243,178,54,0.3); }
 
         .char-bg-img {
             position: absolute;
@@ -95,17 +92,18 @@
         .char-pinyin {
             position: relative; font-size: 1.35rem; color: #598586;
             font-weight: 600; font-family: var(--english-font) !important;
-            z-index: 2; margin-bottom: -5px;
+            z-index: 2; margin-bottom: -8px;
         }
 
         #character-target {
             position: relative; z-index: 10; 
-            width: 100px; height: 100px;
+            width: 90px; height: 90px;
         }
 
         .char-hint {
-            position: relative; font-size: 0.95rem; color: #999;
-            font-weight: bold; z-index: 2; margin-top: -5px;
+            position: relative; font-size: 0.8rem; color: #999;
+            font-weight: bold; z-index: 2; margin-top: -8px; font-family: var(--english-font) !important;
+            white-space: nowrap;
         }
 
         .char-play-btn {
@@ -121,14 +119,12 @@
         }
         .char-play-btn:hover { background: #c0392b; transform: scale(1.15) rotate(5deg); }
 
-        /* 🌟 互动记忆闪卡外层容器 */
         .phrase-node {
             position: absolute; 
             cursor: pointer; 
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 20; 
             transform: translate(-50%, -50%); 
-            /* 开启 3D 透视视距 */
             perspective: 1000px; 
         }
         .phrase-node:hover { 
@@ -136,7 +132,6 @@
             z-index: 100 !important; 
         }
 
-        /* 🌟 闪卡内层（承载正反面，负责翻转动作） */
         .flip-card-inner {
             position: relative;
             width: 100%; height: 100%;
@@ -151,17 +146,13 @@
             box-shadow: 0 8px 25px rgba(243,178,54,0.4);
         }
 
-        /* 点击后触发翻转 */
-        .is-flipped {
-            transform: rotateY(180deg);
-        }
+        .is-flipped { transform: rotateY(180deg); }
 
-        /* 🌟 正面和反面的通用样式 */
         .flip-card-front, .flip-card-back {
             position: absolute;
             width: 100%; height: 100%;
-            -webkit-backface-visibility: hidden; /* Safari */
-            backface-visibility: hidden;         /* 翻转后隐藏背面 */
+            -webkit-backface-visibility: hidden; 
+            backface-visibility: hidden;         
             border-radius: 50%;
             border: 5px solid #d0dede;
             background: white;
@@ -174,7 +165,6 @@
             border-color: #f3b236;
         }
 
-        /* 🌟 正面：只显示文字 */
         .flip-card-front {
             background: linear-gradient(135deg, #ffffff 0%, #f4f9f9 100%);
             color: #1e2e46;
@@ -182,20 +172,16 @@
             font-family: var(--kaiti-font) !important;
         }
 
-        /* 🌟 反面：显示图片 */
-        .flip-card-back {
-            transform: rotateY(180deg); /* 初始状态是反过来的 */
-        }
-        .phrase-img { 
-            width: 85%; height: 85%; object-fit: contain; 
-        }
+        .flip-card-back { transform: rotateY(180deg); }
+        .phrase-img { width: 85%; height: 85%; object-fit: contain; }
 
         @media (max-width: 600px) {
-            .center-char { width: 130px; height: 130px; bottom: 10px; }
+            .center-char { width: 130px; height: 130px; }
             .char-circle { border-width: 5px; }
-            #character-target { width: 75px; height: 75px; }
+            #character-target { width: 65px; height: 65px; }
+            .char-pinyin { font-size: 1.1rem; margin-bottom: -5px; }
+            .char-hint { font-size: 0.7rem; margin-top: -5px; }
             .char-play-btn { width: 36px; height: 36px; top: -8px; right: -8px; font-size: 14px; }
-            .char-pinyin { font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -217,20 +203,34 @@
                 <div id="character-target"></div>
                 <div class="char-hint">✍️ 点击书写</div>
             </div>
-            <button class="char-play-btn" onclick="event.stopPropagation(); speakChar();">🔊</button>
+            <button class="char-play-btn" onclick="event.stopPropagation(); playAudioOrFallback(targetChar);">🔊</button>
         </div>
 
         <div id="phrases-container"></div>
     </div>
 
     <script>
+        let audioUnlocked = false;
+        function unlockSystemAudio() {
+            if (audioUnlocked) return;
+            const silentSpeech = new SpeechSynthesisUtterance(' ');
+            window.speechSynthesis.speak(silentSpeech);
+            const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+            silentAudio.play().catch(() => {});
+            audioUnlocked = true;
+            document.removeEventListener('touchstart', unlockSystemAudio);
+            document.removeEventListener('click', unlockSystemAudio);
+        }
+        document.addEventListener('touchstart', unlockSystemAudio, { passive: true });
+        document.addEventListener('click', unlockSystemAudio);
+
         const params = new URLSearchParams(window.location.search);
         const targetChar = params.get('char');
 
         let xiaoxiao = null;
         function loadVoices() {
             const voices = window.speechSynthesis.getVoices();
-            xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao'));
+            xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao')) || voices.find(v => v.lang.startsWith('zh'));
         }
         window.speechSynthesis.onvoiceschanged = loadVoices;
         loadVoices();
@@ -242,16 +242,29 @@
             return '';
         }
 
-        function speakChar() {
-            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(targetChar)}.mp3`);
-            audio.play().catch(() => {
-                const msg = new SpeechSynthesisUtterance(targetChar);
+        // 🌟 终极破防发音引擎 🌟
+        function playAudioOrFallback(text) {
+            if (!audioUnlocked) unlockSystemAudio();
+            
+            window.speechSynthesis.cancel();
+            
+            // 【核心破解】：在点击的瞬间，同步塞入一个空格语音。拿到系统级别的播放白名单！
+            const dummy = new SpeechSynthesisUtterance(' ');
+            window.speechSynthesis.speak(dummy);
+
+            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`);
+            audio.play().catch(() => { 
+                // 即使 MP3 文件不存在进入了异步 catch，因为门已经被 dummy 语音踹开了，真实语音也能畅通无阻！
+                const msg = new SpeechSynthesisUtterance(text);
                 msg.lang = 'zh-CN';
-                if (!xiaoxiao) { const v = window.speechSynthesis.getVoices(); xiaoxiao = v.find(x => x.name.includes('Xiaoxiao')); }
+                if (!xiaoxiao) {
+                    const voices = window.speechSynthesis.getVoices();
+                    xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao')) || voices.find(v => v.lang.startsWith('zh'));
+                }
                 if (xiaoxiao) msg.voice = xiaoxiao;
-                msg.rate = 0.85;
-                window.speechSynthesis.speak(msg);
-            });
+                msg.rate = 0.85; 
+                window.speechSynthesis.speak(msg); 
+            }); 
         }
 
         function renderPhrases(phraseArray) {
@@ -264,32 +277,51 @@
             const H = container.clientHeight;
             const isMobile = window.innerWidth <= 600;
 
-            const cx = W / 2;
-            const charRadius = isMobile ? 65 : 85; 
-            const bottomOffset = isMobile ? 10 : 20;
-            const cy = H - bottomOffset - charRadius; 
-
             const count = phraseArray.length;
             if (count === 0) return;
 
-            // 1. 安全边距，给翻转预留点空间
-            const safeSide = isMobile ? 50 : 60; 
-            const safeTop = isMobile ? 80 : 90;  
-            
-            let maxRadius = Math.min(cx - safeSide, cy - safeTop);
-            if (count >= 8) maxRadius = Math.min(cx - 30, cy - 70); 
-            
-            const minRadius = isMobile ? 150 : 210; 
-            if (maxRadius < minRadius + 40) maxRadius = minRadius + 40;
+            let cx, cy, maxRadius, minRadius, startAngle, endAngle;
+            const charRadius = isMobile ? 65 : 85; 
 
-            let startAngle = 180;
-            let endAngle = 0;
+            if (isMobile) {
+                container.style.background = 'radial-gradient(circle at 0% 50%, #eef5f5 0%, #d4e4e4 70%)';
+                cx = charRadius + 15; cy = H / 2;           
+                const safeRight = 85; const safeTop = 75; const safeBottom = 75;
+                
+                maxRadius = Math.min(W - cx - safeRight, cy - safeTop, H - cy - safeBottom);
+                if (count >= 8) maxRadius = Math.min(W - cx - 70, cy - 55, H - cy - 55); 
+                
+                minRadius = 135; 
+                if (maxRadius < minRadius + 30) maxRadius = minRadius + 30;
+
+                if (count === 1) { startAngle = 0; endAngle = 0; }
+                else if (count <= 3) { startAngle = 45; endAngle = -45; } 
+                else if (count <= 5) { startAngle = 65; endAngle = -65; }
+                else if (count <= 7) { startAngle = 80; endAngle = -80; }
+                else { startAngle = 90; endAngle = -90; } 
+
+            } else {
+                container.style.background = 'radial-gradient(circle at 50% 100%, #eef5f5 0%, #d4e4e4 70%)';
+                cx = W / 2; const bottomOffset = 20; cy = H - bottomOffset - charRadius; 
+                const safeSide = 90; const safeTop = 90;  
+                
+                maxRadius = Math.min(cx - safeSide, cy - safeTop);
+                if (count >= 8) maxRadius = Math.min(cx - 30, cy - 70); 
+                
+                minRadius = 210; 
+                if (maxRadius < minRadius + 40) maxRadius = minRadius + 40;
+
+                if (count === 1) { startAngle = 90; endAngle = 90; }
+                else if (count <= 3) { startAngle = 135; endAngle = 45; } 
+                else if (count <= 5) { startAngle = 150; endAngle = 30; }
+                else if (count <= 7) { startAngle = 165; endAngle = 15; }
+                else { startAngle = 180; endAngle = 0; } 
+            }
             
-            if (count === 1) { startAngle = 90; endAngle = 90; }
-            else if (count <= 3) { startAngle = 135; endAngle = 45; } 
-            else if (count <= 5) { startAngle = 150; endAngle = 30; }
-            else if (count <= 7) { startAngle = 165; endAngle = 15; }
-            
+            const centerChar = document.getElementById('center-char');
+            centerChar.style.left = cx + 'px';
+            centerChar.style.top = cy + 'px';
+
             const angleStep = count > 1 ? (startAngle - endAngle) / (count - 1) : 0;
 
             const depthFactors = [];
@@ -306,7 +338,7 @@
                 }
             }
 
-            const fanOuterR = maxRadius + 85; 
+            const fanOuterR = maxRadius + (isMobile ? 75 : 95); 
             const fanInnerR = charRadius + 20; 
             
             const p1x = cx + fanOuterR * Math.cos((startAngle + 5) * Math.PI / 180);
@@ -353,9 +385,9 @@
                 const y = cy - currentR * Math.sin(angleRad); 
 
                 const scaleFactor = 0.9 + (f * 0.35); 
-                const baseImgSize = isMobile ? 110 : 155; 
+                const baseImgSize = isMobile ? 105 : 155; 
                 const imgSize = baseImgSize * scaleFactor;
-                const fontSize = (isMobile ? 1.4 : 1.9) * scaleFactor;
+                const fontSize = (isMobile ? 1.3 : 1.9) * scaleFactor;
                 
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                 line.setAttribute('x1', cx); line.setAttribute('y1', cy);
@@ -371,8 +403,9 @@
                 node.style.height = imgSize + 'px';
                 node.style.zIndex = Math.round(f * 10) + 20; 
                 
-                node.onclick = () => {
-                    speak(phrase);
+                node.onclick = (event) => {
+                    event.stopPropagation();
+                    playAudioOrFallback(phrase);
                     const innerCard = node.querySelector('.flip-card-inner');
                     innerCard.classList.toggle('is-flipped');
                 };
@@ -409,8 +442,10 @@
                     bgImg.onerror = () => { bgImg.style.display = 'none'; };
 
                     document.getElementById('character-target').innerHTML = ''; 
+                    
+                    const writerSize = window.innerWidth <= 600 ? 65 : 90;
                     HanziWriter.create('character-target', targetChar, {
-                        width: 100, height: 100, padding: 5, 
+                        width: writerSize, height: writerSize, padding: 5, 
                         strokeColor: '#e74c3c', outlineColor: '#e0e0e0',
                         delayBetweenAnimations: 1500
                     }).animateCharacter();
@@ -425,7 +460,7 @@
                     }
                 }
             })
-            .catch(err => console.error("加载数据失败", err));
+            .catch(err => console.error("Error loading sight words:", err));
 
         let resizeTimer;
         window.addEventListener('resize', () => {
@@ -435,22 +470,6 @@
 
         function goToTracing() { 
             if(targetChar) window.location.href = `tracing_zh.html?char=${encodeURIComponent(targetChar)}&from=detail`; 
-        }
-
-        function speak(text) { 
-            window.speechSynthesis.cancel(); 
-            const audio = new Audio(`../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`);
-            audio.play().catch(() => { 
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-CN';
-                if (!xiaoxiao) {
-                    const voices = window.speechSynthesis.getVoices();
-                    xiaoxiao = voices.find(v => v.name.includes('Xiaoxiao'));
-                }
-                if (xiaoxiao) msg.voice = xiaoxiao;
-                msg.rate = 0.85; 
-                window.speechSynthesis.speak(msg); 
-            }); 
         }
     </script>
 </body>
