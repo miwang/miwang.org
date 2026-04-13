@@ -5,7 +5,7 @@ export async function onRequest(context) {
   const code = url.searchParams.get('code');
 
   try {
-    // 拿着授权码向 GitHub 换取 Access Token
+    // 向 GitHub 换取 Access Token
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
@@ -17,39 +17,42 @@ export async function onRequest(context) {
     
     const data = await response.json();
     
-    // 【重点排错】如果 GitHub 拒绝了密钥，把真实原因显示在屏幕上
     if (data.error) {
        return new Response(
-         `<h3>GitHub 拒绝了授权</h3><p>错误代码: ${data.error}</p><p>详细信息: ${data.error_description}</p><p>👉 解决建议：请检查 Cloudflare 环境变量中的 GITHUB_CLIENT_SECRET 是否填错，或者多复制了空格。</p>`, 
+         `<h3>GitHub 拒绝了授权</h3><p>错误代码: ${data.error}</p><p>详细信息: ${data.error_description}</p>`, 
          { headers: { 'Content-Type': 'text/html;charset=UTF-8' } }
        );
     }
 
     const token = data.access_token;
 
-    // 将 Token 封装并发送给父级页面
+    // 【关键修复】：加入 Decap CMS 标准的双向握手通信机制
     const html = `
       <!DOCTYPE html>
       <html>
       <head><title>授权成功</title></head>
       <body>
-        <p>✅ 拿到 GitHub 钥匙了，正在开锁...</p>
-        <p id="error-msg" style="color: red;"></p>
+        <p>✅ 拿到 GitHub 钥匙了，正在和后台握手开锁...</p>
         <script>
-          try {
-            const token = "${token}";
-            const provider = "github";
-            const message = "authorization:github:success:" + JSON.stringify({ token, provider });
-            
-            // 兼容性更强的回传目标地址
-            const targetOrigin = window.opener ? window.opener.location.origin : new URL(window.location.href).origin;
-            
-            window.opener.postMessage(message, targetOrigin);
-            
-            // 延迟 0.5 秒关闭，确保消息飞到主页面
-            setTimeout(() => window.close(), 500); 
-          } catch (e) {
-            document.getElementById('error-msg').innerText = "回传失败：" + e.message;
+          const token = "${token}";
+          const provider = "github";
+          
+          // 第二步：监听主系统发回来的确认信号，收到后再把真正的 Token 发过去
+          window.addEventListener("message", (event) => {
+            if (event.data === "authorizing:" + provider) {
+              const message = "authorization:" + provider + ":success:" + JSON.stringify({ token, provider });
+              // 使用对方认可的安全源 (event.origin) 回传数据
+              window.opener.postMessage(message, event.origin);
+              // 大功告成，关闭弹窗
+              setTimeout(() => window.close(), 500);
+            }
+          });
+
+          // 第一步：先向主系统发送“敲门”信号
+          if (window.opener) {
+            window.opener.postMessage("authorizing:" + provider, "*");
+          } else {
+            document.body.innerHTML += "<p style='color:red;'>错误：找不到主页面，请从后台系统的 Login 按钮点击进入。</p>";
           }
         </script>
       </body>
