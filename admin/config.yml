@@ -147,3 +147,4 @@ collections:
                 name: "lyrics"
                 widget: "text"
                 hint: "直接粘贴整首古诗或顺口溜！换行就按回车。"
+                
