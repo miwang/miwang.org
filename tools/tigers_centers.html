@@ -43,24 +43,10 @@
         .bg-yellow { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #d35400; }
         .bg-blue   { background: linear-gradient(135deg, #74b9ff, #0984e3); }
 
-        /* 🔧 核心修复：头像以列宽为基准确定大小，切 cols-4 时自动缩小不溢出 */
-        .kids-panel {
-            flex: 1; padding: 5px 12px; overflow: hidden;
-            display: grid; gap: 10px;
-            align-content: center; justify-items: center;
-            /* 不设 grid-auto-rows，让行高跟随内容（头像）自动确定 */
-        }
+        .kids-panel { flex: 1; padding: 5px 12px; overflow: hidden; display: grid; gap: 10px; align-content: center; justify-items: center; }
         .cols-3 { grid-template-columns: repeat(3, 1fr); }
         .cols-4 { grid-template-columns: repeat(4, 1fr); }
-
-        /* width: 100% = 填满列宽；aspect-ratio: 1 = 正方形；height 跟着走 */
-        /* max-width 限制最大尺寸；cols-4 时列更窄，头像自然更小，不会溢出 */
-        .kids-panel .avatar-circle {
-            width: 100%;
-            max-width: min(20vh, 155px);
-            height: auto;
-            aspect-ratio: 1;
-        }
+        .kids-panel .avatar-circle { width: 100%; max-width: min(20vh, 155px); height: auto; aspect-ratio: 1; }
 
         .math-shapes-panel { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 6px; justify-content: center; }
         .math-row  { flex: 0 0 31%; display: flex; align-items: center; background: #f8f9fa; border-radius: 10px; padding: 0 10px; border: 1px solid #eee; overflow: hidden; }
@@ -68,7 +54,6 @@
         .math-list { flex: 1; display: flex; align-items: center; gap: 10px; overflow: hidden; justify-content: flex-end; }
         .icon-cir { color: #d63031; } .icon-tri { color: #00b894; } .icon-squ { color: #0984e3; }
 
-        /* 基础头像（math-list 用固定尺寸） */
         .avatar-circle { width: min(20vh, 155px); height: min(20vh, 155px); border-radius: 50%; background: white; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; cursor: grab; transform: translate3d(0,0,0); }
         .math-list .avatar-circle { width: min(15vh, 115px); height: min(15vh, 115px); border-width: 3px; }
         .avatar-img  { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; pointer-events: none; }
@@ -99,7 +84,6 @@ const db = firebase.database();
 
 const CLOUD_KEY = 'ClassData_tigers';
 const LOCAL_KEY  = CLOUD_KEY + '_local';
-
 const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
 let _localVer = 0;
 let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
@@ -146,6 +130,7 @@ window.onload = () => {
         </div>`;
     nav.appendChild(ctrl);
 
+    // 第一步：有本地缓存就先渲染（本机刷新瞬间有内容）
     const cached = loadLocal();
     if (cached) {
         data = cached;
@@ -154,23 +139,24 @@ window.onload = () => {
         renderUI();
     }
 
-    db.ref(CLOUD_KEY).once('value').then(snap => {
-        const cloud = snap.val();
-        if (cloud && (cloud._ver || 0) > _localVer) {
-            data = cloud;
-            if (!data.bgImages) data.bgImages = [null,null,null,null];
-            _localVer = data._ver || 0;
-            saveLocal(); renderUI();
-        }
-        db.ref(CLOUD_KEY).on('value', snap => {
-            const val = snap.val(); if (!val) return;
-            if (val._sid === SESSION_ID) return;
-            if ((val._ver || 0) <= _localVer) return;
-            data = val; _localVer = val._ver || 0;
-            if (!data.bgImages) data.bgImages = [null,null,null,null];
-            saveLocal(); renderUI();
-        });
-    }).catch(() => {});
+    // 第二步：直接用 on() 监听 Firebase
+    // on() 打开时会立刻触发一次当前值——新设备没有缓存时靠这里加载云端数据
+    // 之后有任何其他设备更新，也通过这里实时同步
+    db.ref(CLOUD_KEY).on('value', snap => {
+        const val = snap.val();
+        if (!val) return;
+        if (val._sid === SESSION_ID) return;        // 忽略自己刚写的回声
+        if ((val._ver || 0) <= _localVer) return;   // 忽略比本机旧的数据
+        // 收到更新（首次加载或其他设备改动）
+        data = val;
+        _localVer = val._ver || 0;
+        if (!data.bgImages) data.bgImages = [null,null,null,null];
+        saveLocal(); // 缓存到本机，下次刷新不依赖网络
+        renderUI();
+    }, err => {
+        // Firebase 连不上（Live Server / 无网络）——已有本地缓存就不影响使用
+        console.warn('Firebase 连接失败，使用本地缓存：', err.message);
+    });
 };
 
 function rotateNext() { data.step++; recalcMathGroups(); updateDate(); commit(); }

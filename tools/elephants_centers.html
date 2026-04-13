@@ -43,21 +43,10 @@
         .bg-yellow { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #d35400; }
         .bg-blue   { background: linear-gradient(135deg, #74b9ff, #0984e3); }
 
-        /* 🔧 核心修复：头像以列宽为基准，cols-4 时自动缩小 */
-        .kids-panel {
-            flex: 1; padding: 5px 12px; overflow: hidden;
-            display: grid; gap: 10px;
-            align-content: center; justify-items: center;
-        }
+        .kids-panel { flex: 1; padding: 5px 12px; overflow: hidden; display: grid; gap: 10px; align-content: center; justify-items: center; }
         .cols-3 { grid-template-columns: repeat(3, 1fr); }
         .cols-4 { grid-template-columns: repeat(4, 1fr); }
-
-        .kids-panel .avatar-circle {
-            width: 100%;
-            max-width: min(20vh, 155px);
-            height: auto;
-            aspect-ratio: 1;
-        }
+        .kids-panel .avatar-circle { width: 100%; max-width: min(20vh, 155px); height: auto; aspect-ratio: 1; }
 
         .math-shapes-panel { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 6px; justify-content: center; }
         .math-row  { flex: 0 0 31%; display: flex; align-items: center; background: #f8f9fa; border-radius: 10px; padding: 0 10px; border: 1px solid #eee; overflow: hidden; }
@@ -95,6 +84,9 @@ const db = firebase.database();
 
 const CLOUD_KEY = 'ClassData_elephants';
 const LOCAL_KEY  = CLOUD_KEY + '_local';
+const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
+let _localVer = 0;
+let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
 
 const allStudentsList = [
     { name: "聂文举", img: "../images/avatars/elephants 25-26/Andrew.webp" },
@@ -123,10 +115,6 @@ const allStudentsList = [
     { name: "唐天天", img: "../images/avatars/elephants 25-26/Skylar.webp" },
     { name: "危芷若", img: "../images/avatars/elephants 25-26/Zuri.webp" },
 ];
-
-const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
-let _localVer = 0;
-let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
 
 function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(data)); } catch(e) {} }
 function loadLocal() {
@@ -170,6 +158,7 @@ window.onload = () => {
         </div>`;
     nav.appendChild(ctrl);
 
+    // 第一步：有本地缓存就先渲染
     const cached = loadLocal();
     if (cached) {
         data = cached;
@@ -178,23 +167,22 @@ window.onload = () => {
         renderUI();
     }
 
-    db.ref(CLOUD_KEY).once('value').then(snap => {
-        const cloud = snap.val();
-        if (cloud && (cloud._ver || 0) > _localVer) {
-            data = cloud;
-            if (!data.bgImages) data.bgImages = [null,null,null,null];
-            _localVer = data._ver || 0;
-            saveLocal(); renderUI();
-        }
-        db.ref(CLOUD_KEY).on('value', snap => {
-            const val = snap.val(); if (!val) return;
-            if (val._sid === SESSION_ID) return;
-            if ((val._ver || 0) <= _localVer) return;
-            data = val; _localVer = val._ver || 0;
-            if (!data.bgImages) data.bgImages = [null,null,null,null];
-            saveLocal(); renderUI();
-        });
-    }).catch(() => {});
+    // 第二步：直接用 on() 监听 Firebase
+    // 新设备没有缓存时，on() 打开瞬间触发一次当前云端值，完成首次加载
+    // 之后有其他设备更新，也通过这里实时同步
+    db.ref(CLOUD_KEY).on('value', snap => {
+        const val = snap.val();
+        if (!val) return;
+        if (val._sid === SESSION_ID) return;        // 忽略自己刚写的回声
+        if ((val._ver || 0) <= _localVer) return;   // 忽略比本机旧的数据
+        data = val;
+        _localVer = val._ver || 0;
+        if (!data.bgImages) data.bgImages = [null,null,null,null];
+        saveLocal();
+        renderUI();
+    }, err => {
+        console.warn('Firebase 连接失败，使用本地缓存：', err.message);
+    });
 };
 
 function rotateNext() { data.step++; recalcMathGroups(); updateDate(); commit(); }

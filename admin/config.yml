@@ -1,6 +1,9 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: miwang/miwang.org
   branch: main
+  base_url: https://miwang.org
+  auth_endpoint: api/auth
 
 # 这是一个保底的全局图库设置，防错用
 media_folder: "images" 

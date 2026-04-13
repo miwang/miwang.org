@@ -21,12 +21,12 @@ html,body{height:100%;font-family:var(--fen);color:var(--dark);background:var(--
 .s-nav-back{position:absolute;left:16px;display:flex;align-items:center;gap:6px;color:white;text-decoration:none;font-size:.95rem;font-weight:bold;font-family:var(--fzh);opacity:.9;transition:opacity .2s;}
 .s-nav-back:hover{opacity:.65;}
 .s-nav-back svg{width:22px;height:22px;flex-shrink:0;}
-.s-date{background:var(--teal);color:white;font-size:1.35rem;font-family:var(--fzh);text-align:center;letter-spacing:3px;padding:9px 16px;border-bottom:3px solid var(--gold);flex-shrink:0;}
+.s-date{background:var(--teal);color:white;font-size:1.35rem;font-family:var(--fzh);text-align:center;letter-spacing:3px;padding:clamp(5px,1.1vh,9px) 16px;border-bottom:3px solid var(--gold);flex-shrink:0;}
 .s-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;padding:10px;min-height:0;}
-.card{background:white;border-radius:14px;padding:12px 14px;border:2px solid #e0e8ee;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden;}
+.card{background:white;border-radius:14px;padding:clamp(7px,1.4vh,12px) 14px;border:2px solid #e0e8ee;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden;}
 .card-hdr{display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:2px solid #f0f3f7;flex-shrink:0;}
 .c-icon{font-size:1.1rem;}
-.c-title{flex:1;font-size:1.95rem;font-weight:bold;font-family:var(--fzh);}
+.c-title{flex:1;font-size:clamp(1.3rem,3.2vh,1.95rem);font-weight:bold;font-family:var(--fzh);}
 .card.words .c-title{color:var(--red);}
 .card.numbers .c-title{color:var(--purple);}
 .card.math .c-title{color:var(--blue);}
@@ -45,22 +45,22 @@ html,body{height:100%;font-family:var(--fen);color:var(--dark);background:var(--
 .m-tab{padding:4px 12px;border-radius:16px;border:2px solid var(--red);background:white;color:var(--red);cursor:pointer;font-family:var(--fzh);font-size:.8rem;transition:.15s;}
 .m-tab.active{background:var(--red);color:white;}
 .words-scroll{display:flex;flex-wrap:wrap;gap:8px;overflow-y:auto;flex:1;padding:4px;}
-.wchip{width:64px;height:64px;border-radius:50%;border:2px solid #fde0d8;background:#fff5f2;cursor:pointer;font-size:2.5rem;font-family:var(--fzh);transition:.15s;user-select:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wchip{width:clamp(48px,7.5vh,64px);height:clamp(48px,7.5vh,64px);border-radius:50%;border:2px solid #fde0d8;background:#fff5f2;cursor:pointer;font-size:clamp(1.8rem,4.5vh,2.5rem);font-family:var(--fzh);transition:.15s;user-select:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .wchip:hover{background:#fdd0c0;border-color:var(--red);}
 .wchip.sel{background:var(--red);color:white;border-color:var(--red);transform:scale(1.07);box-shadow:0 3px 8px rgba(232,97,58,.3);}
 .word-prev{font-size:.8rem;color:#bbb;font-family:var(--fzh);flex-shrink:0;min-height:20px;}
 .word-prev .pc{color:var(--red);font-size:1.2rem;margin-right:3px;}
 .range-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;flex-shrink:0;}
-.r-btn{padding:7px 3px;border-radius:9px;border:2px solid #f0e8ff;background:#f8f2ff;cursor:pointer;font-family:var(--fen);font-size:1.75rem;font-weight:bold;color:var(--purple);text-align:center;transition:.15s;}
+.r-btn{padding:3px 3px;border-radius:3px;border:2px solid #f0e8ff;background:#f8f2ff;cursor:pointer;font-family:var(--fen);font-size:clamp(0.31rem,2.5vh,1.0rem);font-weight:bold;color:var(--purple);text-align:center;transition:.15s;}
 .r-btn:hover{background:#e8d8ff;}
 .r-btn.active{background:var(--purple);color:white;border-color:var(--purple);}
 .dir-row{display:flex;gap:6px;flex-shrink:0;}
-.dir-btn{flex:1;padding:6px;border-radius:8px;border:2px solid #ddd;background:transparent;cursor:pointer;font-family:var(--fzh);font-size:1.78rem;color:#999;text-align:center;transition:.15s;}
+.dir-btn{flex:1;padding:6px;border-radius:8px;border:2px solid #ddd;background:transparent;cursor:pointer;font-family:var(--fzh);font-size:clamp(1.1rem,2.5vh,1.78rem);color:#999;text-align:center;transition:.15s;}
 .dir-btn:hover{border-color:var(--purple);color:var(--purple);}
 .dir-btn.active{background:var(--purple);color:white;border-color:var(--purple);}
-.range-prev{background:#f8f2ff;border-radius:8px;padding:7px 8px;text-align:center;font-size:1.85rem;font-weight:bold;color:var(--purple);letter-spacing:3px;word-break:break-all;line-height:1.6;flex:1;overflow-y:auto;}
+.range-prev{background:#f8f2ff;border-radius:8px;padding:7px 8px;text-align:center;font-size:clamp(1.2rem,2.8vh,1.85rem);font-weight:bold;color:var(--purple);letter-spacing:3px;word-break:break-all;line-height:1.6;flex:1;overflow-y:auto;}
 .math-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
-.math-btn{padding:8px 6px;border-radius:8px;border:2px solid #e0f0fb;background:#eef8ff;cursor:pointer;font-family:var(--fzh);font-size:1.5rem;color:var(--blue);text-align:center;line-height:1.3;transition:.15s;}
+.math-btn{padding:8px 6px;border-radius:8px;border:2px solid #e0f0fb;background:#eef8ff;cursor:pointer;font-family:var(--fzh);font-size:clamp(1rem,2.3vh,1.5rem);color:var(--blue);text-align:center;line-height:1.3;transition:.15s;}
 .math-btn:hover{background:#d0eeff;}
 .math-btn.active{background:var(--blue);color:white;border-color:var(--blue);font-weight:bold;}
 .math-prev{background:#eef8ff;border-radius:8px;padding:8px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;flex:1;}
@@ -72,24 +72,23 @@ html,body{height:100%;font-family:var(--fen);color:var(--dark);background:var(--
 select{border:2px solid #e0f2e8;border-radius:7px;padding:4px 7px;font-family:var(--fzh);font-size:.82rem;background:white;color:var(--dark);outline:none;cursor:pointer;}
 .rand-btn{padding:4px 11px;background:var(--green);color:white;border:none;border-radius:7px;cursor:pointer;font-family:var(--fzh);font-size:.8rem;transition:.15s;}
 .rand-btn:hover{background:#3a8a5a;}
-.sent-disp{background:#edfff5;border-radius:9px;padding:10px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--fzh);font-size:4.2rem;color:var(--dark);text-align:center;flex-direction:column;gap:4px;overflow:hidden;}
+.sent-disp{background:#edfff5;border-radius:9px;padding:10px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--fzh);font-size:clamp(2.2rem,5.2vh,4.2rem);color:var(--dark);text-align:center;flex-direction:column;gap:4px;overflow:hidden;}
 .s-tag{font-size:.65rem;color:var(--green);font-family:var(--fen);}
-.launch-bar{padding:10px 16px;background:white;border-top:3px solid var(--gold);text-align:center;flex-shrink:0;}
-.launch-btn{background:linear-gradient(135deg,var(--teal),#3d6e6f);color:white;border:none;border-radius:14px;padding:11px 50px;font-size:1.15rem;font-family:var(--fzh);cursor:pointer;box-shadow:0 5px 18px rgba(89,133,134,.4);transition:.2s;letter-spacing:4px;border-bottom:3px solid var(--gold);}
+.launch-bar{padding:clamp(5px,1vh,10px) 16px;background:white;border-top:3px solid var(--gold);text-align:center;flex-shrink:0;}
+.launch-btn{background:linear-gradient(135deg,var(--teal),#3d6e6f);color:white;border:none;border-radius:14px;padding:clamp(7px,1.3vh,11px) 50px;font-size:1.15rem;font-family:var(--fzh);cursor:pointer;box-shadow:0 5px 18px rgba(89,133,134,.4);transition:.2s;letter-spacing:4px;border-bottom:3px solid var(--gold);}
 .launch-btn:hover{transform:translateY(-1px);}
 .launch-btn:active{transform:scale(0.97);}
 
-/* DISPLAY */
-#displayView{display:none;position:fixed;inset:0;background:#1a2740;align-items:center;justify-content:center;z-index:200;}
+/* DISPLAY VIEW */
+#displayView{display:none;position:fixed;inset:0;background:rgba(10, 20, 40, 1);align-items:center;justify-content:center;z-index:200;}
 #displayView.show{display:flex;}
 .d-frame{width:1280px;height:720px;background:var(--bg);display:flex;flex-direction:column;transform-origin:center center;flex-shrink:0;overflow:hidden;}
-.d-hdr{background:var(--teal);border-bottom:5px solid var(--gold);height:160px;display:flex;align-items:center;justify-content:center;padding:0 22px;flex-shrink:0;position:relative;}
+.d-hdr{background:var(--teal);border-bottom:5px solid var(--gold);height:160px;display:flex;align-items:center;justify-content:center;padding:0 22px;flex-shrink:0;position:relative;cursor:pointer;}
+.d-hdr::after{content:'点击顶部退出';position:absolute;bottom:5px;font-size:0.7rem;color:rgba(255,255,255,0.3);letter-spacing:1px;}
 .d-date{font-size:3.5rem;font-family:var(--fzh);color:white;letter-spacing:8px;font-weight:bold;text-align:center;}
-/* 返回设置 左边，全屏时也显示 */
 .d-btn-back{position:absolute;left:22px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;border-radius:7px;padding:5px 13px;font-family:var(--fzh);font-size:.8rem;cursor:pointer;transition:background .15s,opacity .3s;white-space:nowrap;}
 .d-btn-back:hover{background:rgba(255,255,255,.32);}
 .d-btn-back.fs-hide{opacity:0;pointer-events:none;}
-/* 全屏按钮 右边，全屏时隐藏 */
 .d-btn-fs{position:absolute;right:22px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;border-radius:7px;padding:5px 13px;font-family:var(--fzh);font-size:.8rem;cursor:pointer;transition:background .15s,opacity .3s;white-space:nowrap;}
 .d-btn-fs:hover{background:rgba(255,255,255,.32);}
 .d-btn-fs.fs-hide{opacity:0;pointer-events:none;}
@@ -132,7 +131,7 @@ select{border:2px solid #e0f2e8;border-radius:7px;padding:4px 7px;font-family:va
       </svg>
       <span>返回工具台</span>
     </a>
-    <span class="s-nav-title">🌟 Morning Work 设置</span>
+    <span class="s-nav-title">🌟 <span style="font-family:var(--fen)">Morning Work</span> 设置</span>
   </nav>
   <div class="s-date" id="sDate">加载中...</div>
   <div class="s-grid">
@@ -191,10 +190,10 @@ select{border:2px solid #e0f2e8;border-radius:7px;padding:4px 7px;font-family:va
 
 <div id="displayView">
   <div class="d-frame" id="dFrame">
-    <div class="d-hdr" id="dHdr">
-      <button class="d-btn-back" id="dBtnBack" onclick="hideDisplay()">← 返回设置</button>
+    <div class="d-hdr" id="dHdr" onclick="hideDisplay()">
+      <button class="d-btn-back" id="dBtnBack">← 返回设置</button>
       <div class="d-date" id="dDate"></div>
-      <button class="d-btn-fs" id="dBtnFs" onclick="goFS()">⛶ 全屏</button>
+      <button class="d-btn-fs" id="dBtnFs" onclick="event.stopPropagation(); goFS();">⛶ 全屏</button>
     </div>
     <div class="d-grid" id="dGrid"></div>
   </div>
@@ -219,6 +218,7 @@ let selWords=[],selMath=[],curEqs=[],curSent=null,filtSents=[...SENTS],selRange=
 let mods={words:true,numbers:true,math:true,sentence:true},isFull=false;
 const CN_DIGITS=['零','一','二','三','四','五','六','七','八','九','十'];
 function dayToCN(n){if(n<=10)return CN_DIGITS[n];if(n<20)return'十'+CN_DIGITS[n-10];if(n===20)return'二十';if(n<30)return'二十'+CN_DIGITS[n-20];if(n===30)return'三十';return'三十'+CN_DIGITS[n-30];}
+
 function init(){
   const now=new Date();
   const ds=`${MNAMES[now.getMonth()]}月${dayToCN(now.getDate())}日　${WDAYS[now.getDay()]}`;
@@ -236,6 +236,7 @@ function init(){
   const sel=document.getElementById('tagFilter');addOpt(sel,'','全部句子');[...tags].sort().forEach(t=>addOpt(sel,t,t));
   pickSent();
 }
+
 function addOpt(sel,v,txt){const o=document.createElement('option');o.value=v;o.textContent=txt;sel.appendChild(o);}
 function getCurMonth(now){const n=['January','February','March','April','May','June','July','August','September','October','November','December'][now.getMonth()];return MONTHS.includes(n)?n:MONTHS[MONTHS.length-1];}
 function prevM(m){const i=MONTHS.indexOf(m);return i>0?MONTHS[i-1]:MONTHS[0];}
@@ -253,9 +254,50 @@ function fmtPreview(eq){return fmtEqStr(eq);}
 function renderEqHTML(eq){const op=eq.op==='+'?'＋':'－';const blank=`<span class="m-blank">&nbsp;&nbsp;&nbsp;</span>`;const a=eq.hide==='a'?blank:eq.a,b=eq.hide==='b'?blank:eq.b,s=eq.hide==='answer'?blank:eq.sum;return`${a}${op}${b}＝${s}`;}
 function filterSents(){const tag=document.getElementById('tagFilter').value;filtSents=tag?SENTS.filter(s=>s.tags.includes(tag)):[...SENTS];pickSent();}
 function pickSent(){if(!filtSents.length)return;curSent=filtSents[Math.floor(Math.random()*filtSents.length)];const text=curSent.words.split(',').join('　')+curSent.p;const tags=curSent.tags.split(',').map(t=>`#${t.trim()}`).join(' ');document.getElementById('sentDisp').innerHTML=`<div>${text}</div><div class="s-tag">${tags}</div>`;}
-function scaleFrame(){const f=document.getElementById('dFrame');if(!f)return;f.style.transform=`scale(${Math.min(window.innerWidth/1280,window.innerHeight/720)})`;}
-function showDisplay(){buildGrid();document.getElementById('displayView').classList.add('show');scaleFrame();}
-function hideDisplay(){if(document.fullscreenElement)document.exitFullscreen();document.getElementById('displayView').classList.remove('show');}
+
+function scaleFrame(){
+    const f=document.getElementById('dFrame');
+    const displayView = document.getElementById('displayView');
+    if(!f) return;
+    
+    // 如果展示界面没显示，则不进行缩放计算，防止干扰设置页面分辨率
+    if(!displayView.classList.contains('show')){
+        f.style.transform = 'none';
+        return;
+    }
+    
+    const scale = Math.min(window.innerWidth/1280, window.innerHeight/720);
+    f.style.transform=`scale(${scale})`;
+}
+
+function showDisplay(){
+    buildGrid();
+    document.getElementById('displayView').classList.add('show');
+    if(!document.fullscreenElement){
+        document.documentElement.requestFullscreen().catch(()=>scaleFrame());
+    } else {
+        scaleFrame();
+    }
+}
+
+function hideDisplay(){
+    if(document.fullscreenElement) {
+        document.exitFullscreen();
+    }
+    const displayView = document.getElementById('displayView');
+    const dFrame = document.getElementById('dFrame');
+    
+    displayView.classList.remove('show');
+    // 退出时彻底清除缩放样式，恢复原始设置界面的分辨率
+    dFrame.style.transform = 'none';
+    
+    // 强制触发一次全局 resize，让所有容器重新对齐
+    setTimeout(() => {
+        dFrame.style.transform = 'none';
+        window.dispatchEvent(new Event('resize'));
+    }, 150);
+}
+
 function buildGrid(){const g=document.getElementById('dGrid');g.innerHTML='';[{key:'words',cls:'p-words',lbl:'四会字',fn:buildWords},{key:'numbers',cls:'p-numbers',lbl:'数字练习',fn:buildNums},{key:'math',cls:'p-math',lbl:'数学题',fn:buildMath},{key:'sentence',cls:'p-sentence',lbl:'今日句子',fn:buildSent}].forEach(def=>{const panel=document.createElement('div');panel.className=`panel ${def.cls}`;const lbl=document.createElement('div');lbl.className='p-lbl';lbl.textContent=def.lbl;panel.appendChild(lbl);if(mods[def.key])def.fn(panel);else{const e=document.createElement('div');e.className='p-empty';e.textContent='已关闭';panel.appendChild(e);}g.appendChild(panel);});}
 function buildWords(panel){if(!selWords.length){addEmpty(panel,'未选择四会字');return;}const wrap=document.createElement('div');wrap.className='pw-wrap';const n=selWords.length;const fs=n<=3?'clamp(3rem,7vw,7rem)':n<=6?'clamp(2rem,5vw,5.5rem)':'clamp(1.5rem,3.5vw,4.2rem)';const pad=n<=3?'14px 20px':n<=6?'10px 16px':'8px 12px';selWords.forEach((w,i)=>{const d=document.createElement('div');d.className='w-big '+WCS[i%WCS.length];d.textContent=w;d.style.cssText=`font-size:${fs};padding:${pad};`;d.onclick=()=>showOv(w);wrap.appendChild(d);});panel.appendChild(wrap);}
 function buildNums(panel){if(!selRange){addEmpty(panel,'未选择数字范围');return;}const ns=[];for(let i=selRange.max;i>=selRange.min;i--)ns.push(i);const disp=numDir==='down'?ns:[...ns].reverse();const wrap=document.createElement('div');wrap.className='pn-wrap';const n=disp.length;const fs=n<=11?'clamp(1.6rem,3.5vw,4rem)':'clamp(1.1rem,2.5vw,3rem)';const pad=n<=11?'10px 14px':'7px 10px';disp.forEach(num=>{const d=document.createElement('div');d.className='n-chip';d.textContent=num;d.style.cssText=`font-size:${fs};padding:${pad};`;d.onclick=()=>showOv(String(num));wrap.appendChild(d);});panel.appendChild(wrap);}
@@ -265,9 +307,34 @@ function addEmpty(panel,msg){const e=document.createElement('div');e.className='
 function showOv(ch){document.getElementById('ovChar').textContent=ch;document.getElementById('overlay').classList.add('show');}
 function closeOv(){document.getElementById('overlay').classList.remove('show');}
 function goFS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();}
-document.addEventListener('fullscreenchange',()=>{isFull=!!document.fullscreenElement;document.getElementById('dBtnFs').classList.toggle('fs-hide',isFull);document.getElementById('dBtnBack').classList.toggle('fs-hide',isFull);setTimeout(scaleFrame,50);});
-window.addEventListener('resize',scaleFrame);
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOv();if((e.key==='f'||e.key==='F')&&!document.getElementById('overlay').classList.contains('show'))goFS();});
+
+document.addEventListener('fullscreenchange',()=>{
+    isFull=!!document.fullscreenElement;
+    document.getElementById('dBtnFs').classList.toggle('fs-hide',isFull);
+    document.getElementById('dBtnBack').classList.toggle('fs-hide',isFull);
+    
+    // 全屏切换时强制计算，退出全屏时则通过 hideDisplay 逻辑清除 transform
+    if(isFull){
+        scaleFrame();
+    } else {
+        hideDisplay();
+    }
+    setTimeout(scaleFrame, 100);
+});
+
+window.addEventListener('resize', scaleFrame);
+document.addEventListener('keydown',e=>{
+    if(e.key==='Escape') {
+        if(document.getElementById('overlay').classList.contains('show')) {
+            closeOv();
+        } else {
+            // 响应 Esc 键退出
+            hideDisplay();
+        }
+    }
+    if((e.key==='f'||e.key==='F')&&!document.getElementById('overlay').classList.contains('show')) goFS();
+});
+
 init();
 </script>
 </body>
