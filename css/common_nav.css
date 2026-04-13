@@ -2,52 +2,111 @@
 :root {
     --nav-font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
     --nav-font-en: "LXGW WenKai Lite", sans-serif;
-    --nav-color: #333333;
 }
 
-/* 🌟 极简返回链接：仅图标和文字，无背景 */
-.common-back-link {
+/* 🌟 全局统一导航栏容器 */
+.mecc-global-nav {
     position: fixed;
-    top: 25px;
-    left: 25px;
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--nav-color);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #598586;
+    border-bottom: 5px solid #f3b236;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 9999;
+    box-sizing: border-box;
+    padding: 0 14px;
+}
+
+/* 🌟 全局统一返回按钮（融入导航栏） */
+.mecc-nav-back {
+    position: absolute;
+    left: 20px;
     display: flex;
     align-items: center;
     gap: 6px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: bold;
     transition: opacity 0.2s ease;
-    background: transparent;
-    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    max-width: 42%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.common-back-link:hover {
-    opacity: 0.6;
+.mecc-nav-back:hover {
+    opacity: 0.7;
 }
 
-/* 中文版字体 */
-.common-back-link span {
+.mecc-nav-back svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+/* 🌟 全局统一标题 */
+.mecc-nav-title {
+    color: #ffffff;
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 0;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 1.1;
+    max-width: min(68vw, 760px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 字体适配 */
+.mecc-nav-title,
+.mecc-nav-back span {
     font-family: var(--nav-font-zh) !important;
 }
 
-/* 英文版字体适配 */
-.common-back-link.en span {
+.mecc-nav-title.en,
+.mecc-nav-back.en span {
     font-family: var(--nav-font-en) !important;
 }
 
-/* 统一图标样式（仿照您满意的简洁圆圈箭头） */
-.common-back-link svg {
-    width: 24px;
-    height: 24px;
+/* 平板与小屏电脑微调 */
+@media (max-width: 1024px) {
+    .mecc-nav-back {
+        max-width: 36%;
+    }
+
+    .mecc-nav-title {
+        max-width: 52vw;
+    }
 }
 
-/* 移动端间距微调 */
+/* 手机端：只保留返回箭头，隐藏文字，避免与标题重叠 */
 @media (max-width: 768px) {
-    .common-back-link {
-        top: 15px;
-        left: 15px;
+    .mecc-global-nav {
+        height: 54px;
+        padding: 0 10px;
+    }
+
+    .mecc-nav-back {
+        left: 10px;
         font-size: 0.95rem;
+        gap: 0 !important;
+        max-width: none;
+    }
+
+    .mecc-nav-back span {
+        display: none !important;
+    }
+
+    .mecc-nav-title {
+        font-size: 1.15rem;
+        max-width: calc(100vw - 88px);
     }
 }

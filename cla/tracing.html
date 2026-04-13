@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="head-title">写字大挑战 - MECC</title>
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif; --english-font: "LXGW WenKai Lite", sans-serif; }
+        body, html { background-color:#f8f9fa; margin:0; padding:0; height:100dvh; width:100%; overflow:hidden; display:flex; flex-direction:column; align-items:center; font-family:var(--kaiti-font) !important; padding-top:60px; }
+        .font-en { font-family:var(--english-font) !important; }
+        .challenge-info { display:flex; flex-direction:column; align-items:center; padding:10px 0; flex-shrink:0; }
+        .stars-display { font-size:1.4rem; color:#f3b236; margin-bottom:5px; letter-spacing:2px; }
+        .progress-box { width:280px; height:10px; background:#e0e0e0; border-radius:5px; overflow:hidden; margin-bottom:5px; }
+        .bar-fill { width:0%; height:100%; background:#f3b236; transition:width .3s; }
+        #writer-container { border:6px solid #598586; border-radius:20px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,.15); touch-action:none; }
+        .btn { padding:10px 30px; border-radius:25px; border:none; cursor:pointer; font-weight:bold; color:white; transition:.2s; font-size:1rem; font-family:var(--kaiti-font) !important; }
+        #final-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(30,46,70,.98); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:1000; color:white; text-align:center; }
+        #final-overlay h2 { font-family:var(--kaiti-font) !important; font-size:2.5rem; }
+        @media (max-width:768px){ body{padding-top:56px;} .stars-display{font-size:1.5rem;} .progress-box{width:85vw;} .btn{padding:10px 36px; white-space:nowrap;} }
+        @media (min-width:769px){
+            body{flex-direction:row; flex-wrap:wrap; align-items:stretch; justify-content:center;}
+            #writer-container{order:1; flex-shrink:0; align-self:center; margin:20px 30px 20px 40px;}
+            .right-panel{order:2; flex:1; min-width:220px; max-width:340px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:20px 30px 20px 0;}
+            .challenge-info,#msg,.controls{display:none;}
+            .right-panel .stars-display{font-size:1.6rem; letter-spacing:4px;}
+            .right-panel .progress-box{width:100%; height:12px;}
+            .right-panel #msg-desktop{color:#598586; font-weight:bold; font-size:1.1rem; text-align:center;}
+            .right-panel .btn{padding:12px 40px; font-size:1.1rem; width:100%;}
+        }
+    </style>
+</head>
+<body>
+    <div class="challenge-info">
+        <div class="stars-display" id="stars">⚪⚪⚪⚪⚪⚪⚪⚪⚪⚪</div>
+        <div class="progress-box"><div class="bar-fill" id="progress-bar"></div></div>
+        <div style="color:#598586; font-weight:bold;"><span id="ui-write-char">请写生字：</span><span id="char-display" style="font-size:2.5rem; color:#e74c3c; font-family:var(--kaiti-font) !important;"></span></div>
+    </div>
+    <div id="writer-container"></div>
+    <div class="right-panel" id="right-panel" style="display:none;">
+        <div style="color:#598586;font-weight:bold;font-size:1.2rem;"><span id="ui-write-char-desk">请写生字：</span><span id="char-label-desktop" style="font-size:2.8rem;color:#e74c3c;font-family:var(--kaiti-font)!important;"></span></div>
+        <div class="stars-display" id="stars-desktop">⚪⚪⚪⚪⚪⚪⚪⚪⚪⚪</div>
+        <div class="progress-box" style="width:100%;height:12px;"><div class="bar-fill" id="progress-bar-desktop"></div></div>
+        <div id="msg-desktop" style="color:#598586;font-weight:bold;font-size:1.1rem;"></div>
+        <button class="btn" id="btn-play-desk" style="background:#598586;" onclick="showDemo()">播放笔顺</button>
+    </div>
+    <div id="msg" style="margin-top:10px; height:24px; color:#598586; font-weight:bold;"></div>
+    <div class="controls" style="margin-top:15px;"><button class="btn" id="btn-play-mob" style="background:#598586;" onclick="showDemo()">播放笔顺</button></div>
+    <div id="final-overlay"><div style="font-size:8rem;">🏆</div><h2 id="ui-perfect">太棒了！</h2><p id="ui-mastered">你今天已经完全掌握了这个字！</p><button class="btn" id="finish-btn" style="background:#f3b236; margin-top:30px; color:#1e2e46;">完成练习</button></div>
+<script>
+const LANG = MECC_CONFIG.getLang();
+const t = {
+ zh:{ title:"写字大挑战 ✍️", wait:"等一下...", yourTurn:"该你了！", perfect:"太棒了！", writeChar:"请写生字：", playDemo:"播放笔顺", mastered:"你今天已经完全掌握了这个字！", finish:"完成练习", backDetail:(char)=>`返回${char||'详情'}`, backList:"返回四会字" },
+ en:{ title:"Tracing Challenge ✍️", wait:"Wait for it...", yourTurn:"Your Turn!", perfect:"Perfect!", writeChar:"Trace: ", playDemo:"Play Demo", mastered:"You've mastered this character today!", finish:"Finish", backDetail:(char)=>`Back to ${char||'Details'}`, backList:"Back to List" }
+}[LANG];
+const urlParams=new URLSearchParams(window.location.search);
+const charToDraw=urlParams.get('char')||'天';
+const from=urlParams.get('from');
+document.getElementById('char-display').innerText=charToDraw;
+document.getElementById('head-title').innerText=t.title+" - MECC";
+document.getElementById('ui-write-char').innerText=t.writeChar;
+document.getElementById('ui-write-char-desk').innerText=t.writeChar;
+document.getElementById('btn-play-mob').innerText=t.playDemo;
+document.getElementById('btn-play-desk').innerText=t.playDemo;
+document.getElementById('ui-perfect').innerText=t.perfect;
+document.getElementById('ui-mastered').innerText=t.mastered;
+document.getElementById('finish-btn').innerText=t.finish;
+if(LANG==='en'){ document.getElementById('btn-play-mob').classList.add('font-en'); document.getElementById('btn-play-desk').classList.add('font-en'); document.getElementById('finish-btn').classList.add('font-en'); document.getElementById('ui-mastered').classList.add('font-en'); }
+const roleQuery=LANG==='en'?'?role=parents':''; const roleSuffix=LANG==='en'?'&role=parents':'';
+let backUrl=`words_and_phrases.html${roleQuery}`, backText=t.backList;
+if(from==='detail'){ backUrl=`word_detail.html?char=${encodeURIComponent(charToDraw)}${roleSuffix}`; backText=t.backDetail(charToDraw); }
+document.getElementById('finish-btn').onclick=()=>{ location.href=backUrl; };
+function updateNavBackDisplay(){
+ const btn=document.querySelector('.mecc-nav-back'); if(!btn) return;
+ btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="16" y1="12" x2="8" y2="12"></line><polyline points="12 8 8 12 12 16"></polyline></svg><span>${backText}</span>`;
+ btn.style.gap='8px';
+}
+window.onload=()=>{
+ MECC_CONFIG.renderGlobalNav(t.title, backUrl, backText);
+ updateNavBackDisplay();
+ window.addEventListener('resize', updateNavBackDisplay);
+ initDesktopPanel(); syncUI("⚪".repeat(10),0,t.wait);
+ writer.animateCharacter({ onComplete:()=>{ syncUI("⚪".repeat(10),0,t.yourTurn); startQuiz(); } });
+};
+let count=0;
+const isMobile=window.innerWidth<=768;
+const navH=56, infoH=isMobile?100:90, ctrlH=isMobile?80:100, reservedH=navH+infoH+ctrlH;
+const maxByHeight=window.innerHeight-reservedH, maxByWidth=window.innerWidth*(isMobile?0.92:0.78), wSize=Math.min(maxByHeight,maxByWidth,isMobile?420:520);
+const writer=HanziWriter.create('writer-container', charToDraw, { width:wSize,height:wSize,padding:25,strokeColor:'#598586',outlineColor:'#c8dede',highlightColor:'#f3b236',strokeAnimationSpeed:.7,delayBetweenStrokes:400,showHintAfterMisses:1,highlightOnComplete:true });
+function showDemo(){ syncUI("⚪".repeat(10),0,t.wait); writer.animateCharacter({ onComplete:()=>{ syncUI("⚪".repeat(10),0,t.yourTurn); writer.quiz({onComplete:()=>{handleQuizComplete();}}); } }); }
+function startQuiz(){ writer.quiz({onComplete:()=>{handleQuizComplete();}}); }
+function handleQuizComplete(){ count++; syncUI("⭐".repeat(count)+"⚪".repeat(10-count), count*10, count<10?t.yourTurn:t.perfect); if(count<10){ confetti({particleCount:60, spread:50, origin:{y:.7}}); setTimeout(()=>writer.quiz({onComplete:handleQuizComplete}),800); } else { const progress=JSON.parse(localStorage.getItem('mecc_progress')||'{}'); progress[charToDraw]='completed'; localStorage.setItem('mecc_progress', JSON.stringify(progress)); confetti({particleCount:150, spread:70, origin:{y:.6}}); document.getElementById('final-overlay').style.display='flex'; } }
+function isDesktop(){ return window.innerWidth>768; }
+function syncUI(starsText, progressPct, msgText){ document.getElementById('stars').innerText=starsText; document.getElementById('progress-bar').style.width=progressPct+'%'; document.getElementById('msg').innerText=msgText; const sd=document.getElementById('stars-desktop'), pb=document.getElementById('progress-bar-desktop'), md=document.getElementById('msg-desktop'); if(sd) sd.innerText=starsText; if(pb) pb.style.width=progressPct+'%'; if(md) md.innerText=msgText; }
+function initDesktopPanel(){ if(!isDesktop()) return; document.getElementById('right-panel').style.display='flex'; const lbl=document.getElementById('char-label-desktop'); if(lbl) lbl.innerText=charToDraw; }
+</script>
+</body></html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="head-title">我的中文绘本图书馆 - MECC</title>
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <style>
+        :root {
+            --reader-bg: #f0f3f7;
+            --card-border: #dfe5ed;
+            --card-shadow: 0 4px 16px rgba(26,39,64,0.07);
+            --card-shadow-hover: 0 10px 24px rgba(26,39,64,0.12);
+            --teal: #4e8a8b;
+            --accent: #f0a832;
+        }
+
+        body {
+            margin: 0;
+            padding-top: 70px;
+            background: var(--reader-bg);
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important;
+        }
+
+        .page-wrap {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 14px 18px 40px;
+        }
+
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0 12px;
+        }
+
+        .filter-select {
+            min-width: 180px;
+            padding: 10px 14px;
+            font-size: 1rem;
+            border-radius: 14px;
+            border: 1.5px solid #d7dee7;
+            background: #fff;
+            outline: none;
+            font-family: inherit;
+            box-shadow: none;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .filter-select:focus {
+            border-color: var(--teal);
+            background: #fcfefe;
+        }
+
+        .result-count {
+            text-align: center;
+            color: #6a7b90;
+            font-size: 0.95rem;
+            margin: 0 0 10px;
+            min-height: 1.4em;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 22px;
+        }
+
+        .book-card {
+            background: #fff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 2px solid var(--card-border);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+            cursor: pointer;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+            border-color: var(--accent);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            background: #eaeaea;
+            display: block;
+        }
+
+        .book-info {
+            padding: 14px 14px 16px;
+        }
+
+        .book-level {
+            display: inline-block;
+            background-color: var(--accent);
+            color: #1a2740;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+
+        .book-title {
+            font-size: 1.08rem;
+            font-weight: bold;
+            margin: 0 0 8px;
+            color: #1a2740;
+            line-height: 1.35;
+        }
+
+        .book-tags {
+            font-size: 0.86rem;
+            color: var(--teal);
+            line-height: 1.55;
+        }
+
+        .empty-state,
+        .error-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 48px 14px;
+            color: #6a7b90;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+
+        .error-state { color: #d94040; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            body { padding-top: 62px; }
+            .page-wrap { padding: 10px 12px 28px; }
+            .filter-bar { gap: 8px; margin-top: 2px; }
+            .filter-select { min-width: 0; width: calc(50% - 4px); padding: 10px 12px; font-size: 0.95rem; }
+            .grid-container { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+            .book-cover { height: 170px; }
+            .book-info { padding: 10px 10px 12px; }
+            .book-title { font-size: 0.96rem; }
+            .book-tags { font-size: 0.76rem; }
+        }
+    </style>
+</head>
+<body class="fade-in">
+    <div class="page-wrap">
+        <div class="filter-bar">
+            <select id="filter-level" class="filter-select font-en" onchange="applyFilters()">
+                <option value="all" id="ui-all-levels">All Levels</option>
+                <option value="Novice Low (L1)">Novice Low (L1)</option>
+                <option value="Novice Mid (L2)">Novice Mid (L2)</option>
+                <option value="Novice High (L3)">Novice High (L3)</option>
+            </select>
+            <select id="filter-topic" class="filter-select" onchange="applyFilters()">
+                <option value="all" id="ui-all-topics">所有话题</option>
+                <option value="动物与自然">动物与自然</option>
+                <option value="家庭与朋友">家庭与朋友</option>
+                <option value="学校生活">学校生活</option>
+                <option value="节日与文化">节日与文化</option>
+                <option value="食物与购物">食物与购物</option>
+            </select>
+        </div>
+
+        <div class="result-count" id="result-count"></div>
+        <div id="book-grid" class="grid-container"></div>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: {
+                title: "📚 中文分级绘本馆",
+                allLevels: "所有难度",
+                allTopics: "所有话题",
+                noBooks: "没有找到符合条件的绘本哦。",
+                count: (n) => `共找到 ${n} 本绘本`
+            },
+            en: {
+                title: "📚 Graded Readers Library",
+                allLevels: "All Levels",
+                allTopics: "All Topics",
+                noBooks: "No books found matching your criteria.",
+                count: (n) => `${n} books found`
+            }
+        }[LANG];
+
+        const gridContainer = document.getElementById('book-grid');
+        const resultCountEl = document.getElementById('result-count');
+        const SCROLL_KEY = `mecc_library_scroll_${LANG}`;
+        let allBooks = [];
+
+        window.onload = () => {
+            MECC_CONFIG.renderGlobalNav(t.title);
+            document.getElementById('head-title').innerText = `${t.title} - MECC`;
+            document.getElementById('ui-all-levels').innerText = t.allLevels;
+            document.getElementById('ui-all-topics').innerText = t.allTopics;
+            restoreScroll();
+            loadBooks();
+        };
+
+        window.addEventListener('pageshow', restoreScroll);
+
+        function restoreScroll() {
+            const saved = sessionStorage.getItem(SCROLL_KEY);
+            if (saved === null) return;
+            const y = parseInt(saved, 10);
+            if (Number.isNaN(y)) return;
+            requestAnimationFrame(() => {
+                window.scrollTo({ top: y, left: 0, behavior: 'auto' });
+            });
+        }
+
+        function saveScroll() {
+            sessionStorage.setItem(SCROLL_KEY, String(window.scrollY || window.pageYOffset || 0));
+        }
+
+        function normalizeImagePath(src) {
+            if (!src) return 'https://via.placeholder.com/220x220?text=%E6%97%A0%E5%B0%81%E9%9D%A2';
+            if (src.startsWith('http') || src.startsWith('../')) return src;
+            if (src.startsWith('/')) return `..${src}`;
+            return `../${src}`;
+        }
+
+        function loadBooks() {
+            fetch(`../data/books.json?v=${Date.now()}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(LANG === 'zh' ? '暂时没有找到书籍数据。' : 'Book data not found.');
+                    return response.json();
+                })
+                .then(data => {
+                    allBooks = (data.book_list || []).map((book, index) => ({ ...book, originalId: index }));
+                    applyFilters();
+                })
+                .catch(error => {
+                    gridContainer.innerHTML = `<div class="error-state">${error.message}</div>`;
+                });
+        }
+
+        function applyFilters() {
+            const selectedLevel = document.getElementById('filter-level').value;
+            const selectedTopic = document.getElementById('filter-topic').value;
+
+            const filteredBooks = allBooks.filter(book => {
+                const matchLevel = (selectedLevel === 'all' || book.level === selectedLevel);
+                const matchTopic = (selectedTopic === 'all' || book.topic === selectedTopic);
+                return matchLevel && matchTopic;
+            });
+            renderGrid(filteredBooks);
+        }
+
+        function renderGrid(booksToShow) {
+            gridContainer.innerHTML = '';
+            resultCountEl.innerText = t.count(booksToShow.length);
+
+            if (booksToShow.length === 0) {
+                gridContainer.innerHTML = `<div class="empty-state">${t.noBooks}</div>`;
+                return;
+            }
+
+            booksToShow.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <img class="book-cover" src="${normalizeImagePath(book.coverImage)}" alt="${book.title}">
+                    <div class="book-info">
+                        <div class="book-level">${book.level || ''}</div>
+                        <h3 class="book-title">${book.title || ''}</h3>
+                        <div class="book-tags">🏷️ ${book.topic || '—'}<br>📝 ${book.vocab_tags || '—'}</div>
+                    </div>
+                `;
+                card.addEventListener('click', () => {
+                    saveScroll();
+                    const suffix = LANG === 'en' ? '&role=parents' : '';
+                    window.location.href = `reader.html?id=${book.originalId}${suffix}`;
+                });
+                gridContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

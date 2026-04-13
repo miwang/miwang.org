@@ -3,153 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tigers 分组 🥛🍪</title>
-    
+    <title>老虎班牛奶饼干分组 🥛🍪</title>
+
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
     <link rel="icon" type="image/png" href="../images/tiger.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
-    
+
     <style>
         :root {
             --milk-color: #E3F2FD;
             --cookie-color: #FFF3E0;
             --bg-color: #f4f7f6;
             --card-border: #3949AB;
+            --main-teal: #598586;
+            --font-main: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --nav-btn-bg: rgba(255,255,255,0.12);
+            --nav-btn-border: rgba(255,255,255,0.28);
         }
-        
         * { box-sizing: border-box; }
-        
-        body { 
-            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
-            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
-            text-align: center; 
-            background-color: var(--bg-color); 
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
             margin: 0; padding: 0;
             height: 100vh; width: 100vw;
             display: flex; flex-direction: column;
-            overflow: hidden; 
+            overflow: hidden; padding-top: 60px;
         }
+        .mecc-nav-back { background: transparent !important; border: none !important; padding: 0 !important; font-size: 1.05rem !important; }
 
-        .back-btn-home {
-            position: absolute; top: 23px; left: 15px; color: #555; text-decoration: none;
-            font-size: 1rem; font-weight: bold; z-index: 200; background: rgba(0, 0, 0, 0.05);
-            padding: 8px 15px; border-radius: 8px; transition: transform 0.2s, background 0.2s;
+        .nav-controls {
+            display: none; position: absolute; left: 50%; transform: translateX(-50%);
+            height: 100%; align-items: center; justify-content: center; gap: 6px; pointer-events: none;
         }
-        .back-btn-home:hover { transform: scale(1.05); background: rgba(0, 0, 0, 0.1); }
+        .nav-btn {
+            pointer-events: auto; padding: 8px 14px; border: 1px solid var(--nav-btn-border);
+            background: var(--nav-btn-bg); color: white; font-weight: bold; cursor: pointer;
+            font-size: 0.95rem; transition: background 0.12s ease, border-color 0.12s ease;
+            white-space: nowrap; border-radius: 6px; font-family: var(--font-main) !important;
+            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.45); }
+        .nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .nav-btn.center-btn {
+            font-size: 1.08rem; background: rgba(255,255,255,0.18);
+            border: 1.5px solid rgba(255,255,255,0.52); min-width: 220px;
+        }
+        .nav-btn.center-btn.is-milk { background: #0D47A1; }
+        .nav-btn.center-btn.is-cookie { background: #E65100; }
+        .back-btn-home, .controls, #status-bar { display: none !important; }
 
-        .controls { 
-            background: white; padding: 6px 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            display: flex; justify-content: center; align-items: center; gap: 15px;
-            height: 60px; flex-shrink: 0; z-index: 100;
+        #attendance-section {
+            flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px;
         }
-        
-        button { 
-            font-family: inherit; font-size: 1rem; padding: 8px 15px; border-radius: 8px; 
-            border: none; cursor: pointer; font-weight: bold; transition: transform 0.1s; 
-        }
-        button:active { transform: scale(0.95); }
-        .btn-green { background-color: #4CAF50; color: white; }
-        .btn-blue { background-color: #2196F3; color: white; }
-        .btn-orange { background-color: #FF9800; color: white; }
-
-        #attendance-section { 
-            flex-grow: 1; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; padding: 10px; padding-top: 60px;
-        }
-        
         #attendance-section h1 { margin: 0 0 15px 0; font-size: 2.2rem; color: #3949AB; }
-
-        .attendance-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(70px, 8vw, 110px), 1fr));
-            gap: clamp(6px, 1vw, 14px); width: 100%; max-width: 1400px;
+        .attendance-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(80px, 10vw, 120px), 1fr));
+            gap: clamp(8px, 1.2vw, 16px); width: 100%; max-width: 1400px; padding: 10px; justify-content: center;
         }
-        
-        .student-card { 
-            cursor: pointer; background: white; border-radius: 12px; padding: 5px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid transparent; 
-            font-weight: bold; font-size: clamp(0.75rem, 1.2vw, 1rem); width: 100%; transition: all 0.2s;
+        .student-card {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            cursor: pointer; background: white; border-radius: 10px; padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 2px solid transparent;
+            font-weight: bold; font-size: clamp(0.8rem, 1.3vw, 1.1rem); transition: all 0.18s ease;
         }
-        .student-card img { 
-            width: 55px; height: 55px; border-radius: 50%; object-fit: cover; background: #ddd; margin-bottom: 2px;
-        }
-        .student-card.absent { opacity: 0.4; filter: grayscale(100%); background: #eee; transform: scale(0.95); }
-
-        .btn-finished { font-size: 1.6rem; padding: 15px 45px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); white-space: nowrap; }
-        @media (max-width: 768px) { .btn-finished { font-size: 1.2rem; padding: 12px 30px; } }
-
-        #pairing-section { 
-            display: none; flex-grow: 1; flex-direction: column; 
-            padding: 10px; height: calc(100vh - 60px); position: relative; 
+        .student-card img { width: clamp(50px, 6vw, 75px); height: clamp(50px, 6vw, 75px); border-radius: 50%; object-fit: cover; background: #ddd; margin-bottom: 6px; }
+        .student-card.absent { opacity: 0.3; filter: grayscale(100%); background: #eee; transform: scale(0.95); }
+        .btn-finished {
+            font-size: 1.5rem; padding: 12px 40px; background-color: #4CAF50; color: white; border:none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; white-space: nowrap; font-family: var(--font-main) !important;
         }
 
-        #status-bar { display: contents; }
-
-        /* 🌟 核心修复 1：拉伸网格内容填满高度 */
+        #pairing-section { display: none; flex-grow: 1; flex-direction: column; padding: 5px; position: relative; }
         #pairs-container {
-            flex-grow: 1; display: grid; gap: 1.5vh; padding: 0 10px 10px 10px;
-            justify-content: center; align-content: stretch; 
-            opacity: 0; transition: opacity 0.3s ease-in;
+            flex-grow: 1; display: grid; gap: 10px; padding: 5px 15px;
+            justify-content: center; align-content: stretch; opacity: 0; transition: opacity 0.18s ease-in;
+            grid-template-rows: repeat(auto-fit, minmax(0, 1fr)); contain: layout paint style;
         }
-
         .pair-card {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 0.5vh; border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--card-border);
-            overflow: hidden; height: 100%; position: relative;
+            display: flex; justify-content: space-between; align-items: center; background: white; padding: 5px;
+            border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.07); border: 3px solid var(--card-border);
+            overflow: hidden; height: 100%; position: relative; contain: layout paint;
         }
-
-        .role-box { 
-            width: 46%; height: 100%; display: flex; flex-direction: column; justify-content: center; 
-            align-items: center; border-radius: 10px; transition: all 0.3s; position: relative; 
+        .role-box {
+            flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 8px; position: relative; gap: 4px; border: 3px solid transparent;
+            transition: none;
+            transform: translateZ(0);
         }
-        
-        .role-box img { 
-            height: 55%; max-height: 90px; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; 
-            border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: block;
+        .role-box img {
+            width: min(14vh, 120px); height: min(14vh, 120px); border-radius: 50%; object-fit: cover;
+            border: 4px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.08); display: block; z-index: 5;
         }
         .target-img { visibility: hidden; }
-        
-        /* 🌟 核心修复 2：字体使用 clamp 动态缩放，防止挤出卡片 */
-        .role-name { font-size: clamp(1rem, 2.5vh, 1.6rem); font-weight: bold; margin-top: 5px; line-height: 1; white-space: nowrap; }
-        .role-icon { position: absolute; top: 2px; left: 2px; font-size: clamp(1.2rem, 3vh, 1.8rem); z-index: 5; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
-        
+        .role-name {
+            font-size: clamp(1.1rem, 2.4vh, 1.7rem); font-weight: bold; margin-top: 2px; line-height: 1; white-space: nowrap; z-index: 5; text-align: center;
+        }
+        .role-icon {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: clamp(1.35rem, 2.7vh, 1.9rem);
+            line-height: 1;
+            z-index: 8;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.98;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18));
+        }
         .milk-side { background-color: var(--milk-color); color: #0D47A1; }
         .cookie-side { background-color: var(--cookie-color); color: #E65100; }
-        .speaking { background-color: #fff !important; transform: scale(1.05); box-shadow: 0 0 15px rgba(76, 175, 80, 0.8); border: 4px solid #4CAF50; z-index: 10; }
-        .listening { opacity: 0.4; filter: grayscale(40%); transform: scale(0.95); }
-        .vs-text { font-size: clamp(0.8rem, 2vh, 1.2rem); color: #ccc; font-weight: bold; width: 8%; }
 
-        .flying-avatar {
-            position: absolute; width: 65px; height: 65px; border-radius: 50%; object-fit: cover;
-            border: 3px solid white; box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 9999; pointer-events: none;
-            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), width 1.2s cubic-bezier(0.19, 1, 0.22, 1),
-                        height 1.2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease;
-            will-change: transform, width, height; 
+        #pairs-container.turn-milk .milk-side,
+        #pairs-container.turn-cookie .cookie-side {
+            background-color: #fff !important;
+            box-shadow: 0 0 0 3px #4CAF50 inset;
+            z-index: 2; opacity: 1;
+        }
+        #pairs-container.turn-milk .cookie-side,
+        #pairs-container.turn-cookie .milk-side {
+            opacity: 0.22;
         }
 
+        .vs-text { font-size: clamp(0.8rem, 2vh, 1.2rem); color: #ccc; font-weight: bold; width: 40px; flex-shrink: 0; text-align: center; }
+
+        .flying-avatar {
+            position: absolute; width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 3px solid white;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.22); z-index: 9999; pointer-events: none; left: 0; top: 0;
+            transform: translate3d(var(--start-x), var(--start-y), 0) scale(0.12);
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.12s ease;
+            transition-delay: var(--delay); will-change: transform;
+        }
+        .flying-avatar.fly { transform: translate3d(var(--target-x), var(--target-y), 0) scale(var(--target-scale)); }
         #animation-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9000; display: none; background: rgba(244, 247, 246, 0.6); 
+            position: absolute; inset: 0; z-index: 9000; display: none; background: rgba(244,247,246,0.2); overflow: hidden; pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 54px !important; }
+            .nav-controls { gap: 2px; }
+            .nav-btn { padding: 7px 10px; font-size: 0.82rem; }
+            .nav-btn svg { width: 14px; height: 14px; }
+            .nav-btn.center-btn { min-width: 170px; font-size: 0.95rem; }
         }
     </style>
 </head>
 <body>
-    <a href="../teachers.html" class="back-btn-home">⬅️ 返回工具台</a>
-
     <div id="attendance-section">
         <h1>🐯 老虎班今天谁没有来？</h1>
         <div class="attendance-grid" id="student-grid"></div>
         <div style="margin-top: 25px;">
-            <button class="btn-green btn-finished" onclick="startGroupingWithAnimation()">✅ 点名完成，开始分组</button>
+            <button class="btn-finished" onclick="startGroupingWithAnimation()">点名完成，开始分组</button>
         </div>
     </div>
 
     <div id="pairing-section">
         <div id="animation-overlay"></div>
-        <div class="controls">
-            <button class="btn-orange" style="font-size:1rem;padding:6px 14px;white-space:nowrap;" onclick="resetToAttendance()">⬅️ 重新点名</button>
-            <button class="btn-blue" style="font-size:1rem;padding:6px 14px;white-space:nowrap;" onclick="reshuffleWithAnimation()">🔀 重新组合</button>
-        </div>
-        <div id="status-bar"><button id="turn-btn" onclick="toggleTurn()" style="flex:1;height:44px;border:none;border-radius:10px;font-size:1.3rem;font-weight:bold;cursor:pointer;transition:0.2s;background:#e8f5e9;color:#2e7d32;">准备好了吗？ 👆 点我开始</button></div>
         <div id="pairs-container"></div>
     </div>
 
@@ -180,161 +190,183 @@
             { id: 23, name: "裴  同", img: "../images/avatars/tigers 25-26/Thomas.webp" },
             { id: 24, name: "段卫龙", img: "../images/avatars/tigers 25-26/Waylon.webp" }
         ];
+        let presentStudents = [], currentPairs = [], turnState = 0;
 
-        let presentStudents = [];
-        let currentPairs = [];
-        const grid = document.getElementById('student-grid');
+        const ICONS = {
+            replay: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 0 15.3 6.4"/><polyline points="3 16 3 12 7 12"/><path d="M21 12A9 9 0 0 0 5.7 5.6"/><polyline points="21 8 21 12 17 12"/></svg>`,
+            shuffle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>`,
+            play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6v12l10-6z"/></svg>`,
+            switch: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`
+        };
+
+        window.onload = () => {
+            MECC_CONFIG.renderGlobalNav("老虎班牛奶饼干分组");
+            const nav = document.querySelector('.mecc-global-nav');
+            const controls = document.createElement('div');
+            controls.className = 'nav-controls';
+            controls.id = 'nav-logic-bar';
+            controls.innerHTML = `
+                <button class="nav-btn" onclick="resetToAttendance()">${ICONS.replay}<span>重新点名</span></button>
+                <button class="nav-btn center-btn" id="nav-turn-btn" onclick="toggleTurn()">${ICONS.play}<span>准备好了吗？ 点我开始</span></button>
+                <button class="nav-btn" onclick="reshuffleWithAnimation()">${ICONS.shuffle}<span>重新组合</span></button>
+            `;
+            nav.appendChild(controls);
+            renderAttendance();
+        };
 
         function renderAttendance() {
+            const grid = document.getElementById('student-grid');
             grid.innerHTML = '';
             allStudents.forEach(student => {
                 const div = document.createElement('div');
                 div.className = `student-card ${student.isAbsent ? 'absent' : ''}`;
-                div.innerHTML = `<img src="${student.img}" alt="${student.name}" onerror="this.src='https://via.placeholder.com/60'"><div>${student.name}</div>`;
-                div.onclick = () => { div.classList.toggle('absent'); student.isAbsent = div.classList.contains('absent'); };
+                div.innerHTML = `<img src="${student.img}" onerror="this.src='https://via.placeholder.com/60'"><div>${student.name}</div>`;
+                div.onclick = () => {
+                    div.classList.toggle('absent');
+                    student.isAbsent = div.classList.contains('absent');
+                };
                 grid.appendChild(div);
             });
         }
 
         function startGroupingWithAnimation() {
             presentStudents = allStudents.filter(s => !s.isAbsent);
-            if (presentStudents.length < 2) { alert("需要2个小朋友以上才能分组哦！"); return; }
+            if (presentStudents.length < 2) return alert("人数不足！");
             document.getElementById('attendance-section').style.display = 'none';
             document.getElementById('pairing-section').style.display = 'flex';
+            document.querySelector('.mecc-nav-title').style.display = 'none';
+            document.getElementById('nav-logic-bar').style.display = 'flex';
             reshuffleWithAnimation();
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; }
         }
 
         function reshuffleWithAnimation() {
             updateTurnUI();
-            let tempPool = [...presentStudents];
-            shuffleArray(tempPool);
+            let tempPool = [...presentStudents].sort(() => Math.random() - 0.5);
             currentPairs = [];
-            while (tempPool.length >= 2) { currentPairs.push([tempPool.pop(), tempPool.pop()]); }
-            if (tempPool.length === 1 && currentPairs.length > 0) { currentPairs[0].push(tempPool.pop()); }
+            while (tempPool.length >= 2) currentPairs.push([tempPool.pop(), tempPool.pop()]);
+            if (tempPool.length === 1) currentPairs[0].push(tempPool.pop());
             renderPairsSmart();
-            setTimeout(executeFlyingAnimation, 50);
+            requestAnimationFrame(() => executeFlyingAnimation());
         }
 
         function renderPairsSmart() {
             const container = document.getElementById('pairs-container');
             container.innerHTML = '';
-            container.style.opacity = '0'; 
-            
-            const pairCount = currentPairs.length;
-            
-            /* 🌟 核心修复 3：恢复正确的列数，并强制分配行高，完美铺满全屏！ */
-            let columns = pairCount <= 6 ? 2 : (pairCount <= 9 ? 3 : 4);
-            let rows = Math.ceil(pairCount / columns);
-            
-            container.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+            container.style.opacity = '0';
+            container.classList.remove('turn-milk', 'turn-cookie');
+            const cols = currentPairs.length <= 6 ? 2 : (currentPairs.length <= 9 ? 3 : 4);
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
             currentPairs.forEach(pair => {
-                const isTrio = pair.length === 3;
                 let html = `
-                <div class="pair-card">
-                    <div class="role-box milk-side">
-                        <span class="role-icon">🥛</span> 
-                        <img src="${pair[0].img}" id="target-img-${pair[0].id}" class="target-img" onerror="this.src='https://via.placeholder.com/60'">
-                        <div class="role-name">${pair[0].name}</div>
-                    </div>
-                    <div class="vs-text">VS</div>
-                    <div class="role-box cookie-side">
-                        <span class="role-icon">🍪</span> 
-                        <img src="${pair[1].img}" id="target-img-${pair[1].id}" class="target-img" onerror="this.src='https://via.placeholder.com/60'">
-                        <div class="role-name">${pair[1].name}</div>
-                    </div>`;
-                if (isTrio) {
-                     html += `
-                    <div class="role-box cookie-side" style="margin-left:5px">
-                        <span class="role-icon">🍪</span>
-                        <img src="${pair[2].img}" id="target-img-${pair[2].id}" class="target-img" onerror="this.src='https://via.placeholder.com/60'">
-                        <div class="role-name">${pair[2].name}</div>
-                    </div>`;
+                    <div class="pair-card">
+                        <div class="role-box milk-side">
+                            <span class="role-icon">🥛</span>
+                            <img src="${pair[0].img}" id="target-img-${pair[0].id}" class="target-img">
+                            <div class="role-name">${pair[0].name}</div>
+                        </div>
+                        <div class="vs-text">VS</div>
+                        <div class="role-box cookie-side">
+                            <span class="role-icon">🍪</span>
+                            <img src="${pair[1].img}" id="target-img-${pair[1].id}" class="target-img">
+                            <div class="role-name">${pair[1].name}</div>
+                        </div>
+                `;
+                if (pair.length === 3) {
+                    html += `
+                        <div class="role-box cookie-side" style="margin-left:4px">
+                            <span class="role-icon">🍪</span>
+                            <img src="${pair[2].img}" id="target-img-${pair[2].id}" class="target-img">
+                            <div class="role-name">${pair[2].name}</div>
+                        </div>
+                    `;
                 }
                 html += `</div>`;
-                container.innerHTML += html;
+                container.insertAdjacentHTML('beforeend', html);
             });
         }
 
         function executeFlyingAnimation() {
             const overlay = document.getElementById('animation-overlay');
-            const container = document.getElementById('pairs-container');
-            overlay.innerHTML = ''; overlay.style.display = 'block';
-            
-            const sectionRect = document.getElementById('pairing-section').getBoundingClientRect();
-            container.style.opacity = '1';
+            const pairsContainer = document.getElementById('pairs-container');
+            overlay.innerHTML = '';
+            overlay.style.display = 'block';
+            pairsContainer.style.opacity = '1';
 
-            const flyingElements = [];
+            const rect = document.getElementById('pairing-section').getBoundingClientRect();
+            const centerX = rect.width / 2 - 32;
+            const centerY = rect.height / 2 - 32;
 
-            presentStudents.forEach((student, index) => {
+            const targetsData = presentStudents.map(student => {
+                const targetImg = document.getElementById(`target-img-${student.id}`);
+                return targetImg ? { tRect: targetImg.getBoundingClientRect(), avatarUrl: student.img } : null;
+            }).filter(Boolean);
+
+            const frag = document.createDocumentFragment();
+            const flyingEls = [];
+            targetsData.forEach((item, i) => {
                 const avatar = document.createElement('img');
-                avatar.src = student.img;
+                avatar.src = item.avatarUrl;
                 avatar.className = 'flying-avatar';
-                avatar.onerror = function() { this.src='https://via.placeholder.com/60'; };
-                
-                const centerX = sectionRect.width / 2;
-                const centerY = sectionRect.height / 2;
-                const randomRotation = Math.random() * 720 - 360; 
-                const scatterX = Math.random() * 300 - 150;
-                const scatterY = Math.random() * 300 - 150;
-
-                avatar.style.left = `0px`; avatar.style.top = `0px`;
-                avatar.style.transform = `translate(${centerX + scatterX}px, ${centerY + scatterY}px) translate(-50%, -50%) scale(0.1) rotate(${randomRotation}deg)`;
-                avatar.style.opacity = '0';
-                
-                overlay.appendChild(avatar);
-                flyingElements.push({ el: avatar, studentId: student.id, delay: index * 25 });
+                const t = item.tRect;
+                const targetX = t.left - rect.left + t.width / 2 - 32;
+                const targetY = t.top - rect.top + t.height / 2 - 32;
+                avatar.style.setProperty('--start-x', `${centerX}px`);
+                avatar.style.setProperty('--start-y', `${centerY}px`);
+                avatar.style.setProperty('--target-x', `${targetX}px`);
+                avatar.style.setProperty('--target-y', `${targetY}px`);
+                avatar.style.setProperty('--target-scale', `${t.width / 65}`);
+                avatar.style.setProperty('--delay', `${i * 14}ms`);
+                frag.appendChild(avatar);
+                flyingEls.push(avatar);
             });
-
-            overlay.offsetWidth;
-
-            flyingElements.forEach(item => {
-                requestAnimationFrame(() => {
-                    item.el.style.opacity = '1';
-                    item.el.style.transform = item.el.style.transform.replace('scale(0.1)', 'scale(1)');
-                });
-
-                setTimeout(() => {
-                    const targetImg = document.getElementById(`target-img-${item.studentId}`);
-                    if (targetImg) {
-                        const rect = targetImg.getBoundingClientRect();
-                        const targetX = rect.left - sectionRect.left + rect.width / 2;
-                        const targetY = rect.top - sectionRect.top + rect.height / 2;
-                        const scaleFinal = rect.width / 65;
-                        
-                        item.el.style.transform = `translate(${targetX}px, ${targetY}px) translate(-50%, -50%) scale(${scaleFinal}) rotate(0deg)`;
-                        item.el.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)'; 
-                    }
-                }, item.delay + 150);
+            overlay.appendChild(frag);
+            requestAnimationFrame(() => {
+                flyingEls.forEach(el => el.classList.add('fly'));
             });
-
-            const animationDuration = 1200; 
-            const maxDelay = (flyingElements.length * 25) + animationDuration + 200;
-            
             setTimeout(() => {
-                overlay.style.display = 'none'; overlay.innerHTML = '';
+                overlay.style.display = 'none';
                 document.querySelectorAll('.target-img').forEach(img => img.style.visibility = 'visible');
-            }, maxDelay);
+            }, 650 + Math.max(0, flyingEls.length - 1) * 14);
         }
 
-        let turnState = 0;
         function toggleTurn() {
-            const btn = document.getElementById('turn-btn'); if (!btn) return;
-            const isMilk = btn.style.background === 'rgb(227, 242, 253)';
-            if (!isMilk && btn.style.background !== 'rgb(255, 243, 224)') { btn.innerText = "🥛 牛奶说  👆 点我换饼干"; btn.style.background = "#e3f2fd"; btn.style.color = "#1565C0"; updateClasses('speaking', 'listening'); }
-            else if (isMilk) { btn.innerText = "🍪 饼干说  👆 点我换牛奶"; btn.style.background = "#fff3e0"; btn.style.color = "#E65100"; updateClasses('listening', 'speaking'); }
-            else { btn.innerText = "🥛 牛奶说  👆 点我换饼干"; btn.style.background = "#e3f2fd"; btn.style.color = "#1565C0"; updateClasses('speaking', 'listening'); }
+            const btn = document.getElementById('nav-turn-btn');
+            const container = document.getElementById('pairs-container');
+            if (turnState === 0 || turnState === 2) {
+                turnState = 1;
+                btn.classList.add('is-milk');
+                btn.classList.remove('is-cookie');
+                btn.innerHTML = `${ICONS.switch}<span>牛奶说，点我换饼干</span>`;
+                container.classList.remove('turn-cookie');
+                container.classList.add('turn-milk');
+            } else {
+                turnState = 2;
+                btn.classList.add('is-cookie');
+                btn.classList.remove('is-milk');
+                btn.innerHTML = `${ICONS.switch}<span>饼干说，点我换牛奶</span>`;
+                container.classList.remove('turn-milk');
+                container.classList.add('turn-cookie');
+            }
         }
-        function updateClasses(milkClass, cookieClass) { document.querySelectorAll('.milk-side').forEach(el => el.className = `role-box milk-side ${milkClass}`); document.querySelectorAll('.cookie-side').forEach(el => el.className = `role-box cookie-side ${cookieClass}`); }
-        function updateTurnUI() { turnState = 0; const tb = document.getElementById('turn-btn'); if(tb){tb.innerText='准备好了吗？ 👆 点我开始';tb.style.background='#e8f5e9';tb.style.color='#2e7d32';} document.querySelectorAll('.role-box').forEach(el => el.classList.remove('speaking', 'listening')); }
-        function resetToAttendance() { document.getElementById('attendance-section').style.display = 'flex'; document.getElementById('pairing-section').style.display = 'none'; }
 
-        renderAttendance();
+        function updateTurnUI() {
+            turnState = 0;
+            const b = document.getElementById('nav-turn-btn');
+            const container = document.getElementById('pairs-container');
+            if (b) {
+                b.classList.remove('is-milk', 'is-cookie');
+                b.innerHTML = `${ICONS.play}<span>准备好了吗？ 点我开始</span>`;
+            }
+            container.classList.remove('turn-milk', 'turn-cookie');
+        }
+
+        function resetToAttendance() {
+            document.getElementById('attendance-section').style.display = 'flex';
+            document.getElementById('pairing-section').style.display = 'none';
+            document.querySelector('.mecc-nav-title').style.display = 'block';
+            document.getElementById('nav-logic-bar').style.display = 'none';
+        }
     </script>
 </body>
 </html>

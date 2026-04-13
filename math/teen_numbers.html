@@ -4,49 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Make a Teen Number! 🎆</title>
-    
+    <script src="../js/config.js"></script>
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* 🌟 强制全局使用 LXGW 字体 */
-        * { 
-            box-sizing: border-box; 
-            font-family: "LXGW WenKai Lite", sans-serif !important; 
-        }
+        * { box-sizing: border-box; font-family: "LXGW WenKai Lite", sans-serif !important; }
+        body { background-color: #f8fafc; margin: 0; display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
 
-        body { 
-            background-color: #f8fafc; margin: 0; 
-            display: flex; flex-direction: column; 
-            height: 100vh; width: 100vw; overflow: hidden;
+        /* 🌟 优雅的 SVG 居中返回按钮 */
+        .text-back-link-unused {
+            position: fixed; top: 15px; left: 20px; z-index: 9999;
+            color: #555; text-decoration: none; font-weight: bold; font-size: 1.1rem;
+            display: flex; align-items: center; gap: 8px;
+            transition: transform 0.2s, opacity 0.2s;
         }
-        /* 手机竖屏：grid 2列，高度由内容决定 */
+        .text-back-link-unused:hover { transform: scale(1.05); opacity: 0.8; }
+        .circle-arrow-icon { width: 22px; height: 22px; }
+
         @media (max-width: 768px) {
             body { height: 100dvh; overflow: hidden; }
             .header { min-height: 60px; }
             .header h1 { font-size: 1.3rem; }
             .back-link { font-size: 0.85rem; }
-            .game-area {
-                flex: 1; overflow: hidden;
-                padding: 6px 8px; gap: 4px;
-                justify-content: space-between;
-                align-items: center;
-            }
+            .game-area { flex: 1; overflow: hidden; padding: 6px 8px; gap: 4px; justify-content: space-between; align-items: center; }
             .target-box { margin-top: 0; flex-shrink: 0; }
             #message { margin: 0; height: auto; font-size: 1rem; line-height: 1.2; flex-shrink: 0; }
-            .options-container {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr;
-                gap: 6px; flex: 1;
-                width: 100%; max-width: 100%;
-                align-content: stretch;
-                min-height: 0;
-            }
-            .option-card {
-                width: 100%; height: 100%;
-                padding: 8px 6px; flex: none;
-                min-height: 0;
-            }
+            .options-container { display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; width: 100%; max-width: 100%; align-content: stretch; min-height: 0; }
+            .option-card { width: 100%; height: 100%; padding: 8px 6px; flex: none; min-height: 0; }
             .dot-group { gap: 3px; }
             .frame-cell, .loose-cell { width: clamp(14px, 5vw, 26px); height: clamp(14px, 5vw, 26px); }
             .dot { width: clamp(10px, 3.8vw, 20px); height: clamp(10px, 3.8vw, 20px); }
@@ -56,79 +43,36 @@
         }
         body.night-mode { background-color: #000000 !important; }
 
-        /* 🌟 悬浮玻璃返回按钮 */
-        .glass-btn {
-            position: fixed; top: 16px; left: 20px;
-            color: #444; text-decoration: none;
-            font-size: 1rem; font-weight: 600; z-index: 9999;
-            background: rgba(255,255,255,0.55);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding: 8px 22px; border-radius: 40px;
-            border: 1.5px solid rgba(255,255,255,0.6);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
-            display: inline-flex; align-items: center;
-            transition: background 0.2s, transform 0.2s;
-            font-family: "LXGW WenKai Lite", sans-serif;
-        }
-        .glass-btn:hover { background: rgba(255,255,255,0.75); transform: scale(1.04); }
-        @media (max-width: 768px) {
-            .glass-btn { top: 10px; left: 12px; font-size: 0.85rem; padding: 6px 14px; }
-        }
-
-        /* 游戏主体区 */
-        .game-area { 
-            flex: 1; display: flex; flex-direction: column; align-items: center; 
-            justify-content: flex-start; padding: 60px 16px 8px; gap: 8px;
-            overflow: hidden;
-        }
-
-        /* 🌟 紧凑的目标数字显示区 */
-        .target-box {
-            display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); margin-top: clamp(2px, 0.5vh, 8px);
-        }
+        .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 76px 16px 8px; gap: 8px; overflow: hidden; }
+        .target-box { display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); margin-top: clamp(2px, 0.5vh, 8px); }
         .target-label { font-size: clamp(1.2rem, 2.2vw, 2rem); color: #1e2e46; font-weight: bold; }
-        .target-number { 
-            font-size: clamp(2.5rem, 5vw, 5rem); font-weight: bold; color: #f3b236; background: white; 
-            border: 3px solid #598586; border-radius: 12px; padding: 0 2.5vw; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
+        .target-number { font-size: clamp(2.5rem, 5vw, 5rem); font-weight: bold; color: #f3b236; background: white; border: 3px solid #598586; border-radius: 12px; padding: 0 2.5vw; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         #message { height: clamp(24px, 3.5vw, 44px); font-size: clamp(1.1rem, 2vw, 1.8rem); font-weight: bold; color: #598586; margin: 4px 0; }
-
-        .options-container { 
-            display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 12px; width: 100%; max-width: 1100px;
-            align-content: center; flex: 1;
-        }
-
-        .option-card { 
-            background: white; border: 3px solid transparent; border-radius: 15px; 
-            display: flex; justify-content: center; align-items: center; 
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.06); transition: 0.2s;
-            padding: 16px 12px; flex: 1 1 clamp(220px, 25vw, 380px); max-width: 420px;
-        }
+        .options-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; max-width: 1100px; align-content: center; flex: 1; }
+        .option-card { background: white; border: 3px solid transparent; border-radius: 15px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.06); transition: 0.2s; padding: 16px 12px; flex: 1 1 clamp(220px, 25vw, 380px); max-width: 420px; }
         .option-card.selected { border-color: #f3b236; background-color: #fffdf5; transform: scale(1.03); }
-
-        /* 十格阵内饰微调 */
         .dot-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
         .ten-frame { border: 2.5px solid #333; padding: 4px; background-color: white; border-radius: 4px; }
         .frame-cell, .loose-cell { width: clamp(28px, 3.2vw, 48px); height: clamp(28px, 3.2vw, 48px); display: flex; justify-content: center; align-items: center; }
         .frame-cell { border: 1.5px solid #555; }
         .dot { width: clamp(20px, 2.4vw, 36px); height: clamp(20px, 2.4vw, 36px); background-color: #dc3545; border-radius: 50%; border: 1px solid #a71d2a; }
-
-        /* 🌟 底部记分牌：放在底边减少占用 */
-        #star-container { 
-            margin-top: 6px; font-size: clamp(1rem, 1.8vw, 1.8rem); color: #f3b236; font-weight: bold;
-            background: #1e2e46; padding: 4px 20px; border-radius: 30px;
-            border: 2px solid #f3b236; flex-shrink: 0;
-        }
-
+        #star-container { margin-top: 6px; font-size: clamp(1rem, 1.8vw, 1.8rem); color: #f3b236; font-weight: bold; background: #1e2e46; padding: 4px 20px; border-radius: 30px; border: 2px solid #f3b236; flex-shrink: 0; }
         #fireworksCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; display: none; }
     </style>
 </head>
 <body>
 
-    <a href="../parents.html" class="glass-btn">← Back to Parents Hub</a>
+    <div class="mecc-global-nav">
+        <a href="#" id="global-back" class="mecc-nav-back en">
+            <svg class="circle-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="16" y1="12" x2="8" y2="12"></line>
+                <polyline points="12 8 8 12 12 16"></polyline>
+            </svg>
+            <span id="back-text">Back to Parents Portal</span>
+        </a>
+        <h1 class="mecc-nav-title en">Make a Teen Number!</h1>
+    </div>
 
     <div class="game-area">
         <div class="target-box">
@@ -147,14 +91,50 @@
 
     <script>
         let currentTarget = 0; let options = []; let selectedIndices = []; let consecutiveCorrect = 0;
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-        function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
         
-        function playClickSound() { initAudio(); const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); g.gain.setValueAtTime(0.2, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
-        function playWinSound() { initAudio(); const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination); osc.type = 'triangle'; [523, 659, 1046].forEach((f, i) => osc.frequency.setValueAtTime(f, audioCtx.currentTime + i*0.1)); g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
-        function playErrorSound() { initAudio(); const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); g.gain.setValueAtTime(0.2, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
-        function playFireworksSound() { initAudio(); const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(60, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.4); g.gain.setValueAtTime(0.4, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            return audioCtx;
+        }
+
+        document.addEventListener('click', function unlockAudio() { getAudioCtx(); document.removeEventListener('click', unlockAudio); }, { once: true });
+        document.addEventListener('touchstart', function unlockAudio() { getAudioCtx(); document.removeEventListener('touchstart', unlockAudio); }, { once: true });
+        
+        function playClickSound() { 
+            try {
+                const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const g = ctx.createGain(); 
+                osc.connect(g); g.connect(ctx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(400, ctx.currentTime); 
+                g.gain.setValueAtTime(0.2, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1); 
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1); 
+            } catch(e) { console.log(e); }
+        }
+        function playWinSound() { 
+            try {
+                const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const g = ctx.createGain(); 
+                osc.connect(g); g.connect(ctx.destination); osc.type = 'triangle'; 
+                [523.25, 659.25, 1046.50].forEach((f, i) => osc.frequency.setValueAtTime(f, ctx.currentTime + i*0.1)); 
+                g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); 
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5); 
+            } catch(e) { console.log(e); }
+        }
+        function playErrorSound() { 
+            try {
+                const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const g = ctx.createGain(); 
+                osc.connect(g); g.connect(ctx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, ctx.currentTime); 
+                g.gain.setValueAtTime(0.2, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2); 
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.2); 
+            } catch(e) { console.log(e); }
+        }
+        function playFireworksSound() { 
+            try {
+                const ctx = getAudioCtx(); const osc = ctx.createOscillator(); const g = ctx.createGain(); 
+                osc.connect(g); g.connect(ctx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(60, ctx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.4); g.gain.setValueAtTime(0.4, ctx.currentTime); 
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4); 
+            } catch(e) { console.log(e); }
+        }
 
         function generateDotsHTML(count) {
             let html = '';
@@ -185,7 +165,7 @@
             let correctOnes = currentTarget - 10;
             
             options = [10, correctOnes];
-            while (options.length < 5) { // 强制生成5个卡片
+            while (options.length < 5) { 
                 let rnd = Math.floor(Math.random() * 9) + 1;
                 if (rnd !== correctOnes && !options.includes(rnd)) { options.push(rnd); }
             }
@@ -217,8 +197,10 @@
             if (sum === currentTarget && hasTen) {
                 playWinSound();
                 c1.style.borderColor = "#4CAF50"; c2.style.borderColor = "#4CAF50";
+                
                 document.getElementById('message').innerText = `Bingo! 10 + ${currentTarget-10} = ${currentTarget}!`;
                 document.getElementById('message').style.color = "#4CAF50";
+                
                 consecutiveCorrect++; 
                 if (consecutiveCorrect >= 5) {
                     document.getElementById('star-count').innerText = consecutiveCorrect;
@@ -231,22 +213,66 @@
             } else {
                 playErrorSound();
                 c1.style.borderColor = "#dc3545"; c2.style.borderColor = "#dc3545";
+                
                 document.getElementById('message').innerText = "Oops! Not quite.";
                 document.getElementById('message').style.color = "#dc3545";
+                
                 consecutiveCorrect = 0; 
                 document.getElementById('star-count').innerText = consecutiveCorrect;
-                setTimeout(() => { c1.classList.remove('selected'); c2.classList.remove('selected'); c1.style.borderColor = "transparent"; c2.style.borderColor = "transparent"; selectedIndices = []; document.getElementById('message').innerText = "Try again!"; }, 800);
+                setTimeout(() => { 
+                    c1.classList.remove('selected'); 
+                    c2.classList.remove('selected'); 
+                    c1.style.borderColor = "transparent"; 
+                    c2.style.borderColor = "transparent"; 
+                    selectedIndices = []; 
+                    document.getElementById('message').innerText = "Try again!"; 
+                }, 800);
             }
         }
 
         const canvas = document.getElementById('fireworksCanvas'); const ctx = canvas.getContext('2d');
         let particles = []; let animationId; let isFireworksPlaying = false;
         class Particle { constructor(x, y, color) { this.x = x; this.y = y; this.color = color; const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 8 + 4; this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed; this.alpha = 1; this.friction = 0.98; this.gravity = 0.2; this.life = Math.random() * 50 + 50; } update() { this.vx *= this.friction; this.vy *= this.friction; this.vy += this.gravity; this.x += this.vx; this.y += this.vy; this.life--; this.alpha = this.life / 100; } draw() { ctx.globalAlpha = this.alpha; ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); } }
-        function createFirework(x, y) { const colors = ['#FF5733', '#FFC300', '#DAF7A6', '#C70039', '#33FFBD']; const color = colors[Math.floor(Math.random() * colors.length)]; for (let i = 0; i < 60; i++) { particles.push(new Particle(x, y, color)); } playFireworksSound(); }
-        function animateFireworks() { ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height); particles.forEach((p, i) => { if (p.life > 0) { p.update(); p.draw(); } else { particles.splice(i, 1); } }); animationId = requestAnimationFrame(animateFireworks); }
-        function startFireworksCelebration() { if (isFireworksPlaying) return; isFireworksPlaying = true; canvas.style.display = 'block'; canvas.width = window.innerWidth; canvas.height = window.innerHeight; animateFireworks(); createFirework(canvas.width * 0.5, canvas.height * 0.3); setTimeout(() => createFirework(canvas.width * 0.3, canvas.height * 0.4), 800); setTimeout(() => createFirework(canvas.width * 0.7, canvas.height * 0.4), 1600); setTimeout(stopFireworksCelebration, 4000); }
-        function stopFireworksCelebration() { isFireworksPlaying = false; cancelAnimationFrame(animationId); canvas.style.display = 'none'; consecutiveCorrect = 0; generateRound(); }
-        generateRound();
+        
+        function createFirework(x, y) { 
+            const colors = ['#FF5733', '#FFC300', '#DAF7A6', '#C70039', '#33FFBD']; 
+            const color = colors[Math.floor(Math.random() * colors.length)]; 
+            for (let i = 0; i < 60; i++) { particles.push(new Particle(x, y, color)); } 
+            playFireworksSound(); 
+        }
+        
+        function animateFireworks() { 
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+            particles.forEach((p, i) => { if (p.life > 0) { p.update(); p.draw(); } else { particles.splice(i, 1); } }); 
+            animationId = requestAnimationFrame(animateFireworks); 
+        }
+        
+        function startFireworksCelebration() { 
+            if (isFireworksPlaying) return; isFireworksPlaying = true; canvas.style.display = 'block'; 
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight; 
+            animateFireworks(); 
+            createFirework(canvas.width * 0.5, canvas.height * 0.3); 
+            setTimeout(() => createFirework(canvas.width * 0.3, canvas.height * 0.4), 800); 
+            setTimeout(() => createFirework(canvas.width * 0.7, canvas.height * 0.4), 1600); 
+            setTimeout(stopFireworksCelebration, 4000); 
+        }
+        
+        function stopFireworksCelebration() { 
+            isFireworksPlaying = false; cancelAnimationFrame(animationId); 
+            canvas.style.display = 'none'; consecutiveCorrect = 0; 
+            alert('Perfect!'); 
+            generateRound(); 
+        }
+
+        window.onload = () => {
+            const backBtn = document.getElementById('global-back');
+            if(window.MECC_CONFIG && window.MECC_CONFIG.getBackHref) {
+                backBtn.href = MECC_CONFIG.getBackHref();
+            } else {
+                backBtn.href = "../parents.html";
+            }
+            generateRound();
+        }
     </script>
 </body>
 </html>

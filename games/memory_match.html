@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="head-title">🃏 汉字连连看 - MECC</title>
+
+<script src="../js/config.js"></script>
+<link rel="stylesheet" href="../css/common_nav.css">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+    :root {
+        --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        --wenkai: "LXGW WenKai Lite", sans-serif;
+    }
+    * { box-sizing: border-box; font-family: var(--kaiti) !important; }
+    
+    body { 
+        background-color: #fff9ea; margin: 0; 
+        height: 100vh; width: 100vw; 
+        overflow: hidden; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding-top: 60px; /* 全局导航栏 */
+    }
+
+    #setup-view {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: transparent; width: 95vw; height: calc(100vh - 60px);
+    }
+    
+    #setup-view .instructions { color: #666; margin: 0 0 2.5vh 0; font-size: 3vh; line-height: 1.6; text-align: center; }
+    
+    .controls { margin-bottom: 3vh; display: flex; gap: 1.5vw; justify-content: center; }
+    .controls .btn {
+        padding: 1.5vh 3vw; font-size: 3vh; background-color: #f8f9fa; color: #555;
+        border: 2px solid #ddd; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;
+    }
+    .controls .btn:hover { background-color: #eee; transform: translateY(-2px); }
+    .controls .btn.start-btn { background-color: #2ecc71; color: white; border-color: #27ae60; box-shadow: 0 4px 0 #27ae60; }
+    .controls .btn.start-btn:active { transform: translateY(2px); box-shadow: none; }
+
+    #char-grid {
+        display: grid; grid-template-columns: repeat(13, 1fr); 
+        gap: 0.7vw; justify-content: center; align-content: center;
+        padding: 2.5vh 1.5vw; background: rgba(89, 133, 134, 0.05); 
+        border-radius: 16px; width: 94vw; max-width: 1250px; border: 2px dashed #598586;
+    }
+    .char-card {
+        aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
+        font-size: 4.8vh; background-color: white; color: #333; border-radius: 1.2vh;
+        cursor: pointer; transition: all 0.2s; border: 2px solid #eee; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05); user-select: none;
+    }
+    .char-card.selected { background-color: #74b9ff; color: white; border: 3px solid #fbc531; transform: scale(1.05); z-index: 2; box-shadow: 0 6px 15px rgba(116, 185, 255, 0.4); }
+
+    #game-view { display: none; width: 100vw; height: calc(100vh - 60px); flex-direction: column; align-items: center; justify-content: center; }
+    
+    .game-header { display: flex; justify-content: space-between; width: 85vh; margin-bottom: 2vh; font-size: 3vh; color: #598586; font-weight: bold; }
+    
+    #memory-board { 
+        display: grid; grid-template-columns: repeat(6, 12.5vh); grid-template-rows: repeat(5, 12.5vh);    
+        gap: 1.5vh; justify-content: center; align-content: center;
+        background-color: rgba(89, 133, 134, 0.08); padding: 2.5vh; border-radius: 20px;
+    }
+
+    .memory-card { width: 100%; height: 100%; perspective: 1000px; cursor: pointer; }
+    .memory-card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+    .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
+    .memory-card.matched { visibility: hidden; opacity: 0; cursor: default; }
+
+    .memory-card-front, .memory-card-back {
+        width: 100%; height: 100%; position: absolute;
+        backface-visibility: hidden; display: flex; justify-content: center; align-items: center;
+        border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .memory-card-front { background-color: #598586; color: white; font-size: 6vh; border: 2px solid #4a6f70; }
+    .memory-card-front:hover { background-color: #6a9c9d; }
+    .memory-card-back { background-color: #fff; color: #333; font-size: 7vh; transform: rotateY(180deg); border: 3px solid #74b9ff; transition: all 0.3s ease; }
+
+    .memory-card.active-pick .memory-card-back { border: 4px solid #fbc531; box-shadow: 0 0 20px rgba(251, 197, 49, 0.8); background-color: #fffdf5; transform: rotateY(180deg) scale(1.05); }
+
+    @keyframes matchSuccessPulse { 0% { transform: scale(1); opacity: 1; filter: blur(0); } 40% { transform: scale(1.15); opacity: 0.9; filter: blur(1px); } 100% { transform: scale(1.05); opacity: 0; filter: blur(3px); visibility: hidden; } }
+    .memory-card.match-success-anim { animation: matchSuccessPulse 0.6s cubic-bezier(0.4, 0.2, 0.2, 1) forwards; pointer-events: none; }
+    @keyframes matchFailShake { 0%, 100% { transform: translateX(0); } 15%, 45%, 75% { transform: translateX(-5px); } 30%, 60%, 90% { transform: translateX(5px); } }
+    .memory-card.match-fail-anim { animation: matchFailShake 0.5s ease forwards; }
+
+    #trophy-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
+    .trophy-icon { font-size: 15vh; animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+    @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    .overlay-text { color: white; font-size: 8vh; font-weight: bold; margin: 2vh 0; }
+
+    @media (max-width: 768px) {
+        body { overflow-y: auto; overflow-x: hidden; justify-content: flex-start; height: auto; position: static; padding-top: 56px;}
+        #setup-view { height: auto; justify-content: flex-start; padding-top: 4vh; }
+        #game-view { height: auto; padding-top: 4vh; padding-bottom: 5vh; justify-content: flex-start; }
+        #memory-board { grid-template-columns: repeat(5, 17vw); grid-template-rows: repeat(6, 17vw); width: 95vw; padding: 3vw; }
+        .memory-card-front { font-size: 8vw; }
+        .memory-card-back { font-size: 10vw; border-width: 2px; }
+        .game-header { width: 90vw; font-size: 4vw; margin-top: 2vh; }
+    }
+</style>
+</head>
+<body>
+
+    <div id="setup-view">
+        <div class="instructions font-zh">
+            <span style="color: #ff4757; font-weight: bold;" id="ui-rule">规则：选择 15 个字开始。</span><br>
+            <span style="color: #598586;" id="ui-desc">点击翻开卡片，选出两个相同的字即可消除。</span>
+        </div>
+        <div class="controls">
+            <button class="btn font-zh" id="btn-all" onclick="selectAll()">全选</button>
+            <button class="btn font-zh" id="btn-clear" onclick="clearAll()">清空</button>
+            <button class="btn start-btn font-zh" id="btn-start" onclick="startGame()">开始挑战</button>
+        </div>
+        <div id="char-grid"></div>
+    </div>
+
+    <div id="game-view">
+        <div class="game-header font-zh">
+            <div id="matches-counter">找到对子: 0 / 15</div>
+            <div id="moves-counter">匹配尝试: 0</div>
+        </div>
+        <div id="memory-board"></div>
+        <button class="btn font-zh" id="btn-back" style="margin-top:3vh; padding: 1.5vh 3vw; font-size: 2.5vh; border-radius: 40px; cursor: pointer; border: 2px solid #ddd; background: #f8f9fa;" onclick="showSetup()">← 返回修改字库</button>
+    </div>
+
+    <div id="trophy-overlay" onclick="closeTrophy()">
+        <div class="trophy-icon">🎯</div>
+        <div class="overlay-text font-zh" id="overlay-msg">太厉害了！</div>
+        <div style="color:rgba(255,255,255,0.6); font-size: 3vh;" id="ui-continue">点击任意位置继续</div>
+    </div>
+
+<script>
+    const LANG = MECC_CONFIG.getLang();
+    const t = {
+        zh: { title: "🃏 汉字连连看", rule: "规则：选择 15 个字开始。", desc: "点击翻开卡片，选出两个相同的字即可消除。", all: "全选", clear: "清空", start: "开始挑战", match: "找到对子: ", move: "匹配尝试: ", back: "← 返回修改字库", win: "太厉害了！全部找齐！", cont: "点击任意位置继续", alertSelect: "请先在字库中选满 15 个字！", alertTrim: "你选的字太多了，系统将自动使用前 15 个字。" },
+        en: { title: "🃏 Memory Match", rule: "Rule: Select 15 words to begin.", desc: "Flip cards and match the identical ones.", all: "All", clear: "Clear", start: "Start", match: "Matches: ", move: "Moves: ", back: "← Back to Words", win: "Awesome! All matched!", cont: "Tap anywhere to continue", alertSelect: "Please select 15 words first!", alertTrim: "You selected too many. The system will use the first 15." }
+    }[LANG];
+
+    let fullWordList = [];
+    
+    window.onload = async () => {
+        MECC_CONFIG.renderGlobalNav(t.title.replace(/🃏/g, '').trim());
+        document.getElementById('head-title').innerText = t.title + " - MECC";
+        document.getElementById('ui-rule').innerText = t.rule;
+        document.getElementById('ui-desc').innerText = t.desc;
+        document.getElementById('btn-all').innerText = t.all;
+        document.getElementById('btn-clear').innerText = t.clear;
+        document.getElementById('btn-start').innerText = t.start;
+        document.getElementById('btn-back').innerText = t.back;
+        document.getElementById('ui-continue').innerText = t.cont;
+
+        const grid = document.getElementById('char-grid');
+        const savedWords = JSON.parse(localStorage.getItem('memoryMatch15_TeacherWords')) || [];
+        
+        fullWordList = await MECC_DATA.getSightWords();
+        fullWordList.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'char-card font-zh'; card.innerText = item.char;
+            if (savedWords.includes(item.char)) card.classList.add('selected');
+            card.onclick = () => card.classList.toggle('selected');
+            grid.appendChild(card);
+        });
+    };
+
+    let gameCards = []; let activeCards = []; let matchedPairs = 0; let totalPairs = 0; let moves = 0; let lockBoard = false; 
+
+    function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
+    function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
+    
+    function showSetup() { 
+        document.getElementById('game-view').style.display = 'none'; document.getElementById('setup-view').style.display = 'flex'; 
+        const backLink = document.querySelector('.mecc-nav-back');
+        if(backLink) { backLink.onclick = null; backLink.href = MECC_CONFIG.getBackHref(); backLink.querySelector('span').innerText = MECC_CONFIG.getUI('back_btn'); }
+    }
+
+    function startGame() {
+        const selected = document.querySelectorAll('.char-card.selected');
+        let words = Array.from(selected).map(el => el.innerText);
+        
+        if (words.length < 15) { alert(`${t.alertSelect}\n(Selected: ${words.length})`); return; }
+        if (words.length > 15) { alert(t.alertTrim); words = words.slice(0, 15); }
+        
+        localStorage.setItem('memoryMatch15_TeacherWords', JSON.stringify(words));
+        totalPairs = words.length; matchedPairs = 0; moves = 0; activeCards = []; lockBoard = false;
+        
+        updateScoreboard();
+
+        document.getElementById('setup-view').style.display = 'none';
+        document.getElementById('game-view').style.display = 'flex';
+        
+        const backLink = document.querySelector('.mecc-nav-back');
+        if(backLink) { backLink.href = "#"; backLink.onclick = (e) => { e.preventDefault(); showSetup(); }; backLink.querySelector('span').innerText = t.back; }
+        
+        gameCards = [...words, ...words].sort(() => Math.random() - 0.5);
+        renderBoard();
+    }
+
+    function renderBoard() {
+        const board = document.getElementById('memory-board'); board.innerHTML = '';
+        gameCards.forEach((char) => {
+            const card = document.createElement('div'); card.className = 'memory-card'; card.dataset.char = char;
+            card.innerHTML = `<div class="memory-card-inner"><div class="memory-card-front font-zh">❓</div><div class="memory-card-back font-zh">${char}</div></div>`;
+            card.onclick = () => processClick(card); board.appendChild(card);
+        });
+    }
+
+    function processClick(card) {
+        if (lockBoard || card.classList.contains('matched') || card.classList.contains('flipped')) return;
+        MECC_AUDIO.playSfx('swoosh'); 
+        card.classList.add('flipped'); card.classList.add('active-pick'); activeCards.push(card);
+
+        if (activeCards.length === 2) { moves++; updateScoreboard(); checkForMatch(); }
+    }
+
+    function checkForMatch() {
+        if (activeCards[0].dataset.char === activeCards[1].dataset.char) disableCards(); else unselectCards();
+    }
+
+    function disableCards() {
+        lockBoard = true; MECC_AUDIO.playSfx('tada'); 
+        const [c1, c2] = activeCards;
+        setTimeout(() => {
+            c1.classList.remove('active-pick'); c2.classList.remove('active-pick');
+            c1.classList.add('match-success-anim', 'matched'); c2.classList.add('match-success-anim', 'matched');
+            activeCards = []; lockBoard = false; matchedPairs++; updateScoreboard();
+            if (matchedPairs === totalPairs) setTimeout(showTrophy, 800); 
+        }, 300); 
+    }
+
+    function unselectCards() {
+        lockBoard = true; MECC_AUDIO.playSfx('wrong'); 
+        const [c1, c2] = activeCards;
+        setTimeout(() => { c1.classList.add('match-fail-anim'); c2.classList.add('match-fail-anim'); }, 50);
+        setTimeout(() => { c1.classList.remove('active-pick', 'match-fail-anim', 'flipped'); c2.classList.remove('active-pick', 'match-fail-anim', 'flipped'); activeCards = []; lockBoard = false; }, 800); 
+    }
+
+    function updateScoreboard() {
+        document.getElementById('matches-counter').innerText = `${t.match}${matchedPairs} / ${totalPairs}`;
+        document.getElementById('moves-counter').innerText = `${t.move}${moves}`;
+    }
+
+    function showTrophy() { document.getElementById('overlay-msg').innerText = t.win; document.getElementById('trophy-overlay').style.display = 'flex'; }
+    function closeTrophy() { document.getElementById('trophy-overlay').style.display = 'none'; showSetup(); }
+</script>
+</body>
+</html>

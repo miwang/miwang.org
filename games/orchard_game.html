@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="head-title">🍎 果园摘水果 - MECC 🍎</title>
+    
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        :root { --kaiti: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif; --teal:#598586; --accent:#f3b236; --orange:#e67e22; }
+        * { box-sizing:border-box; font-family:var(--kaiti) !important; font-weight:bold; }
+
+        body { margin:0; padding:0; background:#f0f3f7; overflow:hidden; display:flex; flex-direction:column; align-items:center; height:100vh; width:100vw; user-select:none; padding-top:60px; }
+
+        /* ── 选词界面：对齐五子棋风格 ── */
+        #start-screen { display:flex; flex-direction:column; align-items:center; width:95%; max-width:1100px; padding-top:16px; background:transparent; gap:0; }
+        .controls { display:flex; gap:10px; justify-content:center; margin-bottom:12px; flex-shrink:0; }
+        .btn { padding:8px 16px; font-size:1rem; border-radius:50px; cursor:pointer; border:none; transition:transform 0.1s; }
+        .btn:active { transform:translateY(2px); }
+        .btn-gray { background:#eee; color:#555; }
+        .btn-start { background:#2ecc71; color:white; padding:10px 30px; font-size:1.2rem; box-shadow:0 4px 0 #27ae60; }
+
+        #char-grid { display:grid; grid-template-columns:repeat(13,1fr); gap:10px; padding:20px; background:rgba(89,133,134,0.05); border-radius:16px; border:2px dashed #598586; width:100%; }
+        .char-card { aspect-ratio:1/1; display:flex; justify-content:center; align-items:center; font-size:1.8rem; background:white; border-radius:10px; cursor:pointer; border:2px solid #eee; transition:0.2s; }
+        .char-card.selected { background:var(--orange); color:white; border-color:#d35400; transform:scale(1.05); box-shadow:0 4px 0 #d35400; }
+
+        /* ── 游戏界面 ── */
+        #game-screen { display:none; width:100%; height:calc(100vh - 60px); position:relative; background:linear-gradient(to bottom,#87CEEB 0%,#b8e8ff 55%,#c8f0c8 100%); }
+        .target-box { position:absolute; top:15px; left:50%; transform:translateX(-50%); background:white; padding:8px 30px; border-radius:50px; border:3px solid var(--teal); font-size:clamp(1.2rem,3vh,2rem); color:#333; z-index:30; white-space:nowrap; }
+        .score-pill { position:absolute; top:20px; right:15px; background:var(--accent); color:#1a2740; padding:6px 15px; border-radius:50px; font-size:1rem; z-index:40; }
+
+        /* 果篮容器：由 JS 注入 SVG */
+        #basket { position:absolute; bottom:100px; left:50%; transform:translateX(-50%); width:clamp(140px,14vw,200px); height:clamp(120px,13vh,170px); z-index:15; cursor:pointer; }
+
+        /* 水果：emoji 和字居中叠在一起 */
+        .fruit { position:absolute; width:clamp(80px,8vw,120px); height:clamp(80px,8vw,120px); display:flex; justify-content:center; align-items:center; cursor:pointer; z-index:10; }
+        .fruit-icon { position:absolute; font-size:clamp(3.5rem,6.5vw,8rem); line-height:1; filter:drop-shadow(2px 3px 5px rgba(0,0,0,0.25)); }
+        .fruit span { position:relative; z-index:11; color:white; font-size:clamp(1.1rem,1.5vw,1.8rem); text-shadow:1px 1px 0 rgba(0,0,0,0.9),2px 2px 8px rgba(0,0,0,0.8); }
+
+        /* ── 手机端 ── */
+        @media (max-width:768px) {
+            body { padding-top:56px; }
+            .mecc-nav-back span { display:none; }
+            #start-screen { width:100%; max-width:100%; height:calc(100dvh - 56px); padding:8px 8px 6px; overflow:hidden; display:flex; flex-direction:column; gap:6px; }
+            #char-grid { grid-template-columns:repeat(6,1fr); grid-auto-rows:1fr; gap:4px; padding:8px; width:100%; flex:1; min-height:0; aspect-ratio:unset; }
+            .char-card { aspect-ratio:unset; font-size:clamp(0.9rem,5vw,1.4rem); }
+            .target-box { font-size:1.1rem; padding:6px 14px; max-width:60%; }
+            #basket { bottom:70px; width:clamp(100px,28vw,155px); height:clamp(85px,24vw,130px); }
+            .fruit { width:clamp(62px,17vw,105px); height:clamp(62px,17vw,105px); }
+            .fruit-icon { font-size:clamp(2.8rem,13vw,6rem); }
+            .fruit span { font-size:clamp(0.95rem,4vw,1.35rem); }
+            .btn { font-size:0.9rem; padding:6px 12px; }
+            .btn-start { font-size:1rem; padding:6px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <div class="controls">
+            <button class="btn btn-gray" id="ui-all" onclick="selectAll()">Select All</button>
+            <button class="btn btn-gray" id="ui-none" onclick="clearAll()">Clear</button>
+            <button class="btn btn-start" id="ui-start" onclick="startGame()">Start!</button>
+        </div>
+        <div id="char-grid"></div>
+    </div>
+
+    <div id="game-screen">
+        <div class="target-box" id="ui-target">Catch: ...</div>
+        <div class="score-pill"><span id="ui-score-label">Score</span>: <span id="score">0</span></div>
+        <div id="basket" onmousedown="startDrag(event)" ontouchstart="startDrag(event)"></div>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: { nav: "果园摘水果", all: "全选", none: "清空", start: "开始挑战", target: "请接住：", score: "得分", back: "返回工具台", backWord: "返回修改字库", alert: "请至少选择4个汉字！" },
+            en: { nav: "Orchard Harvest", all: "Select All", none: "Clear", start: "Start!", target: "Catch: ", score: "Score", back: "Back to Parents Portal", backWord: "Back to Selection", alert: "Please select at least 4 characters!" }
+        }[LANG];
+
+        const fruitEmojis = ['🍎','🍐','🍊','🍓','🍑','🍇'];
+        let selectedWords = []; let score = 0; let targetWord = ""; let gameActive = false; let isPaused = false;
+        let appleInterval = null; let activeWords = new Set(); let lastCorrectTime = Date.now();
+
+        // ── iOS 音频可靠方案：预检 MP3，手势上下文里同步决定走 MP3 或 TTS ──
+        const audioManifest = new Map();
+        async function buildAudioManifest(chars) {
+            await Promise.all(chars.map(async char => {
+                try {
+                    const r = await fetch(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`, { method: 'HEAD' });
+                    audioManifest.set(char, r.ok);
+                } catch { audioManifest.set(char, false); }
+            }));
+        }
+        function speakChar(char) {
+            window.speechSynthesis.cancel();
+            if (audioManifest.get(char) === true) {
+                new Audio(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`).play().catch(() => {
+                    const msg = new SpeechSynthesisUtterance(char);
+                    msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+                    window.speechSynthesis.speak(msg);
+                });
+            } else {
+                const msg = new SpeechSynthesisUtterance(char);
+                msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        // SVG 果篮渲染
+        function renderBasket() {
+            document.getElementById('basket').innerHTML = `
+            <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;pointer-events:none">
+              <defs>
+                <linearGradient id="bG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4883A"/><stop offset="100%" stop-color="#A0522D"/></linearGradient>
+                <linearGradient id="rG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B4513"/><stop offset="100%" stop-color="#5C2A0A"/></linearGradient>
+                <clipPath id="bC"><path d="M18,58 L182,58 Q178,150 100,154 Q22,150 18,58 Z"/></clipPath>
+              </defs>
+              <!-- 把手 -->
+              <path d="M58,56 Q100,-5,142,56" fill="none" stroke="#5C2A0A" stroke-width="13" stroke-linecap="round"/>
+              <path d="M58,56 Q100,-5,142,56" fill="none" stroke="#A0522D" stroke-width="7" stroke-linecap="round"/>
+              <!-- 篮身 -->
+              <path d="M18,58 L182,58 Q178,150 100,154 Q22,150 18,58 Z" fill="url(#bG)"/>
+              <!-- 横纹 -->
+              <g clip-path="url(#bC)" stroke="#6B3010" stroke-width="3" opacity="0.5">
+                <line x1="0" y1="76"  x2="200" y2="76"/>
+                <line x1="0" y1="96"  x2="200" y2="96"/>
+                <line x1="0" y1="116" x2="200" y2="116"/>
+                <line x1="0" y1="136" x2="200" y2="136"/>
+              </g>
+              <!-- 竖纹 -->
+              <g clip-path="url(#bC)" stroke="#6B3010" stroke-width="2" opacity="0.38">
+                <line x1="42"  y1="56" x2="35"  y2="154"/>
+                <line x1="67"  y1="56" x2="63"  y2="154"/>
+                <line x1="92"  y1="56" x2="92"  y2="154"/>
+                <line x1="117" y1="56" x2="117" y2="154"/>
+                <line x1="142" y1="56" x2="148" y2="154"/>
+                <line x1="165" y1="56" x2="175" y2="148"/>
+              </g>
+              <!-- 顶沿 -->
+              <rect x="13" y="51" width="174" height="15" rx="7.5" fill="url(#rG)"/>
+              <!-- 高光 -->
+              <ellipse cx="100" cy="56" rx="55" ry="4" fill="white" opacity="0.2"/>
+            </svg>`;
+        }
+
+        document.addEventListener('visibilitychange', () => { if (document.hidden) { isPaused = true; } else { isPaused = false; } });
+
+        window.onload = async () => {
+            MECC_CONFIG.renderGlobalNav(t.nav);
+            renderBasket();
+            updateBackBtn(t.back, MECC_CONFIG.getBackHref());
+            document.getElementById('ui-all').innerText = t.all;
+            document.getElementById('ui-none').innerText = t.none;
+            document.getElementById('ui-start').innerText = t.start;
+            document.getElementById('ui-score-label').innerText = t.score;
+
+            const grid = document.getElementById('char-grid');
+            const dataObj = await MECC_DATA.getSightWords();
+            dataObj.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'char-card'; card.innerText = item.char;
+                card.onclick = () => card.classList.toggle('selected');
+                grid.appendChild(card);
+            });
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if(!gameActive || isPaused) return;
+            const basket = document.getElementById('basket');
+            const step = 50; const cur = basket.offsetLeft;
+            if(e.key === 'ArrowLeft') moveBasket(cur - step);
+            else if(e.key === 'ArrowRight') moveBasket(cur + step);
+        });
+
+        function moveBasket(nx) {
+            const b = document.getElementById('basket');
+            const limit = b.offsetWidth / 2;
+            b.style.left = Math.max(limit, Math.min(window.innerWidth - limit, nx)) + "px";
+        }
+
+        // 🌟 核心保命修复：绝对不再破坏原生内部的 span 和 i 标签！
+        function updateBackBtn(txt, href, isAct = false) {
+            const btn = document.querySelector('.mecc-nav-back');
+            if(btn) {
+                const span = btn.querySelector('span');
+                // 仅修改内部的 span 文字，绝不碰原生的圆形箭头图标！
+                if(span) { span.innerText = txt; } else { btn.innerText = txt; }
+                
+                if(isAct) { btn.removeAttribute('href'); btn.onclick = (e) => { e.preventDefault(); backToSetup(); }; }
+                else { btn.href = href; btn.onclick = null; }
+            }
+        }
+
+        function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
+        function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
+
+        function startGame() {
+            selectedWords = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
+            if (selectedWords.length < 4) { alert(t.alert); return; }
+            // 在用户手势中预先创建并恢复 AudioContext，确保 setInterval 里的 playSfx 能正常发声
+            if (!MECC_AUDIO.ctx) MECC_AUDIO.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            MECC_AUDIO.ctx.resume();
+            // 异步预检 MP3 清单，通常在用户首次点击前就完成
+            buildAudioManifest(selectedWords);
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            updateBackBtn(t.backWord, "#", true);
+            score = 0; document.getElementById('score').innerText = "0";
+            gameActive = true; activeWords.clear();
+            nextTarget();
+            appleInterval = setInterval(spawnFruit, 1600);
+        }
+
+        function backToSetup() {
+            gameActive = false; clearInterval(appleInterval);
+            document.querySelectorAll('.fruit').forEach(f => f.remove());
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            updateBackBtn(t.back, MECC_CONFIG.getBackHref());
+        }
+
+        function nextTarget() {
+            targetWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+            document.getElementById('ui-target').innerHTML = `${t.target} <span style="color:var(--orange);">"${targetWord}"</span>`;
+            speakChar(targetWord);
+            lastCorrectTime = Date.now();
+        }
+
+        function spawnFruit() {
+            if(!gameActive || isPaused) return;
+            const fruit = document.createElement('div');
+            fruit.className = 'fruit';
+            
+            let word;
+            if (Date.now() - lastCorrectTime > 4000) { word = targetWord; } 
+            else {
+                const available = selectedWords.filter(w => !activeWords.has(w));
+                word = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : selectedWords[0];
+            }
+
+            if (word === targetWord) lastCorrectTime = Date.now();
+            activeWords.add(word);
+            
+            const emoji = fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
+            fruit.innerHTML = `<div class="fruit-icon">${emoji}</div><span>${word}</span>`;
+            fruit.style.left = (Math.random() * (window.innerWidth - 100) + 50) + "px";
+            fruit.style.top = "-120px";
+            document.getElementById('game-screen').appendChild(fruit);
+
+            let pos = -120; const speed = 2.5 + Math.random() * 2;
+            const timer = setInterval(() => {
+                if(!gameActive) { clearInterval(timer); fruit.remove(); return; }
+                if(isPaused) return;
+
+                pos += speed; fruit.style.top = pos + "px";
+                const bRect = document.getElementById('basket').getBoundingClientRect();
+                const fRect = fruit.getBoundingClientRect();
+                
+                if (fRect.bottom >= bRect.top + 20 && fRect.left < bRect.right && fRect.right > bRect.left && fRect.top < bRect.bottom) {
+                    if (word === targetWord) {
+                        score += 10; document.getElementById('score').innerText = score;
+                        MECC_AUDIO.playSfx('tada'); 
+                        activeWords.delete(word); fruit.remove(); clearInterval(timer); nextTarget();
+                    } else {
+                        MECC_AUDIO.playSfx('wrong'); 
+                        activeWords.delete(word); fruit.remove(); clearInterval(timer);
+                    }
+                }
+                if (pos > window.innerHeight) { activeWords.delete(word); fruit.remove(); clearInterval(timer); }
+            }, 16);
+        }
+
+        function startDrag(e) {
+            const mv = (me) => { const x = me.touches ? me.touches[0].clientX : me.clientX; moveBasket(x); };
+            const ed = () => { 
+                window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', ed);
+                window.removeEventListener('touchmove', mv); window.removeEventListener('touchend', ed);
+            };
+            window.addEventListener('mousemove', mv); window.addEventListener('mouseup', ed);
+            window.addEventListener('touchmove', mv, {passive: false}); window.addEventListener('touchend', ed);
+        }
+    </script>
+</body>
+</html>

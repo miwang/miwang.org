@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="head-title">四会字学习进度索引 - MECC</title>
+
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        :root {
+            --kaiti-font: "STKaiti", "华文楷体", "楷体", "KaiTi", "LXGW WenKai Lite", "BiauKai", serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            margin: 0;
+            font-family: var(--kaiti-font) !important;
+            padding-top: 80px;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1000px;
+            margin: 0 auto 30px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .progress-summary {
+            background: #1e2e46;
+            color: white;
+            padding: 22px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .summary-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .summary-title {
+            margin: 0;
+            font-size: 1.6rem;
+            color: #f3b236;
+            font-family: var(--kaiti-font) !important;
+            line-height: 1.1;
+        }
+
+        .summary-progress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .summary-detail {
+            margin: 0;
+            opacity: 0.92;
+            font-size: 1rem;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .progress-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1 1 340px;
+            max-width: 360px;
+            min-width: 180px;
+        }
+
+        .bar-container {
+            flex: 1 1 auto;
+            height: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #f3b236;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .top-pct {
+            font-weight: bold;
+            color: #f3b236;
+            min-width: 44px;
+            text-align: right;
+            font-size: 1rem;
+        }
+
+        .week-section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .week-title {
+            font-size: 1.8rem;
+            color: #1e2e46;
+            border-left: 8px solid #f3b236;
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: left;
+            font-family: var(--kaiti-font) !important;
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 15px;
+        }
+
+        .char-card {
+            background: #fff9ea;
+            border: 2px solid #ffeaa7;
+            border-radius: 12px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .char-card:hover {
+            transform: scale(1.05);
+            border-color: #f3b236;
+        }
+
+        .char-text {
+            font-size: 3.8rem;
+            color: #e74c3c;
+            font-family: var(--kaiti-font) !important;
+        }
+
+        .badge-done {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 68px;
+            }
+
+            .container {
+                width: 94%;
+                margin-bottom: 24px;
+            }
+
+            .progress-summary {
+                padding: 18px 16px;
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .summary-top-row {
+                gap: 10px;
+            }
+
+            .summary-title {
+                font-size: 1.1rem;
+            }
+
+            .summary-progress-row {
+                gap: 10px;
+                align-items: center;
+            }
+
+            .summary-detail {
+                font-size: 0.95rem;
+                white-space: normal;
+                flex: 1 1 auto;
+            }
+
+            .progress-inline {
+                flex: 0 0 42%;
+                min-width: 120px;
+                gap: 8px;
+            }
+
+            .top-pct {
+                min-width: 36px;
+                font-size: 0.95rem;
+            }
+
+            .week-section {
+                padding: 18px 16px;
+                margin-bottom: 24px;
+            }
+
+            .week-title {
+                font-size: 1.35rem;
+                margin-bottom: 16px;
+            }
+
+            .char-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .char-card {
+                height: 96px;
+            }
+
+            .char-text {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="progress-summary" id="progress-summary">
+            <div class="summary-top-row">
+                <h2 class="summary-title" id="summary-title">学习进度</h2>
+            </div>
+            <div class="summary-progress-row">
+                <p class="summary-detail" id="summary-detail">加载中...</p>
+                <div class="progress-inline">
+                    <div class="bar-container"><div id="top-bar-fill" class="bar-fill"></div></div>
+                    <div id="top-pct" class="top-pct">0%</div>
+                </div>
+            </div>
+        </div>
+        <div id="main-content"></div>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: {
+                title: "四会字学习进度 📘",
+                progress: "学习进度",
+                loading: "正在加载字库...",
+                mastered: (done, total) => `本月已掌握 ${done} / ${total} 个汉字`,
+                keep_trying: "加油，继续努力练习！",
+                error: "未能加载数据，请确保后台配置正常！"
+            },
+            en: {
+                title: "Sight Words Progress 📘",
+                progress: "Learning Progress",
+                loading: "Loading characters...",
+                mastered: (done, total) => `Mastered ${done} / ${total} characters`,
+                keep_trying: "Keep up the good work!",
+                error: "Failed to load data. Please check configuration."
+            }
+        }[LANG];
+
+        function updateNavBackDisplay() {
+            const btn = document.querySelector('.mecc-nav-back');
+            if (!btn) return;
+            const isMobile = window.innerWidth <= 768;
+            const label = btn.dataset.mode === 'restart'
+                ? (LANG === 'zh' ? '重新记忆' : 'Back to Sight Words Progress')
+                : (LANG === 'zh' ? '返回工具台' : 'Back to Sight Words Progress');
+
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="16" y1="12" x2="8" y2="12"></line>
+                    <polyline points="12 8 8 12 12 16"></polyline>
+                </svg>
+                ${isMobile ? '' : `<span>${label}</span>`}
+            `;
+            btn.style.gap = isMobile ? '0px' : '8px';
+        }
+
+        window.onload = async function() {
+            MECC_CONFIG.renderGlobalNav(t.title);
+            const navBtn = document.querySelector('.mecc-nav-back');
+            if (navBtn) {
+                navBtn.dataset.mode = 'back';
+                updateNavBackDisplay();
+            }
+            window.addEventListener('resize', updateNavBackDisplay);
+
+            document.getElementById('head-title').innerText = t.title + " - MECC";
+            document.getElementById('summary-title').innerText = t.progress;
+            document.getElementById('summary-detail').innerText = t.loading;
+
+            const content = document.getElementById('main-content');
+            const progress = MECC_DATA.getAllProgress();
+
+            const monthEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthZh = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+            const currentMonthEn = monthEn[new Date().getMonth()];
+
+            const fullWordData = await MECC_DATA.getSightWords();
+
+            if (fullWordData.length === 0) {
+                content.innerHTML = `<div style="text-align:center; padding: 40px; color:#999; font-size:1.1rem;">${t.error}</div>`;
+                return;
+            }
+
+            const labels = [];
+            fullWordData.forEach(item => { if (!labels.includes(item.week)) labels.push(item.week); });
+
+            let displayLabel = currentMonthEn;
+            let thisPeriodChars = fullWordData.filter(d => d.week === currentMonthEn);
+
+            if (thisPeriodChars.length === 0 && labels.length > 0) {
+                displayLabel = labels[labels.length - 1];
+                thisPeriodChars = fullWordData.filter(d => d.week === displayLabel);
+            }
+
+            const translatedDisplayLabel = LANG === 'en' ? displayLabel : (monthZh[monthEn.indexOf(displayLabel)] || displayLabel);
+
+            if (thisPeriodChars.length > 0) {
+                const completedCount = thisPeriodChars.filter(d => progress[d.char] === 'completed').length;
+                const percentage = Math.round((completedCount / thisPeriodChars.length) * 100) || 0;
+                document.getElementById('top-bar-fill').style.width = percentage + '%';
+                document.getElementById('top-pct').innerText = percentage + '%';
+                document.getElementById('summary-title').innerText = `${translatedDisplayLabel} ${t.progress}`;
+                document.getElementById('summary-detail').innerText = t.mastered(completedCount, thisPeriodChars.length);
+            } else {
+                document.getElementById('summary-detail').innerText = t.keep_trying;
+            }
+
+            content.innerHTML = labels.map(label => {
+                const charsInGroup = fullWordData.filter(item => item.week === label);
+                const translatedLabel = LANG === 'en' ? label : (monthZh[monthEn.indexOf(label)] || label);
+                return `
+                    <div class="week-section">
+                        <div class="week-title">${translatedLabel}</div>
+                        <div class="char-grid">
+                            ${charsInGroup.map(item => {
+                                const isDone = progress[item.char] === 'completed';
+                                const urlParams = new URLSearchParams(window.location.search);
+                                urlParams.set('char', item.char);
+
+                                return `<a href="word_detail.html?${urlParams.toString()}" class="char-card" onclick="saveScroll()">
+                                        <span class="badge-done" style="display: ${isDone ? 'flex' : 'none'}">✅</span>
+                                        <span class="char-text">${item.char}</span>
+                                    </a>`;
+                            }).join('')}
+                        </div>
+                    </div>`;
+            }).join('');
+
+            const scrollKey = `wap_scroll_${LANG}`;
+            const savedScroll = sessionStorage.getItem(scrollKey);
+            if (savedScroll !== null) {
+                window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+                sessionStorage.removeItem(scrollKey);
+            }
+        };
+
+        function saveScroll() {
+            sessionStorage.setItem(`wap_scroll_${LANG}`, window.scrollY);
+        }
+    </script>
+</body>
+</html>

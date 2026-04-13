@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Tigers Centers - MECC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-database-compat.js"></script>
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="icon" type="image/png" href="../images/tiger_centers.webp">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+    <style>
+        :root {
+            --bg-color: #f0f2f5; --accent-color: #f3b236; --text-dark: #2c3e50;
+            --font-main: 'STKaiti', 'KaiTi', '楷体', "LXGW WenKai Lite", serif;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: var(--font-main) !important; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg-color); color: var(--text-dark); padding-top: 60px; }
+
+        .mecc-global-nav { justify-content: flex-start !important; padding: 0 15px; }
+        .mecc-nav-title { display: none !important; }
+        .mecc-nav-back { position: static !important; margin-right: 15px; background: transparent !important; border: none !important; }
+        .nav-status-area { display: flex; align-items: center; color: white; gap: 12px; margin-right: auto; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.3); }
+        .nav-status-main { font-size: 1.3rem; font-weight: bold; color: var(--accent-yellow); }
+        .nav-status-date  { font-size: 0.9rem; opacity: 0.9; font-weight: bold; }
+        .nav-btn-group { display: flex; align-items: center; gap: 4px; }
+        .nav-btn { border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; color: white; font-size: 0.9rem; font-weight: bold; background: rgba(255,255,255,0.1); transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: inherit; }
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .nav-btn-next { background: var(--accent-yellow) !important; color: var(--text-dark) !important; border: none !important; padding: 6px 20px; font-size: 1rem; }
+
+        #board { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; background: #dfe6e9; overflow: hidden; }
+        .zone { background-color: white; overflow: hidden; display: flex; position: relative; height: 100%; width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .layout-normal  { flex-direction: row; }
+        .layout-reverse { flex-direction: row-reverse; }
+
+        .big-img-panel { flex: 0 0 38%; height: 100%; padding: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+        .uploaded-img  { width: 100%; height: 100%; object-fit: cover; }
+        .color-block   { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 55px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); font-family: system-ui, sans-serif !important; }
+        .bg-red    { background: linear-gradient(135deg, #ff7675, #d63031); }
+        .bg-green  { background: linear-gradient(135deg, #55efc4, #00b894); }
+        .bg-yellow { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #d35400; }
+        .bg-blue   { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+
+        .kids-panel { flex: 1; padding: 5px 12px; overflow: hidden; display: grid; gap: 10px; align-content: center; justify-items: center; }
+        .cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .math-shapes-panel { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 6px; justify-content: center; }
+        .math-row  { flex: 0 0 31%; display: flex; align-items: center; background: #f8f9fa; border-radius: 10px; padding: 0 10px; border: 1px solid #eee; overflow: hidden; }
+        .math-icon { flex: 1; font-size: min(16vh, 110px); text-align: center; display: flex; align-items: center; justify-content: center; }
+        .icon-cir { color: #d63031; } .icon-tri { color: #00b894; } .icon-squ { color: #0984e3; }
+        .math-list { width: 380px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; overflow: hidden; justify-content: flex-end; margin-left: auto; }
+
+        .avatar-circle { width: min(20vh, 155px); height: min(20vh, 155px); border-radius: 50%; background: white; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; cursor: grab; transform: translate3d(0,0,0); }
+        .math-list .avatar-circle { width: min(15vh, 115px); height: min(15vh, 115px); border-width: 3px; }
+        .avatar-img  { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; pointer-events: none; }
+        .name-tooltip { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: var(--text-dark); color: white; padding: 4px 12px; border-radius: 8px; font-size: 14px; font-weight: bold; opacity: 0; z-index: 60; white-space: nowrap; transition: opacity 0.2s; pointer-events: none; }
+        .avatar-circle:hover .name-tooltip { opacity: 1; }
+        .action-btn { position: absolute; width: 22px; height: 22px; border-radius: 50%; color: white; display: none; align-items: center; justify-content: center; cursor: pointer; top: -2px; right: -2px; background: #ff7675; z-index: 100; font-family: sans-serif; }
+        .avatar-circle:hover .action-btn { display: flex; }
+        .photo-mask { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; cursor: pointer; z-index: 20; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,46,70,0.8); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; font-size: 24px; gap: 12px; }
+        #loading-msg { font-size: 16px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+<div id="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <div id="loading-msg">处理中...</div>
+</div>
+
+<script>
+// ─── Firebase ────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyCuJ_tzEVkVdmEpOtODU_TbfFf9Q0-zP04",
+    authDomain: "centers-data-d544b.firebaseapp.com",
+    databaseURL: "https://centers-data-d544b-default-rtdb.firebaseio.com",
+    projectId: "centers-data-d544b",
+    storageBucket: "centers-data-d544b.firebasestorage.app",
+    messagingSenderId: "47575546646",
+    appId: "1:47575546646:web:76c2fc4740c6a15f1fee37"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const CLOUD_KEY = 'ClassData_tigers';
+
+// ─── 版本控制：防止 Firebase 旧数据覆盖本地新操作 ────────────────────────────
+// 每次本机操作都递增 _localVer，Firebase 监听器只接受版本号比本机更高的数据
+const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
+let _localVer = 0;
+
+let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
+
+// 本地先渲染，再后台同步
+function commit() {
+    _localVer++;
+    data._sid = SESSION_ID;
+    data._ver = _localVer;
+    renderUI();
+    db.ref(CLOUD_KEY).set(data); // 静默上传，不等结果
+}
+
+// 导入时用：带超时的写入，最多等 5 秒，超时也正常结束
+function commitAndWait() {
+    _localVer++;
+    data._sid = SESSION_ID;
+    data._ver = _localVer;
+    renderUI();
+    const writePromise = db.ref(CLOUD_KEY).set(data);
+    const timeout = new Promise(resolve => setTimeout(resolve, 5000));
+    return Promise.race([writePromise, timeout]);
+}
+
+function showLoading(on, msg) {
+    document.getElementById('loading').style.display = on ? 'flex' : 'none';
+    if (msg) document.getElementById('loading-msg').innerText = msg;
+}
+
+// ─── 初始化 ──────────────────────────────────────────────────────────────────
+window.onload = () => {
+    MECC_CONFIG.renderGlobalNav("");
+    const nav = document.querySelector('.mecc-global-nav');
+    const ctrl = document.createElement('div');
+    ctrl.style.display = 'contents';
+    ctrl.innerHTML = `
+        <div class="nav-status-area">
+            <div class="nav-status-main" id="status-main">第 1 轮</div>
+            <div class="nav-status-date"  id="status-date">暂无记录</div>
+        </div>
+        <div class="nav-btn-group">
+            <button class="nav-btn" onclick="addStudentAuto()"><i class="fas fa-plus"></i> 加人</button>
+            <button class="nav-btn" onclick="rotatePrev()" id="btn-prev"><i class="fas fa-undo"></i> 撤销</button>
+            <button class="nav-btn nav-btn-next" onclick="rotateNext()">下一步 <i class="fas fa-arrow-right"></i></button>
+            <button class="nav-btn" onclick="saveData()">备份</button>
+            <button class="nav-btn" onclick="document.getElementById('fileInput').click()">导入</button>
+            <input type="file" id="fileInput" hidden onchange="loadData(this)">
+        </div>`;
+    nav.appendChild(ctrl);
+
+    const oldRaw = localStorage.getItem(CLOUD_KEY);
+    db.ref(CLOUD_KEY).once('value').then(snap => {
+        const cloud = snap.val();
+        if (cloud) {
+            data = cloud;
+            if (!data.bgImages) data.bgImages = [null,null,null,null];
+            _localVer = data._ver || 0; // 同步版本号
+        } else if (oldRaw) {
+            showLoading(true, '正在迁移本地数据...');
+            recompressAllImages(JSON.parse(oldRaw)).then(compressed => {
+                data = compressed;
+                return commitAndWait();
+            }).then(() => showLoading(false))
+              .catch(() => showLoading(false));
+        }
+        renderUI();
+
+        // 实时监听：只接受版本号更高（来自其他设备）的数据
+        db.ref(CLOUD_KEY).on('value', snap => {
+            const val = snap.val();
+            if (!val) return;
+            if (val._sid === SESSION_ID) return;    // 自己写的，忽略
+            if ((val._ver || 0) <= _localVer) return; // 版本不比本机新，忽略
+            // 真正来自其他设备的更新
+            data = val;
+            _localVer = val._ver || 0;
+            if (!data.bgImages) data.bgImages = [null,null,null,null];
+            renderUI();
+        });
+    });
+};
+
+// ─── 轮次 ────────────────────────────────────────────────────────────────────
+function rotateNext() { data.step++; recalcMathGroups(); updateDate(); commit(); }
+function rotatePrev() { if (data.step > 0) { data.step--; recalcMathGroups(); commit(); } }
+function updateDate() {
+    const now = new Date(), d = ["日","一","二","三","四","五","六"];
+    data.lastDateStr = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 星期${d[now.getDay()]}`;
+}
+function recalcMathGroups() {
+    const off = data.step % 4, cyc = Math.floor(data.step / 4) % 3;
+    const ms = data.students.filter(s => (s.groupIndex + off) % 4 === 0).sort((a,b) => a.rank - b.rank);
+    let c = 0; ms.forEach(s => { s.mathSubGroup = ((c < 2 ? 0 : c < 4 ? 1 : 2) + cyc) % 3; c++; });
+}
+function normalizeRanks() {
+    data.students.sort((a,b) => a.groupIndex !== b.groupIndex ? a.groupIndex - b.groupIndex : a.rank - b.rank);
+    data.students.forEach((s,i) => s.rank = i + 1);
+}
+
+// ─── 渲染 ────────────────────────────────────────────────────────────────────
+const ZONE_DEFAULTS = [
+    { id:0, cls:'bg-red',    html:'1 2 3' },
+    { id:1, cls:'bg-green',  html:'<i class="fas fa-chalkboard-teacher"></i>' },
+    { id:3, cls:'bg-yellow', html:'<i class="fas fa-pencil-alt"></i>' },
+    { id:2, cls:'bg-blue',   html:'<i class="fas fa-laptop"></i>' }
+];
+
+function renderUI() {
+    for (let i = 0; i < 3; i++) { const el = document.getElementById('col-'+i); if(el) el.innerHTML=''; }
+    for (let i = 1; i <= 3; i++) { const el = document.getElementById('cont-'+i); if(el) el.innerHTML=''; }
+
+    ZONE_DEFAULTS.forEach(d => {
+        const el = document.getElementById('img-cont-'+d.id); if(!el) return;
+        if (data.bgImages[d.id]) {
+            el.className = '';
+            el.innerHTML = `<img src="${data.bgImages[d.id]}" class="uploaded-img">`;
+        } else {
+            el.className = `color-block ${d.cls}`;
+            el.innerHTML = d.html;
+        }
+    });
+
+    document.getElementById('status-main').innerText = `第 ${data.step + 1} 轮`;
+    document.getElementById('status-date').innerText  = data.lastDateStr;
+    document.getElementById('btn-prev').style.opacity = data.step <= 0 ? '0.3' : '1';
+
+    const off = data.step % 4, zones = [[],[],[],[]];
+    data.students.forEach(s => zones[(s.groupIndex + off) % 4].push(s));
+    zones.forEach((list, vz) => {
+        list.sort((a,b) => a.rank - b.rank);
+        if (vz === 0) {
+            list.forEach(s => { const c = document.getElementById('col-'+(s.mathSubGroup||0)); if(c) c.appendChild(makeAvatar(s)); });
+        } else {
+            const p = document.getElementById('cont-'+vz); if(!p) return;
+            p.className = `kids-panel ${list.length > 6 ? 'cols-4' : 'cols-3'}`;
+            list.forEach(s => p.appendChild(makeAvatar(s)));
+        }
+    });
+}
+
+function makeAvatar(s) {
+    const div = document.createElement('div');
+    div.className = 'avatar-circle'; div.draggable = true;
+    div.ondragstart = e => e.dataTransfer.setData('text', s.id);
+    const img = s.photo
+        ? `<img src="${s.photo}" class="avatar-img">`
+        : `<i class="fas fa-user" style="color:#dfe6e9;font-size:45px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"></i>`;
+    div.innerHTML = `<div class="action-btn" onclick="del(${s.id})">×</div>${img}<div class="photo-mask" onclick="handleAvatarClick(${s.id})"></div><div class="name-tooltip">${s.name}</div>`;
+    return div;
+}
+
+// ─── 学生操作 ─────────────────────────────────────────────────────────────────
+function addStudentAuto() {
+    const n = prompt('请输入新学生的名字：', '新同学');
+    if (!n || !n.trim()) return;
+    data.students.push({ id: Date.now()+Math.random(), name: n.trim(), groupIndex: (0-data.step%4+4)%4, mathSubGroup: 0, rank: 9999, photo: null });
+    normalizeRanks(); commit();
+}
+function del(id) {
+    if (!confirm('确认删除?')) return;
+    data.students = data.students.filter(x => x.id !== id);
+    commit();
+}
+function handleAvatarClick(id) {
+    if (confirm('确定：改名 / 取消：换图')) {
+        const s = data.students.find(x => x.id === id);
+        const n = prompt('新名字：', s.name);
+        if (n && n.trim()) { s.name = n.trim(); commit(); }
+    } else {
+        upPhoto(id);
+    }
+}
+
+// ─── 图片上传 ─────────────────────────────────────────────────────────────────
+function upPhoto(id) {
+    tf(f => compress(f, 150, 0.65, res => {
+        const s = data.students.find(x => x.id === id);
+        if (s) { s.photo = res; commit(); }
+    }));
+}
+function upBg(z) {
+    tf(f => compress(f, 300, 0.7, res => {
+        data.bgImages[z] = res; commit();
+    }));
+}
+
+function tf(cb) {
+    const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
+    inp.onchange = e => {
+        if (!e.target.files[0]) return;
+        showLoading(true, '压缩中...');
+        cb(e.target.files[0]);
+        setTimeout(() => showLoading(false), 800);
+    };
+    inp.click();
+}
+
+function compress(file, maxPx, q, cb) {
+    const r = new FileReader(); r.readAsDataURL(file);
+    r.onload = e => {
+        const img = new Image(); img.src = e.target.result;
+        img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > h) { if (w > maxPx) { h = h*maxPx/w; w = maxPx; } }
+            else        { if (h > maxPx) { w = w*maxPx/h; h = maxPx; } }
+            const cvs = document.createElement('canvas');
+            cvs.width = w; cvs.height = h;
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            cb(cvs.toDataURL('image/jpeg', q));
+        };
+    };
+}
+
+function recompressDataUrl(dataUrl, maxPx, q) {
+    return new Promise(resolve => {
+        if (!dataUrl) return resolve(null);
+        const img = new Image(); img.src = dataUrl;
+        img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > h) { if (w > maxPx) { h = h*maxPx/w; w = maxPx; } }
+            else        { if (h > maxPx) { w = w*maxPx/h; h = maxPx; } }
+            const cvs = document.createElement('canvas');
+            cvs.width = w; cvs.height = h;
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(cvs.toDataURL('image/jpeg', q));
+        };
+        img.onerror = () => resolve(null);
+    });
+}
+
+async function recompressAllImages(parsed) {
+    const result = {
+        step:        parsed.step || 0,
+        lastDateStr: parsed.lastDateStr || '暂无记录',
+        bgImages:    [null, null, null, null],
+        students:    []
+    };
+    const bgs = parsed.bgImages || [null,null,null,null];
+    for (let i = 0; i < 4; i++) {
+        result.bgImages[i] = await recompressDataUrl(bgs[i], 300, 0.7);
+    }
+    for (const s of (parsed.students || [])) {
+        result.students.push({
+            id:           s.id,
+            name:         s.name,
+            groupIndex:   s.groupIndex,
+            mathSubGroup: s.mathSubGroup || 0,
+            rank:         s.rank,
+            photo:        await recompressDataUrl(s.photo, 150, 0.65)
+        });
+    }
+    return result;
+}
+
+// ─── 拖拽 ────────────────────────────────────────────────────────────────────
+function dropInZone(ev, vz) {
+    ev.preventDefault(); if (vz === 0) return;
+    const s = data.students.find(x => x.id === Number(ev.dataTransfer.getData('text')));
+    if (s) { s.groupIndex = (vz - data.step%4 + 4) % 4; s.rank = 99999; normalizeRanks(); commit(); }
+}
+function dropMathSub(ev, sub) {
+    ev.preventDefault(); ev.stopPropagation();
+    const s = data.students.find(x => x.id === Number(ev.dataTransfer.getData('text')));
+    if (s) { s.groupIndex = (0 - data.step%4 + 4) % 4; s.mathSubGroup = sub; s.rank = 99999; normalizeRanks(); commit(); }
+}
+
+// ─── 备份 / 导入 ──────────────────────────────────────────────────────────────
+function saveData() {
+    const b = new Blob([JSON.stringify(data)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+    a.download = 'Tigers_Sync_Backup.json'; a.click();
+}
+function loadData(el) {
+    if (!el.files[0]) return;
+    const r = new FileReader();
+    r.onload = e => {
+        try {
+            const parsed = JSON.parse(e.target.result);
+            showLoading(true, '正在压缩图片...');
+            recompressAllImages(parsed).then(compressed => {
+                data = compressed;
+                normalizeRanks();
+                showLoading(true, '上传到云端...');
+                return commitAndWait(); // 最多等 5 秒，超时也会继续
+            }).then(() => {
+                showLoading(false);
+                alert('导入成功！');
+            }).catch(() => {
+                showLoading(false);
+                alert('导入成功（离线模式，未能上传到云端）。');
+            });
+        } catch(x) {
+            alert('导入失败，文件格式有误。');
+        }
+    };
+    r.readAsText(el.files[0]);
+}
+
+// 键盘翻页
+document.addEventListener('keydown', e => {
+    if (e.target.tagName.toLowerCase() === 'input') return;
+    if (['PageDown','ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); rotateNext(); }
+    if (['PageUp','ArrowLeft','ArrowUp'].includes(e.key)) { e.preventDefault(); rotatePrev(); }
+});
+</script>
+
+<div id="board">
+    <div class="zone layout-reverse" id="zone-0" ondragover="event.preventDefault()" ondrop="dropMathSub(event, 0)">
+        <div class="big-img-panel" onclick="upBg(0)"><div id="img-cont-0" class="color-block bg-red">1 2 3</div></div>
+        <div class="math-shapes-panel">
+            <div class="math-row" ondragover="event.preventDefault()" ondrop="dropMathSub(event, 0)">
+                <div class="math-icon icon-cir"><i class="fas fa-circle"></i></div>
+                <div class="math-list" id="col-0"></div>
+            </div>
+            <div class="math-row" ondragover="event.preventDefault()" ondrop="dropMathSub(event, 1)">
+                <div class="math-icon icon-tri"><i class="fas fa-caret-up" style="transform:scale(1.4);"></i></div>
+                <div class="math-list" id="col-1"></div>
+            </div>
+            <div class="math-row" ondragover="event.preventDefault()" ondrop="dropMathSub(event, 2)">
+                <div class="math-icon icon-squ"><i class="fas fa-square"></i></div>
+                <div class="math-list" id="col-2"></div>
+            </div>
+        </div>
+    </div>
+    <div class="zone layout-normal" id="zone-1" ondragover="event.preventDefault()" ondrop="dropInZone(event, 1)">
+        <div class="big-img-panel" onclick="upBg(1)"><div id="img-cont-1" class="color-block bg-green"><i class="fas fa-chalkboard-teacher"></i></div></div>
+        <div class="kids-panel cols-3" id="cont-1"></div>
+    </div>
+    <div class="zone layout-reverse" id="zone-3" ondragover="event.preventDefault()" ondrop="dropInZone(event, 3)">
+        <div class="big-img-panel" onclick="upBg(3)"><div id="img-cont-3" class="color-block bg-yellow"><i class="fas fa-pencil-alt"></i></div></div>
+        <div class="kids-panel cols-3" id="cont-3"></div>
+    </div>
+    <div class="zone layout-normal" id="zone-2" ondragover="event.preventDefault()" ondrop="dropInZone(event, 2)">
+        <div class="big-img-panel" onclick="upBg(2)"><div id="img-cont-2" class="color-block bg-blue"><i class="fas fa-laptop"></i></div></div>
+        <div class="kids-panel cols-3" id="cont-2"></div>
+    </div>
+</div>
+</body>
+</html>

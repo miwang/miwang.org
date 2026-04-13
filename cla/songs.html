@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我们来唱歌 - MECC Final Edition</title>
+    <title id="head-title">我们来唱歌 - MECC</title>
+    
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://unpkg.com/pinyin-pro"></script>
 
     <style>
         :root {
-            /* 🌟 修复：恢复正确的 CSS 变量定义语法 */
             --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
             --wenkai: "LXGW WenKai Lite", sans-serif;
             --main-teal: #598586;
@@ -20,23 +23,12 @@
         .font-zh, [class*="font-zh"] { font-family: var(--kaiti) !important; font-weight: bold; }
         .font-en, [class*="font-en"] { font-family: var(--wenkai) !important; }
 
-        body { background-color: #fff9ea; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-        .back-btn-capsule {
-            position: absolute; top: 20px; left: 20px; color: #555; text-decoration: none;
-            font-size: 1.1rem; font-weight: bold; z-index: 5000; 
-            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            padding: 8px 22px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.6);
-            display: flex; align-items: center; cursor: pointer;
-        }
-
-        .list-header { text-align: center; padding: 30px 0 10px 0; flex-shrink: 0; }
-        .list-header h1 { font-size: 3.5rem; color: var(--main-teal); margin: 0; letter-spacing: 5px; }
+        body { background-color: #fff9ea; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-top: 60px; }
 
         #gallery-view {
             flex: 1; overflow-y: auto; display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            grid-auto-rows: 290px; align-items: start; gap: 30px; padding: 20px 50px; box-sizing: border-box;
+            grid-auto-rows: 290px; align-items: start; gap: 30px; padding: 30px 50px; box-sizing: border-box;
         }
         .song-card {
             background: white; border: 4px solid var(--main-teal); border-radius: 20px;
@@ -46,11 +38,10 @@
         .song-card:hover { transform: translateY(-5px); border-color: var(--accent-yellow); }
         .card-img-wrapper { width: 100%; height: 155px; overflow: hidden; background: #f4f4f4; display: flex; align-items: center; justify-content: center; position: relative; }
         .song-card img { width: 100%; height: 100%; object-fit: cover; }
-
         .song-info { flex: 1; padding: 6px 10px; text-align: center; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
         .song-info h3 { margin: 0; font-size: 1rem; color: #333; line-height: 1.3; }
 
-        #play-view { display: none; height: 100vh; flex-direction: column; background: #fff9ea; z-index: 2000; position: relative; }
+        #play-view { display: none; height: 100vh; flex-direction: column; background: #fff9ea; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; }
         .play-header { min-height: 12vh; background: var(--main-teal); display: flex; align-items: center; justify-content: space-between; border-bottom: 0.6vh solid var(--accent-yellow); padding: 0 20px; gap: 12px; }
         .play-back-btn { flex-shrink: 0; color: white; cursor: pointer; font-size: 1rem; font-weight: bold; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.4); transition: 0.2s; white-space: nowrap; }
         .play-back-btn:hover { background: rgba(255,255,255,0.35); }
@@ -59,70 +50,97 @@
         .lyrics-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2vh; overflow-y: auto; }
         .lyric-line { font-size: 9vh; font-weight: bold; margin: 0.6vh 0; color: #1e2e46; text-align: center; width: 100%; }
         .pagination-controls { height: 12vh; display: flex; justify-content: center; align-items: center; gap: 8vw; background: #fff; border-top: 1px solid #f0f0f0; }
-        .page-btn { background: var(--accent-yellow); border: none; padding: 1.5vh 8vw; border-radius: 20px; font-size: 4vh; cursor: pointer; box-shadow: 0 0.6vh 0 #d49a2a; touch-action: manipulation; }
+        .page-btn {
+            background: #f3b236;
+            color: #ffffff;
+            border: 1.5px solid transparent;
+            padding: 12px 28px;
+            min-width: 118px;
+            border-radius: 16px;
+            font-size: 1.85rem;
+            cursor: pointer;
+            box-shadow: none;
+            transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .page-btn:hover { background: #e1a328; }
+        .page-btn:active { transform: scale(0.97); }
 
-        #hover-img-container { position: fixed; display: none; z-index: 10000; padding: 10px; pointer-events: auto; }
+        #hover-img-container { position: fixed; display: none; z-index: 10005; padding: 10px; pointer-events: auto; }
         #global-hover-img { max-height: 40vh; max-width: 420px; border: 6px solid var(--accent-yellow); border-radius: 20px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-        .btn-delete-item { position: absolute; top: 0px; right: 0px; background: #e74c3c; color: white; border: 3px solid white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10001; transition: 0.2s; }
-        .btn-delete-item:hover { transform: scale(1.1); background: #c0392b; }
+        .btn-delete-item { position: absolute; top: 0px; right: 0px; background: #e74c3c; color: white; border: 3px solid white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10006; transition: 0.2s; }
 
         .hover-word { border-bottom: 0.8vh dashed var(--main-teal); cursor: pointer; display: inline-block; }
         .clickable-char { cursor: pointer; border-radius: 8px; display: inline-block; }
         .red-word { color: #e74c3c !important; }
-        
-        #selection-bubble { position: fixed; display: none; background: rgba(89, 133, 134, 0.95); color: white; padding: 10px 25px; border-radius: 50px; cursor: pointer; z-index: 9999; font-size: 1.2rem; font-weight: bold; border: 2px solid white; backdrop-filter: blur(5px); }
+        #selection-bubble { position: fixed; display: none; background: rgba(89, 133, 134, 0.95); color: white; padding: 10px 25px; border-radius: 50px; cursor: pointer; z-index: 10005; font-size: 1.2rem; font-weight: bold; border: 2px solid white; }
 
-        .admin-bar { background: white; margin: 10px 50px 20px 50px; padding: 12px; border-radius: 20px; border: 2px dashed var(--main-teal); display: flex; justify-content: center; gap: 20px; align-items: center; flex-shrink: 0; }
-        .admin-btn { background: var(--main-teal); color: white; border: none; padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 1rem; }
+        .admin-bar { background: white; margin: 10px 50px 20px 50px; padding: 12px; border-radius: 20px; border: 2px dashed rgba(89, 133, 134, 0.85); display: flex; justify-content: center; gap: 20px; align-items: center; flex-shrink: 0; }
+        .admin-btn {
+            background: #598586;
+            color: white;
+            border: 1.5px solid transparent;
+            padding: 9px 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 0.96rem;
+            box-shadow: none;
+            transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1.1;
+        }
+        .admin-btn:hover { background: #4f7879; }
+        .admin-btn:active { transform: scale(0.98); }
 
         @media (max-width: 768px) {
-            .list-header { padding: 56px 16px 6px !important; }
-            .list-header h1 { font-size: 2rem !important; letter-spacing: 2px !important; }
-            #gallery-view { grid-template-columns: 1fr 1fr !important; grid-auto-rows: auto !important; gap: 14px !important; padding: 10px 14px !important; }
+            body { padding-top: 56px; }
+            #gallery-view { grid-template-columns: 1fr 1fr !important; grid-auto-rows: auto !important; gap: 14px !important; padding: 20px 14px !important; }
             .song-card { height: 220px !important; }
             .card-img-wrapper { height: 150px !important; flex-shrink: 0 !important; }
             .song-info { height: 70px !important; flex-shrink: 0 !important; overflow: hidden !important; padding: 6px 8px !important; }
             .song-info h3 { font-size: 0.9rem !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; line-height: 1.3 !important; }
-            .admin-bar { margin: 6px 12px 10px !important; padding: 6px 8px !important; gap: 6px !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: center !important; }
+            .admin-bar { margin: 6px 12px 10px !important; padding: 6px 8px !important; gap: 6px !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: center !important; overflow-x: auto; }
             .admin-bar span { font-size: 0.75rem !important; white-space: nowrap !important; }
-            .admin-btn { padding: 5px 8px !important; font-size: 0.75rem !important; white-space: nowrap !important; }
+            .admin-btn { padding: 6px 10px !important; font-size: 0.75rem !important; border-radius: 12px !important; white-space: nowrap !important; gap: 5px !important; }
             .play-header { min-height: auto !important; padding: 10px 12px !important; gap: 8px !important; }
             .play-back-btn { font-size: 0.85rem !important; padding: 6px 12px !important; }
             #song-title { font-size: clamp(0.7rem, 2.8vw, 1rem) !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-            .lyric-line { font-size: clamp(1.4rem, 6vw, 2rem) !important; white-space: nowrap !important; margin: 0.4em 0 !important; width: 100% !important; text-align: center !important; overflow: hidden !important; text-overflow: clip !important; transform-origin: center !important; }
+            .lyric-line { font-size: clamp(1.4rem, 6vw, 2rem) !important; white-space: nowrap !important; margin: 0.4em 0 !important; }
             .pagination-controls { height: auto !important; padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important; gap: 6vw !important; }
-            .page-btn { padding: 10px 10vw !important; font-size: 1.6rem !important; }
+            .page-btn { padding: 10px 18px !important; min-width: 96px !important; font-size: 1.35rem !important; border-radius: 14px !important; }
             #page-indicator { font-size: 1.4rem !important; }
         }
     </style>
 </head>
 <body>
 
-    <div id="list-view" style="display: flex; flex-direction: column; height: 100vh;">
-        <a href="../teachers.html" class="back-btn-capsule font-zh">⬅️ 返回工具台</a>
-        <div class="list-header"><h1 id="main-title" class="font-zh"></h1></div>
+    <div id="list-view" style="display: flex; flex-direction: column; height: calc(100vh - 60px);">
         <div id="gallery-view"></div>
-        <div class="admin-bar font-zh">
+        <div class="admin-bar font-zh" id="admin-bar">
             <span>数据中心：</span>
-            <button class="admin-btn font-zh" onclick="exportData()">💾 导出备份</button>
-            <button class="admin-btn font-zh" onclick="document.getElementById('fileInput').click()">📂 导入备份</button>
+            <button class="admin-btn font-zh" onclick="exportData()">⤓ 导出备份</button>
+            <button class="admin-btn font-zh" onclick="document.getElementById('fileInput').click()">⤒ 导入</button>
             <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
-            <button class="admin-btn font-zh" style="background:#e74c3c;" onclick="resetAll()">🗑️ 清空所有记录</button>
+            <button class="admin-btn font-zh" style="background:#e74c3c;" onclick="resetAll()">✕ 清空记录</button>
         </div>
     </div>
 
     <div id="play-view">
-        <div class="play-header">
-            <div class="play-back-btn font-zh" onclick="closePlay()">⬅️ 返回列表</div>
+        <div class="mecc-global-nav"><a href="#" class="mecc-nav-back" onclick="closePlay();return false;">← <span>返回</span></a><h1 class="mecc-nav-title" id="song-title-nav"></h1></div><div class="play-header" style="display:none;">
+            <div class="play-back-btn font-zh" id="btn-close-play" onclick="closePlay()">⬅️ 返回列表</div>
             <h1 id="song-title" class="font-zh" style="color:white; font-size: clamp(1rem, 3.5vh, 2.2rem); margin:0; text-align:center; flex:1;"></h1>
             <div class="play-header-spacer font-zh">⬅️ 返回列表</div>
         </div>
         <div class="lyrics-panel">
             <div class="lyrics-content" id="lyrics-content"></div>
             <div class="pagination-controls">
-                <button class="page-btn" onclick="prevPage()">⬅️</button>
+                <button class="page-btn" onclick="prevPage()">←</button>
                 <div id="page-indicator" class="font-en" style="font-size: 4vh; color: var(--main-teal); font-weight: bold;"></div>
-                <button class="page-btn" onclick="nextPage()">➡️</button>
+                <button class="page-btn" onclick="nextPage()">→</button>
             </div>
         </div>
     </div>
@@ -135,6 +153,12 @@
     </div>
 
     <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: { title: "🎶 我们来唱歌", backList: "⬅️ 返回列表" },
+            en: { title: "🎶 Let's Sing", backList: "⬅️ Back to List" }
+        }[LANG];
+
         let songsData = [];
 
         function formatText(text, isLyrics = false) {
@@ -160,40 +184,38 @@
 
         let currentSong = null, currentSlides = [], currentSlideIndex = 0, selectedText = "", hideTimer = null;
 
-        function initData() {
-            document.getElementById('main-title').innerHTML = formatText("🎶 我们来唱歌 🎶");
-            fetch('../data/songs.json')
-                .then(res => {
-                    if (!res.ok) throw new Error("无法读取数据文件");
-                    return res.json();
-                })
+        window.onload = () => {
+            MECC_CONFIG.renderGlobalNav(t.title);
+            document.getElementById('head-title').innerText = t.title + " - MECC";
+            document.getElementById('btn-close-play').innerText = t.backList;
+
+            // 🌟 核心：如果是家长模式，直接隐藏生字标记管理员条
+            if (LANG === 'en') {
+                document.getElementById('admin-bar').style.display = 'none';
+            }
+
+            fetch(`../data/songs.json?v=${new Date().getTime()}`)
+                .then(res => res.json())
                 .then(data => {
                     const list = data.song_list || [];
                     songsData = list.map(song => {
                         let lyricsArray = [];
-                        if (song.lyrics) {
-                            lyricsArray = song.lyrics.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                        }
+                        if (song.lyrics) lyricsArray = song.lyrics.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                         return { ...song, lyrics: lyricsArray };
                     });
                     initGallery();
                 })
                 .catch(err => {
-                    document.getElementById('gallery-view').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;" class="font-zh">未能加载儿歌数据，请确保后台配置正常！</div>';
+                    document.getElementById('gallery-view').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;">未能加载儿歌数据，请确保后台配置正常！</div>';
                 });
-        }
+        };
 
         function initGallery() {
             if (songsData.length === 0) return;
             document.getElementById('gallery-view').innerHTML = songsData.map((song, index) => {
                 let imgPath = song.cover || '';
-                
-                // 🌟 路径防呆处理，防止因为后台填错路径导致 404
-                if (imgPath && imgPath.startsWith('/')) {
-                    imgPath = '..' + imgPath; 
-                } else if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('../')) {
-                    imgPath = '../' + imgPath;
-                }
+                if (imgPath && imgPath.startsWith('/')) imgPath = '..' + imgPath; 
+                else if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('../')) imgPath = '../' + imgPath;
 
                 return `
                 <div class="song-card" onclick="startLevel(${index})">
@@ -203,28 +225,28 @@
             }).join('');
         }
 
-        // 🌟 核心升级：智能自动断页功能 + 视频起始时间修复
         function startLevel(idx) {
-            currentSong = songsData[idx]; listView.style.display = 'none'; playView.style.display = 'flex';
-            document.getElementById('song-title').innerHTML = formatText(currentSong.title);
+            currentSong = songsData[idx]; 
+            
+            // 🌟 打开播放页时，暂时隐去全局导航，保持沉浸感
+            document.querySelector('.mecc-global-nav').style.display = 'none';
+            
+            listView.style.display = 'none'; playView.style.display = 'flex';
+            document.getElementById('song-title').innerHTML = formatText(currentSong.title); document.getElementById('song-title-nav').innerText = currentSong.title;
             currentSlides = []; 
             let temp = [];
             
-            // 智能判断：检测老师有没有手动输入分隔符
             const hasManualBreaks = currentSong.lyrics.some(l => l === "---");
 
             if (hasManualBreaks) {
-                // 模式 A：老师输入了 ---，完全听老师的节奏
                 currentSong.lyrics.forEach(l => {
                     if(l === "---") { currentSlides.push({type:'text', content:temp}); temp = []; }
                     else { temp.push(l); }
                 });
                 if(temp.length) currentSlides.push({type:'text', content:temp});
             } else {
-                // 模式 B：老师没输入，系统自动每 4 行分成一页，保护基本乐句节奏
                 currentSong.lyrics.forEach((l, index) => {
                     temp.push(l);
-                    // 凑满4行，或者已经是最后一行了，就打包成一页
                     if (temp.length === 4 || index === currentSong.lyrics.length - 1) {
                         currentSlides.push({type:'text', content:temp});
                         temp = [];
@@ -232,13 +254,8 @@
                 });
             }
 
-            // 🌟 修复 Bug 1：将 startTime 传递给视频页面
             if (currentSong.youtubeId) {
-                currentSlides.push({
-                    type: 'video', 
-                    content: currentSong.youtubeId,
-                    startTime: currentSong.startTime || 0
-                });
+                currentSlides.push({ type: 'video', content: currentSong.youtubeId, startTime: currentSong.startTime || 0 });
             }
             currentSlideIndex = 0; renderSlide();
         }
@@ -249,16 +266,9 @@
             if (text.length <= 12) return [text];
             const segs = text.split(/(?<=[，。！？；、,!?;])/);
             if (segs.length <= 1) return [text]; 
-            const result = [];
-            let buf = '';
-            segs.forEach(seg => {
-                buf += seg;
-                if (buf.length >= 4) { result.push(buf); buf = ''; }
-            });
-            if (buf) { 
-                if (result.length) result[result.length - 1] += buf;
-                else result.push(buf);
-            }
+            const result = []; let buf = '';
+            segs.forEach(seg => { buf += seg; if (buf.length >= 4) { result.push(buf); buf = ''; } });
+            if (buf) { if (result.length) result[result.length - 1] += buf; else result.push(buf); }
             return result;
         }
 
@@ -295,18 +305,14 @@
                         div.className = 'lyric-line font-zh';
                         if (isMobile) {
                             const vw = window.innerWidth;
-                            const availPx = vw * 0.86;
-                            const pxPerChar = availPx / line.length;
-                            const computedSize = Math.min(pxPerChar * 0.85, 32);
-                            div.style.fontSize = Math.max(computedSize, 14) + 'px';
+                            const pxPerChar = (vw * 0.86) / line.length;
+                            div.style.fontSize = Math.max(Math.min(pxPerChar * 0.85, 32), 14) + 'px';
                         }
                         parts.forEach(part => {
                             const span = document.createElement('span');
                             if (part.isMarked) {
-                                span.className = 'hover-word';
-                                span.innerHTML = formatText(part.text, true);
-                                span.onmouseenter = (e) => showImg(e, part.img, part.text);
-                                span.onmouseleave = scheduleHide;
+                                span.className = 'hover-word'; span.innerHTML = formatText(part.text, true);
+                                span.onmouseenter = (e) => showImg(e, part.img, part.text); span.onmouseleave = scheduleHide;
                             } else {
                                 span.innerHTML = formatText(part.text, true);
                             }
@@ -316,7 +322,6 @@
                     });
                 });
             } else {
-                // 🌟 修复 Bug 1：如果有 startTime，拼接到视频网址里去
                 const startParam = slide.startTime > 0 ? `&start=${slide.startTime}` : '';
                 lyricsContent.innerHTML = `<div style="width:90%; height:80%; border-radius:20px; overflow:hidden; border:8px solid var(--main-teal);"><iframe src="https://www.youtube-nocookie.com/embed/${slide.content}?rel=0${startParam}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe></div>`;
             }
@@ -326,20 +331,16 @@
         function showImg(e, src, word) {
             clearTimeout(hideTimer);
             let imgPath = src;
-            if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) { imgPath = '/' + imgPath; }
-            globalImg.src = imgPath;
-            imgContainer.style.display = 'block';
+            if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) imgPath = '../' + imgPath; 
+            globalImg.src = imgPath; imgContainer.style.display = 'block';
             const rect = e.target.getBoundingClientRect();
             
             setTimeout(() => {
                 let topPos = rect.top - imgContainer.offsetHeight - 10;
                 if (topPos < 10) topPos = rect.bottom + 10; 
-
                 let leftPos = rect.left;
                 if (leftPos + imgContainer.offsetWidth > window.innerWidth) leftPos = window.innerWidth - imgContainer.offsetWidth - 20;
-
-                imgContainer.style.top = topPos + 'px';
-                imgContainer.style.left = leftPos + 'px';
+                imgContainer.style.top = topPos + 'px'; imgContainer.style.left = leftPos + 'px';
             }, 0);
 
             deleteBtn.onclick = (event) => {
@@ -363,6 +364,7 @@
                 if (newState) span.classList.add('red-word'); else span.classList.remove('red-word');
             });
         }
+
         document.onmouseup = (e) => {
             const s = window.getSelection(); const t = s.toString().trim();
             if (playView.style.display === 'flex' && t && t.length > 0) {
@@ -371,18 +373,21 @@
                 bubble.style.top = (rect.top - 65) + 'px'; bubble.style.left = (rect.left + (rect.width/2) - 50) + 'px';
             } else if (e.target !== bubble) { bubble.style.display = 'none'; }
         };
+
         function makeHardWord() {
             const { pinyin } = pinyinPro; const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".webp";
-            const imgFile = prompt(`请填写后台的图片路径:`, `/images/songs/${autoName}`);
+            const imgFile = prompt(`请填写后台的图片路径:`, `../images/songs/${autoName}`);
             if (imgFile) { let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); d[selectedText] = imgFile; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); bubble.style.display = 'none'; renderSlide(); }
         }
 
-        // 🌟 修复 Bug 2：返回列表时，强制清空页面内容（切断视频声音）
         function closePlay() { 
             playView.style.display = 'none'; 
             listView.style.display = 'flex'; 
             bubble.style.display = 'none'; 
             lyricsContent.innerHTML = ''; 
+            
+            // 🌟 退出播放时，恢复全局导航
+            document.querySelector('.mecc-global-nav').style.display = 'flex';
         }
 
         function exportData() { const data = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('mecc_')) data[k] = localStorage.getItem(k); } const blob = new Blob([JSON.stringify(data)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `mecc_songs_backup.json`; a.click(); }
@@ -390,8 +395,6 @@
         function resetAll() { if(confirm("确定清空吗？")) { Object.keys(localStorage).forEach(k => k.startsWith('mecc_') && localStorage.removeItem(k)); location.reload(); } }
         function prevPage() { if(currentSlideIndex > 0) { currentSlideIndex--; renderSlide(); } }
         function nextPage() { if(currentSlideIndex < currentSlides.length - 1) { currentSlideIndex++; renderSlide(); } }
-
-        window.onload = initData;
     </script>
 </body>
 </html>

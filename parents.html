@@ -6,6 +6,7 @@
     <title>Parents & Students — Wang Laoshi's Space</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
 
@@ -46,30 +47,28 @@
             height: 4px;
             background: linear-gradient(90deg, var(--teal), var(--accent), var(--teal));
         }
-        .site-header::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(78,138,139,0.06) 0%, transparent 50%);
-            pointer-events: none;
-        }
 
+        /* 🌟 扁平化返回按钮样式 */
         .site-header .back-link {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             position: relative;
             font-family: var(--font-en);
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             white-space: nowrap;
-            padding: 5px 12px;
+            padding: 8px 12px;
             border-radius: 8px;
-            transition: background 0.2s, opacity 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
             z-index: 2;
             margin-bottom: 8px;
+            background: transparent; /* 扁平化无背景 */
         }
-        .site-header .back-link:hover { background: rgba(255,255,255,0.08); }
+        .site-header .back-link:hover { opacity: 0.8; transform: translateX(-3px); }
+        .site-header .back-link i { font-size: 1.2rem; }
 
         .header-content { position: relative; z-index: 1; }
 
@@ -98,18 +97,7 @@
             gap: 36px;
         }
 
-        section {
-            animation: sectionFadeIn 0.5s ease-out both;
-        }
-        section:nth-child(1) { animation-delay: 0.1s; }
-        section:nth-child(2) { animation-delay: 0.2s; }
-        section:nth-child(3) { animation-delay: 0.3s; }
-
-        @keyframes sectionFadeIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
+        section { animation: sectionFadeIn 0.5s ease-out both; }
         .section-title {
             font-family: var(--font-en);
             font-size: 1.08rem;
@@ -122,12 +110,7 @@
             align-items: center;
             gap: 8px;
         }
-        .section-title .zh {
-            font-family: var(--font-zh);
-            font-weight: normal;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
+        .section-title .zh { font-family: var(--font-zh); font-weight: normal; color: var(--text-muted); font-size: 0.95rem; }
 
         .grid {
             display: grid;
@@ -144,138 +127,29 @@
             color: var(--text);
             box-shadow: var(--shadow);
             border: 2px solid var(--border);
-            transition: transform 0.25s cubic-bezier(0.23,1,0.32,1),
-                        box-shadow 0.25s ease,
-                        border-color 0.25s ease;
+            transition: transform 0.25s cubic-bezier(0.23,1,0.32,1), box-shadow 0.25s ease, border-color 0.25s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             position: relative;
         }
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--accent);
-        }
-        .card:active {
-            transform: translateY(-2px);
-        }
+        .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
+        .card-icon { font-size: 2.6rem; margin-bottom: 12px; transition: transform 0.3s ease; }
+        .card-title { font-family: var(--font-en); font-size: 1.02rem; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+        .card-title .zh { font-family: var(--font-zh); display: block; font-size: 0.92rem; font-weight: normal; color: var(--teal); margin-top: 2px; }
+        .card-desc { font-family: var(--font-en); font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
 
-        /* Progress ring overlay */
-        .card-progress-overlay {
-            position: absolute; top: 10px; right: 10px;
-            width: 44px; height: 44px;
-            background: white; border-radius: 50%; padding: 2px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .mini-pct-text {
-            position: absolute;
-            font-size: 0.62rem;
-            font-weight: 700;
-            color: var(--primary);
-            font-family: var(--font-en);
-        }
-
-        .card-icon {
-            font-size: 2.6rem;
-            margin-bottom: 12px;
-            transition: transform 0.3s ease;
-        }
-        .card:hover .card-icon {
-            transform: scale(1.12);
-        }
-
-        .card-title {
-            font-family: var(--font-en);
-            font-size: 1.02rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 6px;
-            line-height: 1.3;
-        }
-        .card-title .zh {
-            font-family: var(--font-zh);
-            display: block;
-            font-size: 0.92rem;
-            font-weight: normal;
-            color: var(--teal);
-            margin-top: 2px;
-        }
-        .card-desc {
-            font-family: var(--font-en);
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-        .card-desc .zh { font-family: var(--font-zh); }
-
-        /* ── Admin zone ── */
-        .admin-zone {
-            margin-top: 8px;
-            padding: 20px;
-            border-top: 1px dashed var(--border);
-            text-align: center;
-        }
-        .btn-reset {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 8px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-family: var(--font-en);
-            transition: color 0.2s, border-color 0.2s, background 0.2s;
-        }
-        .btn-reset:hover {
-            color: #d94040;
-            border-color: #d94040;
-            background: rgba(217,64,64,0.04);
-        }
-
-        /* ── Footer ── */
-        .site-footer {
-            text-align: center;
-            padding: 22px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
-            margin-top: 8px;
-        }
-        .site-footer .zh { font-family: var(--font-zh); }
-
-        /* ── Responsive ── */
-        @media (max-width: 600px) {
-            .site-header { padding: 10px 16px 12px; }
-            .site-header h1 { font-size: 1.4rem; }
-            .site-header .zh-sub { font-size: 0.8rem; }
-            .site-header .back-link { font-size: 0.78rem; padding: 4px 8px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 12px; }
-            .card { padding: 20px 12px 18px; }
-            .card-icon { font-size: 2.2rem; }
-            .container { margin: 16px auto; gap: 24px; width: 92%; }
-        }
-
-        @media (min-width: 601px) and (max-width: 768px) {
-            .site-header h1 { font-size: 1.7rem; }
-            .site-header .zh-sub { font-size: 0.85rem; }
-            .site-header .back-link { font-size: 0.82rem; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
-            .container { width: 94%; gap: 28px; }
-        }
-
-        @media (min-width: 1200px) {
-            .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-            .container { max-width: 1100px; }
-        }
+        .site-footer { text-align: center; padding: 22px; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 8px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); } }
     </style>
 </head>
 <body>
 
     <header class="site-header">
-        <a href="index.html" class="back-link">← Back to Portal</a>
+        <a href="index.html" class="back-link">
+            <i class="far fa-arrow-alt-circle-left"></i> Back to Portal
+        </a>
         <div class="header-content">
             <h1>Chinese Playground 🐼</h1>
             <span class="zh-sub">学生与家长学习中心</span>
@@ -285,116 +159,82 @@
     <div class="container">
 
         <section>
-            <div class="section-title">
-                📝 Chinese Literacy <span class="zh">汉字识写</span>
-            </div>
+            <div class="section-title">📝 Chinese Literacy <span class="zh">汉字识写</span></div>
             <div class="grid">
-                <a href="./cla/words_and_phrases_en.html" class="card" onclick="saveScroll()">
-                    <div class="card-progress-overlay">
-                        <svg viewBox="0 0 36 36" style="width:100%;height:100%;">
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke="#e4e9ef" stroke-width="4"/>
-                            <path id="progress-path"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="0, 100"
-                                stroke-linecap="round"/>
-                        </svg>
-                        <span class="mini-pct-text" id="pct-text">0%</span>
-                    </div>
+                <a href="./cla/words_and_phrases.html?role=parents" class="card">
                     <div class="card-icon">📖</div>
-                    <div class="card-title">
-                        Vocabulary &amp; Writing
-                        <span class="zh">词汇与书写</span>
-                    </div>
+                    <div class="card-title">Vocabulary & Writing<span class="zh">词汇与书写</span></div>
                     <p class="card-desc">Review characters and practice writing.</p>
-                    <p id="stat-detail" style="font-size:0.74rem;color:var(--teal);margin-top:8px;font-weight:600;"></p>
                 </a>
-                <a href="./games/sentence_builder_en.html" class="card" onclick="saveScroll()">
+                <a href="./games/sentence_builder.html?role=parents" class="card">
                     <div class="card-icon">🧩</div>
-                    <div class="card-title">
-                        Sentence Builder
-                        <span class="zh">句子排排队</span>
-                    </div>
-                    <p class="card-desc">Drag &amp; drop words to build sentences.</p>
+                    <div class="card-title">Sentence Builder<span class="zh">句子排排队</span></div>
+                    <p class="card-desc">Drag & drop words to build sentences.</p>
                 </a>
             </div>
         </section>
 
         <section>
-            <div class="section-title">
-                🔢 Math Station <span class="zh">数学练习站</span>
-            </div>
+            <div class="section-title">🔢 Math Station <span class="zh">数学练习站</span></div>
             <div class="grid">
-                <a href="math/teen_numbers.html" class="card" onclick="saveScroll()">
+                <a href="math/teen_numbers.html?role=parents" class="card">
                     <div class="card-icon">🔟</div>
-                    <div class="card-title">
-                        Building Teen Numbers
-                        <span class="zh">认识十几</span>
-                    </div>
+                    <div class="card-title">Building Teen Numbers<span class="zh">认识十几</span></div>
                     <p class="card-desc">Mastering numbers 11–19.</p>
                 </a>
-                <a href="math/teen_numbers_addition.html" class="card" onclick="saveScroll()">
+                <a href="math/teen_numbers_addition.html?role=parents" class="card">
                     <div class="card-icon">➕</div>
-                    <div class="card-title">
-                        Teen Numbers Addition
-                        <span class="zh">十几的加法</span>
-                    </div>
+                    <div class="card-title">Teen Numbers Addition<span class="zh">十几的加法</span></div>
                     <p class="card-desc">Practice 10 + ___ with visual aids.</p>
                 </a>
-                <a href="math/addition_maze_en.html" class="card" onclick="saveScroll()">
+                <a href="math/addition_maze.html?role=parents" class="card">
                     <div class="card-icon">🗺️</div>
-                    <div class="card-title">
-                        A-Maze-ing Addition
-                        <span class="zh">加法迷宫</span>
-                    </div>
-                    <p class="card-desc">Find the path to the target sum!</p>
+                    <div class="card-title">Addition Maze<span class="zh">加法迷宫</span></div>
+                    <p class="card-desc">Find the path by solving addition puzzles.</p>
                 </a>
-                <a href="math/subtraction_maze_en.html" class="card" onclick="saveScroll()">
-                    <div class="card-icon">➖</div>
-                    <div class="card-title">
-                        A-Maze-ing Subtraction
-                        <span class="zh">减法迷宫</span>
-                    </div>
-                    <p class="card-desc">Find the path to the target difference!</p>
+                <a href="math/subtraction_maze.html?role=parents" class="card">
+                    <div class="card-icon">🧭</div>
+                    <div class="card-title">Subtraction Maze<span class="zh">减法迷宫</span></div>
+                    <p class="card-desc">Practice subtraction while navigating the maze.</p>
                 </a>
             </div>
         </section>
 
         <section>
-            <div class="section-title">
-                🎮 Interactive Games <span class="zh">互动游戏</span>
-            </div>
+            <div class="section-title">🎮 Interactive Games <span class="zh">互动游戏</span></div>
             <div class="grid">
-                <a href="games/cat_game_en.html" class="card" onclick="saveScroll()">
+                <a href="games/knockknock.html?role=parents" class="card">
+                    <div class="card-icon">🚪</div>
+                    <div class="card-title">Who is it?<span class="zh">这是谁？</span></div>
+                    <p class="card-desc">Learn family members in Chinese.</p>
+                </a>
+                <a href="games/memory_match.html?role=parents" class="card">
+                    <div class="card-icon">🃏</div>
+                    <div class="card-title">Memory Match<span class="zh">汉字连连看</span></div>
+                    <p class="card-desc">Flip and match identical characters.</p>
+                </a>
+                <a href="games/magic_train.html?role=parents" class="card">
+                    <div class="card-icon">🚂</div>
+                    <div class="card-title">Magic Word Train<span class="zh">识字小火车</span></div>
+                    <p class="card-desc">Drag characters onto the train cars.</p>
+                </a>
+                <a href="games/cat_game.html?role=parents" class="card">
                     <div class="card-icon">😸</div>
-                    <div class="card-title">
-                        Where is the Cat?
-                        <span class="zh">小猫在哪里？</span>
-                    </div>
+                    <div class="card-title">Where is the Cat?<span class="zh">小猫在哪里？</span></div>
                     <p class="card-desc">Practice reading characters.</p>
                 </a>
-                <a href="games/connect_5_en.html" class="card" onclick="saveScroll()">
+                <a href="games/connect_5.html?role=parents" class="card">
                     <div class="card-icon">🐼</div>
-                    <div class="card-title">
-                        Connect 5
-                        <span class="zh">五子棋</span>
-                    </div>
-                    <p class="card-desc">Strategy &amp; character game.</p>
+                    <div class="card-title">Connect 5<span class="zh">五子棋</span></div>
+                    <p class="card-desc">Strategy & character game.</p>
                 </a>
-                <a href="games/orchard_game_en.html" class="card" onclick="saveScroll()">
+                <a href="games/orchard_game.html?role=parents" class="card">
                     <div class="card-icon">🍎</div>
-                    <div class="card-title">
-                        In the Orchard
-                        <span class="zh">果园摘水果</span>
-                    </div>
+                    <div class="card-title">In the Orchard<span class="zh">果园摘水果</span></div>
                     <p class="card-desc">Pick fruits while learning!</p>
                 </a>
             </div>
         </section>
-
-        <div class="admin-zone">
-            <button class="btn-reset" onclick="resetProgress()">Reset Student Progress</button>
-        </div>
 
     </div>
 
@@ -403,54 +243,44 @@
     </footer>
 
     <script src="js/sight_words_data.js"></script>
+
     <script>
-        function updateDashboard() {
-            const progress = JSON.parse(localStorage.getItem('mecc_progress') || '{}');
-            const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-            const currentMonthName = monthNames[new Date().getMonth()];
+        (function () {
+            const SCROLL_KEY = 'parentsPageScrollY';
 
-            let thisMonthChars = fullWordData.filter(d => d.week === currentMonthName);
-            let displayLabel = currentMonthName;
+            function restoreScroll() {
+                const saved = sessionStorage.getItem(SCROLL_KEY);
+                if (saved === null) return;
+                const y = parseInt(saved, 10);
+                if (Number.isNaN(y)) return;
 
-            if (thisMonthChars.length === 0) {
-                const lastEntry = fullWordData[fullWordData.length - 1];
-                if (lastEntry) {
-                    displayLabel = lastEntry.week;
-                    thisMonthChars = fullWordData.filter(d => d.week === displayLabel);
-                }
+                requestAnimationFrame(() => {
+                    window.scrollTo({ top: y, left: 0, behavior: 'auto' });
+                    setTimeout(() => {
+                        window.scrollTo({ top: y, left: 0, behavior: 'auto' });
+                    }, 60);
+                });
             }
 
-            if (thisMonthChars.length > 0) {
-                const total = thisMonthChars.length;
-                const completed = thisMonthChars.filter(d => progress[d.char] === 'completed').length;
-                const percentage = Math.round((completed / total) * 100) || 0;
-                document.getElementById('pct-text').innerText = percentage + '%';
-                document.getElementById('progress-path').setAttribute('stroke-dasharray', `${percentage}, 100`);
-                document.getElementById('stat-detail').innerText = `${displayLabel}: ${completed}/${total} Mastered`;
-            } else {
-                document.getElementById('stat-detail').innerText = "No data found";
+            function saveScroll() {
+                sessionStorage.setItem(SCROLL_KEY, String(window.scrollY || window.pageYOffset || 0));
             }
-        }
 
-        function saveScroll() {
-            sessionStorage.setItem('parents_scroll', window.scrollY);
-        }
+            window.addEventListener('pageshow', restoreScroll);
+            window.addEventListener('load', restoreScroll);
 
-        function resetProgress() {
-            if (confirm("Are you sure you want to clear all practice records? This cannot be undone.")) {
-                localStorage.removeItem('mecc_progress');
-                location.reload();
+            document.querySelectorAll('a.card').forEach((link) => {
+                link.addEventListener('click', saveScroll);
+                link.addEventListener('touchstart', saveScroll, { passive: true });
+            });
+
+            const backLink = document.querySelector('.back-link');
+            if (backLink) {
+                backLink.addEventListener('click', saveScroll);
+                backLink.addEventListener('touchstart', saveScroll, { passive: true });
             }
-        }
-
-        window.onload = function() {
-            updateDashboard();
-            const saved = sessionStorage.getItem('parents_scroll');
-            if (saved !== null) {
-                window.scrollTo({ top: parseInt(saved), behavior: 'instant' });
-                sessionStorage.removeItem('parents_scroll');
-            }
-        };
+        })();
     </script>
+
 </body>
 </html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="head-title">智能加法迷宫 - MECC</title>
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF9800;
+            --bg: #FFF3E0;
+            --cell-bg: #ffffff;
+            --selected: #FFE082;
+            --correct: #81C784;
+            --incorrect: #E57373;
+            --text: #333;
+        }
+        
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden; 
+            background-color: #ECEFF1;
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            user-select: none;
+            padding-top: 60px;
+        }
+
+        /* 🌟 优雅的 SVG 居中返回按钮 */
+        .text-back-link-unused {
+            position: fixed; top: 15px; left: 20px; z-index: 9999;
+            color: #555; text-decoration: none; font-weight: bold; font-size: 1.1rem;
+            display: flex; align-items: center; gap: 8px;
+            transition: transform 0.2s, opacity 0.2s;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+        .text-back-link-unused:hover { transform: scale(1.05); opacity: 0.8; }
+        .circle-arrow-icon { width: 22px; height: 22px; }
+
+        .page {
+            display: none; position: absolute; top: 60px; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: calc(100vh - 60px);
+        }
+        .page.active { display: flex; }
+
+        #start-page { justify-content: center; align-items: center; background-color: #ECEFF1; overflow-y: auto;}
+        #start-page-content { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 1000px; }
+        h1 { color: var(--primary); margin-top: 0; font-size: 2.5rem; }
+        .number-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 15px; margin-top: 20px; }
+        @media (max-width: 600px) { .number-grid { grid-template-columns: repeat(4, 1fr); gap: 10px;} h1 { font-size: 1.6em; } }
+        
+        .num-btn {
+            background-color: white; border: 3px solid var(--primary); border-radius: 12px;
+            font-size: 1.8em; padding: 15px 0; cursor: pointer; transition: transform 0.2s, background 0.2s;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+        .num-btn:hover { transform: scale(1.05); background-color: var(--selected); }
+
+        #game-page { background: #E3F2FD; flex-direction: row; }
+        
+        .sidebar {
+            width: 260px; background: var(--bg); padding: 40px 20px 30px;
+            display: flex; flex-direction: column; align-items: center;
+            border-right: 4px solid var(--primary); flex-shrink: 0; height: 100%;
+        }
+        .target-box { text-align: center; margin-bottom: 30px; }
+        .target-label { font-size: 1.6em; font-weight: bold; display: block; color: var(--text); }
+        #current-target { font-size: 4em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; font-family: "LXGW WenKai Lite", sans-serif; }
+        .controls { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: auto; }
+
+        .game-area { flex: 1; padding: 25px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        #maze-container { flex: 1; display: grid; gap: 4px; background: #FFB74D; padding: 8px; border-radius: 12px; width: 100%; height: 100%; }
+
+        @media (max-width: 899px) {
+            #game-page { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; padding: 15px; border-right: none; border-bottom: 4px solid var(--primary); }
+            .target-box { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 10px; }
+            .target-label { font-size: 1.2em; display: inline; }
+            #current-target { font-size: 2em; display: inline; margin-top: 0; }
+            .controls { display: flex; flex-direction: row; gap: 10px; justify-content: center; margin-top: 0; }
+            .btn { flex: 1; max-width: 160px; }
+            .game-area { padding: 10px; }
+        }
+
+        .btn { padding: 15px; font-size: 1.2em; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; text-align: center; font-family: inherit; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.95); }
+        .back-btn { background-color: #9E9E9E; color: white; }
+        .check-btn { background-color: #4CAF50; color: white; box-shadow: 0 4px 0 #388E3C; }
+
+        .cell {
+            background-color: var(--cell-bg); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: clamp(1.2rem, 3.5vw, 2.2rem); font-weight: bold; cursor: pointer;
+            position: relative; border: 3px solid transparent; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s, background-color 0.2s, border-color 0.2s;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+        .cell:active { transform: translateY(2px) scale(0.96); box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1); }
+        .cell.selected { background-color: var(--selected); border-color: #FBC02D; z-index: 5; }
+        .cell.correct { background-color: var(--correct); color: white; border-color: transparent; }
+        .cell.incorrect { background-color: var(--incorrect); color: white; border-color: transparent; }
+        
+        .hint-arrow { position: absolute; font-size: 1.5rem; color: #1976D2; pointer-events: none; z-index: 10; }
+        .hint-top { left: calc(50% - 12px); animation: pointUp 0.6s infinite alternate; }
+        .hint-bottom { left: calc(50% - 12px); transform: rotate(180deg); animation: pointDown 0.6s infinite alternate; }
+        .hint-left { top: calc(50% - 12px); transform: rotate(-90deg); animation: pointLeft 0.6s infinite alternate; }
+        .hint-right { top: calc(50% - 12px); transform: rotate(90deg); animation: pointRight 0.6s infinite alternate; }
+
+        @keyframes pointUp { from { top: -15px; } to { top: -25px; } }
+        @keyframes pointDown { from { bottom: -15px; } to { bottom: -25px; } }
+        @keyframes pointLeft { from { left: -15px; } to { left: -25px; } }
+        @keyframes pointRight { from { right: -15px; } to { right: -25px; } }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+
+        #celebration-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-content { background: white; padding: 40px 60px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 8px solid var(--correct); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-content h1 { font-size: 3.5rem; margin: 0 0 10px 0; color: var(--primary); font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important; }
+        .modal-content p { font-size: 1.8rem; margin-bottom: 30px; }
+        .modal-btn { background: var(--primary); color: white; font-size: 1.5rem; padding: 15px 40px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 6px 0 #E65100; font-weight: bold; font-family: inherit; }
+        .modal-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #E65100; }
+        @media (max-width: 600px) {
+            .modal-content { padding: 30px 20px; width: 90%; }
+            .modal-content h1 { font-size: 2.5rem; }
+            .modal-content p { font-size: 1.3rem; }
+        }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="mecc-global-nav">
+        <a href="#" id="global-back" class="mecc-nav-back">
+            <svg class="circle-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="16" y1="12" x2="8" y2="12"></line>
+                <polyline points="12 8 8 12 12 16"></polyline>
+            </svg>
+            <span id="back-text">返回工具台</span>
+        </a>
+        <h1 id="global-nav-title" class="mecc-nav-title">智能加法迷宫</h1>
+    </div>
+
+    <div id="start-page" class="page active">
+        <div id="start-page-content">
+            <h1 id="ui-title">智能加法迷宫</h1>
+            <p id="ui-desc">选择一个数字，走出迷宫</p>
+            <div class="number-grid" id="number-grid"></div>
+        </div>
+    </div>
+
+    <div id="game-page" class="page">
+        <div class="sidebar">
+            <div class="target-box">
+                <span class="target-label" id="ui-target-label">目标数字</span>
+                <span id="current-target">5</span>
+            </div>
+            <div class="controls">
+                <button class="btn check-btn" id="btn-check" onclick="checkAnswers()">检查答案 ✔️</button>
+                <button class="btn back-btn" id="btn-reselect" onclick="showStartPage()">重新选</button>
+            </div>
+        </div>
+        <div class="game-area">
+            <div id="maze-container"></div>
+        </div>
+    </div>
+
+    <div id="celebration-modal">
+        <div class="modal-content">
+            <h1 id="ui-win-title">🌟 太棒啦！ 🌟</h1>
+            <p id="ui-win-desc">你成功走出了数字 <span id="win-number" style="color:#E65100; font-size: 2.5rem; font-weight:bold;"></span> 的迷宫！</p>
+            <button class="modal-btn" id="btn-close" onclick="closeCelebration()">查看迷宫</button>
+        </div>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: { title: "智能加法迷宫", back: "返回工具台", desc: "选择一个数字，走出迷宫", target: "目标数字", check: "检查答案 ✔️", reselect: "重新选", winTitle: "🌟 太棒啦！ 🌟", winDesc: "你成功走出了数字", winBtn: "查看迷宫" },
+            en: { title: "Addition Maze", back: "Back to Parents Portal", desc: "Select a target number", target: "Target", check: "Check Path ✔️", reselect: "Reselect", winTitle: "🌟 Awesome! 🌟", winDesc: "You completed the maze for", winBtn: "View Board" }
+        }[LANG];
+
+        function playSuccessSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const melody = [
+                    { freq: 523.25, t: 0.00, dur: 0.18 },
+                    { freq: 659.25, t: 0.16, dur: 0.18 },
+                    { freq: 783.99, t: 0.32, dur: 0.18 },
+                    { freq: 1046.50, t: 0.48, dur: 0.60 },
+                ];
+                melody.forEach(({ freq, t, dur }) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const s = ctx.currentTime + t;
+                    gain.gain.setValueAtTime(0, s);
+                    gain.gain.linearRampToValueAtTime(0.35, s + 0.03);
+                    gain.gain.linearRampToValueAtTime(0.25, s + dur - 0.05);
+                    gain.gain.linearRampToValueAtTime(0, s + dur);
+                    osc.start(s);
+                    osc.stop(s + dur + 0.01);
+                });
+            } catch(e) { console.log("音效播放失败:", e); }
+        }
+
+        window.onload = () => {
+            const backBtn = document.getElementById('global-back');
+            backBtn.href = MECC_CONFIG.getBackHref();
+            document.getElementById('back-text').innerText = t.back;
+            const navTitle = document.getElementById('global-nav-title');
+            if (LANG === 'en') {
+                backBtn.classList.add('en');
+                navTitle.classList.add('en');
+            } else {
+                backBtn.classList.remove('en');
+                navTitle.classList.remove('en');
+            }
+            document.getElementById('head-title').innerText = t.title + " - MECC";
+            document.getElementById('global-nav-title').innerText = t.title;
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('ui-desc').innerText = t.desc;
+            document.getElementById('ui-target-label').innerText = t.target;
+            document.getElementById('btn-check').innerText = t.check;
+            document.getElementById('btn-reselect').innerText = t.reselect;
+            document.getElementById('ui-win-title').innerText = t.winTitle;
+            document.getElementById('ui-win-desc').innerHTML = `${t.winDesc} <span id="win-number" style="color:#E65100; font-size: 2.5rem; font-weight:bold;"></span>！`;
+            document.getElementById('btn-close').innerText = t.winBtn;
+            init();
+        };
+
+        let currentTarget = 0; let rows = 8; let cols = 11; let endCellPos = {r: rows-1, c: cols-1};
+
+        function init() {
+            const grid = document.getElementById('number-grid'); grid.innerHTML = '';
+            for (let i = 5; i <= 20; i++) {
+                const btn = document.createElement('button'); btn.className = 'num-btn';
+                btn.innerHTML = i; btn.onclick = () => startGame(i); grid.appendChild(btn);
+            }
+        }
+
+        function showStartPage() {
+            document.getElementById('start-page').classList.add('active');
+            document.getElementById('game-page').classList.remove('active');
+            init(); 
+        }
+
+        function startGame(num) {
+            currentTarget = num; document.getElementById('current-target').innerText = num;
+            document.getElementById('start-page').classList.remove('active');
+            document.getElementById('game-page').classList.add('active');
+            
+            if (window.innerWidth < 900) { rows = 8; cols = 5; } else { rows = 8; cols = 11; }
+            endCellPos = {r: rows-1, c: cols-1};
+            renderMaze(generateMazeData(num, rows, cols));
+        }
+
+        function generateMazeData(target, rCount, cCount) {
+            let data = Array(rCount).fill(0).map(() => Array(cCount).fill(null));
+            let path = []; let r = 0, c = 0; path.push(`${r},${c}`);
+            while(r < rCount - 1 || c < cCount - 1) {
+                let moves = [];
+                if(r < rCount - 1) moves.push({dr: 1, dc: 0}); 
+                if(c < cCount - 1) moves.push({dr: 0, dc: 1}); 
+                let move = moves[Math.floor(Math.random() * moves.length)];
+                r += move.dr; c += move.dc; path.push(`${r},${c}`);
+            }
+            for(let i=0; i<rCount; i++) {
+                for(let j=0; j<cCount; j++) {
+                    const isCorrectNode = path.includes(`${i},${j}`);
+                    let sum = isCorrectNode ? target : generateWrongSum(target);
+                    let num1 = Math.floor(Math.random() * (sum + 1));
+                    data[i][j] = { text: `${num1}+${sum - num1}`, sum: sum };
+                }
+            }
+            return data;
+        }
+
+        function generateWrongSum(target) {
+            let wrongSum = target;
+            while(wrongSum === target) {
+                let offset = Math.floor(Math.random() * 7) - 3;
+                wrongSum = target + offset; if(wrongSum < 0) wrongSum = target + 1;
+            }
+            return wrongSum;
+        }
+
+        function renderMaze(data) {
+            const container = document.getElementById('maze-container');
+            container.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            container.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+            container.innerHTML = '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div'); cell.className = 'cell';
+                    cell.innerText = data[r][c].text; 
+                    cell.dataset.row = r; cell.dataset.col = c; cell.dataset.sum = data[r][c].sum;
+                    cell.onclick = () => handleCellClick(cell, r, c); 
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(cell, r, c) {
+            if (cell.classList.contains('correct')) { updateHints(r, c, cell); return; }
+            if (cell.classList.contains('selected') || cell.classList.contains('incorrect')) {
+                cell.classList.remove('selected', 'incorrect', 'shake'); clearHints();
+            } else { cell.classList.add('selected'); updateHints(r, c, cell); }
+        }
+
+        function updateHints(r, c, currentCell) {
+            clearHints();
+            const directions = [{ dr: -1, dc: 0, class: 'hint-top', icon: '▲' }, { dr: 1, dc: 0, class: 'hint-bottom', icon: '▲' }, { dr: 0, dc: -1, class: 'hint-left', icon: '▲' }, { dr: 0, dc: 1, class: 'hint-right', icon: '▲' }];
+            directions.forEach(dir => {
+                const nr = r + dir.dr; const nc = c + dir.dc;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                    const neighbor = document.querySelector(`.cell[data-row="${nr}"][data-col="${nc}"]`);
+                    if (neighbor && !neighbor.classList.contains('correct') && !neighbor.classList.contains('selected')) {
+                        const arrow = document.createElement('div'); arrow.className = `hint-arrow ${dir.class}`; arrow.innerText = dir.icon; currentCell.appendChild(arrow);
+                    }
+                }
+            });
+        }
+
+        function clearHints() { document.querySelectorAll('.hint-arrow').forEach(el => el.remove()); }
+
+        function checkAnswers() {
+            clearHints(); let hasWrong = false; let hasSelected = false;
+            document.querySelectorAll('.cell.selected, .cell.incorrect').forEach(cell => {
+                hasSelected = true; const sum = parseInt(cell.dataset.sum); cell.classList.remove('shake');
+                if (sum === currentTarget) { cell.classList.remove('selected', 'incorrect'); cell.classList.add('correct'); } 
+                else { cell.classList.remove('selected'); cell.classList.add('incorrect'); void cell.offsetWidth; cell.classList.add('shake'); hasWrong = true; }
+            });
+            
+            if (!hasSelected && !document.querySelector('.cell.correct')) {
+                const btn = document.querySelector('.check-btn'); btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake'); return;
+            }
+            const endCell = document.querySelector(`.cell[data-row="${endCellPos.r}"][data-col="${endCellPos.c}"]`);
+            if (!hasWrong && endCell && endCell.classList.contains('correct')) triggerCelebration();
+        }
+
+        function triggerCelebration() {
+            playSuccessSound();
+            document.getElementById('win-number').innerText = currentTarget;
+            document.getElementById('celebration-modal').style.display = 'flex';
+            var end = Date.now() + 3000;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FF9800', '#81C784', '#2196F3', '#FFEB3B', '#E57373'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FF9800', '#81C784', '#2196F3', '#FFEB3B', '#E57373'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        function closeCelebration() { document.getElementById('celebration-modal').style.display = 'none'; }
+    </script>
+</body>
+</html>

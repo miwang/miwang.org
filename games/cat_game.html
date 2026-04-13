@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="head-title">😸 小猫在哪里？ 😸</title>
+    
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        :root { --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif; --wenkai: "LXGW WenKai Lite", sans-serif; --main-teal: #598586; --accent-yellow: #f3b236; }
+        *, h1, h2, .btn, .char-card, .name, #result-text { font-family: var(--kaiti) !important; font-weight: bold; }
+        .score, .font-en { font-family: var(--wenkai) !important; }
+        body { margin: 0; padding: 0; background-color: #1f2e46; color: white; overflow: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; width: 100vw; user-select: none; padding-top: 60px; }
+        
+        .game-top-bar { width: 100%; height: 12vh; display: none; align-items: center; justify-content: center; position: relative; padding: 0 20px; }
+        #vs-scoreboard { position: absolute; right: 20px; top: 50%; transform: translateY(-50%) scale(0.9); display: flex; align-items: center; gap: 15px; background: rgba(255, 255, 255, 0.1); padding: 8px 20px; border-radius: 50px; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .player-box { display: flex; align-items: center; gap: 10px; }
+        .player-box .name { font-size: 1.2rem; color: #fff; }
+        .player-box .score { font-size: 2.5rem; color: var(--accent-yellow); min-width: 40px; text-align: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-yellow); background: white; }
+
+        #start-screen { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; height: calc(100vh - 60px); padding: 16px 20px 12px; box-sizing: border-box; overflow: hidden; }
+        .controls { margin-bottom: 12px; display: flex; gap: 16px; }
+        .btn { padding: clamp(6px, 0.8vh, 10px) clamp(16px, 2vw, 26px); font-size: clamp(0.9rem, 1.2vw, 1.2rem); background-color: var(--main-teal); color: white; border: 2px solid var(--accent-yellow); border-radius: 50px; cursor: pointer; transition: 0.2s; }
+        .btn-start { background-color: var(--accent-yellow); color: #1f2e46; box-shadow: 0 4px 0 #d49a2a; }
+
+        #char-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: clamp(5px, 0.8vw, 10px); max-width: 1250px; width: 95%; padding: clamp(10px, 1.5vh, 20px); background: rgba(255, 255, 255, 0.08); border-radius: 16px; border: 2px dashed rgba(243, 178, 54, 0.4); }
+        .char-card { aspect-ratio: 1/1; display: flex; justify-content: center; align-items: center; font-size: 2rem; background-color: #f0f0f0; color: #333; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .char-card.selected { background-color: var(--main-teal); color: var(--accent-yellow); border: 3px solid var(--accent-yellow); transform: scale(1.05); }
+
+        #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 60px); position: relative; overflow: hidden; }
+        .game-board { flex: 1; display: flex; align-items: center; justify-content: center; gap: 40px; z-index: 2; }
+        .card-container { position: relative; width: clamp(120px, 18vw, 220px); height: clamp(120px, 18vw, 220px); }
+        .char-circle { position: absolute; inset: 0; background-color: var(--main-teal); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 8rem; color: var(--accent-yellow); cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border: 5px solid transparent; transition: 0.2s; }
+        .char-circle:hover { transform: translateY(-10px); border-color: var(--accent-yellow); }
+        .hidden-cat { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(3.5rem, 7vw, 8rem); opacity: 0; }
+        .cat-found-anim { animation: bounceCat 0.5s infinite; opacity: 1 !important; }
+        @keyframes bounceCat { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, -80%); } }
+        .fly-away { animation: magicVanish 0.8s forwards; pointer-events: none; }
+        @keyframes magicVanish { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0) translateY(-500px) rotate(360deg); opacity: 0; } }
+
+        .footer { height: 20vh; width: 100%; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #result-text { font-size: 2.8rem; color: var(--main-teal); margin-bottom: 10px; text-align: center;}
+        .bottom-wave { position: absolute; bottom: -30vh; width: 150vw; height: 60vh; background-color: #ffffff; border-radius: 50%; z-index: 1; }
+
+        @media (max-width: 768px) {
+            /* 导航栏：手机端只留圆形箭头图标，隐藏文字防遮挡 */
+            .mecc-nav-back span { display: none; }
+
+            body { height: 100dvh; padding-top: 56px; overflow: hidden; }
+
+            /* 选字界面：撑满屏幕，字格自适应填充 */
+            #start-screen {
+                height: calc(100dvh - 56px); padding: 8px 8px 6px !important;
+                justify-content: flex-start !important; overflow: hidden; gap: 6px;
+            }
+            .controls { gap: 8px !important; flex-wrap: wrap; margin-bottom: 0 !important; justify-content: center; flex-shrink: 0; }
+            .btn { padding: 8px 16px !important; font-size: 0.95rem !important; }
+            /* 关键：min-height:0 让 flex 子元素能正常收缩；去掉 aspect-ratio 让行高由 1fr 决定 */
+            #char-grid {
+                grid-template-columns: repeat(8, 1fr) !important;
+                grid-auto-rows: 1fr !important;
+                gap: 4px !important; padding: 6px !important;
+                width: 100% !important; max-width: 100% !important;
+                flex: 1 !important; min-height: 0 !important;
+                align-content: unset !important;
+            }
+            .char-card { aspect-ratio: unset !important; font-size: clamp(1rem, 5.5vw, 1.4rem) !important; }
+
+            /* VS 计分板（中文模式） */
+            .game-top-bar { height: auto !important; flex-direction: column !important; padding: 8px 0 6px !important; gap: 6px !important; align-items: center !important; }
+            #vs-scoreboard { position: static !important; transform: none !important; width: 90% !important; max-width: 360px !important; display: flex !important; justify-content: center !important; margin: 0 auto !important; padding: 6px 16px !important; gap: 12px !important; }
+            .player-box .score { font-size: 1.6rem !important; }
+            .player-box .name { font-size: 0.9rem !important; }
+            .avatar { width: 28px !important; height: 28px !important; }
+
+            /* 游戏界面：无空白，撑满屏幕 */
+            #game-screen { justify-content: space-between !important; padding: 16px 0 24px !important; box-sizing: border-box !important; overflow: hidden !important; }
+            .game-board { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; padding: 0 16px !important; width: 100% !important; flex: 1 !important; align-content: center !important; align-items: center !important; }
+            .card-container { width: 44vw !important; height: 44vw !important; }
+            .char-circle { font-size: 17vw !important; }
+            .hidden-cat { font-size: 19vw !important; }
+            .bottom-wave { display: none !important; }
+            .footer { height: auto !important; padding: 0 !important; flex-shrink: 0 !important; flex-direction: column !important; align-items: center !important; gap: 10px !important; z-index: 10; position: relative; }
+            #result-text { font-size: 1.3rem !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <div class="controls">
+            <button class="btn" id="btn-select-all" onclick="selectAll()">全选</button>
+            <button class="btn" id="btn-clear-all" onclick="clearAll()">清空</button>
+            <button class="btn btn-start" id="btn-start" onclick="startGame()">开始游戏</button>
+        </div>
+        <div id="char-grid"></div>
+    </div>
+
+    <div id="game-screen">
+        <div class="game-top-bar" id="game-top-bar">
+            <div id="vs-scoreboard">
+                <div class="player-box">
+                    <img src="../favicon.png" class="avatar">
+                    <span class="name" id="ui-teacher-name">王老师</span>
+                    <span class="score" id="score-teacher">0</span>
+                </div>
+                <div style="font-size: 1.2rem; font-weight: bold; color: #ff4757; font-style: italic;">VS</div>
+                <div class="player-box">
+                    <span class="score" id="score-student">0</span>
+                    <span class="name" id="ui-student-name">小朋友</span>
+                    <div style="font-size: 2rem;">👧👦</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-board" id="board"></div>
+
+        <div class="footer">
+            <div id="result-text">小猫在 ______ 的后面。</div>
+            <button class="btn" id="next-btn" onclick="nextRound()" style="display:none; background: #3498db; border-color:#2980b9;">下一组 ➔</button>
+            <button class="btn btn-back-setup" id="btn-back-setup" onclick="backToSetup()" style="background:transparent; border-color:rgba(255,255,255,0.3); color:rgba(255,255,255,0.6); font-size:1rem; padding:8px 20px; margin-top:10px;">← 返回字库</button>
+        </div>
+        <div class="bottom-wave"></div>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: { 
+                title: "😸 小猫在哪里？", selectAll: "全选", clearAll: "清空", startGame: "开始游戏", 
+                teacher: "王老师", student: "小朋友", prompt: "小猫在 ______ 的后面。", 
+                foundT: (char) => `找到啦！是“${char}”！小朋友加一分！`, 
+                foundP: (char) => `找到啦！是“${char}”！`, 
+                teacherWinAlert: "王老师截胡成功！", hiddenBehind: (char) => `哈哈！躲在“${char}”后面！`, 
+                nextBtn: "下一组 ➔", backSetup: "返回字库", alertMin: "请至少选择4个字来玩小猫藏猫猫哦！" 
+            },
+            en: { 
+                title: "😸 Where is the Cat?", selectAll: "Select All", clearAll: "Clear", startGame: "Start Game", 
+                teacher: "Teacher", student: "Student", prompt: "The cat is behind ______.", 
+                foundT: (char) => `Found it! It's "${char}"! +1 for Student!`, 
+                foundP: (char) => `Found it! It's "${char}"!`, 
+                teacherWinAlert: "Teacher intercepted!", hiddenBehind: (char) => `Haha! Hiding behind "${char}"!`, 
+                nextBtn: "Next Group ➔", backSetup: "Back to Words", alertMin: "Please select at least 4 characters to play!" 
+            }
+        }[LANG];
+
+        window.onload = async () => {
+            MECC_CONFIG.renderGlobalNav(t.title.replace(/😸/g, '').trim());
+
+            document.getElementById('head-title').innerText = t.title;
+            document.getElementById('btn-select-all').innerText = t.selectAll;
+            document.getElementById('btn-clear-all').innerText = t.clearAll;
+            document.getElementById('btn-start').innerText = t.startGame;
+            document.getElementById('ui-teacher-name').innerText = t.teacher;
+            document.getElementById('ui-student-name').innerText = t.student;
+            document.getElementById('next-btn').innerText = t.nextBtn;
+            document.getElementById('btn-back-setup').innerText = t.backSetup;
+
+            if (LANG === 'en') {
+                document.getElementById('vs-scoreboard').style.display = 'none';
+            }
+
+            const grid = document.getElementById('char-grid');
+            const saved = JSON.parse(localStorage.getItem('catGameWords')) || [];
+            
+            const list = await MECC_DATA.getSightWords();
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'char-card' + (saved.includes(item.char) ? ' selected' : '');
+                card.innerText = item.char; card.onclick = () => card.classList.toggle('selected');
+                grid.appendChild(card);
+            });
+        };
+
+        let selectedChars = []; let teacherScore = 0; let studentScore = 0; let wrongAttempts = 0; let roundOver = false; let currentChars = []; let targetIdx = -1;
+
+        function backToSetup() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('game-top-bar').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            
+            const globalBack = document.querySelector('.mecc-nav-back');
+            if (globalBack) {
+                globalBack.onclick = null; 
+                globalBack.href = MECC_CONFIG.getBackHref();
+                globalBack.querySelector('span').innerText = MECC_CONFIG.getUI('back_btn');
+            }
+        }
+
+        function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
+        function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
+
+        // ── iOS 音频可靠播放方案 ──
+        // iOS Safari 要求 TTS 必须在用户手势的同步代码中调用，async 回调里调用会被拦截。
+        // 解决方案：游戏开始时预检哪些字有 MP3，之后在 pointerdown 里同步决策。
+        const audioManifest = new Map(); // char → true(有MP3) / false(用TTS)
+
+        async function buildAudioManifest(chars) {
+            await Promise.all(chars.map(async char => {
+                try {
+                    const r = await fetch(
+                        `../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`,
+                        { method: 'HEAD' }
+                    );
+                    audioManifest.set(char, r.ok);
+                } catch {
+                    audioManifest.set(char, false);
+                }
+            }));
+        }
+
+        // 在用户手势（pointerdown）的同步代码中直接调用，确保 iOS 允许播放
+        function speakChar(char) {
+            window.speechSynthesis.cancel();
+            if (audioManifest.get(char) === true) {
+                new Audio(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`).play().catch(() => {
+                    // MP3 突然失效时的最后兜底
+                    const msg = new SpeechSynthesisUtterance(char);
+                    msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+                    window.speechSynthesis.speak(msg);
+                });
+            } else {
+                // 同步调用 TTS，仍在用户手势上下文中，iOS 允许
+                const msg = new SpeechSynthesisUtterance(char);
+                msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function startGame() {
+            selectedChars = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
+            if (selectedChars.length < 4) { alert(t.alertMin); return; }
+            localStorage.setItem('catGameWords', JSON.stringify(selectedChars));
+            // 异步预检 MP3，非阻塞，通常在用户点 Start 到第一次点字之间就完成了
+            buildAudioManifest(selectedChars);
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            if (LANG === 'zh') document.getElementById('game-top-bar').style.display = 'flex';
+            
+            const globalBack = document.querySelector('.mecc-nav-back');
+            if (globalBack) {
+                globalBack.onclick = (e) => { e.preventDefault(); backToSetup(); };
+                globalBack.querySelector('span').innerText = t.backSetup;
+            }
+            nextRound();
+        }
+
+        function nextRound() {
+            const board = document.getElementById('board'); board.innerHTML = '';
+            document.getElementById('result-text').innerText = t.prompt;
+            document.getElementById('result-text').style.color = '#598586';
+            document.getElementById('next-btn').style.display = 'none';
+            wrongAttempts = 0; roundOver = false;
+            currentChars = [...selectedChars].sort(() => Math.random() - 0.5).slice(0, 4);
+            targetIdx = Math.floor(Math.random() * 4);
+            currentChars.forEach((char, i) => {
+                const container = document.createElement('div'); container.className = 'card-container';
+                const cat = document.createElement('div'); cat.className = 'hidden-cat'; cat.innerText = '😸'; cat.id = 'cat-'+i;
+                const circle = document.createElement('div'); circle.className = 'char-circle'; circle.innerText = char; circle.id = 'circle-'+i;
+                
+                // pointerdown 在 iOS/Android 上比 onclick 更早触发，确保音频在用户手势中播放
+                circle.addEventListener('pointerdown', () => {
+                    speakChar(char);
+                });
+
+                circle.onclick = () => {
+                    if (roundOver || circle.classList.contains('fly-away')) return;
+                    circle.classList.add('fly-away');
+                    
+                    if (i === targetIdx) {
+                        roundOver = true; MECC_AUDIO.playSfx('tada'); cat.classList.add('cat-found-anim');
+                        if (LANG === 'zh') {
+                            studentScore++; document.getElementById('score-student').innerText = studentScore;
+                            document.getElementById('result-text').innerText = t.foundT(char);
+                        } else {
+                            document.getElementById('result-text').innerText = t.foundP(char);
+                        }
+                        document.getElementById('next-btn').style.display = 'block';
+                    } else {
+                        MECC_AUDIO.playSfx('swoosh');
+                        if (LANG === 'zh') {
+                            wrongAttempts++;
+                            if (wrongAttempts === 3) {
+                                roundOver = true; teacherScore++; document.getElementById('score-teacher').innerText = teacherScore;
+                                document.getElementById('result-text').innerText = t.teacherWinAlert;
+                                document.getElementById('result-text').style.color = '#ff4757';
+                                MECC_AUDIO.playSfx('wrong');
+                                setTimeout(() => {
+                                    MECC_AUDIO.playSfx('tada');
+                                    document.getElementById('circle-'+targetIdx).classList.add('fly-away');
+                                    document.getElementById('cat-'+targetIdx).classList.add('cat-found-anim');
+                                    document.getElementById('result-text').innerText = t.hiddenBehind(currentChars[targetIdx]);
+                                    document.getElementById('next-btn').style.display = 'block';
+                                }, 1000);
+                            }
+                        }
+                    }
+                };
+                container.appendChild(cat); container.appendChild(circle); board.appendChild(container);
+            });
+        }
+    </script>
+</body>
+</html>

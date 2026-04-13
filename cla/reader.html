@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="head-title">绘本阅读 - MECC</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        :root {
+            --reader-bg: #f0f3f7;
+            --panel: #ffffff;
+            --text: #1a2740;
+            --muted: #6a7b90;
+            --accent: #f0a832;
+            --accent-dk: #d4922a;
+            --teal: #598586;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: var(--reader-bg);
+            overflow: hidden;
+            padding-top: 70px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reader-shell {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding: 12px 18px 18px;
+        }
+
+        .reader-topbar {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 2px;
+        }
+
+        .book-title {
+            font-size: 1.18rem;
+            font-weight: bold;
+            color: var(--text);
+            line-height: 1.35;
+            min-width: 0;
+        }
+
+        .page-counter {
+            font-size: 0.98rem;
+            color: var(--muted);
+            font-weight: bold;
+            font-family: "LXGW WenKai Lite", sans-serif;
+            white-space: nowrap;
+        }
+
+        .reader-main {
+            flex: 1;
+            min-height: 0;
+            background: var(--panel);
+            border-radius: 24px;
+            box-shadow: 0 10px 28px rgba(26,39,64,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 20px 22px 18px;
+        }
+
+        .book-image {
+            max-width: min(100%, 900px);
+            max-height: 44vh;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+            object-fit: contain;
+            background: #eaeaea;
+        }
+
+        .book-text {
+            margin-top: 20px;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            text-align: center;
+            line-height: 1.45;
+            color: var(--text);
+            max-width: 960px;
+            word-break: break-word;
+        }
+
+        .speak-btn {
+            margin-top: 18px;
+            border-radius: 14px;
+            padding: 12px 22px;
+            background: #598586;
+            color: #ffffff;
+            border: 1.5px solid transparent;
+            box-shadow: none;
+            transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+        }
+        .speak-btn:hover { background: #4f7879; }
+        .speak-btn:active { transform: scale(0.98); }
+
+        .reader-footer {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 18px;
+            padding-top: 14px;
+        }
+
+        .nav-btn {
+            justify-self: stretch;
+            background: #f3b236;
+            color: #ffffff;
+            border: 1.5px solid transparent;
+            border-radius: 14px;
+            box-shadow: none;
+            transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+        }
+        .nav-btn:hover { background: #e1a328; }
+        .nav-btn:active { transform: scale(0.98); }
+
+        .nav-btn:disabled {
+            background-color: #c8ced6 !important;
+            color: #fff !important;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .center-indicator {
+            color: var(--teal);
+            font-weight: 700;
+            font-size: 1rem;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+
+        .message-box {
+            color: var(--muted);
+            text-align: center;
+            font-size: 1.05rem;
+            font-family: "LXGW WenKai Lite", sans-serif;
+            padding: 40px 16px;
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 62px; }
+            .reader-shell { padding: 10px 12px 14px; }
+            .reader-topbar { grid-template-columns: 1fr; gap: 6px; margin-bottom: 10px; }
+            .book-title { font-size: 1rem; text-align: center; }
+            .page-counter { text-align: center; }
+            .reader-main { padding: 14px 14px 16px; border-radius: 20px; }
+            .book-image { max-height: 34vh; }
+            .book-text { font-size: clamp(1.45rem, 6.2vw, 2rem); margin-top: 16px; }
+            .reader-footer { grid-template-columns: 1fr 72px 1fr; gap: 10px; padding-top: 10px; }
+            .nav-btn { padding-left: 8px; padding-right: 8px; }
+            .center-indicator { font-size: 0.92rem; text-align: center; }
+            .speak-btn { width: 100%; max-width: 260px; }
+        }
+    </style>
+</head>
+<body class="fade-in">
+    <div class="reader-shell">
+        <div class="reader-topbar">
+            <h2 class="book-title" id="display-title">加载中...</h2>
+            <div class="page-counter font-en" id="display-counter">1 / 1</div>
+        </div>
+
+        <main class="reader-main">
+            <img class="book-image" id="display-image" src="" alt="绘本插图">
+            <div class="book-text phrase-text" id="display-text">加载中...</div>
+            <button id="btn-speak" class="btn speak-btn" onclick="speakText()">朗读</button>
+        </main>
+
+        <footer class="reader-footer">
+            <button class="btn nav-btn" id="btn-prev" onclick="goPrev()">←</button>
+            <div class="center-indicator" id="footer-indicator">1 / 1</div>
+            <button class="btn nav-btn" id="btn-next" onclick="goNext()">→</button>
+        </footer>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: {
+                baseTitle: '绘本阅读',
+                back: '返回图书馆',
+                notFound: '未找到书籍编号。请从图书馆重新进入。',
+                missing: '这本书的内容还在路上哦。',
+                loadFail: '数据加载失败，请重试。',
+                prev: '←',
+                next: '→',
+                speak: '朗读',
+                noSpeech: '抱歉，您的浏览器不支持语音朗读功能。'
+            },
+            en: {
+                baseTitle: 'Reader',
+                back: 'Back to Library',
+                notFound: 'Book ID not found. Please reopen from the library.',
+                missing: 'This book is not ready yet.',
+                loadFail: 'Failed to load book data. Please try again.',
+                prev: '←',
+                next: '→',
+                speak: 'Read Aloud',
+                noSpeech: 'Sorry, your browser does not support speech synthesis.'
+            }
+        }[LANG];
+
+        let currentBookData = null;
+        let currentPageIndex = 0;
+
+        const titleEl = document.getElementById('display-title');
+        const counterEl = document.getElementById('display-counter');
+        const footerIndicator = document.getElementById('footer-indicator');
+        const imageEl = document.getElementById('display-image');
+        const textEl = document.getElementById('display-text');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnSpeak = document.getElementById('btn-speak');
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id');
+
+        window.onload = () => {
+            MECC_CONFIG.renderGlobalNav(t.baseTitle);
+            document.getElementById('head-title').innerText = `${t.baseTitle} - MECC`;
+            btnPrev.innerText = t.prev;
+            btnNext.innerText = t.next;
+            btnSpeak.innerText = t.speak;
+            const navBackText = document.querySelector('.mecc-nav-back span');
+            if (navBackText) navBackText.innerText = t.back;
+            bindBackLink();
+            loadBook();
+        };
+
+        function bindBackLink() {
+            const backLink = document.querySelector('.mecc-nav-back');
+            if (!backLink) return;
+            backLink.href = LANG === 'en' ? 'library.html?role=parents' : 'library.html';
+            backLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (document.referrer && document.referrer.includes('library')) {
+                    window.history.back();
+                } else {
+                    window.location.href = backLink.href;
+                }
+            });
+        }
+
+        function normalizeImagePath(src) {
+            if (!src) return '';
+            if (src.startsWith('http') || src.startsWith('../')) return src;
+            if (src.startsWith('/')) return `..${src}`;
+            return `../${src}`;
+        }
+
+        function showMessage(message, isError = false) {
+            titleEl.textContent = t.baseTitle;
+            counterEl.textContent = '—';
+            footerIndicator.textContent = '—';
+            imageEl.style.display = 'none';
+            textEl.textContent = message;
+            textEl.className = 'message-box';
+            btnSpeak.style.display = 'none';
+            btnPrev.disabled = true;
+            btnNext.disabled = true;
+            if (isError) textEl.style.color = '#d94040';
+        }
+
+        function loadBook() {
+            if (bookId === null) {
+                showMessage(t.notFound);
+                return;
+            }
+
+            fetch(`../data/books.json?v=${Date.now()}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Data not found');
+                    return response.json();
+                })
+                .then(data => {
+                    const booksList = data.book_list || [];
+                    currentBookData = booksList[bookId];
+                    if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) {
+                        renderPage();
+                    } else {
+                        showMessage(t.missing);
+                    }
+                })
+                .catch(() => {
+                    showMessage(t.loadFail, true);
+                });
+        }
+
+        imageEl.onerror = function() {
+            this.style.display = 'none';
+        };
+
+        function renderPage() {
+            const totalPages = currentBookData.pages.length;
+            const currentPage = currentBookData.pages[currentPageIndex];
+            const currentTitle = currentBookData.title || t.baseTitle;
+            titleEl.textContent = currentTitle;
+            counterEl.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+            footerIndicator.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+            document.getElementById('head-title').innerText = `${currentTitle} - MECC`;
+            const navTitle = document.querySelector('.mecc-nav-title');
+            if (navTitle) navTitle.innerText = currentTitle;
+
+            const imgSrc = normalizeImagePath(currentPage.image || '');
+            if (imgSrc) {
+                imageEl.src = imgSrc;
+                imageEl.style.display = 'block';
+            } else {
+                imageEl.style.display = 'none';
+            }
+
+            textEl.className = 'book-text phrase-text';
+            textEl.style.color = '';
+            textEl.textContent = currentPage.text || '';
+            btnSpeak.style.display = 'inline-flex';
+
+            btnPrev.disabled = (currentPageIndex === 0);
+            btnNext.disabled = (currentPageIndex === totalPages - 1);
+        }
+
+        function goPrev() {
+            if (!currentBookData) return;
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                renderPage();
+            }
+        }
+
+        function goNext() {
+            if (!currentBookData) return;
+            if (currentPageIndex < currentBookData.pages.length - 1) {
+                currentPageIndex++;
+                renderPage();
+            }
+        }
+
+        function speakText() {
+            const textToRead = textEl.textContent;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = LANG === 'en' ? 'en-US' : 'zh-CN';
+                utterance.rate = 0.8;
+                btnSpeak.classList.remove('success-anim');
+                void btnSpeak.offsetWidth;
+                btnSpeak.classList.add('success-anim');
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert(t.noSpeech);
+            }
+        }
+    </script>
+</body>
+</html>
