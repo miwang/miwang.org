@@ -25,21 +25,69 @@
 
         body { background-color: #fff9ea; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-top: 60px; }
 
-        #gallery-view {
+#gallery-view {
             flex: 1; overflow-y: auto; display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            grid-auto-rows: 290px; align-items: start; gap: 30px; padding: 30px 50px; box-sizing: border-box;
+            /* 缩小了卡片基础宽度和缝隙，取消了固定行高 */
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            align-content: start; gap: 20px; padding: 30px 40px; box-sizing: border-box;
         }
+        
+        /* 阶梯式弹跳进场动画 */
+        @keyframes cardPop {
+            from { opacity: 0; transform: translateY(30px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         .song-card {
-            background: white; border: 4px solid var(--main-teal); border-radius: 20px;
-            overflow: hidden; cursor: pointer; transition: 0.2s;
-            display: flex; flex-direction: column; height: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            background: white; border: 3px solid #e2e8f0; border-radius: 24px;
+            overflow: hidden; cursor: pointer; 
+            display: flex; flex-direction: column; height: 190px; /* 卡片整体调矮 */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.04);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            animation: cardPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
-        .song-card:hover { transform: translateY(-5px); border-color: var(--accent-yellow); }
-        .card-img-wrapper { width: 100%; height: 155px; overflow: hidden; background: #f4f4f4; display: flex; align-items: center; justify-content: center; position: relative; }
-        .song-card img { width: 100%; height: 100%; object-fit: cover; }
-        .song-info { flex: 1; padding: 6px 10px; text-align: center; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
-        .song-info h3 { margin: 0; font-size: 1rem; color: #333; line-height: 1.3; }
+        
+        .song-card:hover { 
+            transform: translateY(-8px) scale(1.03); 
+            border-color: var(--accent-yellow); 
+            box-shadow: 0 15px 30px rgba(243, 178, 54, 0.25); /* 炫酷的发光阴影 */
+            z-index: 10;
+        }
+        
+        .card-img-wrapper { 
+            width: 100%; height: 135px; /* 图片区域压缩 */
+            overflow: hidden; background: #f8f9fa; 
+            display: flex; align-items: center; justify-content: center; position: relative; 
+        }
+        
+        .song-card img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            transition: transform 0.5s ease; /* 平滑缩放 */
+        }
+        
+        /* 鼠标悬浮时，图片轻微放大（变焦效果） */
+        .song-card:hover img { transform: scale(1.1); } 
+
+        /* 隐藏的播放遮罩层 */
+        .play-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.25);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .song-card:hover .play-overlay { opacity: 1; }
+        
+        .play-icon {
+            width: 48px; height: 48px; background: rgba(255,255,255,0.95);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: var(--accent-yellow); font-size: 20px; padding-left: 4px; /* 图标视觉居中 */
+            transform: scale(0.5); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .song-card:hover .play-icon { transform: scale(1); } /* 播放按钮弹出 */
+
+        .song-info { flex: 1; padding: 6px 10px; text-align: center; display: flex; align-items: center; justify-content: center; background: white; z-index: 2; }
+        .song-info h3 { margin: 0; font-size: 0.95rem; color: #2c3e50; line-height: 1.3; font-weight: bold; }
 
         #play-view { display: none; height: 100vh; flex-direction: column; background: #fff9ea; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; }
         .play-header { min-height: 12vh; background: var(--main-teal); display: flex; align-items: center; justify-content: space-between; border-bottom: 0.6vh solid var(--accent-yellow); padding: 0 20px; gap: 12px; }
@@ -98,9 +146,9 @@
 
         @media (max-width: 768px) {
             body { padding-top: 56px; }
-            #gallery-view { grid-template-columns: 1fr 1fr !important; grid-auto-rows: auto !important; gap: 14px !important; padding: 20px 14px !important; }
-            .song-card { height: 220px !important; }
-            .card-img-wrapper { height: 150px !important; flex-shrink: 0 !important; }
+            #gallery-view { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; gap: 12px !important; padding: 15px !important; }
+            .song-card { height: 170px !important; border-radius: 18px !important; }
+            .card-img-wrapper { height: 115px !important; }
             .song-info { height: 70px !important; flex-shrink: 0 !important; overflow: hidden !important; padding: 6px 8px !important; }
             .song-info h3 { font-size: 0.9rem !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; line-height: 1.3 !important; }
             .admin-bar { margin: 6px 12px 10px !important; padding: 6px 8px !important; gap: 6px !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: center !important; overflow-x: auto; }
@@ -220,9 +268,17 @@
                 if (imgPath && imgPath.startsWith('/')) imgPath = '..' + imgPath; 
                 else if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('../')) imgPath = '../' + imgPath;
 
+                // 核心炫酷点：根据卡片序号，计算出延迟出场的时间，形成瀑布流弹跳效果
+                const delay = Math.min(index * 0.05, 0.5);
+
                 return `
-                <div class="song-card" onclick="startLevel(${index})">
-                    <div class="card-img-wrapper"><img src="${imgPath}" onerror="this.style.display='none';"></div>
+                <div class="song-card" style="animation-delay: ${delay}s" onclick="startLevel(${index})">
+                    <div class="card-img-wrapper">
+                        <img src="${imgPath}" onerror="this.style.display='none';">
+                        <div class="play-overlay">
+                            <div class="play-icon"><i class="fas fa-play"></i></div>
+                        </div>
+                    </div>
                     <div class="song-info"><h3>${formatText(song.title)}</h3></div>
                 </div>`;
             }).join('');
