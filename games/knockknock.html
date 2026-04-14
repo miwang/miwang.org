@@ -256,147 +256,50 @@
         .next-btn:active { transform: translateX(-50%) translateY(2px); }
 
         @media (max-width: 980px) {
-            .memory-grid,
-            .answer-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
+            .memory-grid, .answer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .memory-card img { height: min(15vh, 132px); }
-
-            #play-screen {
-                gap: 6px;
-                padding-bottom: 48px;
-            }
-
-            .game-stage {
-                height: min(28vh, 285px);
-                min-height: 162px;
-            }
-
-            .answer-grid {
-                width: 100%;
-                gap: 10px;
-                grid-auto-rows: 1fr;
-            }
-
-            .ans-btn {
-                min-height: clamp(54px, 8vh, 78px);
-                padding: 8px 6px;
-                font-size: clamp(1.02rem, 3.5vw, 1.55rem);
-            }
+            #play-screen { gap: 6px; padding-bottom: 48px; }
+            .game-stage { height: min(28vh, 285px); min-height: 162px; }
+            .answer-grid { width: 100%; gap: 10px; grid-auto-rows: 1fr; }
+            .ans-btn { min-height: clamp(54px, 8vh, 78px); padding: 8px 6px; font-size: clamp(1.02rem, 3.5vw, 1.55rem); }
         }
 
         @media (max-width: 768px) {
-            :root {
-                --nav-h: 54px;
-                --bottom-btn-space: 46px;
-            }
-
-            .container {
-                min-height: calc(100dvh - var(--nav-h));
-                padding: 5px 10px 6px;
-            }
-
-            #memory-screen {
-                gap: 6px;
-                justify-content: flex-start;
-            }
-
+            :root { --nav-h: 54px; --bottom-btn-space: 46px; }
+            .container { min-height: calc(100dvh - var(--nav-h)); padding: 5px 10px 6px; }
+            #memory-screen { gap: 6px; justify-content: flex-start; }
             .timer-box { font-size: clamp(1.3rem, 4.5vw, 2.1rem); }
             .memory-grid { gap: 8px; }
-
-            .memory-card {
-                border-radius: 17px;
-                padding: 7px 6px;
-            }
-
+            .memory-card { border-radius: 17px; padding: 7px 6px; }
             .memory-card img { height: min(11vh, 90px); }
-            .memory-card p {
-                font-size: clamp(0.9rem, 5vw, 1.5rem);
-                margin-top: 2px;
-            }
-
-            .start-btn {
-                width: min(84vw, 320px);
-                padding: 10px 14px;
-                font-size: 1.08rem;
-            }
-
-            #play-screen {
-                gap: 5px;
-                padding-bottom: var(--bottom-btn-space);
-            }
-
-            .status-msg {
-                font-size: clamp(1.04rem, 4.6vw, 1.6rem);
-                min-height: 1.45em;
-            }
-
-            .game-stage {
-                width: 100%;
-                height: min(22vh, 180px);
-                min-height: 128px;
-                border-width: 5px;
-                border-radius: 20px;
-            }
-
-            .answer-grid {
-                gap: 8px;
-                width: 100%;
-            }
-
-            .ans-btn {
-                min-height: clamp(56px, 9.2vh, 88px);
-                padding: 8px 4px;
-                border-radius: 15px;
-                font-size: clamp(1.02rem, 5.8vw, 1.52rem);
-                box-shadow: 0 5px 0 #d49a2a;
-            }
-
+            .memory-card p { font-size: clamp(0.9rem, 5vw, 1.5rem); margin-top: 2px; }
+            .start-btn { width: min(84vw, 320px); padding: 10px 14px; font-size: 1.08rem; }
+            #play-screen { gap: 5px; padding-bottom: var(--bottom-btn-space); }
+            .status-msg { font-size: clamp(1.04rem, 4.6vw, 1.6rem); min-height: 1.45em; }
+            .game-stage { width: 100%; height: min(22vh, 180px); min-height: 128px; border-width: 5px; border-radius: 20px; }
+            .answer-grid { gap: 8px; width: 100%; }
+            .ans-btn { min-height: clamp(56px, 9.2vh, 88px); padding: 8px 4px; border-radius: 15px; font-size: clamp(1.02rem, 5.8vw, 1.52rem); box-shadow: 0 5px 0 #d49a2a; }
             .ans-btn.wrong { box-shadow: 0 5px 0 #c0392b !important; }
             .ans-btn.correct { box-shadow: 0 5px 0 #3e8e41 !important; }
-
-            .next-btn {
-                width: min(78vw, 290px);
-                min-width: 0;
-                padding: 9px 14px;
-                font-size: 1.02rem;
-                bottom: 1px;
-            }
+            .next-btn { width: min(78vw, 290px); min-width: 0; padding: 9px 14px; font-size: 1.02rem; bottom: 1px; }
         }
 
         @media (max-width: 420px) {
             .game-stage { height: min(20vh, 165px); }
             .status-msg { font-size: clamp(0.98rem, 4.5vw, 1.42rem); }
-            .ans-btn {
-                font-size: clamp(0.98rem, 5.5vw, 1.36rem);
-                min-height: clamp(54px, 8.6vh, 78px);
-            }
+            .ans-btn { font-size: clamp(0.98rem, 5.5vw, 1.36rem); min-height: clamp(54px, 8.6vh, 78px); }
         }
 
         @media (max-height: 820px) && (max-width: 980px) {
-            .container {
-                padding-top: 4px;
-                padding-bottom: 4px;
-            }
-
+            .container { padding-top: 4px; padding-bottom: 4px; }
             .timer-box { font-size: clamp(1.2rem, 4vw, 1.85rem); }
             .memory-card img { height: min(10vh, 82px); }
             .memory-card p { font-size: clamp(0.88rem, 4.5vw, 1.35rem); }
             .start-btn { font-size: 1rem; padding: 9px 14px; }
-
-            #play-screen {
-                gap: 4px;
-                padding-bottom: 42px;
-            }
-
+            #play-screen { gap: 4px; padding-bottom: 42px; }
             .status-msg { font-size: clamp(0.96rem, 4.2vw, 1.4rem); }
             .game-stage { height: min(18vh, 150px); min-height: 118px; }
-            .ans-btn {
-                min-height: clamp(50px, 8vh, 68px);
-                padding: 8px 4px;
-                font-size: clamp(0.95rem, 4.6vw, 1.24rem);
-            }
+            .ans-btn { min-height: clamp(50px, 8vh, 68px); padding: 8px 4px; font-size: clamp(0.95rem, 4.6vw, 1.24rem); }
         }
 
         @media (min-width: 700px) && (max-width: 1100px) && (max-height: 900px) {
@@ -405,16 +308,11 @@
             .memory-card img { height: min(10vh, 88px); }
             .memory-card p { font-size: clamp(0.92rem, 2.5vh, 1.45rem); }
             .start-btn { padding: 10px 20px; font-size: 1.05rem; }
-
             #play-screen { padding-bottom: 44px; }
             .status-msg { font-size: clamp(1rem, 2.8vh, 1.48rem); }
             .game-stage { height: min(16vh, 140px); min-height: 114px; }
             .answer-grid { gap: 8px; }
-            .ans-btn {
-                min-height: clamp(50px, 7vh, 66px);
-                padding: 8px 6px;
-                font-size: clamp(1rem, 2.2vh, 1.3rem);
-            }
+            .ans-btn { min-height: clamp(50px, 7vh, 66px); padding: 8px 6px; font-size: clamp(1rem, 2.2vh, 1.3rem); }
         }
     </style>
 </head>
@@ -439,28 +337,8 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: {
-                navTitle: "这是谁？",
-                timer: "倒计时",
-                start: "开始挑战！",
-                next: "下一位家人",
-                success: "你真棒！是",
-                back: "返回工具台",
-                restart: "重新记忆",
-                wrong: "不对哦",
-                allDone: "全认识了！"
-            },
-            en: {
-                navTitle: "Who is it?",
-                timer: "Timer",
-                start: "Start!",
-                next: "Next Person",
-                success: "Great job! It's ",
-                back: "Back to Parents Portal",
-                restart: "Restart",
-                wrong: "Try again",
-                allDone: "Amazing!"
-            }
+            zh: { navTitle: "这是谁？", timer: "倒计时", start: "开始挑战！", next: "下一位家人", success: "你真棒！是", back: "返回工具台", restart: "重新记忆", wrong: "不对哦", allDone: "全认识了！" },
+            en: { navTitle: "Who is it?", timer: "Timer", start: "Start!", next: "Next Person", success: "Great job! It's ", back: "Back to Parents Portal", restart: "Restart", wrong: "Try again", allDone: "Amazing!" }
         }[LANG];
 
         const members = ['爷爷', '奶奶', '爸爸', '妈妈', '哥哥', '姐姐', '弟弟', '妹妹'];
@@ -477,33 +355,23 @@
 
         let audioUnlocked = false;
         let audioCtx = null;
-        const audioUrls = {
-            doorbell: '../audio/doorbell.mp3',
-            correct: '../audio/correct.mp3',
-            wrong: '../audio/wrong.mp3'
-        };
+        const audioUrls = { doorbell: '../audio/doorbell.mp3', correct: '../audio/correct.mp3', wrong: '../audio/wrong.mp3' };
         const sfxPool = {};
 
         function createAudioPool(name, src, count = 4) {
             sfxPool[name] = Array.from({ length: count }, () => {
-                const a = new Audio(src);
-                a.preload = 'auto';
-                a.playsInline = true;
-                return a;
+                const a = new Audio(src); a.preload = 'auto'; a.playsInline = true; return a;
             });
         }
 
         function unlockAudio() {
             if (audioUnlocked) return;
             audioUnlocked = true;
-
             try {
                 const Ctx = window.AudioContext || window.webkitAudioContext;
                 if (Ctx) {
-                    audioCtx = new Ctx();
-                    const buffer = audioCtx.createBuffer(1, 1, 22050);
-                    const source = audioCtx.createBufferSource();
-                    source.buffer = buffer;
+                    audioCtx = new Ctx(); const buffer = audioCtx.createBuffer(1, 1, 22050);
+                    const source = audioCtx.createBufferSource(); source.buffer = buffer;
                     source.connect(audioCtx.destination);
                     if (audioCtx.state === 'suspended') audioCtx.resume();
                     source.start(0);
@@ -512,95 +380,84 @@
 
             Object.values(sfxPool).flat().forEach(a => {
                 try {
-                    a.muted = true;
-                    const p = a.play();
+                    a.muted = true; const p = a.play();
                     if (p && typeof p.then === 'function') {
-                        p.then(() => {
-                            a.pause();
-                            a.currentTime = 0;
-                            a.muted = false;
-                        }).catch(() => { a.muted = false; });
-                    } else {
-                        a.muted = false;
-                    }
-                } catch (e) {
-                    a.muted = false;
-                }
+                        p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; });
+                    } else { a.muted = false; }
+                } catch (e) { a.muted = false; }
             });
         }
 
         function playSfx(name) {
             unlockAudio();
-            const pool = sfxPool[name];
-            if (!pool) return;
+            const pool = sfxPool[name]; if (!pool) return;
             const a = pool.find(x => x.paused || x.ended) || pool[0];
-            try {
-                a.currentTime = 0;
-                a.play().catch(() => null);
-            } catch (e) {}
+            try { a.currentTime = 0; a.play().catch(() => null); } catch (e) {}
         }
 
-        function speakText(text) {
+        // ==========================================
+        // 🌟 统一的三级音频降级系统
+        // ==========================================
+        let globalAudio = null;
+
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', url, true);
+                xhr.onload = () => resolve(xhr.status !== 404);
+                xhr.onerror = () => resolve(false);
+                xhr.send();
+            });
+        }
+
+        async function sayName(name) {
+            unlockAudio();
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+
+            const localPath = `../audio/${pinyinMap[name]}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(name)}`;
+
             try {
+                const isLocalReady = await checkFileExists(localPath);
+                if (isLocalReady) {
+                    globalAudio = new Audio(localPath);
+                } else {
+                    const response = await fetch(azureUrl);
+                    if (!response.ok) throw new Error("Azure API Error");
+                    const audioBlob = await response.blob();
+                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                }
+                await globalAudio.play();
+            } catch (e) {
+                console.warn("发音失败，降级到系统声音:", e);
                 window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
+                const utterance = new SpeechSynthesisUtterance(name);
                 utterance.lang = 'zh-CN';
                 utterance.rate = 0.9;
                 window.speechSynthesis.speak(utterance);
-            } catch (e) {}
+            }
         }
+        // ==========================================
 
-        function sayName(name) {
-            unlockAudio();
-            const a = new Audio(`../audio/${pinyinMap[name]}.mp3`);
-            a.preload = 'auto';
-            a.playsInline = true;
-            a.play().catch(() => speakText(name));
-        }
-
-        function updateCountdown() {
-            document.getElementById('countdown').innerText = `${t.timer}: ${timeLeft}s`;
-        }
+        function updateCountdown() { document.getElementById('countdown').innerText = `${t.timer}: ${timeLeft}s`; }
 
         function updateNavBackText() {
-            const btn = document.querySelector('.mecc-nav-back');
-            if (!btn) return;
-            const isMobile = window.innerWidth <= 768;
-            const label = btn.dataset.mode === 'restart' ? t.restart : t.back;
-            btn.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="16" y1="12" x2="8" y2="12"></line>
-                    <polyline points="12 8 8 12 12 16"></polyline>
-                </svg>
-                ${isMobile ? '' : `<span>${label}</span>`}
-            `;
+            const btn = document.querySelector('.mecc-nav-back'); if (!btn) return;
+            const isMobile = window.innerWidth <= 768; const label = btn.dataset.mode === 'restart' ? t.restart : t.back;
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="16" y1="12" x2="8" y2="12"></line><polyline points="12 8 8 12 12 16"></polyline></svg>${isMobile ? '' : `<span>${label}</span>`}`;
             btn.style.gap = isMobile ? '0px' : '6px';
         }
 
         function autoFitAnswerButtons() {
-            const grid = document.getElementById('btn-container');
-            if (!grid) return;
-            const buttons = [...grid.querySelectorAll('.ans-btn')];
-            if (!buttons.length) return;
-
+            const grid = document.getElementById('btn-container'); if (!grid) return;
+            const buttons = [...grid.querySelectorAll('.ans-btn')]; if (!buttons.length) return;
             buttons.forEach(btn => btn.style.fontSize = '');
-            const styles = getComputedStyle(document.documentElement);
-            const maxFont = window.innerWidth <= 768 ? 26 : 34;
-            const minFont = window.innerWidth <= 768 ? 16 : 18;
-
+            const maxFont = window.innerWidth <= 768 ? 26 : 34; const minFont = window.innerWidth <= 768 ? 16 : 18;
             let chosen = maxFont;
             for (let size = maxFont; size >= minFont; size--) {
                 buttons.forEach(btn => btn.style.fontSize = size + 'px');
-                const fits = buttons.every(btn => {
-                    const spanH = btn.scrollHeight;
-                    const spanW = btn.scrollWidth;
-                    return spanH <= btn.clientHeight + 1 && spanW <= btn.clientWidth + 1
-                });
-                if (fits) {
-                    chosen = size;
-                    break;
-                }
+                const fits = buttons.every(btn => btn.scrollHeight <= btn.clientHeight + 1 && btn.scrollWidth <= btn.clientWidth + 1);
+                if (fits) { chosen = size; break; }
             }
             buttons.forEach(btn => btn.style.fontSize = chosen + 'px');
         }
@@ -611,12 +468,8 @@
             createAudioPool('wrong', audioUrls.wrong, 3);
 
             MECC_CONFIG.renderGlobalNav(t.navTitle);
-
             const btn = document.querySelector('.mecc-nav-back');
-            if (btn) {
-                btn.dataset.mode = 'back';
-                updateNavBackText();
-            }
+            if (btn) { btn.dataset.mode = 'back'; updateNavBackText(); }
 
             document.getElementById('ui-start-btn').innerText = t.start;
             document.getElementById('next-btn').innerText = t.next;
@@ -626,100 +479,51 @@
                 <div class="memory-card" onclick="sayName('${m}')">
                     <img src="../images/family/${pinyinMap[m]}.webp" alt="${m}">
                     <p>${m}</p>
-                </div>
-            `).join('');
+                </div>`).join('');
 
-            document.getElementById('btn-container').innerHTML = members.map(m =>
-                `<button class="ans-btn" onclick="check(this, '${m}')">${m}</button>`
-            ).join('');
+            document.getElementById('btn-container').innerHTML = members.map(m => `<button class="ans-btn" onclick="check(this, '${m}')">${m}</button>`).join('');
 
             autoFitAnswerButtons();
-            window.addEventListener('resize', () => {
-                updateNavBackText();
-                autoFitAnswerButtons();
-            });
+            window.addEventListener('resize', () => { updateNavBackText(); autoFitAnswerButtons(); });
 
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateCountdown();
-                if (timeLeft <= 0) startGame();
-            }, 1000);
-
-            ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {
-                document.addEventListener(evt, unlockAudio, { passive: true, once: true });
-            });
+            timerId = setInterval(() => { timeLeft--; updateCountdown(); if (timeLeft <= 0) startGame(); }, 1000);
+            ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => { document.addEventListener(evt, unlockAudio, { passive: true, once: true }); });
         };
 
         function startGame() {
-            unlockAudio();
-            clearInterval(timerId);
-            remainingMembers = [...members];
-            document.getElementById('memory-screen').style.display = 'none';
-            document.getElementById('play-screen').style.display = 'flex';
-
+            unlockAudio(); clearInterval(timerId); remainingMembers = [...members];
+            document.getElementById('memory-screen').style.display = 'none'; document.getElementById('play-screen').style.display = 'flex';
             const btn = document.querySelector('.mecc-nav-back');
-            if (btn) {
-                btn.removeAttribute('href');
-                btn.dataset.mode = 'restart';
-                updateNavBackText();
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    location.reload();
-                };
-            }
-
-            nextRound();
-            autoFitAnswerButtons();
+            if (btn) { btn.removeAttribute('href'); btn.dataset.mode = 'restart'; updateNavBackText(); btn.onclick = (e) => { e.preventDefault(); location.reload(); }; }
+            nextRound(); autoFitAnswerButtons();
         }
 
         function nextRound() {
-            if (remainingMembers.length === 0) {
-                alert(t.allDone);
-                remainingMembers = [...members];
-            }
-
-            isLocked = false;
-            currentTarget = remainingMembers.splice(Math.floor(Math.random() * remainingMembers.length), 1)[0];
+            if (remainingMembers.length === 0) { alert(t.allDone); remainingMembers = [...members]; }
+            isLocked = false; currentTarget = remainingMembers.splice(Math.floor(Math.random() * remainingMembers.length), 1)[0];
             document.getElementById('msg').innerText = "";
             const charDiv = document.getElementById('char-container');
-            charDiv.style.opacity = "0";
-            charDiv.style.backgroundImage = "none";
+            charDiv.style.opacity = "0"; charDiv.style.backgroundImage = "none";
             document.getElementById('next-btn').classList.remove('show');
-
-            document.querySelectorAll('.ans-btn').forEach(b => {
-                b.classList.remove('wrong', 'correct');
-            });
-
-            playSfx('doorbell');
-            autoFitAnswerButtons();
+            document.querySelectorAll('.ans-btn').forEach(b => { b.classList.remove('wrong', 'correct'); });
+            playSfx('doorbell'); autoFitAnswerButtons();
         }
 
         function check(btn, name) {
             sayName(name);
-
             if (name === currentTarget) {
                 if (!btn.classList.contains('correct')) {
                     btn.classList.add('correct');
-                    document.getElementById('msg').innerText = `${t.success}${name}！`;
-                    document.getElementById('msg').style.color = "#4CAF50";
-
+                    document.getElementById('msg').innerText = `${t.success}${name}！`; document.getElementById('msg').style.color = "#4CAF50";
                     const charDiv = document.getElementById('char-container');
-                    charDiv.style.backgroundImage = `url('../images/family/${pinyinMap[name]}.webp')`;
-                    charDiv.style.opacity = "1";
+                    charDiv.style.backgroundImage = `url('../images/family/${pinyinMap[name]}.webp')`; charDiv.style.opacity = "1";
                     document.getElementById('next-btn').classList.add('show');
-
-                    if (!isLocked) {
-                        setTimeout(() => playSfx('correct'), 220);
-                    }
+                    if (!isLocked) { setTimeout(() => playSfx('correct'), 220); }
                 }
                 isLocked = true;
             } else {
                 btn.classList.add('wrong');
-                if (!isLocked) {
-                    document.getElementById('msg').innerText = t.wrong;
-                    document.getElementById('msg').style.color = "#ff4757";
-                    playSfx('wrong');
-                }
+                if (!isLocked) { document.getElementById('msg').innerText = t.wrong; document.getElementById('msg').style.color = "#ff4757"; playSfx('wrong'); }
             }
         }
     </script>

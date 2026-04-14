@@ -48,19 +48,15 @@
         .bottom-wave { position: absolute; bottom: -30vh; width: 150vw; height: 60vh; background-color: #ffffff; border-radius: 50%; z-index: 1; }
 
         @media (max-width: 768px) {
-            /* 导航栏：手机端只留圆形箭头图标，隐藏文字防遮挡 */
             .mecc-nav-back span { display: none; }
-
             body { height: 100dvh; padding-top: 56px; overflow: hidden; }
 
-            /* 选字界面：撑满屏幕，字格自适应填充 */
             #start-screen {
                 height: calc(100dvh - 56px); padding: 8px 8px 6px !important;
                 justify-content: flex-start !important; overflow: hidden; gap: 6px;
             }
             .controls { gap: 8px !important; flex-wrap: wrap; margin-bottom: 0 !important; justify-content: center; flex-shrink: 0; }
             .btn { padding: 8px 16px !important; font-size: 0.95rem !important; }
-            /* 关键：min-height:0 让 flex 子元素能正常收缩；去掉 aspect-ratio 让行高由 1fr 决定 */
             #char-grid {
                 grid-template-columns: repeat(8, 1fr) !important;
                 grid-auto-rows: 1fr !important;
@@ -71,14 +67,12 @@
             }
             .char-card { aspect-ratio: unset !important; font-size: clamp(1rem, 5.5vw, 1.4rem) !important; }
 
-            /* VS 计分板（中文模式） */
             .game-top-bar { height: auto !important; flex-direction: column !important; padding: 8px 0 6px !important; gap: 6px !important; align-items: center !important; }
             #vs-scoreboard { position: static !important; transform: none !important; width: 90% !important; max-width: 360px !important; display: flex !important; justify-content: center !important; margin: 0 auto !important; padding: 6px 16px !important; gap: 12px !important; }
             .player-box .score { font-size: 1.6rem !important; }
             .player-box .name { font-size: 0.9rem !important; }
             .avatar { width: 28px !important; height: 28px !important; }
 
-            /* 游戏界面：无空白，撑满屏幕 */
             #game-screen { justify-content: space-between !important; padding: 16px 0 24px !important; box-sizing: border-box !important; overflow: hidden !important; }
             .game-board { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; padding: 0 16px !important; width: 100% !important; flex: 1 !important; align-content: center !important; align-items: center !important; }
             .card-container { width: 44vw !important; height: 44vw !important; }
@@ -149,6 +143,50 @@
             }
         }[LANG];
 
+        // ==========================================
+        // 🌟 统一的三级音频降级系统
+        // ==========================================
+        let globalAudio = null;
+
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', url, true);
+                xhr.onload = () => resolve(xhr.status !== 404);
+                xhr.onerror = () => resolve(false);
+                xhr.send();
+            });
+        }
+
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+
+            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+            try {
+                const isLocalReady = await checkFileExists(localPath);
+                if (isLocalReady) {
+                    globalAudio = new Audio(localPath);
+                } else {
+                    const response = await fetch(azureUrl);
+                    if (!response.ok) throw new Error("Azure API Error");
+                    const audioBlob = await response.blob();
+                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                }
+                await globalAudio.play();
+            } catch (e) {
+                console.warn("所有高清发音均失败，使用系统降级方案:", e);
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                msg.rate = 0.85; msg.pitch = 1.1;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+        // ==========================================
+
         window.onload = async () => {
             MECC_CONFIG.renderGlobalNav(t.title.replace(/😸/g, '').trim());
 
@@ -180,6 +218,7 @@
         let selectedChars = []; let teacherScore = 0; let studentScore = 0; let wrongAttempts = 0; let roundOver = false; let currentChars = []; let targetIdx = -1;
 
         function backToSetup() {
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('game-top-bar').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
@@ -195,49 +234,11 @@
         function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
         function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
 
-        // ── iOS 音频可靠播放方案 ──
-        // iOS Safari 要求 TTS 必须在用户手势的同步代码中调用，async 回调里调用会被拦截。
-        // 解决方案：游戏开始时预检哪些字有 MP3，之后在 pointerdown 里同步决策。
-        const audioManifest = new Map(); // char → true(有MP3) / false(用TTS)
-
-        async function buildAudioManifest(chars) {
-            await Promise.all(chars.map(async char => {
-                try {
-                    const r = await fetch(
-                        `../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`,
-                        { method: 'HEAD' }
-                    );
-                    audioManifest.set(char, r.ok);
-                } catch {
-                    audioManifest.set(char, false);
-                }
-            }));
-        }
-
-        // 在用户手势（pointerdown）的同步代码中直接调用，确保 iOS 允许播放
-        function speakChar(char) {
-            window.speechSynthesis.cancel();
-            if (audioManifest.get(char) === true) {
-                new Audio(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`).play().catch(() => {
-                    // MP3 突然失效时的最后兜底
-                    const msg = new SpeechSynthesisUtterance(char);
-                    msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-                    window.speechSynthesis.speak(msg);
-                });
-            } else {
-                // 同步调用 TTS，仍在用户手势上下文中，iOS 允许
-                const msg = new SpeechSynthesisUtterance(char);
-                msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-                window.speechSynthesis.speak(msg);
-            }
-        }
-
         function startGame() {
             selectedChars = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
             if (selectedChars.length < 4) { alert(t.alertMin); return; }
             localStorage.setItem('catGameWords', JSON.stringify(selectedChars));
-            // 异步预检 MP3，非阻塞，通常在用户点 Start 到第一次点字之间就完成了
-            buildAudioManifest(selectedChars);
+            
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
             if (LANG === 'zh') document.getElementById('game-top-bar').style.display = 'flex';
@@ -258,14 +259,15 @@
             wrongAttempts = 0; roundOver = false;
             currentChars = [...selectedChars].sort(() => Math.random() - 0.5).slice(0, 4);
             targetIdx = Math.floor(Math.random() * 4);
+            
             currentChars.forEach((char, i) => {
                 const container = document.createElement('div'); container.className = 'card-container';
                 const cat = document.createElement('div'); cat.className = 'hidden-cat'; cat.innerText = '😸'; cat.id = 'cat-'+i;
                 const circle = document.createElement('div'); circle.className = 'char-circle'; circle.innerText = char; circle.id = 'circle-'+i;
                 
-                // pointerdown 在 iOS/Android 上比 onclick 更早触发，确保音频在用户手势中播放
+                // pointerdown 在 iOS/Android 上比 onclick 更早触发，确保音频在用户手势中顺滑播放
                 circle.addEventListener('pointerdown', () => {
-                    speakChar(char);
+                    playUnifiedAudio(char);
                 });
 
                 circle.onclick = () => {

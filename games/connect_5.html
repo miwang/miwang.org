@@ -43,10 +43,8 @@
         @media (max-width: 768px) {
             body { padding-top: 56px; overflow: hidden; height: 100dvh; align-items: stretch; }
 
-            /* 导航栏只留圆形箭头 */
             .mecc-nav-back span { display: none; }
 
-            /* 选字界面：铺满屏幕 */
             #setup-view {
                 width: 100%; max-width: 100%;
                 height: calc(100dvh - 56px);
@@ -63,40 +61,25 @@
             }
             .char-card { aspect-ratio: unset; font-size: clamp(0.9rem, 5vw, 1.4rem); }
 
-            /* 游戏界面：Milk 在上，棋盘居中，Cookie 在下，撑满屏幕 */
             #game-view {
                 padding: 4px 4px 4px;
-                flex: 1;
-                height: auto;
-                min-height: unset;
-                justify-content: space-between;
-                gap: 3px;
-                width: 100%;
+                flex: 1; height: auto; min-height: unset;
+                justify-content: space-between; gap: 3px; width: 100%;
             }
             .battle-area {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 3px;
-                width: 100%;
-                flex: 1;
-                min-height: 0;
+                display: flex; flex-direction: column; align-items: center;
+                gap: 3px; width: 100%; flex: 1; min-height: 0;
             }
-            /* Milk（玩家1）横条在上，压薄 */
             #side-1 {
-                order: 0;
-                flex-direction: row; gap: 6px;
+                order: 0; flex-direction: row; gap: 6px;
                 opacity: 0.45; transform: none !important;
                 justify-content: center; align-items: center;
                 background: rgba(116,185,255,0.12); border-radius: 10px;
                 padding: 4px 16px; width: 100%; flex-shrink: 0;
             }
-            /* 棋盘居中 */
             #board { order: 1; }
-            /* Cookie（玩家2）横条在下，压薄 */
             #side-2 {
-                order: 2;
-                flex-direction: row; gap: 6px;
+                order: 2; flex-direction: row; gap: 6px;
                 opacity: 0.45; transform: none !important;
                 justify-content: center; align-items: center;
                 background: rgba(251,197,49,0.12); border-radius: 10px;
@@ -108,10 +91,8 @@
             .side-panel .icon { font-size: 1.6rem; }
             .side-panel .name { font-size: 0.95rem; margin-top: 0; }
 
-            /* 手机端隐藏返回按钮，导航箭头已够用 */
             #btn-back-game { display: none; }
 
-            /* 棋盘：缩小外边距让格子更大 */
             #board {
                 --cell: calc((100vw - 16px - 8 * 3px) / 9);
                 grid-template-columns: repeat(9, var(--cell));
@@ -149,25 +130,62 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: {
-                title: "自由五子棋",
-                selectAll: "全选字库", clear: "全部清空", start: "开始对战",
-                p1: "牛奶", p2: "饼干",
-                backGame: "← 重新选字",
-                alertEmpty: "请先选择一些汉字哦！"
-            },
-            en: {
-                title: "Connect Five",
-                selectAll: "Select All", clear: "Clear", start: "Start Game",
-                p1: "Milk", p2: "Cookie",
-                backGame: "← Back to Selection",
-                alertEmpty: "Please select some characters first!"
-            }
+            zh: { title: "自由五子棋", selectAll: "全选字库", clear: "全部清空", start: "开始对战", p1: "牛奶", p2: "饼干", backGame: "← 重新选字", alertEmpty: "请先选择一些汉字哦！" },
+            en: { title: "Connect Five", selectAll: "Select All", clear: "Clear", start: "Start Game", p1: "Milk", p2: "Cookie", backGame: "← Back to Selection", alertEmpty: "Please select some characters first!" }
         }[LANG];
 
         let boardState = Array.from({length: 7}, () => Array(9).fill(0));
         let boardWords = [];
         let currentPlayer = 1;
+
+        // ==========================================
+        // 🌟 统一的三级音频降级系统
+        // ==========================================
+        let globalAudio = null;
+
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', url, true);
+                xhr.onload = () => resolve(xhr.status !== 404);
+                xhr.onerror = () => resolve(false);
+                xhr.send();
+            });
+        }
+
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+
+            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+            try {
+                const isLocalReady = await checkFileExists(localPath);
+                if (isLocalReady) {
+                    globalAudio = new Audio(localPath);
+                } else {
+                    const response = await fetch(azureUrl);
+                    if (!response.ok) throw new Error("Azure API Error");
+                    const audioBlob = await response.blob();
+                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                }
+                await globalAudio.play();
+            } catch (e) {
+                console.warn("所有高清发音均失败，使用系统降级方案:", e);
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                msg.rate = 0.85; msg.pitch = 1.1;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+        
+        // 维持 iOS 音频会话
+        document.addEventListener('touchstart', () => {
+            new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
+        }, { passive: true, once: true });
+        // ==========================================
 
         window.onload = async () => {
             MECC_CONFIG.renderGlobalNav(t.title);
@@ -187,7 +205,7 @@
                 card.innerText = item.char;
                 card.onclick = () => {
                     MECC_AUDIO.playSfx('swoosh');
-                    MECC_AUDIO.readText(item.char);
+                    playUnifiedAudio(item.char);
                     card.classList.toggle('selected');
                 };
                 grid.appendChild(card);
@@ -208,7 +226,6 @@
             document.getElementById('setup-view').style.display = 'none';
             document.getElementById('game-view').style.display = 'flex';
 
-            // 游戏中导航返回键也触发 backToSetup
             const navBack = document.querySelector('.mecc-nav-back');
             if (navBack) {
                 navBack.href = '#';
@@ -221,9 +238,10 @@
 
         function backToSetup() {
             MECC_AUDIO.stopAll();
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('setup-view').style.display = '';
-            // 恢复导航返回链接
+            
             const navBack = document.querySelector('.mecc-nav-back');
             if (navBack) { navBack.href = MECC_CONFIG.getBackHref(); navBack.onclick = null; }
         }
@@ -241,7 +259,7 @@
                     cell.innerText = word;
                     cell.onclick = () => {
                         MECC_AUDIO.playSfx('swoosh');
-                        MECC_AUDIO.readText(word);
+                        playUnifiedAudio(word);
                         if (boardState[r][c] === 0) {
                             boardState[r][c] = currentPlayer;
                             currentPlayer = currentPlayer === 1 ? 2 : 1;

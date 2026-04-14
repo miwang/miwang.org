@@ -86,32 +86,55 @@
         let selectedWords = []; let score = 0; let targetWord = ""; let gameActive = false; let isPaused = false;
         let appleInterval = null; let activeWords = new Set(); let lastCorrectTime = Date.now();
 
-        // ── iOS 音频可靠方案：预检 MP3，手势上下文里同步决定走 MP3 或 TTS ──
-        const audioManifest = new Map();
-        async function buildAudioManifest(chars) {
-            await Promise.all(chars.map(async char => {
-                try {
-                    const r = await fetch(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`, { method: 'HEAD' });
-                    audioManifest.set(char, r.ok);
-                } catch { audioManifest.set(char, false); }
-            }));
+        // ==========================================
+        // 🌟 统一的三级音频降级系统
+        // ==========================================
+        let globalAudio = null;
+
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', url, true);
+                xhr.onload = () => resolve(xhr.status !== 404);
+                xhr.onerror = () => resolve(false);
+                xhr.send();
+            });
         }
-        function speakChar(char) {
-            window.speechSynthesis.cancel();
-            if (audioManifest.get(char) === true) {
-                new Audio(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`).play().catch(() => {
-                    const msg = new SpeechSynthesisUtterance(char);
-                    msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-                    window.speechSynthesis.speak(msg);
-                });
-            } else {
-                const msg = new SpeechSynthesisUtterance(char);
-                msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+
+            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+            try {
+                const isLocalReady = await checkFileExists(localPath);
+                if (isLocalReady) {
+                    globalAudio = new Audio(localPath);
+                } else {
+                    const response = await fetch(azureUrl);
+                    if (!response.ok) throw new Error("Azure API Error");
+                    const audioBlob = await response.blob();
+                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                }
+                await globalAudio.play();
+            } catch (e) {
+                console.warn("所有高清发音均失败，使用系统降级方案:", e);
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                msg.rate = 0.85; msg.pitch = 1.1;
                 window.speechSynthesis.speak(msg);
             }
         }
+        
+        // 维持 iOS 音频会话
+        document.addEventListener('touchstart', () => {
+            new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
+        }, { passive: true, once: true });
+        // ==========================================
 
-        // SVG 果篮渲染
         function renderBasket() {
             document.getElementById('basket').innerHTML = `
             <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;pointer-events:none">
@@ -120,19 +143,15 @@
                 <linearGradient id="rG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B4513"/><stop offset="100%" stop-color="#5C2A0A"/></linearGradient>
                 <clipPath id="bC"><path d="M18,58 L182,58 Q178,150 100,154 Q22,150 18,58 Z"/></clipPath>
               </defs>
-              <!-- 把手 -->
               <path d="M58,56 Q100,-5,142,56" fill="none" stroke="#5C2A0A" stroke-width="13" stroke-linecap="round"/>
               <path d="M58,56 Q100,-5,142,56" fill="none" stroke="#A0522D" stroke-width="7" stroke-linecap="round"/>
-              <!-- 篮身 -->
               <path d="M18,58 L182,58 Q178,150 100,154 Q22,150 18,58 Z" fill="url(#bG)"/>
-              <!-- 横纹 -->
               <g clip-path="url(#bC)" stroke="#6B3010" stroke-width="3" opacity="0.5">
                 <line x1="0" y1="76"  x2="200" y2="76"/>
                 <line x1="0" y1="96"  x2="200" y2="96"/>
                 <line x1="0" y1="116" x2="200" y2="116"/>
                 <line x1="0" y1="136" x2="200" y2="136"/>
               </g>
-              <!-- 竖纹 -->
               <g clip-path="url(#bC)" stroke="#6B3010" stroke-width="2" opacity="0.38">
                 <line x1="42"  y1="56" x2="35"  y2="154"/>
                 <line x1="67"  y1="56" x2="63"  y2="154"/>
@@ -141,9 +160,7 @@
                 <line x1="142" y1="56" x2="148" y2="154"/>
                 <line x1="165" y1="56" x2="175" y2="148"/>
               </g>
-              <!-- 顶沿 -->
               <rect x="13" y="51" width="174" height="15" rx="7.5" fill="url(#rG)"/>
-              <!-- 高光 -->
               <ellipse cx="100" cy="56" rx="55" ry="4" fill="white" opacity="0.2"/>
             </svg>`;
         }
@@ -183,12 +200,10 @@
             b.style.left = Math.max(limit, Math.min(window.innerWidth - limit, nx)) + "px";
         }
 
-        // 🌟 核心保命修复：绝对不再破坏原生内部的 span 和 i 标签！
         function updateBackBtn(txt, href, isAct = false) {
             const btn = document.querySelector('.mecc-nav-back');
             if(btn) {
                 const span = btn.querySelector('span');
-                // 仅修改内部的 span 文字，绝不碰原生的圆形箭头图标！
                 if(span) { span.innerText = txt; } else { btn.innerText = txt; }
                 
                 if(isAct) { btn.removeAttribute('href'); btn.onclick = (e) => { e.preventDefault(); backToSetup(); }; }
@@ -202,11 +217,9 @@
         function startGame() {
             selectedWords = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
             if (selectedWords.length < 4) { alert(t.alert); return; }
-            // 在用户手势中预先创建并恢复 AudioContext，确保 setInterval 里的 playSfx 能正常发声
             if (!MECC_AUDIO.ctx) MECC_AUDIO.ctx = new (window.AudioContext || window.webkitAudioContext)();
             MECC_AUDIO.ctx.resume();
-            // 异步预检 MP3 清单，通常在用户首次点击前就完成
-            buildAudioManifest(selectedWords);
+            
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             updateBackBtn(t.backWord, "#", true);
@@ -219,6 +232,7 @@
         function backToSetup() {
             gameActive = false; clearInterval(appleInterval);
             document.querySelectorAll('.fruit').forEach(f => f.remove());
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
             updateBackBtn(t.back, MECC_CONFIG.getBackHref());
@@ -227,7 +241,7 @@
         function nextTarget() {
             targetWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
             document.getElementById('ui-target').innerHTML = `${t.target} <span style="color:var(--orange);">"${targetWord}"</span>`;
-            speakChar(targetWord);
+            playUnifiedAudio(targetWord);
             lastCorrectTime = Date.now();
         }
 

@@ -42,7 +42,6 @@
             cursor: grab; box-shadow: 0 6px 0 #fbc02d, 0 10px 15px rgba(0,0,0,0.1); transition: 0.2s;
         }
 
-        /* 火车区域：不再用 absolute，用 flex 撑满剩余空间 */
         #train-track-wrapper {
             flex: 1; min-height: 0;
             display: flex; align-items: center; justify-content: center;
@@ -66,7 +65,6 @@
         .train-car.filled .bubble { opacity: 1; transform: translateY(0); }
         .train-departing { transform: translateX(150vw) !important; transition: transform 3.5s ease-in !important; }
 
-        /* 拖拽幽灵 */
         #drag-ghost {
             position: fixed; pointer-events: none; z-index: 9999;
             width: clamp(60px,14vw,88px); height: clamp(60px,14vw,88px);
@@ -78,7 +76,6 @@
             font-family: var(--kaiti) !important; font-weight: bold;
         }
 
-        /* 手机端微调 */
         @media (max-width: 768px) {
             body { padding-top: 56px; }
             .mecc-nav-back span { display: none; }
@@ -107,48 +104,54 @@
         en: { title: "🚂 Magic Word Train", instruction: "Drag the characters onto the train.", winMsg: "Choo choo! The train is departing!" }
     }[LANG];
 
-    // ── 音频引擎 ──────────────────────────────────────────────────
-    // 规则：
-    //   ① 点击/触摸词块 → 播放录音 char.mp3（无录音 fallback 中文 TTS 读字）
-    //   ② 放到车厢成功 → 中文 TTS 读"大学的大"
-    //   ③ 所有发声均发生在 touchstart / click（iOS user gesture），保证 iOS 可用
-    //   ④ UI 语言 zh/en 只影响页面文字，发音永远是中文
+    // ==========================================
+    // 🌟 统一的三级音频降级系统（完全替换老代码）
+    // ==========================================
+    let globalAudio = null;
 
-    // 每次 touchstart 维持 iOS 音频会话
-    document.addEventListener('touchstart', () => {
-        new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
-    }, { passive: true });
-
-    // 预检哪些字有录音（游戏开始时调用，非阻塞）
-    const charAudioMap = new Map();
-    async function checkCharAudio(chars) {
-        await Promise.all(chars.map(async char => {
-            if (charAudioMap.has(char)) return;
-            try {
-                const r = await fetch(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`, { method: 'HEAD' });
-                charAudioMap.set(char, r.ok);
-            } catch { charAudioMap.set(char, false); }
-        }));
+    function checkFileExists(url) {
+        return new Promise((resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('HEAD', url, true);
+            xhr.onload = () => resolve(xhr.status !== 404);
+            xhr.onerror = () => resolve(false);
+            xhr.send();
+        });
     }
 
-    // 读单字：有录音用录音，无录音 TTS 中文（在 user gesture 里同步决定，iOS 安全）
-    function playChar(char) {
-        window.speechSynthesis.cancel();
-        if (charAudioMap.get(char) === true) {
-            new Audio(`../audio/sight_words_phrases/${encodeURIComponent(char)}.mp3`).play().catch(() => speakChinese(char));
-        } else {
-            speakChinese(char);
+    async function playUnifiedAudio(text) {
+        if (!text) return;
+        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+
+        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+        try {
+            const isLocalReady = await checkFileExists(localPath);
+            if (isLocalReady) {
+                globalAudio = new Audio(localPath);
+            } else {
+                const response = await fetch(azureUrl);
+                if (!response.ok) throw new Error("Azure API Error");
+                const audioBlob = await response.blob();
+                globalAudio = new Audio(URL.createObjectURL(audioBlob));
+            }
+            await globalAudio.play();
+        } catch (e) {
+            console.warn("所有高清发音均失败，使用系统降级方案:", e);
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN';
+            msg.rate = 0.85; msg.pitch = 1.1;
+            window.speechSynthesis.speak(msg);
         }
     }
 
-    // TTS 永远用中文读（"大学的大" 或胜利提示）
-    function speakChinese(text) {
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-        window.speechSynthesis.speak(msg);
-    }
-    // ─────────────────────────────────────────────────────────────
+    // 维持 iOS 音频会话
+    document.addEventListener('touchstart', () => {
+        new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
+    }, { passive: true });
+    // ==========================================
 
     window.onload = async () => {
         MECC_CONFIG.renderGlobalNav(t.title.replace(/🚂/g, '').trim());
@@ -170,8 +173,6 @@
         tc.innerHTML = '<div class="locomotive"><div class="steam" style="animation-delay:0s"></div><div class="steam" style="animation-delay:0.6s"></div>🚂</div>';
 
         const selected = [...fullWordList].sort(() => 0.5 - Math.random()).slice(0, MECC_CONFIG.GAME.TRAIN_LENGTH);
-        // 非阻塞预检单字录音
-        checkCharAudio(selected.map(w => w.char));
 
         selected.forEach(word => {
             const car = document.createElement('div');
@@ -194,7 +195,7 @@
                 const b = document.createElement('div');
                 b.className = 'block';
                 b.innerText = word.char;
-                b.dataset.phrase = phrase;           // 预存词组，touchstart 时直接可用
+                b.dataset.phrase = phrase;
                 b.style.touchAction = 'manipulation';
                 b.draggable = true;
                 b.ondragstart = e => e.dataTransfer.setData('text', word.char);
@@ -204,14 +205,6 @@
             });
         }, 400);
     }
-
-    // ── 交互逻辑 ─────────────────────────────────────────────────
-    // 桌面：drag & drop
-    // 手机：轻点 → click 触发选中/读字；拖动 → touchmove 触发拖拽模式
-    //
-    // 关键技巧：touchstart 不调 preventDefault，保留 click 事件；
-    // 只在 touchmove 检测到真实移动后才调 preventDefault（阻止滚动）。
-    // 在 touchmove 第一帧（仍属 user gesture）里调 speakTrain，iOS 允许。
 
     let selectedChar  = null;
     let selectedBlock = null;
@@ -226,7 +219,6 @@
         return true;
     }
 
-    // 轻点词块 → 选中 + 读字（click 是 iOS user gesture，TTS 可用）
     function onBlockClick(e) {
         const block  = e.currentTarget;
         if (block.style.visibility === 'hidden') return;
@@ -236,15 +228,14 @@
         selectedChar   = block.innerText;
         selectedBlock  = block;
         block.style.boxShadow = '0 0 0 5px #ff5722, 0 0 20px rgba(255,87,34,0.5)';
-        playChar(selectedChar);
+        playUnifiedAudio(selectedChar);
     }
 
-    // 轻点车厢 → 若已选中字则放入
     function onCarClick(e) {
         if (!selectedChar || !selectedBlock) return;
         const phrase = selectedBlock.dataset.phrase || selectedChar;
         if (fillCar(e.currentTarget, selectedChar, selectedBlock)) {
-            speakChinese(phrase === selectedChar ? selectedChar : `${phrase}的${selectedChar}`);
+            playUnifiedAudio(phrase === selectedChar ? selectedChar : `${phrase}的${selectedChar}`);
         }
         document.querySelectorAll('.block').forEach(b => {
             if (b.style.visibility !== 'hidden') b.style.boxShadow = '0 6px 0 #fbc02d, 0 10px 15px rgba(0,0,0,0.1)';
@@ -252,14 +243,13 @@
         selectedChar = null; selectedBlock = null;
     }
 
-    // 手机拖拽：touchstart 不调 preventDefault，保留 click
     function onTouchStart(e) {
         const block  = e.currentTarget;
         if (block.style.visibility === 'hidden') return;
         const char   = block.innerText;
         const phrase = block.dataset.phrase || char;
-        // touchstart：播字录音（user gesture ✓）
-        playChar(char);
+        
+        playUnifiedAudio(char);
 
         const startX = e.touches[0].clientX;
         const startY = e.touches[0].clientY;
@@ -270,12 +260,11 @@
             const dy = me.touches[0].clientY - startY;
             if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
                 isDragging = true;
-                // 拖动开始：显示幽灵，不播声音（声音在放入车厢时播放，避免重叠）
                 ghost.innerText = char;
                 ghost.style.display = 'flex';
             }
             if (isDragging) {
-                me.preventDefault();     // 只在真实拖动时阻止页面滚动
+                me.preventDefault();
                 moveGhost(me.touches[0].clientX, me.touches[0].clientY);
                 const el  = document.elementFromPoint(me.touches[0].clientX, me.touches[0].clientY);
                 document.querySelectorAll('.train-car').forEach(c => c.style.outline = '');
@@ -293,10 +282,9 @@
                 const el    = document.elementFromPoint(touch.clientX, touch.clientY);
                 const car   = el && el.closest('.train-car');
                 if (car && fillCar(car, char, block)) {
-                    speakChinese(phrase === char ? char : `${phrase}的${char}`);
+                    playUnifiedAudio(phrase === char ? char : `${phrase}的${char}`);
                 }
             }
-            // 未发生拖动时，click 事件会自然触发 onBlockClick
         };
 
         document.addEventListener('touchmove', onMove, { passive: false });
@@ -308,14 +296,13 @@
         ghost.style.top  = y + 'px';
     }
 
-    // 桌面 drag & drop
     function handleDrop(e) {
         const char  = e.dataTransfer.getData('text');
         const block = [...document.querySelectorAll('.block')].find(b => b.innerText === char && b.style.visibility !== 'hidden');
         if (!block) return;
         const phrase = block.dataset.phrase || char;
         if (fillCar(this, char, block)) {
-            speakChinese(phrase === char ? char : `${phrase}的${char}`);
+            playUnifiedAudio(phrase === char ? char : `${phrase}的${char}`);
         }
     }
 
@@ -323,7 +310,7 @@
         if (document.querySelectorAll('.train-car.filled').length === MECC_CONFIG.GAME.TRAIN_LENGTH) {
             setTimeout(() => {
                 MECC_UI.fireConfetti();
-                speakChinese(LANG === 'en' ? '太棒了！' : t.winMsg);
+                playUnifiedAudio(LANG === 'en' ? '太棒了！' : t.winMsg);
                 document.getElementById('train-track-wrapper').classList.add('train-departing');
                 setTimeout(startGame, MECC_CONFIG.GAME.AUTO_NEXT_DELAY);
             }, 3500);

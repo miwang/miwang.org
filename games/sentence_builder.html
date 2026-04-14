@@ -231,6 +231,48 @@
         let allSentences = []; 
         let currentFilteredList = [];
 
+        // --- 🌟 新增：三级朗读降级系统 ---
+        let globalAudio = null;
+
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+
+            // 本地助教录音路径 (如果你保存在了别的地方，可以修改这里)
+            const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+            try {
+                const isLocalReady = await checkFileExists(localPath);
+                if (isLocalReady) {
+                    globalAudio = new Audio(localPath);
+                } else {
+                    const response = await fetch(azureUrl);
+                    if (!response.ok) throw new Error("Azure API Error");
+                    const audioBlob = await response.blob();
+                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                }
+                await globalAudio.play();
+            } catch (e) {
+                console.warn("所有高清发音均失败，使用系统降级方案:", e);
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', url, true);
+                xhr.onload = () => resolve(xhr.status !== 404);
+                xhr.onerror = () => resolve(false);
+                xhr.send();
+            });
+        }
+        // ---------------------------------
+
         window.onload = () => {
             MECC_CONFIG.renderGlobalNav(t.title);
             document.getElementById('head-title').innerText = t.title + " - MECC";
@@ -264,14 +306,12 @@
             const kw = typeof keywordTags !== 'undefined' ? keywordTags : [];
             const bar = document.getElementById('tag-bar');
             
-            // 🌟 1. “全部”标签的中英反转
             let allText = LANG === 'en' 
                 ? `All <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「全部」</span>`
                 : `「全部」<span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">All</span>`;
 
             let html = `<div class="tag-row"><div class="tag-pill all ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()" style="display:flex;align-items:center;">${allText}</div>`;
             
-            // 🌟 2. 主题标签的中英反转
             themeKeys.forEach(tag => {
                 const def = tagDefinitions[tag];
                 let innerText = LANG === 'en' 
@@ -281,7 +321,6 @@
             });
             html += `</div><div class="tag-row"><span class="tag-row-label font-zh">${t.byWord}</span>`;
             
-            // 🌟 3. 字词标签的中英反转（沿用刚才修复好的）
             kw.forEach(k => {
                 let innerText = LANG === 'en' 
                     ? `${k.en} <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「${k.zh}」</span>`
@@ -434,7 +473,7 @@
             const current = [...zone.querySelectorAll('.word-brick')].map(b => b.dataset.word).join('');
             if (current === currentData.words.join('')) {
                 zone.dataset.locked = '1'; document.getElementById('success-controls').style.visibility = 'visible';
-                MECC_AUDIO.playSfx('tada'); 
+                if (typeof MECC_AUDIO !== 'undefined' && MECC_AUDIO.playSfx) MECC_AUDIO.playSfx('tada'); 
                 autoSizeZone(); 
                 const punc = currentData.punctuation || '';
                 if (punc && !zone.querySelector('.auto-punctuation')) {
@@ -461,8 +500,10 @@
             document.getElementById('reading-overlay').style.display = 'flex'; requestAnimationFrame(autoSizeReading);
         }
 
+        // 🌟 修改：调用统一的朗读函数
         function readCurrentSentence() { 
-            MECC_AUDIO.readText(currentData.words.join('') + (currentData.punctuation || '')); 
+            const fullText = currentData.words.join('') + (currentData.punctuation || '');
+            playUnifiedAudio(fullText); 
         }
 
         function closePlay() { listView.style.display = 'flex'; playView.style.display = 'none'; document.body.style.overflow = ''; }
