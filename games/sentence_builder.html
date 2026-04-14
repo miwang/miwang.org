@@ -234,33 +234,37 @@
         // --- 🌟 新增：三级朗读降级系统 ---
         let globalAudio = null;
 
-        async function playUnifiedAudio(text) {
-            if (!text) return;
-            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+    async function playUnifiedAudio(text) {
+        if (!text) return;
+        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
 
-            // 本地助教录音路径 (如果你保存在了别的地方，可以修改这里)
-            const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
-            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+        const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
+        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-            try {
-                const isLocalReady = await checkFileExists(localPath);
-                if (isLocalReady) {
-                    globalAudio = new Audio(localPath);
-                } else {
-                    const response = await fetch(azureUrl);
-                    if (!response.ok) throw new Error("Azure API Error");
-                    const audioBlob = await response.blob();
-                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                }
+        try {
+            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                globalAudio = new Audio(localPath);
                 await globalAudio.play();
-            } catch (e) {
-                console.warn("所有高清发音均失败，使用系统降级方案:", e);
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-CN';
-                window.speechSynthesis.speak(msg);
+                return; 
             }
-        }
+        } catch(e) {}
+
+        try {
+            const azureRes = await fetch(azureUrl);
+            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                const audioBlob = await azureRes.blob();
+                globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                await globalAudio.play();
+                return; 
+            }
+        } catch(e) {}
+
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+        window.speechSynthesis.speak(msg);
+    }
 
         function checkFileExists(url) {
             return new Promise((resolve) => {

@@ -259,37 +259,40 @@ function getCharPinyin(char){ if(pinyinOverride[char]) return pinyinOverride[cha
 // --- 🌟 核心：统一发音逻辑 (本地录音 -> Azure云端 -> 系统降级) ---
 let globalAudio = null;
 
-async function playUnifiedAudio(text) {
-    if (!text) return;
-    if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+    async function playUnifiedAudio(text) {
+        if (!text) return;
+        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
 
-    const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
-    const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-    try {
-        // 1. 尝试播放本地助教录音
-        const isLocalReady = await checkFileExists(localPath);
-        if (isLocalReady) {
-            console.log("播放本地助教录音:", text);
-            globalAudio = new Audio(localPath);
-        } else {
-            // 2. 本地没有，尝试从 Azure 获取高清发音
-            console.log("本地无录音，调用 Azure 引擎:", text);
-            const response = await fetch(azureUrl);
-            if (!response.ok) throw new Error("Azure API Error");
-            const audioBlob = await response.blob();
-            globalAudio = new Audio(URL.createObjectURL(audioBlob));
-        }
-        await globalAudio.play();
-    } catch (e) {
-        // 3. 终极降级：使用系统自带发音
-        console.warn("所有高清发音均失败，使用系统降级方案:", e);
+        // 第一关：尝试本地录音 (增加验证：必须是真正的音频，过滤假 200 网页)
+        try {
+            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                globalAudio = new Audio(localPath);
+                await globalAudio.play();
+                return; // 成功播放就退出
+            }
+        } catch(e) {}
+
+        // 第二关：本地没有，呼叫 Azure 晓晓
+        try {
+            const azureRes = await fetch(azureUrl);
+            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                const audioBlob = await azureRes.blob();
+                globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                await globalAudio.play();
+                return; // 成功播放就退出
+            }
+        } catch(e) {}
+
+        // 第三关：彻底断网兜底
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN';
+        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
         window.speechSynthesis.speak(msg);
     }
-}
 
 // 辅助函数：检查文件是否存在
 function checkFileExists(url) {

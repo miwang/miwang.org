@@ -400,43 +400,37 @@
         // ==========================================
         let globalAudio = null;
 
-        function checkFileExists(url) {
-            return new Promise((resolve) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('HEAD', url, true);
-                xhr.onload = () => resolve(xhr.status !== 404);
-                xhr.onerror = () => resolve(false);
-                xhr.send();
-            });
-        }
+    async function playUnifiedAudio(text) {
+        if (!text) return;
+        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
 
-        async function sayName(name) {
-            unlockAudio();
-            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
+        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-            const localPath = `../audio/${pinyinMap[name]}.mp3`;
-            const azureUrl = `/api/tts?text=${encodeURIComponent(name)}`;
-
-            try {
-                const isLocalReady = await checkFileExists(localPath);
-                if (isLocalReady) {
-                    globalAudio = new Audio(localPath);
-                } else {
-                    const response = await fetch(azureUrl);
-                    if (!response.ok) throw new Error("Azure API Error");
-                    const audioBlob = await response.blob();
-                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                }
+        try {
+            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                globalAudio = new Audio(localPath);
                 await globalAudio.play();
-            } catch (e) {
-                console.warn("发音失败，降级到系统声音:", e);
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(name);
-                utterance.lang = 'zh-CN';
-                utterance.rate = 0.9;
-                window.speechSynthesis.speak(utterance);
+                return; 
             }
-        }
+        } catch(e) {}
+
+        try {
+            const azureRes = await fetch(azureUrl);
+            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                const audioBlob = await azureRes.blob();
+                globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                await globalAudio.play();
+                return; 
+            }
+        } catch(e) {}
+
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+        window.speechSynthesis.speak(msg);
+    }
         // ==========================================
 
         function updateCountdown() { document.getElementById('countdown').innerText = `${t.timer}: ${timeLeft}s`; }

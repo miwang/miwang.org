@@ -91,44 +91,40 @@
         // ==========================================
         let globalAudio = null;
 
-        function checkFileExists(url) {
-            return new Promise((resolve) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('HEAD', url, true);
-                xhr.onload = () => resolve(xhr.status !== 404);
-                xhr.onerror = () => resolve(false);
-                xhr.send();
-            });
-        }
+    async function playUnifiedAudio(text) {
+        if (!text) return;
+        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
 
-        async function playUnifiedAudio(text) {
-            if (!text) return;
-            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
-            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
-
-            try {
-                const isLocalReady = await checkFileExists(localPath);
-                if (isLocalReady) {
-                    globalAudio = new Audio(localPath);
-                } else {
-                    const response = await fetch(azureUrl);
-                    if (!response.ok) throw new Error("Azure API Error");
-                    const audioBlob = await response.blob();
-                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                }
+        // 第一关：尝试本地录音 (增加验证：必须是真正的音频，过滤假 200 网页)
+        try {
+            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                globalAudio = new Audio(localPath);
                 await globalAudio.play();
-            } catch (e) {
-                console.warn("所有高清发音均失败，使用系统降级方案:", e);
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'zh-CN';
-                msg.rate = 0.85; msg.pitch = 1.1;
-                window.speechSynthesis.speak(msg);
+                return; // 成功播放就退出
             }
-        }
-        
+        } catch(e) {}
+
+        // 第二关：本地没有，呼叫 Azure 晓晓
+        try {
+            const azureRes = await fetch(azureUrl);
+            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                const audioBlob = await azureRes.blob();
+                globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                await globalAudio.play();
+                return; // 成功播放就退出
+            }
+        } catch(e) {}
+
+        // 第三关：彻底断网兜底
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+        window.speechSynthesis.speak(msg);
+    }
         // 维持 iOS 音频会话
         document.addEventListener('touchstart', () => {
             new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
