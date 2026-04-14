@@ -16,6 +16,10 @@
             --bg-color: #f0f2f5; --accent-color: #f3b236; --text-dark: #2c3e50;
             --font-main: 'STKaiti', 'KaiTi', '楷体', "LXGW WenKai Lite", serif;
         }
+
+        /* 🌟 核心修复 1：增加数字/英文专属字体类 */
+        .font-en { font-family: "LXGW WenKai Lite", system-ui, sans-serif !important; }
+
         * { box-sizing: border-box; }
         body { font-family: var(--font-main) !important; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg-color); color: var(--text-dark); padding-top: 60px; }
 
@@ -154,7 +158,6 @@ window.onload = () => {
         </div>`;
     nav.appendChild(ctrl);
 
-    // 第一步：有本地缓存就先渲染（本机刷新瞬间有内容）
     const cached = loadLocal();
     if (cached) {
         data = cached;
@@ -163,22 +166,17 @@ window.onload = () => {
         renderUI();
     }
 
-    // 第二步：直接用 on() 监听 Firebase
-    // on() 打开时会立刻触发一次当前值——新设备没有缓存时靠这里加载云端数据
-    // 之后有任何其他设备更新，也通过这里实时同步
     db.ref(CLOUD_KEY).on('value', snap => {
         const val = snap.val();
         if (!val) return;
-        if (val._sid === SESSION_ID) return;        // 忽略自己刚写的回声
-        if ((val._ver || 0) <= _localVer) return;   // 忽略比本机旧的数据
-        // 收到更新（首次加载或其他设备改动）
+        if (val._sid === SESSION_ID) return;
+        if ((val._ver || 0) <= _localVer) return;
         data = val;
         _localVer = val._ver || 0;
         if (!data.bgImages) data.bgImages = [null,null,null,null];
-        saveLocal(); // 缓存到本机，下次刷新不依赖网络
+        saveLocal();
         renderUI();
     }, err => {
-        // Firebase 连不上（Live Server / 无网络）——已有本地缓存就不影响使用
         console.warn('Firebase 连接失败，使用本地缓存：', err.message);
     });
 };
@@ -217,9 +215,11 @@ function renderUI() {
         el.innerHTML = d.html; 
     });
     
-    document.getElementById('status-main').innerText = `第 ${data.step + 1} 轮`;
-    document.getElementById('status-date').innerText  = data.lastDateStr;
+    // 🌟 核心修复 2：使用 innerHTML 并用正则把所有数字包裹上英文字体类，避免楷体数字
+    document.getElementById('status-main').innerHTML = `第 <span class="font-en">${data.step + 1}</span> 轮`;
+    document.getElementById('status-date').innerHTML = data.lastDateStr.replace(/\d+/g, '<span class="font-en">$&</span>');
     document.getElementById('btn-prev').style.opacity = data.step <= 0 ? '0.3' : '1';
+    
     const off = data.step % 4, zones = [[],[],[],[]];
     data.students.forEach(s => zones[(s.groupIndex + off) % 4].push(s));
     zones.forEach((list, vz) => {
@@ -262,7 +262,6 @@ function handleAvatarClick(id) {
     } else { upPhoto(id); }
 }
 
-// 修改后的代码（清晰度提升 4 倍以上）
 function upPhoto(id) { tf(f => compress(f, 300, 0.85, res => { const s = data.students.find(x => x.id === id); if(s) { s.photo = res; commit(); } })); }
 function upBg(z)     { tf(f => compress(f, 800, 0.85,  res => { data.bgImages[z] = res; commit(); })); }
 
@@ -298,9 +297,9 @@ function recompressDataUrl(dataUrl, maxPx, q) {
 async function recompressAllImages(parsed) {
     const result = { step: parsed.step||0, lastDateStr: parsed.lastDateStr||'暂无记录', bgImages:[null,null,null,null], students:[] };
     const bgs = parsed.bgImages||[null,null,null,null];
-    for (let i=0;i<4;i++) result.bgImages[i] = await recompressDataUrl(bgs[i],800,0.85); // 背景图提升至 800 像素，85% 画质
+    for (let i=0;i<4;i++) result.bgImages[i] = await recompressDataUrl(bgs[i],800,0.85); 
     for (const s of (parsed.students||[])) {
-        result.students.push({ id:s.id, name:s.name, groupIndex:s.groupIndex, mathSubGroup:s.mathSubGroup||0, rank:s.rank, photo: await recompressDataUrl(s.photo,300,0.85) }); // 头像提升至 300 像素，85% 画质
+        result.students.push({ id:s.id, name:s.name, groupIndex:s.groupIndex, mathSubGroup:s.mathSubGroup||0, rank:s.rank, photo: await recompressDataUrl(s.photo,300,0.85) }); 
     }
     return result;
 }
