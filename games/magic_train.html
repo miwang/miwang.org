@@ -16,8 +16,18 @@
             --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
             --wenkai: "LXGW WenKai Lite", sans-serif;
         }
-        *, .instruction, .block, .shadow-text, .bubble-text { font-family: var(--kaiti) !important; font-weight: bold; }
-        .font-en { font-family: var(--wenkai) !important; }
+
+        /* --- 优化后的字体规则 --- */
+        /* 默认使用楷体，但不使用 * 通配符强制覆盖所有元素 */
+        body, .instruction, .block, .shadow-text, .bubble-text { 
+            font-family: var(--kaiti) !important; 
+            font-weight: bold; 
+        }
+
+        /* 英文专用类：确保优先级高于上面的默认规则 */
+        .font-en { 
+            font-family: var(--wenkai) !important; 
+        }
 
         body {
             background: linear-gradient(to bottom, #a1e4ff 0%, #ffffff 70%, #76d476 70%, #45b645 100%);
@@ -31,7 +41,13 @@
             flex: 1; min-height: 0; padding: 0 12px;
         }
 
-        .instruction { font-size: clamp(1rem, 2.5vh, 1.4rem); color: #333; margin-top: clamp(8px,2vh,20px); margin-bottom: clamp(6px,1.5vh,10px); flex-shrink: 0; }
+        .instruction { 
+            font-size: clamp(1rem, 2.5vh, 1.4rem); 
+            color: #333; 
+            margin-top: clamp(8px,2vh,20px); 
+            margin-bottom: clamp(6px,1.5vh,10px); 
+            flex-shrink: 0; 
+        }
 
         #blocks-container { display: flex; justify-content: center; gap: clamp(10px,3vw,20px); margin-bottom: clamp(8px,2vh,20px); flex-shrink: 0; }
         .block {
@@ -104,13 +120,10 @@
         en: { title: "🚂 Magic Word Train", instruction: "Drag the characters onto the train.", winMsg: "Choo choo! The train is departing!" }
     }[LANG];
 
-    // 🌟 统一的三级音频降级系统（带 iOS 强解锁）
     let globalAudio = new Audio();
 
     async function playUnifiedAudio(text) {
         if (!text) return;
-        
-        // iOS 解锁
         globalAudio.pause();
         globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
         globalAudio.play().catch(() => {});
@@ -150,7 +163,16 @@
     window.onload = async () => {
         MECC_CONFIG.renderGlobalNav(t.title.replace(/🚂/g, '').trim());
         document.getElementById('head-title').innerText = t.title + " - MECC";
-        document.getElementById('ui-instruction').innerText = t.instruction;
+        
+        // 🌟 核心修复：处理提示文字及其字体
+        const instructionEl = document.getElementById('ui-instruction');
+        instructionEl.innerText = t.instruction;
+        if (LANG === 'en') {
+            instructionEl.classList.add('font-en');
+        } else {
+            instructionEl.classList.remove('font-en');
+        }
+
         fullWordList = await MECC_DATA.getSightWords();
         if (fullWordList.length > 0) startGame();
     };

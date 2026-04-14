@@ -10,10 +10,18 @@
 
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
 
     <style>
         :root {
             --kaiti-font: "STKaiti", "华文楷体", "楷体", "KaiTi", "LXGW WenKai Lite", "BiauKai", serif;
+            --wenkai-font: "LXGW WenKai Lite", sans-serif;
+        }
+
+        /* 🌟 核心修复 2：增加英文专属字体类 */
+        .font-en {
+            font-family: var(--wenkai-font) !important;
         }
 
         body {
@@ -54,7 +62,7 @@
             margin: 0;
             font-size: 1.6rem;
             color: #f3b236;
-            font-family: var(--kaiti-font) !important;
+            font-family: var(--kaiti-font); /* 移除 !important，以便 .font-en 可以覆盖 */
             line-height: 1.1;
         }
 
@@ -122,7 +130,7 @@
             margin-bottom: 20px;
             font-weight: bold;
             text-align: left;
-            font-family: var(--kaiti-font) !important;
+            font-family: var(--kaiti-font); /* 移除 !important，以便 .font-en 可以覆盖 */
         }
 
         .char-grid {
@@ -311,6 +319,14 @@
             window.addEventListener('resize', updateNavBackDisplay);
 
             document.getElementById('head-title').innerText = t.title + " - MECC";
+            
+            // 🌟 核心修复 3：动态添加英文 UI 类名
+            if (LANG === 'en') {
+                document.getElementById('summary-title').classList.add('font-en');
+                document.getElementById('summary-detail').classList.add('font-en');
+                document.getElementById('top-pct').classList.add('font-en');
+            }
+
             document.getElementById('summary-title').innerText = t.progress;
             document.getElementById('summary-detail').innerText = t.loading;
 
@@ -324,7 +340,7 @@
             const fullWordData = await MECC_DATA.getSightWords();
 
             if (fullWordData.length === 0) {
-                content.innerHTML = `<div style="text-align:center; padding: 40px; color:#999; font-size:1.1rem;">${t.error}</div>`;
+                content.innerHTML = `<div style="text-align:center; padding: 40px; color:#999; font-size:1.1rem;" class="${LANG === 'en' ? 'font-en' : ''}">${t.error}</div>`;
                 return;
             }
 
@@ -355,9 +371,11 @@
             content.innerHTML = labels.map(label => {
                 const charsInGroup = fullWordData.filter(item => item.week === label);
                 const translatedLabel = LANG === 'en' ? label : (monthZh[monthEn.indexOf(label)] || label);
+                // 🌟 核心修复 4：星期区块标题动态适配英文字体
+                const fontClass = LANG === 'en' ? 'font-en' : '';
                 return `
                     <div class="week-section">
-                        <div class="week-title">${translatedLabel}</div>
+                        <div class="week-title ${fontClass}">${translatedLabel}</div>
                         <div class="char-grid">
                             ${charsInGroup.map(item => {
                                 const isDone = progress[item.char] === 'completed';

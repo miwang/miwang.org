@@ -45,6 +45,11 @@
             font-family: var(--kaiti-font) !important;
         }
 
+        /* 🌟 新增：英文类，确保能覆盖上面的基础设定 */
+        .font-en {
+            font-family: "LXGW WenKai Lite", sans-serif !important;
+        }
+
         .container {
             min-height: calc(100svh - var(--nav-h));
             width: 100%;
@@ -470,6 +475,16 @@
 
             document.getElementById('ui-start-btn').innerText = t.start;
             document.getElementById('next-btn').innerText = t.next;
+
+            // 🌟 新增：如果是英文环境，给所有的文字控制 UI 元素动态添加英文字体类
+            if (LANG === 'en') {
+                const enElements = ['countdown', 'ui-start-btn', 'msg', 'next-btn'];
+                enElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('font-en');
+                });
+            }
+
             updateCountdown();
 
             document.getElementById('memory-grid').innerHTML = members.map(m => `

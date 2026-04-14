@@ -18,6 +18,11 @@
             --main-teal: #598586;
         }
 
+        /* 🌟 核心修复 1：统一设置中文默认 UI 字体为楷体 */
+        body, .play-back-btn, .btn-action, .reading-hint, .tag-row-label { 
+            font-family: var(--kaiti) !important; 
+        }
+
         .font-zh { font-family: var(--kaiti) !important; }
         .font-en { font-family: var(--wenkai) !important; }
 
@@ -55,7 +60,8 @@
             color: #444; text-decoration: none; font-size: 1.1rem; font-weight: bold; 
             background: rgba(255,255,255,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 6px 20px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.5); 
-            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; font-family: var(--wenkai);
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; 
+            /* 🌟 核心修复：移除了写死的 font-family: var(--wenkai); */
         }
         .play-back-btn:hover { background: rgba(255,255,255,0.8); transform: scale(1.02); }
         .circle-arrow-icon { width: 20px; height: 20px; }
@@ -189,7 +195,7 @@
                 <span id="close-text">返回列表</span>
             </div>
             <div id="success-controls" style="visibility: hidden; display: flex;">
-                <button class="btn-action font-zh" id="btn-read-mode" onclick="enterReadingMode()">📖 全屏读字</button>
+                <button class="btn-action" id="btn-read-mode" onclick="enterReadingMode()">📖 全屏读字</button>
             </div>
         </div>
         <div class="play-layout">
@@ -207,7 +213,7 @@
     <div id="reading-overlay" onclick="this.style.display='none'">
         <button class="tts-btn" onclick="event.stopPropagation(); readCurrentSentence();" title="朗读句子">🔊</button>
         <div id="full-container" style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center;"></div>
-        <div class="reading-hint font-zh" id="ui-hint">点击任意位置返回</div>
+        <div class="reading-hint" id="ui-hint">点击任意位置返回</div>
     </div>
 
     <script>
@@ -275,6 +281,15 @@
             document.getElementById('btn-read-mode').innerText = t.readMode;
             document.getElementById('ui-hint').innerText = t.hint;
 
+            // 🌟 核心修复 2：英文环境动态添加英文字体类
+            if (LANG === 'en') {
+                const enElements = ['close-text', 'btn-read-mode', 'ui-hint'];
+                enElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('font-en');
+                });
+            }
+
             fetch(`../data/sentences.json?v=${new Date().getTime()}`)
                 .then(res => res.json())
                 .then(data => {
@@ -313,7 +328,9 @@
                     : `「${def.zh}」<span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">${def.en}</span>`;
                 html += `<div class="tag-pill theme ${activeThemeTag === tag ? 'active' : ''}" onclick="toggleThemeTag('${tag}')" style="display:flex;align-items:center;">${innerText}</div>`;
             });
-            html += `</div><div class="tag-row"><span class="tag-row-label font-zh">${t.byWord}</span>`;
+            
+            // 🌟 核心修复 3：去掉 tag-row-label 上的写死字体
+            html += `</div><div class="tag-row"><span class="tag-row-label ${LANG === 'en' ? 'font-en' : ''}">${t.byWord}</span>`;
             
             kw.forEach(k => {
                 let innerText = LANG === 'en' 

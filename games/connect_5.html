@@ -10,7 +10,15 @@
     <link rel="stylesheet" href="../css/style.css">
 
     <style>
-        * { box-sizing: border-box; font-family: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important; }
+        * { box-sizing: border-box; }
+        
+        /* 🌟 核心修复 1：移除 *，换成具体的标签和类名 */
+        body, .btn, .char-card, .name, .cell, #btn-back-game { 
+            font-family: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important; 
+        }
+
+        /* 英文类，优先级可以正常覆盖上面的设定 */
+        .font-en { font-family: "LXGW WenKai Lite", sans-serif !important; }
 
         body { background-color: #fff9ea; margin: 0; display: flex; flex-direction: column; align-items: center; padding-top: 60px; overflow: auto; min-height: 100vh; }
 
@@ -156,6 +164,15 @@
             document.getElementById('name-1').innerText       = t.p1;
             document.getElementById('name-2').innerText       = t.p2;
             document.getElementById('btn-back-game').innerText = t.backGame;
+
+            // 🌟 核心修复 2：如果是英文环境，给所有的文字 UI 元素动态添加英文字体类
+            if (LANG === 'en') {
+                const enElements = ['btn-all', 'btn-clear', 'btn-start', 'name-1', 'name-2', 'btn-back-game'];
+                enElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('font-en');
+                });
+            }
 
             const grid = document.getElementById('char-grid');
             const words = await MECC_DATA.getSightWords();

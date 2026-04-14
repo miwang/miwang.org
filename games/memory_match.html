@@ -15,7 +15,16 @@
         --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
         --wenkai: "LXGW WenKai Lite", sans-serif;
     }
-    * { box-sizing: border-box; font-family: var(--kaiti) !important; }
+    
+    * { box-sizing: border-box; }
+    
+    /* 🌟 核心修复 1：移除 *，换成具体的标签和类名 */
+    body, .instructions, .btn, .game-header, .overlay-text, #ui-continue, .char-card, .memory-card-front, .memory-card-back { 
+        font-family: var(--kaiti) !important; 
+    }
+
+    /* 英文类，优先级可以正常覆盖上面的设定 */
+    .font-en { font-family: var(--wenkai) !important; }
     
     body { 
         background-color: #fff9ea; margin: 0; 
@@ -105,37 +114,37 @@
 <body>
 
     <div id="setup-view">
-        <div class="instructions font-zh">
+        <div class="instructions">
             <span style="color: #ff4757; font-weight: bold;" id="ui-rule">规则：选择 15 个字开始。</span><br>
             <span style="color: #598586;" id="ui-desc">点击翻开卡片，选出两个相同的字即可消除。</span>
         </div>
         <div class="controls">
-            <button class="btn font-zh" id="btn-all" onclick="selectAll()">全选</button>
-            <button class="btn font-zh" id="btn-clear" onclick="clearAll()">清空</button>
-            <button class="btn start-btn font-zh" id="btn-start" onclick="startGame()">开始挑战</button>
+            <button class="btn" id="btn-all" onclick="selectAll()">全选</button>
+            <button class="btn" id="btn-clear" onclick="clearAll()">清空</button>
+            <button class="btn start-btn" id="btn-start" onclick="startGame()">开始挑战</button>
         </div>
         <div id="char-grid"></div>
     </div>
 
     <div id="game-view">
-        <div class="game-header font-zh">
+        <div class="game-header">
             <div id="matches-counter">找到对子: 0 / 15</div>
             <div id="moves-counter">匹配尝试: 0</div>
         </div>
         <div id="memory-board"></div>
-        <button class="btn font-zh" id="btn-back" style="margin-top:3vh; padding: 1.5vh 3vw; font-size: 2.5vh; border-radius: 40px; cursor: pointer; border: 2px solid #ddd; background: #f8f9fa;" onclick="showSetup()">← 返回修改字库</button>
+        <button class="btn" id="btn-back" style="margin-top:3vh; padding: 1.5vh 3vw; font-size: 2.5vh; border-radius: 40px; cursor: pointer; border: 2px solid #ddd; background: #f8f9fa;" onclick="showSetup()">← 返回修改字库</button>
     </div>
 
     <div id="trophy-overlay" onclick="closeTrophy()">
         <div class="trophy-icon">🎯</div>
-        <div class="overlay-text font-zh" id="overlay-msg">太厉害了！</div>
+        <div class="overlay-text" id="overlay-msg">太厉害了！</div>
         <div style="color:rgba(255,255,255,0.6); font-size: 3vh;" id="ui-continue">点击任意位置继续</div>
     </div>
 
 <script>
     const LANG = MECC_CONFIG.getLang();
     const t = {
-        zh: { title: "🃏 汉字连连看", rule: "规则：选择 15 个字开始。", desc: "点击翻开卡片，选出两个相同的字即可消除。", all: "全选", clear: "清空", start: "开始挑战", match: "找到对子: ", move: "匹配尝试: ", back: "← 返回修改字库", win: "太厉害了！全部找齐！", cont: "点击任意位置继续", alertSelect: "请先在字库中选满 15 个字！", alertTrim: "你选的字太多了，系统将自动使用前 15 个字。" },
+        zh: { title: "🃏 汉字连连看", rule: "规则：选择 15 个字开始。", desc: "点击翻开卡片，选出两个相同的字即可消除。", all: "全选", clear: "清空", start: "开始挑战", match: "找到对子: ", move: "匹配尝试: ", back: "返回修改字库", win: "太厉害了！全部找齐！", cont: "点击任意位置继续", alertSelect: "请先在字库中选满 15 个字！", alertTrim: "你选的字太多了，系统将自动使用前 15 个字。" },
         en: { title: "🃏 Memory Match", rule: "Rule: Select 15 words to begin.", desc: "Flip cards and match the identical ones.", all: "All", clear: "Clear", start: "Start", match: "Matches: ", move: "Moves: ", back: "← Back to Words", win: "Awesome! All matched!", cont: "Tap anywhere to continue", alertSelect: "Please select 15 words first!", alertTrim: "You selected too many. The system will use the first 15." }
     }[LANG];
 
@@ -151,6 +160,18 @@
         document.getElementById('btn-start').innerText = t.start;
         document.getElementById('btn-back').innerText = t.back;
         document.getElementById('ui-continue').innerText = t.cont;
+
+        // 🌟 核心修复 2：英文环境动态添加英文字体类
+        if (LANG === 'en') {
+            const enElements = [
+                'ui-rule', 'ui-desc', 'btn-all', 'btn-clear', 'btn-start', 
+                'btn-back', 'matches-counter', 'moves-counter', 'overlay-msg', 'ui-continue'
+            ];
+            enElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('font-en');
+            });
+        }
 
         const grid = document.getElementById('char-grid');
         const savedWords = JSON.parse(localStorage.getItem('memoryMatch15_TeacherWords')) || [];

@@ -12,8 +12,13 @@
     <link rel="stylesheet" href="../css/style.css">
     <style>
         :root { --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif; --wenkai: "LXGW WenKai Lite", sans-serif; --main-teal: #598586; --accent-yellow: #f3b236; }
-        *, h1, h2, .btn, .char-card, .name, #result-text { font-family: var(--kaiti) !important; font-weight: bold; }
+        
+        /* 🌟 核心修复 1：移除 *，换成具体的标签和类名，并加上 .char-circle 保证汉字不受影响 */
+        body, h1, h2, .btn, .char-card, .char-circle, .name, #result-text { font-family: var(--kaiti) !important; font-weight: bold; }
+        
+        /* 英文类，优先级可以正常覆盖上面的设定 */
         .score, .font-en { font-family: var(--wenkai) !important; }
+        
         body { margin: 0; padding: 0; background-color: #1f2e46; color: white; overflow: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; width: 100vw; user-select: none; padding-top: 60px; }
         
         .game-top-bar { width: 100%; height: 12vh; display: none; align-items: center; justify-content: center; position: relative; padding: 0 20px; }
@@ -193,7 +198,21 @@
             document.getElementById('next-btn').innerText = t.nextBtn;
             document.getElementById('btn-back-setup').innerText = t.backSetup;
 
-            if (LANG === 'en') document.getElementById('vs-scoreboard').style.display = 'none';
+            // 🌟 核心修复 2：如果是英文环境，给所有的文字 UI 元素动态添加英文字体类
+            if (LANG === 'en') {
+                document.getElementById('vs-scoreboard').style.display = 'none';
+                
+                // 把需要变成 LXGW 英文字体的元素 ID 列出来
+                const enElements = [
+                    'result-text', 'btn-select-all', 'btn-clear-all', 'btn-start', 
+                    'ui-teacher-name', 'ui-student-name', 'next-btn', 'btn-back-setup'
+                ];
+                
+                enElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('font-en');
+                });
+            }
 
             const grid = document.getElementById('char-grid');
             const saved = JSON.parse(localStorage.getItem('catGameWords')) || [];

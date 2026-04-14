@@ -12,7 +12,17 @@
 
     <style>
         :root { --kaiti: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif; --teal:#598586; --accent:#f3b236; --orange:#e67e22; }
-        * { box-sizing:border-box; font-family:var(--kaiti) !important; font-weight:bold; }
+        
+        * { box-sizing: border-box; }
+        
+        /* 🌟 核心修复 1：移除 *，换成具体的标签和类名 */
+        body, .btn, .char-card, .target-box, .score-pill, .fruit span { 
+            font-family: var(--kaiti) !important; 
+            font-weight: bold; 
+        }
+
+        /* 英文类，优先级可以正常覆盖上面的设定 */
+        .font-en { font-family: "LXGW WenKai Lite", sans-serif !important; }
 
         body { margin:0; padding:0; background:#f0f3f7; overflow:hidden; display:flex; flex-direction:column; align-items:center; height:100vh; width:100vw; user-select:none; padding-top:60px; }
 
@@ -65,7 +75,7 @@
 
     <div id="game-screen">
         <div class="target-box" id="ui-target">Catch: ...</div>
-        <div class="score-pill"><span id="ui-score-label">Score</span>: <span id="score">0</span></div>
+        <div class="score-pill"><span id="ui-score-label">Score</span>: <span id="score" class="font-en">0</span></div>
         <div id="basket" onmousedown="startDrag(event)" ontouchstart="startDrag(event)"></div>
     </div>
 
@@ -170,6 +180,15 @@
             document.getElementById('ui-none').innerText = t.none;
             document.getElementById('ui-start').innerText = t.start;
             document.getElementById('ui-score-label').innerText = t.score;
+
+            // 🌟 核心修复 2：英文环境添加英文字体类
+            if (LANG === 'en') {
+                const enElements = ['ui-all', 'ui-none', 'ui-start', 'ui-target', 'ui-score-label'];
+                enElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('font-en');
+                });
+            }
 
             const grid = document.getElementById('char-grid');
             const dataObj = await MECC_DATA.getSightWords();
