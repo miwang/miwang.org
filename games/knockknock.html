@@ -396,41 +396,44 @@
         }
 
         // ==========================================
-        // 🌟 统一的三级音频降级系统
+        // 🌟 统一的三级音频降级系统 (完全版)
         // ==========================================
         let globalAudio = null;
 
-    async function playUnifiedAudio(text) {
-        if (!text) return;
-        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        async function sayName(name) {
+            unlockAudio();
+            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
 
-        const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
-        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+            const localPath = `../audio/${pinyinMap[name]}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(name)}`;
 
-        try {
-            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio = new Audio(localPath);
-                await globalAudio.play();
-                return; 
-            }
-        } catch(e) {}
+            // 闯关 1: 本地录音
+            try {
+                const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+                if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                    globalAudio = new Audio(localPath);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
 
-        try {
-            const azureRes = await fetch(azureUrl);
-            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
-                const audioBlob = await azureRes.blob();
-                globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                await globalAudio.play();
-                return; 
-            }
-        } catch(e) {}
+            // 闯关 2: Azure 晓晓
+            try {
+                const azureRes = await fetch(azureUrl);
+                if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
 
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-        window.speechSynthesis.speak(msg);
-    }
+            // 闯关 3: 兜底系统声音
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(name);
+            utterance.lang = 'zh-CN'; utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
         // ==========================================
 
         function updateCountdown() { document.getElementById('countdown').innerText = `${t.timer}: ${timeLeft}s`; }
