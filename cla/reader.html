@@ -354,31 +354,48 @@
             }
         }
 
-        let currentAudio = null; // 用于控制播放
+let currentAudio = null; 
 
 async function speakText() {
     const textToRead = textEl.textContent;
     if (!textToRead) return;
 
-    // 视觉反馈：点击时按钮闪一下
     btnSpeak.classList.add('success-anim');
     setTimeout(() => btnSpeak.classList.remove('success-anim'), 500);
 
-    // 如果正在播放，先停掉
     if (currentAudio) {
         currentAudio.pause();
         currentAudio = null;
     }
 
-    // 调用我们在 Cloudflare 写的 API
     const apiUrl = `/api/tts?text=${encodeURIComponent(textToRead)}`;
     
     try {
-        currentAudio = new Audio(apiUrl);
+        // 💡 升级：先用 fetch 去把数据拉过来“验货”
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            throw new Error(`服务器报错: ${response.status} ${response.statusText}`);
+        }
+
+        // 💡 关键防御：检查返回的头信息，是不是真正的音频 (audio)
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("audio")) {
+            throw new Error("返回的不是音频文件！你可能是在本地测试，或者 API 路径没生效。");
+        }
+
+        // 验货成功，把音频数据转换成播放器能认的格式
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        currentAudio = new Audio(audioUrl);
         await currentAudio.play();
+
     } catch (e) {
-        console.error("发音加载失败，切换回系统默认声音:", e);
-        // 如果云端失败（比如欠费或网络问题），自动降级使用系统自带声音，保证教学不中断
+        // 只有当云端音频彻底失败时，才会走到这里
+        console.error("❌ Azure 发音失败，原因：", e.message);
+        console.log("👉 自动切换回系统默认声音");
+        
         const utterance = new SpeechSynthesisUtterance(textToRead);
         utterance.lang = 'zh-CN';
         window.speechSynthesis.speak(utterance);
