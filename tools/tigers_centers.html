@@ -176,20 +176,23 @@ function normalizeRanks() {
 }
 
 const ZONE_DEFAULTS = [
-    { id:0, cls:'bg-red',    html:'1 2 3' },
-    { id:1, cls:'bg-green',  html:'<i class="fas fa-chalkboard-teacher"></i>' },
-    { id:3, cls:'bg-yellow', html:'<i class="fas fa-pencil-alt"></i>' },
-    { id:2, cls:'bg-blue',   html:'<i class="fas fa-laptop"></i>' }
+    { id:0, html:'<img src="../images/centers/math_center.webp" class="uploaded-img">' },
+    { id:1, html:'<img src="../images/centers/wanglaoshi.webp" class="uploaded-img">' },
+    { id:3, html:'<img src="../images/centers/zhanglaoshi.webp" class="uploaded-img">' },
+    { id:2, html:'<img src="../images/centers/computer_center.webp" class="uploaded-img">' }
 ];
 
 function renderUI() {
     for (let i = 0; i < 3; i++) { const el = document.getElementById('col-'+i); if(el) el.innerHTML=''; }
     for (let i = 1; i <= 3; i++) { const el = document.getElementById('cont-'+i); if(el) el.innerHTML=''; }
+    
+    // 🌟 强行使用本地高清背景图，无视 Firebase 里的压缩图
     ZONE_DEFAULTS.forEach(d => {
         const el = document.getElementById('img-cont-'+d.id); if(!el) return;
-        if (data.bgImages[d.id]) { el.className=''; el.innerHTML=`<img src="${data.bgImages[d.id]}" class="uploaded-img">`; }
-        else { el.className=`color-block ${d.cls}`; el.innerHTML=d.html; }
+        el.className = ''; 
+        el.innerHTML = d.html; 
     });
+    
     document.getElementById('status-main').innerText = `第 ${data.step + 1} 轮`;
     document.getElementById('status-date').innerText  = data.lastDateStr;
     document.getElementById('btn-prev').style.opacity = data.step <= 0 ? '0.3' : '1';
@@ -208,11 +211,13 @@ function renderUI() {
 }
 
 function makeAvatar(s) {
+    const info = allStudentsList.find(x => x.name === s.name) || {};
+    const photo = info.img || s.photo || null;
     const div = document.createElement('div');
     div.className = 'avatar-circle'; div.draggable = true;
     div.ondragstart = e => e.dataTransfer.setData('text', s.id);
-    const img = s.photo
-        ? `<img src="${s.photo}" class="avatar-img">`
+    const img = photo
+        ? `<img src="${photo}" class="avatar-img">`
         : `<i class="fas fa-user" style="color:#dfe6e9;font-size:45px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"></i>`;
     div.innerHTML = `<div class="action-btn" onclick="del(${s.id})">×</div>${img}<div class="photo-mask" onclick="handleAvatarClick(${s.id})"></div><div class="name-tooltip">${s.name}</div>`;
     return div;
