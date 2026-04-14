@@ -71,238 +71,47 @@ const pinyinOverride={ '长':'cháng','会':'huì','了':'le','和':'hé','看':
 function getCharPinyin(char){ if(pinyinOverride[char]) return pinyinOverride[char]; if(window.pinyinPro) return window.pinyinPro.pinyin(char,{toneType:'symbol'}); return ''; }
 
 // --- 🌟 核心：统一发音逻辑 (本地录音 -> Azure云端 -> 系统降级) ---
-let globalAudio = null;
+// 把 Audio 对象放在最外层，只创建一次
+let globalAudio = new Audio();
 
 async function playUnifiedAudio(text) {
     if (!text) return;
-    if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+    
+    // 【破局核心】：在点击的同步时刻播放静音，强行拿到浏览器的长期播放许可
+    globalAudio.pause();
+    globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+    globalAudio.play().catch(() => {});
 
     const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
     const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
+    // 第一关：尝试本地录音
     try {
-        // 1. 尝试播放本地助教录音
-        const isLocalReady = await checkFileExists(localPath);
-        if (isLocalReady) {
-            console.log("播放本地助教录音:", text);
-            globalAudio = new Audio(localPath);
-        } else {
-            // 2. 本地没有，尝试从 Azure 获取高清发音
-            console.log("本地无录音，调用 Azure 引擎:", text);
-            const response = await fetch(azureUrl);
-            if (!response.ok) throw new Error("Azure API Error");
-            const audioBlob = await response.blob();
-            globalAudio = new Audio(URL.createObjectURL(audioBlob));
+        const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+        // 如果能拿到正经的 audio 标识，说明本地文件真实存在，而不是网页兜底
+        if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+            globalAudio.src = localPath; // 已经拿到许可，复用实例直接播放
+            await globalAudio.play();
+            return; 
         }
-        await globalAudio.play();
-    } catch (e) {
-        // 3. 终极降级：使用系统自带发音
-        console.warn("所有高清发音均失败，使用系统降级方案:", e);
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN';
-        window.speechSynthesis.speak(msg);
-    }
-}
+    } catch(e) { console.warn("本地验证跳过", e); }
 
-// 辅助函数：检查文件是否存在
-function checkFileExists(url) {
-    return new Promise((resolve) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('HEAD', url, true);
-        xhr.onload = () => resolve(xhr.status !== 404);
-        xhr.onerror = () => resolve(false);
-        xhr.send();
-    });
-}
+    // 第二关：呼叫 Azure 晓晓
+    try {
+        const azureRes = await fetch(azureUrl).catch(() => null);
+        if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+            const audioBlob = await azureRes.blob();
+            globalAudio.src = URL.createObjectURL(audioBlob);
+            await globalAudio.play();
+            return; 
+        }
+    } catch(e) { console.warn("Azure 验证跳过", e); }
 
-function updateNavBackDisplay(label){
- const btn=document.querySelector('.mecc-nav-back'); if(!btn) return;
- btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="16" y1="12" x2="8" y2="12"></line><polyline points="12 8 8 12 12 16"></polyline></svg><span>${label}</span>`;
- btn.style.gap='8px';
-}
-
-window.onload=function(){
- const backHref='words_and_phrases.html'+(LANG==='en'?'?role=parents':'');
- MECC_CONFIG.renderGlobalNav(t.pageTitle, backHref, t.back);
- updateNavBackDisplay(t.back);
- window.addEventListener('resize',()=>updateNavBackDisplay(t.back));
- document.getElementById('head-title').innerText=t.pageTitle;
- document.getElementById('ui-hint').innerText=t.hint;
- fetch(MECC_CONFIG.PATH.SIGHT_WORDS_DATA).then(res=>res.json()).then(dataObj=>{
-   const data=(dataObj.sight_words_list||[]).find(d=>d.char===targetChar);
-   if(data){
-     document.getElementById('char-pinyin').textContent=getCharPinyin(targetChar);
-     const bgImg=document.getElementById('char-bg-img');
-     bgImg.src=`${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${encodeURIComponent(targetChar)}.webp`;
-     bgImg.onerror=()=>{bgImg.style.display='none';};
-     const writerSize=window.innerWidth<=600?65:90;
-     HanziWriter.create('character-target', targetChar, {width:writerSize,height:writerSize,padding:5,strokeColor:'#e74c3c',outlineColor:'#e0e0e0',delayBetweenAnimations:1500}).animateCharacter();
-     let phraseArray=data.phrases?data.phrases.split(/[,，、]/).map(p=>p.trim()).filter(p=>p):[];
-     if(phraseArray.length>0) renderPhrases(phraseArray);
-   }
- });
-};
-
-function goToTracing(){ const suffix=LANG==='en'?'&role=parents':''; if(targetChar) window.location.href=`tracing.html?char=${encodeURIComponent(targetChar)}&from=detail${suffix}`; }
-
-function renderPhrases(phraseArray){
- const container=document.getElementById('orbit-container'); const phrasesContainer=document.getElementById('phrases-container'); const linesSvg=document.getElementById('lines-layer'); const fanSvg=document.getElementById('fan-layer');
- const W=container.clientWidth, H=container.clientHeight, isMobile=window.innerWidth<=600, count=phraseArray.length; if(count===0) return;
- let cx,cy,maxRadius,minRadius,startAngle,endAngle; const charRadius=isMobile?65:85;
- if(isMobile){
-  container.style.background='radial-gradient(circle at 0% 50%, #eef5f5 0%, #d4e4e4 70%)';
-  cx=charRadius+15; cy=H/2; const safeRight=85,safeTop=75,safeBottom=75;
-  maxRadius=Math.min(W-cx-safeRight,cy-safeTop,H-cy-safeBottom); if(count>=8) maxRadius=Math.min(W-cx-70,cy-55,H-cy-55); minRadius=135; if(maxRadius<minRadius+30) maxRadius=minRadius+30;
-  if(count===1){startAngle=0;endAngle=0;} else if(count<=3){startAngle=45;endAngle=-45;} else if(count<=5){startAngle=65;endAngle=-65;} else if(count<=7){startAngle=80;endAngle=-80;} else {startAngle=90;endAngle=-90;}
- } else {
-  container.style.background='radial-gradient(circle at 50% 100%, #eef5f5 0%, #d4e4e4 70%)';
-  cx=W/2; const bottomOffset=20; cy=H-bottomOffset-charRadius; const safeSide=90,safeTop=90;
-  maxRadius=Math.min(cx-safeSide,cy-safeTop); if(count>=8) maxRadius=Math.min(cx-30,cy-70); minRadius=210; if(maxRadius<minRadius+40) maxRadius=minRadius+40;
-  if(count===1){startAngle=90;endAngle=90;} else if(count<=3){startAngle=135;endAngle=45;} else if(count<=5){startAngle=150;endAngle=30;} else if(count<=7){startAngle=165;endAngle=15;} else {startAngle=180;endAngle=0;}
- }
- const centerChar=document.getElementById('center-char'); centerChar.style.left=cx+'px'; centerChar.style.top=cy+'px';
- const angleStep=count>1?(startAngle-endAngle)/(count-1):0; const depthFactors=[];
- if(count<=4){ for(let i=0;i<count;i++) depthFactors.push(1.0); } else if(count<=6){ for(let i=0;i<count;i++) depthFactors.push(i%2===0?1.0:0.65); } else { for(let i=0;i<count;i++){ const mod=i%3; if(mod===0) depthFactors.push(1.0); else if(mod===1) depthFactors.push(0.40); else depthFactors.push(0.80); } }
- const fanOuterR=maxRadius+(isMobile?75:95), fanInnerR=charRadius+20;
- const p1x=cx+fanOuterR*Math.cos((startAngle+5)*Math.PI/180), p1y=cy-fanOuterR*Math.sin((startAngle+5)*Math.PI/180);
- const p2x=cx+fanOuterR*Math.cos((endAngle-5)*Math.PI/180), p2y=cy-fanOuterR*Math.sin((endAngle-5)*Math.PI/180);
- const p3x=cx+fanInnerR*Math.cos((endAngle-5)*Math.PI/180), p3y=cy-fanInnerR*Math.sin((endAngle-5)*Math.PI/180);
- const p4x=cx+fanInnerR*Math.cos((startAngle+5)*Math.PI/180), p4y=cy-fanInnerR*Math.sin((startAngle+5)*Math.PI/180);
- const spanAngle=(startAngle+5)-(endAngle-5), largeArc=spanAngle>180?1:0;
- let fanHTML=''; if(count>1){ fanHTML += `<path d="M ${p4x} ${p4y} L ${p1x} ${p1y} A ${fanOuterR} ${fanOuterR} 0 ${largeArc} 1 ${p2x} ${p2y} L ${p3x} ${p3y} A ${fanInnerR} ${fanInnerR} 0 ${largeArc} 0 ${p4x} ${p4y} Z" fill="rgba(255, 252, 245, 0.65)" stroke="#e6c27a" stroke-width="4" />`; }
- fanSvg.innerHTML=fanHTML; linesSvg.innerHTML=''; phrasesContainer.innerHTML='';
- phraseArray.forEach((phrase,i)=>{ const angleRad=(startAngle-i*angleStep)*Math.PI/180, f=depthFactors[i], currentR=minRadius+(maxRadius-minRadius)*f, x=cx+currentR*Math.cos(angleRad), y=cy-currentR*Math.sin(angleRad);
-  const scaleFactor=0.9+(f*0.35), imgSize=(isMobile?105:155)*scaleFactor, fontSize=(isMobile?1.3:1.9)*scaleFactor;
-  const line=document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',cx); line.setAttribute('y1',cy); line.setAttribute('x2',x); line.setAttribute('y2',y); line.setAttribute('class','connect-line'); linesSvg.appendChild(line);
-  const node=document.createElement('div'); node.className='phrase-node'; node.style.left=x+'px'; node.style.top=y+'px'; node.style.width=imgSize+'px'; node.style.height=imgSize+'px'; node.style.zIndex=Math.round(f*10)+20;
-  // 修改点：点击卡片也调用统一发音逻辑
-  node.onclick=(event)=>{ event.stopPropagation(); playUnifiedAudio(phrase); node.querySelector('.flip-card-inner').classList.toggle('is-flipped'); };
-  const webpUrl=`${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${encodeURIComponent(phrase)}.webp`;
-  node.innerHTML=`<div class=\"flip-card-inner\"><div class=\"flip-card-front\" style=\"border-width:${5*scaleFactor}px;\"><span style=\"font-size:${fontSize}rem; line-height:1.2;\">${phrase}</span></div><div class=\"flip-card-back\" style=\"border-width:${5*scaleFactor}px;\"><img src=\"${webpUrl}\" class=\"phrase-img\" alt=\"${phrase}\" onerror=\"this.parentElement.style.background='#f0f5f5'; this.remove();\"></div></div>`;
-  phrasesContainer.appendChild(node);
- });
-}
-</script>
-</body></html><!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="head-title">生字研习 - MECC</title>
-    <script src="../js/config.js"></script>
-    <link rel="stylesheet" href="../css/common_nav.css">
-    <link rel="icon" type="image/png" href="../favicon.png">
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-    <script src="https://unpkg.com/pinyin-pro"></script>
-    <style>
-        :root { --kaiti-font: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif; --english-font: "LXGW WenKai Lite", sans-serif; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; overflow: hidden; }
-        body { background-color: #d4e4e4; font-family: var(--kaiti-font) !important; padding-top: 60px; }
-        .orbit-container { position: relative; width: 100%; height: calc(100vh - 60px); overflow: hidden; background: radial-gradient(circle at 50% 100%, #eef5f5 0%, #d4e4e4 70%); }
-        .fan-layer, .lines-layer { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
-        .fan-layer { z-index:0; } .lines-layer { z-index:1; }
-        .connect-line { stroke:#9bb8b8; stroke-width:2.5; stroke-dasharray:6,6; opacity:.8; fill:none; }
-        .center-char { position:absolute; transform:translate(-50%,-50%); z-index:50; width:170px; height:170px; }
-        .char-circle { width:100%; height:100%; border-radius:50%; background:white; border:8px solid #f3b236; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,0,0,.15); cursor:pointer; position:relative; overflow:hidden; transition:transform .3s; }
-        .char-circle:hover { transform:scale(1.05); box-shadow:0 6px 30px rgba(243,178,54,.3); }
-        .char-bg-img { position:absolute; width:90%; height:90%; object-fit:contain; opacity:.15; z-index:0; pointer-events:none; }
-        .char-pinyin { position:relative; font-size:1.35rem; color:#598586; font-weight:600; font-family:var(--english-font) !important; z-index:2; margin-bottom:-8px; }
-        #character-target { position:relative; z-index:10; width:90px; height:90px; }
-        .char-hint { position:relative; font-size:.8rem; color:#999; font-weight:bold; z-index:2; margin-top:-8px; font-family:var(--english-font) !important; white-space:nowrap; }
-        .char-play-btn { position:absolute; top:-5px; right:-5px; z-index:60; width:42px; height:42px; border-radius:50%; background:#e74c3c; color:white; border:4px solid white; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(231,76,60,.3); transition:.2s; }
-        .char-play-btn:hover { background:#c0392b; transform:scale(1.15) rotate(5deg); }
-        .phrase-node { position:absolute; cursor:pointer; transition:transform .3s; z-index:20; transform:translate(-50%,-50%); perspective:1000px; }
-        .phrase-node:hover { transform:translate(-50%,-50%) scale(1.15); z-index:100 !important; }
-        .flip-card-inner { position:relative; width:100%; height:100%; text-align:center; transition:transform .6s; transform-style:preserve-3d; border-radius:50%; box-shadow:0 6px 18px rgba(0,0,0,.15); }
-        .phrase-node:hover .flip-card-inner { box-shadow:0 8px 25px rgba(243,178,54,.4); }
-        .is-flipped { transform:rotateY(180deg); }
-        .flip-card-front,.flip-card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:50%; border:5px solid #d0dede; background:white; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:border-color .3s; }
-        .phrase-node:hover .flip-card-front,.phrase-node:hover .flip-card-back { border-color:#f3b236; }
-        .flip-card-front { background:linear-gradient(135deg,#ffffff 0%,#f4f9f9 100%); color:#1e2e46; font-weight:bold; font-family:var(--kaiti-font) !important; }
-        .flip-card-back { transform:rotateY(180deg); }
-        .phrase-img { width:85%; height:85%; object-fit:contain; }
-        @media (max-width:768px){ body{padding-top:56px;} }
-        @media (max-width:600px){ .center-char{width:130px;height:130px;} .char-circle{border-width:5px;} #character-target{width:65px;height:65px;} .char-pinyin{font-size:1.1rem;margin-bottom:-5px;} .char-hint{font-size:.7rem;margin-top:-5px;} .char-play-btn{width:36px;height:36px;top:-8px;right:-8px;font-size:14px;} }
-    </style>
-</head>
-<body>
-    <div class="orbit-container" id="orbit-container">
-        <svg class="fan-layer" id="fan-layer"></svg>
-        <svg class="lines-layer" id="lines-layer"></svg>
-        <div class="center-char" id="center-char">
-            <div class="char-circle" onclick="goToTracing()">
-                <img id="char-bg-img" class="char-bg-img" alt="">
-                <div class="char-pinyin" id="char-pinyin"></div>
-                <div id="character-target"></div>
-                <div class="char-hint" id="ui-hint">✍️ 点击书写</div>
-            </div>
-            <button class="char-play-btn" onclick="event.stopPropagation(); playUnifiedAudio(targetChar);">🔊</button>
-        </div>
-        <div id="phrases-container"></div>
-    </div>
-<script>
-const LANG = MECC_CONFIG.getLang();
-const urlParams = new URLSearchParams(window.location.search);
-const targetChar = urlParams.get('char');
-
-const t = {
- zh:{ pageTitle:"生字研习", back:"返回四会字", hint:"✍️ 点击书写" },
- en:{ pageTitle:"Character Details", back:"Back to List", hint:"✍️ Click to trace" }
-}[LANG];
-
-const pinyinOverride={ '长':'cháng','会':'huì','了':'le','和':'hé','看':'kàn','大':'dà' };
-function getCharPinyin(char){ if(pinyinOverride[char]) return pinyinOverride[char]; if(window.pinyinPro) return window.pinyinPro.pinyin(char,{toneType:'symbol'}); return ''; }
-
-// --- 🌟 核心：统一发音逻辑 (本地录音 -> Azure云端 -> 系统降级) ---
-let globalAudio = null;
-
-    async function playUnifiedAudio(text) {
-        if (!text) return;
-        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
-
-        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
-        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
-
-        // 第一关：尝试本地录音 (增加验证：必须是真正的音频，过滤假 200 网页)
-        try {
-            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio = new Audio(localPath);
-                await globalAudio.play();
-                return; // 成功播放就退出
-            }
-        } catch(e) {}
-
-        // 第二关：本地没有，呼叫 Azure 晓晓
-        try {
-            const azureRes = await fetch(azureUrl);
-            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
-                const audioBlob = await azureRes.blob();
-                globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                await globalAudio.play();
-                return; // 成功播放就退出
-            }
-        } catch(e) {}
-
-        // 第三关：彻底断网兜底
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-        window.speechSynthesis.speak(msg);
-    }
-
-// 辅助函数：检查文件是否存在
-function checkFileExists(url) {
-    return new Promise((resolve) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('HEAD', url, true);
-        xhr.onload = () => resolve(xhr.status !== 404);
-        xhr.onerror = () => resolve(false);
-        xhr.send();
-    });
+    // 第三关：彻底断网兜底
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+    window.speechSynthesis.speak(msg);
 }
 
 function updateNavBackDisplay(label){
@@ -365,7 +174,6 @@ function renderPhrases(phraseArray){
   const scaleFactor=0.9+(f*0.35), imgSize=(isMobile?105:155)*scaleFactor, fontSize=(isMobile?1.3:1.9)*scaleFactor;
   const line=document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',cx); line.setAttribute('y1',cy); line.setAttribute('x2',x); line.setAttribute('y2',y); line.setAttribute('class','connect-line'); linesSvg.appendChild(line);
   const node=document.createElement('div'); node.className='phrase-node'; node.style.left=x+'px'; node.style.top=y+'px'; node.style.width=imgSize+'px'; node.style.height=imgSize+'px'; node.style.zIndex=Math.round(f*10)+20;
-  // 修改点：点击卡片也调用统一发音逻辑
   node.onclick=(event)=>{ event.stopPropagation(); playUnifiedAudio(phrase); node.querySelector('.flip-card-inner').classList.toggle('is-flipped'); };
   const webpUrl=`${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${encodeURIComponent(phrase)}.webp`;
   node.innerHTML=`<div class=\"flip-card-inner\"><div class=\"flip-card-front\" style=\"border-width:${5*scaleFactor}px;\"><span style=\"font-size:${fontSize}rem; line-height:1.2;\">${phrase}</span></div><div class=\"flip-card-back\" style=\"border-width:${5*scaleFactor}px;\"><img src=\"${webpUrl}\" class=\"phrase-img\" alt=\"${phrase}\" onerror=\"this.parentElement.style.background='#f0f5f5'; this.remove();\"></div></div>`;
