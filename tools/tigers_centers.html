@@ -46,8 +46,7 @@
         .kids-panel { flex: 1; padding: 5px 12px; overflow: hidden; display: grid; gap: 10px; align-content: center; justify-items: center; }
         .cols-3 { grid-template-columns: repeat(3, 1fr); }
         .cols-4 { grid-template-columns: repeat(4, 1fr); }
-        .kids-panel .avatar-circle { width: 100%; max-width: min(20vh, 155px); height: auto; aspect-ratio: 1; }
-
+        .kids-panel .avatar-circle { width: 100%; max-width: min(20vh, 155px); height: auto; aspect-ratio: 1 / 1; min-height: 0; }
         .math-shapes-panel { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 6px; justify-content: center; }
         .math-row  { flex: 0 0 31%; display: flex; align-items: center; background: #f8f9fa; border-radius: 10px; padding: 0 10px; border: 1px solid #eee; overflow: hidden; }
         .math-icon { width: 80px; flex-shrink: 0; font-size: min(10vh, 75px); text-align: center; display: flex; align-items: center; justify-content: center; }
@@ -87,7 +86,32 @@ const LOCAL_KEY  = CLOUD_KEY + '_local';
 const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
 let _localVer = 0;
 let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
-
+const allStudentsList = [
+    { name: "寇令宜",       img: "../images/avatars/tigers 25-26/Alivia.webp" },
+    { name: "潘佳媛",       img: "../images/avatars/tigers 25-26/Amayra.webp" },
+    { name: "罗燕婉",        img: "../images/avatars/tigers 25-26/Ariah.webp" },
+    { name: "高叶",         img: "../images/avatars/tigers 25-26/Avya.webp" },
+    { name: "冉未央",        img: "../images/avatars/tigers 25-26/Avyan.webp" },
+    { name: "金博雷",      img: "../images/avatars/tigers 25-26/Bradley.webp" },
+    { name: "董小小",    img: "../images/avatars/tigers 25-26/Charlotte.webp" },
+    { name: "康佳明",       img: "../images/avatars/tigers 25-26/Dakota.webp" },
+    { name: "白芮萌",      img: "../images/avatars/tigers 25-26/Emerson.webp" },
+    { name: "窦文怡", img: "../images/avatars/tigers 25-26/Everleigh D.webp" },
+    { name: "芮依晨", img: "../images/avatars/tigers 25-26/Everleigh R.webp" },
+    { name: "何佳莹",   img: "../images/avatars/tigers 25-26/Gabri'ella.webp" },
+    { name: "万家火",      img: "../images/avatars/tigers 25-26/Gabriel.webp" },
+    { name: "况何夕",       img: "../images/avatars/tigers 25-26/Hadley.webp" },
+    { name: "阮看山",       img: "../images/avatars/tigers 25-26/Kimani.webp" },
+    { name: "莫若兰",        img: "../images/avatars/tigers 25-26/Leyla.webp" },
+    { name: "兰琦玉",         img: "../images/avatars/tigers 25-26/Luke.webp" },
+    { name: "潘美伦",    img: "../images/avatars/tigers 25-26/Ma'Laysia.webp" },
+    { name: "罗大韦",      img: "../images/avatars/tigers 25-26/Maxwell.webp" },
+    { name: "杜坤",      img: "../images/avatars/tigers 25-26/Nikolas.webp" },
+    { name: "唐花花",      img: "../images/avatars/tigers 25-26/Scarlet.webp" },
+    { name: "吴若即",       img: "../images/avatars/tigers 25-26/Taraji.webp" },
+    { name: "裴同",       img: "../images/avatars/tigers 25-26/Thomas.webp" },
+    { name: "段卫龙",       img: "../images/avatars/tigers 25-26/Waylon.webp" }
+];
 function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(data)); } catch(e) {} }
 function loadLocal() {
     try {
