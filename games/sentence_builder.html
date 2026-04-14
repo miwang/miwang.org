@@ -24,11 +24,10 @@
         body { 
             background-color: #fff9ea; margin: 0; padding: 0;
             display: flex; flex-direction: column; min-height: 100vh; width: 100vw;
-            position: relative; padding-top: 60px; /* 预留全局导航栏空间 */
+            position: relative; padding-top: 60px;
         }
 
         #list-view { display: flex; flex-direction: column; min-height: calc(100vh - 60px); width: 100%; }
-        /* 删除了原有大标题，压缩头部空间 */
         .list-header { text-align: center; padding: 15px 0 10px 0; flex-shrink: 0; }
 
         #gallery-view {
@@ -48,12 +47,10 @@
         .sentence-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .sentence-card .card-info { padding: 12px 10px; text-align: center; font-size: 1.1rem; font-weight: bold; color: #333; background: white; flex: 1; display: flex; align-items: center; justify-content: center; }
 
-        /* 播放页固定在屏幕顶端，盖住导航栏 */
         #play-view { display: none; position: fixed; top:0; left:0; height: 100dvh; width: 100vw; flex-direction: column; align-items: center; padding: 6px 15px 10px; box-sizing: border-box; background: #fff9ea; z-index: 10000; overflow: hidden; }
         
         .play-top-bar { width: 100%; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; box-sizing: border-box; flex-shrink: 0; }
         
-        /* 🌟 统一优雅 SVG 返回按钮样式 */
         .play-back-btn { 
             color: #444; text-decoration: none; font-size: 1.1rem; font-weight: bold; 
             background: rgba(255,255,255,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
@@ -231,51 +228,44 @@
         let allSentences = []; 
         let currentFilteredList = [];
 
-        // --- 🌟 新增：三级朗读降级系统 ---
-        let globalAudio = null;
+        // --- 🌟 三级朗读降级系统（带 iOS 解锁） ---
+        let globalAudio = new Audio();
 
-    async function playUnifiedAudio(text) {
-        if (!text) return;
-        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            
+            // 💡 iOS 防拦截核心：同步触发一个静音的播放，拿到系统播放授权
+            globalAudio.pause();
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().catch(() => {});
 
-        const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
-        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+            const localPath = `../audio/sentences/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-        try {
-            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio = new Audio(localPath);
-                await globalAudio.play();
-                return; 
-            }
-        } catch(e) {}
+            try {
+                const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+                if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                    globalAudio.src = localPath;
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
 
-        try {
-            const azureRes = await fetch(azureUrl);
-            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
-                const audioBlob = await azureRes.blob();
-                globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                await globalAudio.play();
-                return; 
-            }
-        } catch(e) {}
+            try {
+                const azureRes = await fetch(azureUrl).catch(() => null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio.src = URL.createObjectURL(audioBlob);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
 
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-        window.speechSynthesis.speak(msg);
-    }
-
-        function checkFileExists(url) {
-            return new Promise((resolve) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('HEAD', url, true);
-                xhr.onload = () => resolve(xhr.status !== 404);
-                xhr.onerror = () => resolve(false);
-                xhr.send();
-            });
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+            window.speechSynthesis.speak(msg);
         }
-        // ---------------------------------
 
         window.onload = () => {
             MECC_CONFIG.renderGlobalNav(t.title);
@@ -504,7 +494,6 @@
             document.getElementById('reading-overlay').style.display = 'flex'; requestAnimationFrame(autoSizeReading);
         }
 
-        // 🌟 修改：调用统一的朗读函数
         function readCurrentSentence() { 
             const fullText = currentData.words.join('') + (currentData.punctuation || '');
             playUnifiedAudio(fullText); 

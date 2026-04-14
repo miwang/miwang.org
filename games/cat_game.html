@@ -143,46 +143,43 @@
             }
         }[LANG];
 
-        // ==========================================
         // 🌟 统一的三级音频降级系统
-        // ==========================================
-        let globalAudio = null;
+        let globalAudio = new Audio();
 
-    async function playUnifiedAudio(text) {
-        if (!text) return;
-        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            
+            globalAudio.pause();
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().catch(() => {});
 
-        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
-        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-        // 第一关：尝试本地录音 (增加验证：必须是真正的音频，过滤假 200 网页)
-        try {
-            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio = new Audio(localPath);
-                await globalAudio.play();
-                return; // 成功播放就退出
-            }
-        } catch(e) {}
+            try {
+                const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+                if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                    globalAudio.src = localPath;
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
 
-        // 第二关：本地没有，呼叫 Azure 晓晓
-        try {
-            const azureRes = await fetch(azureUrl);
-            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
-                const audioBlob = await azureRes.blob();
-                globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                await globalAudio.play();
-                return; // 成功播放就退出
-            }
-        } catch(e) {}
+            try {
+                const azureRes = await fetch(azureUrl).catch(() => null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio.src = URL.createObjectURL(audioBlob);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
 
-        // 第三关：彻底断网兜底
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-        window.speechSynthesis.speak(msg);
-    }
-        // ==========================================
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+            window.speechSynthesis.speak(msg);
+        }
 
         window.onload = async () => {
             MECC_CONFIG.renderGlobalNav(t.title.replace(/😸/g, '').trim());
@@ -196,9 +193,7 @@
             document.getElementById('next-btn').innerText = t.nextBtn;
             document.getElementById('btn-back-setup').innerText = t.backSetup;
 
-            if (LANG === 'en') {
-                document.getElementById('vs-scoreboard').style.display = 'none';
-            }
+            if (LANG === 'en') document.getElementById('vs-scoreboard').style.display = 'none';
 
             const grid = document.getElementById('char-grid');
             const saved = JSON.parse(localStorage.getItem('catGameWords')) || [];
@@ -262,10 +257,8 @@
                 const cat = document.createElement('div'); cat.className = 'hidden-cat'; cat.innerText = '😸'; cat.id = 'cat-'+i;
                 const circle = document.createElement('div'); circle.className = 'char-circle'; circle.innerText = char; circle.id = 'circle-'+i;
                 
-                // pointerdown 在 iOS/Android 上比 onclick 更早触发，确保音频在用户手势中顺滑播放
-                circle.addEventListener('pointerdown', () => {
-                    playUnifiedAudio(char);
-                });
+                // pointerdown 在 iOS 上更早触发
+                circle.addEventListener('pointerdown', () => { playUnifiedAudio(char); });
 
                 circle.onclick = () => {
                     if (roundOver || circle.classList.contains('fly-away')) return;
@@ -276,9 +269,7 @@
                         if (LANG === 'zh') {
                             studentScore++; document.getElementById('score-student').innerText = studentScore;
                             document.getElementById('result-text').innerText = t.foundT(char);
-                        } else {
-                            document.getElementById('result-text').innerText = t.foundP(char);
-                        }
+                        } else { document.getElementById('result-text').innerText = t.foundP(char); }
                         document.getElementById('next-btn').style.display = 'block';
                     } else {
                         MECC_AUDIO.playSfx('swoosh');

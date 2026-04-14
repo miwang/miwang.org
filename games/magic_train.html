@@ -104,51 +104,48 @@
         en: { title: "🚂 Magic Word Train", instruction: "Drag the characters onto the train.", winMsg: "Choo choo! The train is departing!" }
     }[LANG];
 
-    // ==========================================
-    // 🌟 统一的三级音频降级系统（完全替换老代码）
-    // ==========================================
-    let globalAudio = null;
+    // 🌟 统一的三级音频降级系统（带 iOS 强解锁）
+    let globalAudio = new Audio();
 
     async function playUnifiedAudio(text) {
         if (!text) return;
-        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        
+        // iOS 解锁
+        globalAudio.pause();
+        globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+        globalAudio.play().catch(() => {});
 
         const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
         const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-        // 第一关：尝试本地录音 (增加验证：必须是真正的音频，过滤假 200 网页)
         try {
             const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
             if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio = new Audio(localPath);
+                globalAudio.src = localPath;
                 await globalAudio.play();
-                return; // 成功播放就退出
+                return; 
             }
         } catch(e) {}
 
-        // 第二关：本地没有，呼叫 Azure 晓晓
         try {
-            const azureRes = await fetch(azureUrl);
-            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+            const azureRes = await fetch(azureUrl).catch(() => null);
+            if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
                 const audioBlob = await azureRes.blob();
-                globalAudio = new Audio(URL.createObjectURL(audioBlob));
+                globalAudio.src = URL.createObjectURL(audioBlob);
                 await globalAudio.play();
-                return; // 成功播放就退出
+                return; 
             }
         } catch(e) {}
 
-        // 第三关：彻底断网兜底
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
         window.speechSynthesis.speak(msg);
     }
 
-    // 维持 iOS 音频会话
     document.addEventListener('touchstart', () => {
         new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
-    }, { passive: true });
-    // ==========================================
+    }, { passive: true, once: true });
 
     window.onload = async () => {
         MECC_CONFIG.renderGlobalNav(t.title.replace(/🚂/g, '').trim());

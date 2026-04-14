@@ -19,14 +19,13 @@
             --teal: #598586;
         }
 
-        /* 🌟 修复核心：强制盒模型，保证 padding 不会撑爆屏幕 */
         *, *::before, *::after {
             box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            height: 100vh; /* 严格锁死一屏高度 */
+            height: 100vh;
             height: 100dvh;
             background: var(--reader-bg);
             overflow: hidden;
@@ -43,7 +42,6 @@
             padding: 12px 18px 15px; 
         }
 
-        /* 隐藏废弃标题栏 */
         .reader-topbar { display: none; }
 
         .reader-main {
@@ -79,20 +77,27 @@
             word-break: break-word;
         }
 
+        /* 🌟 修复：使用 Flex 完美居中文字，去除会挤压文字的左右 padding */
         .speak-btn {
-            margin-top: 16px;
+            margin: 20px auto 0; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 14px;
-            padding: 10px 30px;
+            padding: 0 40px;
+            height: 48px;
+            min-width: 160px;
             background: #598586;
             color: #ffffff;
-            font-size: 1.1rem;
-            border: 1.5px solid transparent;
-            box-shadow: none;
-            transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
-            flex-shrink: 0; /* 防止按钮被挤压变形 */
+            font-size: 1.2rem;
+            border: none;
+            box-shadow: 0 4px 12px rgba(89, 133, 134, 0.3);
+            transition: background 0.2s ease, transform 0.15s ease;
+            cursor: pointer;
+            flex-shrink: 0;
         }
-        .speak-btn:hover { background: #4f7879; }
-        .speak-btn:active { transform: scale(0.98); }
+        .speak-btn:active { transform: scale(0.95); }
+        .speak-btn.success-anim { background: #4caf50; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4); }
 
         .reader-footer {
             display: flex;
@@ -101,7 +106,7 @@
             gap: 35px;
             padding-top: 15px;
             padding-bottom: 5px;
-            flex-shrink: 0; /* 🌟 保证底部控制栏绝对不被挤出屏幕 */
+            flex-shrink: 0; 
         }
 
         .nav-btn {
@@ -122,14 +127,7 @@
         
         .nav-btn:hover { background: #e1a328; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(243, 178, 54, 0.4); }
         .nav-btn:active { transform: scale(0.95); }
-
-        .nav-btn:disabled {
-            background-color: #d1d5db !important;
-            color: #9ca3af !important;
-            box-shadow: none !important;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .nav-btn:disabled { background-color: #d1d5db !important; color: #9ca3af !important; box-shadow: none !important; cursor: not-allowed; transform: none !important; }
 
         .center-indicator {
             color: var(--teal);
@@ -140,37 +138,51 @@
             text-align: center;
         }
 
-        .message-box {
-            color: var(--muted);
-            text-align: center;
-            font-size: 1.05rem;
-            font-family: "LXGW WenKai Lite", sans-serif;
-            padding: 40px 16px;
-        }
+        .message-box { color: var(--muted); text-align: center; font-size: 1.05rem; font-family: "LXGW WenKai Lite", sans-serif; padding: 40px 16px; }
 
-        /* 🌟 专门针对 1280x720 等宽矮屏进行高度极限压缩 */
         @media (max-height: 768px) {
             body { padding-top: 60px; }
             .reader-shell { padding: 8px 14px 10px; }
             .reader-main { padding: 10px 20px; }
-            .book-image { max-height: 38vh; } /* 进一步压低图片，给字留空间 */
+            .book-image { max-height: 38vh; } 
             .book-text { margin-top: 12px; font-size: clamp(1.5rem, 3.5vw, 2.2rem); }
-            .speak-btn { margin-top: 10px; padding: 8px 24px; font-size: 1rem; }
+            .speak-btn { margin-top: 15px; height: 42px; padding: 0 30px; font-size: 1.1rem; }
             .reader-footer { gap: 25px; padding-top: 10px; padding-bottom: 0px; }
             .nav-btn { height: 42px; width: 80px; font-size: 1.4rem; }
         }
 
-        /* 手机竖屏适配 */
+        /* 🌟 修复：手机端重新分配空间，填平“鱼塘” */
         @media (max-width: 768px) {
-            body { padding-top: 62px; }
-            .reader-shell { padding: 10px 12px; }
-            .reader-main { padding: 20px 14px; border-radius: 20px; }
-            .book-image { max-height: 38vh; }
-            .book-text { font-size: clamp(1.45rem, 6.2vw, 2rem); margin-top: 16px; }
-            .reader-footer { gap: 20px; padding-top: 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 10px)); }
-            .nav-btn { width: 70px; height: 42px; font-size: 1.3rem; }
+            body { padding-top: 56px; }
+            .reader-shell { padding: 10px; }
+            .reader-main { 
+                padding: 15px 14px; 
+                border-radius: 20px; 
+                justify-content: center; /* 恢复垂直居中，不再把元素全顶到上面 */
+                gap: 15px; /* 用 gap 来控制图文按钮间距 */
+            } 
+            .book-image { 
+                max-height: 52vh; /* 图片更霸气 */
+                width: 100%; 
+                border-radius: 12px; 
+                margin-top: 0; 
+            } 
+            .book-text { 
+                font-size: clamp(1.8rem, 8vw, 2.6rem); /* 字体更大 */
+                margin-top: 5px; 
+                line-height: 1.4; 
+            } 
+            .reader-footer { gap: 20px; padding-top: 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+            .nav-btn { width: 80px; height: 46px; font-size: 1.4rem; }
             .center-indicator { font-size: 1rem; }
-            .speak-btn { width: 100%; max-width: 260px; height: 44px; }
+            .speak-btn { 
+                width: 85%; 
+                max-width: 320px; 
+                height: 52px; /* 按钮变高，更好按 */
+                padding: 0; /* 彻底去掉内边距，靠 flex 完美居中 */
+                font-size: 1.3rem; 
+                margin-top: 10px; 
+            } 
         }
     </style>
 </head>
@@ -197,28 +209,8 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: {
-                baseTitle: '绘本阅读',
-                back: '返回图书馆',
-                notFound: '未找到书籍编号。请从图书馆重新进入。',
-                missing: '这本书的内容还在路上哦。',
-                loadFail: '数据加载失败，请重试。',
-                prev: '←',
-                next: '→',
-                speak: '朗读',
-                noSpeech: '抱歉，您的浏览器不支持语音朗读功能。'
-            },
-            en: {
-                baseTitle: 'Reader',
-                back: 'Back to Library',
-                notFound: 'Book ID not found. Please reopen from the library.',
-                missing: 'This book is not ready yet.',
-                loadFail: 'Failed to load book data. Please try again.',
-                prev: '←',
-                next: '→',
-                speak: 'Read Aloud',
-                noSpeech: 'Sorry, your browser does not support speech synthesis.'
-            }
+            zh: { baseTitle: '绘本阅读', back: '返回图书馆', notFound: '未找到书籍编号。请从图书馆重新进入。', missing: '这本书的内容还在路上哦。', loadFail: '数据加载失败，请重试。', prev: '←', next: '→', speak: '朗读', noSpeech: '抱歉，您的浏览器不支持语音朗读功能。' },
+            en: { baseTitle: 'Reader', back: 'Back to Library', notFound: 'Book ID not found. Please reopen from the library.', missing: 'This book is not ready yet.', loadFail: 'Failed to load book data. Please try again.', prev: '←', next: '→', speak: 'Read Aloud', noSpeech: 'Sorry, your browser does not support speech synthesis.' }
         }[LANG];
 
         let currentBookData = null;
@@ -234,6 +226,19 @@
         const btnSpeak = document.getElementById('btn-speak');
         const urlParams = new URLSearchParams(window.location.search);
         const bookId = urlParams.get('id');
+
+        let currentAudio = new Audio();
+        let audioUnlocked = false;
+
+        const unlockInteraction = () => {
+            if (audioUnlocked) return;
+            currentAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            currentAudio.play().then(() => { audioUnlocked = true; }).catch(()=>{});
+            document.removeEventListener('touchstart', unlockInteraction);
+            document.removeEventListener('mousedown', unlockInteraction);
+        };
+        document.addEventListener('touchstart', unlockInteraction, { passive: true });
+        document.addEventListener('mousedown', unlockInteraction, { passive: true });
 
         window.onload = () => {
             MECC_CONFIG.renderGlobalNav(t.baseTitle);
@@ -255,9 +260,7 @@
                 event.preventDefault();
                 if (document.referrer && document.referrer.includes('library')) {
                     window.history.back();
-                } else {
-                    window.location.href = backLink.href;
-                }
+                } else { window.location.href = backLink.href; }
             });
         }
 
@@ -269,46 +272,25 @@
         }
 
         function showMessage(message, isError = false) {
-            titleEl.textContent = t.baseTitle;
-            counterEl.textContent = '—';
-            footerIndicator.textContent = '—';
-            imageEl.style.display = 'none';
-            textEl.textContent = message;
-            textEl.className = 'message-box';
-            btnSpeak.style.display = 'none';
-            btnPrev.disabled = true;
-            btnNext.disabled = true;
+            titleEl.textContent = t.baseTitle; counterEl.textContent = '—'; footerIndicator.textContent = '—';
+            imageEl.style.display = 'none'; textEl.textContent = message; textEl.className = 'message-box';
+            btnSpeak.style.display = 'none'; btnPrev.disabled = true; btnNext.disabled = true;
             if (isError) textEl.style.color = '#d94040';
         }
 
         function loadBook() {
-            if (bookId === null) {
-                showMessage(t.notFound);
-                return;
-            }
-
+            if (bookId === null) { showMessage(t.notFound); return; }
             fetch(`../data/books.json?v=${Date.now()}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Data not found');
-                    return response.json();
-                })
+                .then(response => { if (!response.ok) throw new Error('Data not found'); return response.json(); })
                 .then(data => {
-                    const booksList = data.book_list || [];
-                    currentBookData = booksList[bookId];
-                    if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) {
-                        renderPage();
-                    } else {
-                        showMessage(t.missing);
-                    }
+                    const booksList = data.book_list || []; currentBookData = booksList[bookId];
+                    if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) { renderPage(); } 
+                    else { showMessage(t.missing); }
                 })
-                .catch(() => {
-                    showMessage(t.loadFail, true);
-                });
+                .catch(() => { showMessage(t.loadFail, true); });
         }
 
-        imageEl.onerror = function() {
-            this.style.display = 'none';
-        };
+        imageEl.onerror = function() { this.style.display = 'none'; };
 
         function renderPage() {
             const totalPages = currentBookData.pages.length;
@@ -322,85 +304,50 @@
             if (navTitle) navTitle.innerText = currentTitle;
 
             const imgSrc = normalizeImagePath(currentPage.image || '');
-            if (imgSrc) {
-                imageEl.src = imgSrc;
-                imageEl.style.display = 'block';
-            } else {
-                imageEl.style.display = 'none';
-            }
+            if (imgSrc) { imageEl.src = imgSrc; imageEl.style.display = 'block'; } 
+            else { imageEl.style.display = 'none'; }
 
-            textEl.className = 'book-text phrase-text';
-            textEl.style.color = '';
-            textEl.textContent = currentPage.text || '';
+            textEl.className = 'book-text phrase-text'; textEl.style.color = ''; textEl.textContent = currentPage.text || '';
             btnSpeak.style.display = 'inline-flex';
-
             btnPrev.disabled = (currentPageIndex === 0);
             btnNext.disabled = (currentPageIndex === totalPages - 1);
         }
 
-        function goPrev() {
-            if (!currentBookData) return;
-            if (currentPageIndex > 0) {
-                currentPageIndex--;
-                renderPage();
+        function goPrev() { if (currentBookData && currentPageIndex > 0) { currentPageIndex--; renderPage(); } }
+        function goNext() { if (currentBookData && currentPageIndex < currentBookData.pages.length - 1) { currentPageIndex++; renderPage(); } }
+
+        async function speakText() {
+            const textToRead = textEl.textContent;
+            if (!textToRead) return;
+
+            btnSpeak.classList.add('success-anim');
+            setTimeout(() => btnSpeak.classList.remove('success-anim'), 500);
+
+            if (!audioUnlocked) {
+                currentAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+                currentAudio.play().catch(()=>{});
+                audioUnlocked = true;
+            }
+
+            const apiUrl = `/api/tts?text=${encodeURIComponent(textToRead)}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("API Error");
+
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("audio")) throw new Error("Not Audio");
+
+                const audioBlob = await response.blob();
+                currentAudio.src = URL.createObjectURL(audioBlob);
+                await currentAudio.play();
+            } catch (e) {
+                console.warn("云端发音失败，降级到系统声音:", e);
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = 'zh-CN';
+                window.speechSynthesis.speak(utterance);
             }
         }
-
-        function goNext() {
-            if (!currentBookData) return;
-            if (currentPageIndex < currentBookData.pages.length - 1) {
-                currentPageIndex++;
-                renderPage();
-            }
-        }
-
-let currentAudio = null; 
-
-async function speakText() {
-    const textToRead = textEl.textContent;
-    if (!textToRead) return;
-
-    btnSpeak.classList.add('success-anim');
-    setTimeout(() => btnSpeak.classList.remove('success-anim'), 500);
-
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-    }
-
-    const apiUrl = `/api/tts?text=${encodeURIComponent(textToRead)}`;
-    
-    try {
-        // 💡 升级：先用 fetch 去把数据拉过来“验货”
-        const response = await fetch(apiUrl);
-        
-        if (!response.ok) {
-            throw new Error(`服务器报错: ${response.status} ${response.statusText}`);
-        }
-
-        // 💡 关键防御：检查返回的头信息，是不是真正的音频 (audio)
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("audio")) {
-            throw new Error("返回的不是音频文件！你可能是在本地测试，或者 API 路径没生效。");
-        }
-
-        // 验货成功，把音频数据转换成播放器能认的格式
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        currentAudio = new Audio(audioUrl);
-        await currentAudio.play();
-
-    } catch (e) {
-        // 只有当云端音频彻底失败时，才会走到这里
-        console.error("❌ Azure 发音失败，原因：", e.message);
-        console.log("👉 自动切换回系统默认声音");
-        
-        const utterance = new SpeechSynthesisUtterance(textToRead);
-        utterance.lang = 'zh-CN';
-        window.speechSynthesis.speak(utterance);
-    }
-}
     </script>
 </body>
 </html>

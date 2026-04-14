@@ -16,7 +16,6 @@
 
         body { margin:0; padding:0; background:#f0f3f7; overflow:hidden; display:flex; flex-direction:column; align-items:center; height:100vh; width:100vw; user-select:none; padding-top:60px; }
 
-        /* ── 选词界面：对齐五子棋风格 ── */
         #start-screen { display:flex; flex-direction:column; align-items:center; width:95%; max-width:1100px; padding-top:16px; background:transparent; gap:0; }
         .controls { display:flex; gap:10px; justify-content:center; margin-bottom:12px; flex-shrink:0; }
         .btn { padding:8px 16px; font-size:1rem; border-radius:50px; cursor:pointer; border:none; transition:transform 0.1s; }
@@ -28,20 +27,15 @@
         .char-card { aspect-ratio:1/1; display:flex; justify-content:center; align-items:center; font-size:1.8rem; background:white; border-radius:10px; cursor:pointer; border:2px solid #eee; transition:0.2s; }
         .char-card.selected { background:var(--orange); color:white; border-color:#d35400; transform:scale(1.05); box-shadow:0 4px 0 #d35400; }
 
-        /* ── 游戏界面 ── */
         #game-screen { display:none; width:100%; height:calc(100vh - 60px); position:relative; background:linear-gradient(to bottom,#87CEEB 0%,#b8e8ff 55%,#c8f0c8 100%); }
         .target-box { position:absolute; top:15px; left:50%; transform:translateX(-50%); background:white; padding:8px 30px; border-radius:50px; border:3px solid var(--teal); font-size:clamp(1.2rem,3vh,2rem); color:#333; z-index:30; white-space:nowrap; }
         .score-pill { position:absolute; top:20px; right:15px; background:var(--accent); color:#1a2740; padding:6px 15px; border-radius:50px; font-size:1rem; z-index:40; }
 
-        /* 果篮容器：由 JS 注入 SVG */
         #basket { position:absolute; bottom:100px; left:50%; transform:translateX(-50%); width:clamp(140px,14vw,200px); height:clamp(120px,13vh,170px); z-index:15; cursor:pointer; }
-
-        /* 水果：emoji 和字居中叠在一起 */
         .fruit { position:absolute; width:clamp(80px,8vw,120px); height:clamp(80px,8vw,120px); display:flex; justify-content:center; align-items:center; cursor:pointer; z-index:10; }
         .fruit-icon { position:absolute; font-size:clamp(3.5rem,6.5vw,8rem); line-height:1; filter:drop-shadow(2px 3px 5px rgba(0,0,0,0.25)); }
         .fruit span { position:relative; z-index:11; color:white; font-size:clamp(1.1rem,1.5vw,1.8rem); text-shadow:1px 1px 0 rgba(0,0,0,0.9),2px 2px 8px rgba(0,0,0,0.8); }
 
-        /* ── 手机端 ── */
         @media (max-width:768px) {
             body { padding-top:56px; }
             .mecc-nav-back span { display:none; }
@@ -86,50 +80,55 @@
         let selectedWords = []; let score = 0; let targetWord = ""; let gameActive = false; let isPaused = false;
         let appleInterval = null; let activeWords = new Set(); let lastCorrectTime = Date.now();
 
-        // ==========================================
-        // 🌟 统一的三级音频降级系统
-        // ==========================================
-        let globalAudio = null;
+        // 🌟 终极发音降级引擎
+        let globalAudio = new Audio();
+        let audioUnlocked = false;
 
-    async function playUnifiedAudio(text) {
-        if (!text) return;
-        if (globalAudio) { globalAudio.pause(); globalAudio = null; }
+        const unlockInteraction = () => {
+            if (audioUnlocked) return;
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().then(() => { audioUnlocked = true; }).catch(()=>{});
+            document.removeEventListener('touchstart', unlockInteraction);
+            document.removeEventListener('mousedown', unlockInteraction);
+        };
+        document.addEventListener('touchstart', unlockInteraction, { passive: true });
+        document.addEventListener('mousedown', unlockInteraction, { passive: true });
 
-        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
-        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
-
-        // 第一关：尝试本地录音 (增加验证：必须是真正的音频，过滤假 200 网页)
-        try {
-            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio = new Audio(localPath);
-                await globalAudio.play();
-                return; // 成功播放就退出
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            if (!audioUnlocked) {
+                globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+                globalAudio.play().catch(()=>{});
+                audioUnlocked = true;
             }
-        } catch(e) {}
 
-        // 第二关：本地没有，呼叫 Azure 晓晓
-        try {
-            const azureRes = await fetch(azureUrl);
-            if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
-                const audioBlob = await azureRes.blob();
-                globalAudio = new Audio(URL.createObjectURL(audioBlob));
-                await globalAudio.play();
-                return; // 成功播放就退出
-            }
-        } catch(e) {}
+            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
 
-        // 第三关：彻底断网兜底
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-        window.speechSynthesis.speak(msg);
-    }
-        // 维持 iOS 音频会话
-        document.addEventListener('touchstart', () => {
-            new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
-        }, { passive: true, once: true });
-        // ==========================================
+            try {
+                const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+                if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
+                    globalAudio.src = localPath;
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
+
+            try {
+                const azureRes = await fetch(azureUrl).catch(() => null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio.src = URL.createObjectURL(audioBlob);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
+
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+            window.speechSynthesis.speak(msg);
+        }
 
         function renderBasket() {
             document.getElementById('basket').innerHTML = `
@@ -228,7 +227,6 @@
         function backToSetup() {
             gameActive = false; clearInterval(appleInterval);
             document.querySelectorAll('.fruit').forEach(f => f.remove());
-            if (globalAudio) { globalAudio.pause(); globalAudio = null; }
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
             updateBackBtn(t.back, MECC_CONFIG.getBackHref());
