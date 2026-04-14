@@ -233,12 +233,13 @@ function handleAvatarClick(id) {
     } else { upPhoto(id); }
 }
 
-function upPhoto(id) { tf(f => compress(f, 150, 0.65, res => { const s = data.students.find(x => x.id === id); if(s) { s.photo = res; commit(); } })); }
-function upBg(z)     { tf(f => compress(f, 300, 0.7,  res => { data.bgImages[z] = res; commit(); })); }
+// 修改后的代码（清晰度提升 4 倍以上）
+function upPhoto(id) { tf(f => compress(f, 300, 0.85, res => { const s = data.students.find(x => x.id === id); if(s) { s.photo = res; commit(); } })); }
+function upBg(z)     { tf(f => compress(f, 800, 0.85,  res => { data.bgImages[z] = res; commit(); })); }
 
 function tf(cb) {
     const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
-    inp.onchange = e => { if (!e.target.files[0]) return; showLoading(true,'压缩中...'); cb(e.target.files[0]); setTimeout(()=>showLoading(false),800); };
+    inp.onchange = e => { if (!e.target.files[0]) return; showLoading(true,'处理中...'); cb(e.target.files[0]); setTimeout(()=>showLoading(false),800); };
     inp.click();
 }
 function compress(file, maxPx, q, cb) {
@@ -268,9 +269,9 @@ function recompressDataUrl(dataUrl, maxPx, q) {
 async function recompressAllImages(parsed) {
     const result = { step: parsed.step||0, lastDateStr: parsed.lastDateStr||'暂无记录', bgImages:[null,null,null,null], students:[] };
     const bgs = parsed.bgImages||[null,null,null,null];
-    for (let i=0;i<4;i++) result.bgImages[i] = await recompressDataUrl(bgs[i],300,0.7);
+    for (let i=0;i<4;i++) result.bgImages[i] = await recompressDataUrl(bgs[i],800,0.85); // 背景图提升至 800 像素，85% 画质
     for (const s of (parsed.students||[])) {
-        result.students.push({ id:s.id, name:s.name, groupIndex:s.groupIndex, mathSubGroup:s.mathSubGroup||0, rank:s.rank, photo: await recompressDataUrl(s.photo,150,0.65) });
+        result.students.push({ id:s.id, name:s.name, groupIndex:s.groupIndex, mathSubGroup:s.mathSubGroup||0, rank:s.rank, photo: await recompressDataUrl(s.photo,300,0.85) }); // 头像提升至 300 像素，85% 画质
     }
     return result;
 }
