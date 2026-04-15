@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Wall 汇总控制台</title>
+    
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        body {
+            background-color: #f7f9fc;
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+
+        /* 汇总主容器：更加紧凑 */
+        .dashboard-wrapper {
+            max-width: 1000px; /* 缩减了整体宽度 */
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 8px solid #e1b382; /* 边框变细 */
+            border-radius: 12px;
+            padding: 25px 30px; /* 缩减内边距 */
+        }
+
+        /* 控制台顶部装饰 */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 35px; /* 缩减间距 */
+        }
+
+        .bunting-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px; /* 缩减旗帜间距 */
+            margin-bottom: 20px;
+        }
+
+        .pennant {
+            width: 40px;
+            height: 55px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 10px;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 紧凑的网格布局 */
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 卡片宽度缩减 */
+            gap: 15px; /* 卡片间距缩减 */
+        }
+
+        /* 极简扁平化卡片 */
+        .unit-card {
+            background: #ffffff;
+            border: none;
+            border-top: 5px solid var(--theme-color); /* 顶部色块装饰 */
+            border-radius: 8px; /* 较小的圆角 */
+            padding: 15px 15px 20px;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03); /* 极弱的扁平投影 */
+        }
+
+        .unit-card:hover {
+            background: #fafbfc; /* 悬浮仅改变底色 */
+            transform: translateY(-2px); /* 轻微上浮，无夸张阴影 */
+        }
+
+        /* 单元编号 (方形圆角更扁平) */
+        .unit-badge {
+            width: 36px;
+            height: 36px;
+            background-color: var(--theme-color);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem; /* 字号调小 */
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .unit-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .unit-status {
+            font-size: 0.85rem;
+            color: #777;
+            background: #f0f2f5;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        /* 低饱和度马卡龙主题色 */
+        .color-1 { --theme-color: #ffb5c6; }
+        .color-2 { --theme-color: #ffd19a; }
+        .color-3 { --theme-color: #aae0b0; }
+        .color-4 { --theme-color: #a3d5f5; }
+        .color-5 { --theme-color: #cdb4e6; }
+        .color-6 { --theme-color: #92e0d8; }
+        .color-7 { --theme-color: #f7a8b8; }
+        .color-8 { --theme-color: #ffe699; }
+    </style>
+</head>
+<body>
+
+    <nav class="mecc-global-nav">
+        <a href="../teachers.html" class="mecc-nav-back">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+            <span class="font-zh">返回主页</span>
+        </a>
+        <h1 class="mecc-nav-title font-en">Focus Wall <span class="font-zh">教学看板汇总</span></h1>
+    </nav>
+
+    <div class="dashboard-wrapper fade-in">
+        
+        <div class="dashboard-header">
+            <div class="bunting-container">
+                <div class="pennant bg-pink font-en">F</div>
+                <div class="pennant bg-orange font-en">O</div>
+                <div class="pennant bg-green font-en">C</div>
+                <div class="pennant bg-blue font-en">U</div>
+                <div class="pennant bg-purple font-en">S</div>
+            </div>
+            <h2 class="font-zh" style="font-size: 1.8rem; color: #555;">课程大纲预览</h2>
+        </div>
+
+        <div class="unit-grid">
+            
+            <a href="focus_wall_unit/unit_school.html" class="unit-card color-1">
+                <div class="unit-badge font-en">1</div>
+                <div class="unit-name font-zh">我的学校</div>
+                <div class="unit-status font-zh">✅ 已上线</div>
+            </a>
+
+            <a href="#" class="unit-card color-2" style="opacity: 0.65;">
+                <div class="unit-badge font-en">2</div>
+                <div class="unit-name font-zh">我的家庭</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+
+            <a href="#" class="unit-card color-3" style="opacity: 0.65;">
+                <div class="unit-badge font-en">3</div>
+                <div class="unit-name font-zh">我的身体</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+
+            <a href="#" class="unit-card color-4" style="opacity: 0.65;">
+                <div class="unit-badge font-en">4</div>
+                <div class="unit-name font-zh">食物与饮料</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+
+            <a href="#" class="unit-card color-5" style="opacity: 0.65;">
+                <div class="unit-badge font-en">5</div>
+                <div class="unit-name font-zh">动物世界</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+
+            <a href="#" class="unit-card color-6" style="opacity: 0.65;">
+                <div class="unit-badge font-en">6</div>
+                <div class="unit-name font-zh">天气与季节</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+            
+            <a href="#" class="unit-card color-7" style="opacity: 0.65;">
+                <div class="unit-badge font-en">7</div>
+                <div class="unit-name font-zh">社区与职业</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+            
+            <a href="#" class="unit-card color-8" style="opacity: 0.65;">
+                <div class="unit-badge font-en">8</div>
+                <div class="unit-name font-zh">交通与旅行</div>
+                <div class="unit-status font-zh">⏳ 建设中</div>
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>

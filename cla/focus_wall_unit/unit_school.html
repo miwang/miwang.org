@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单元：我的学校 - Focus Wall</title>
+    
+    <link rel="stylesheet" href="../../css/common_nav.css">
+    <link rel="stylesheet" href="../../css/style.css">
+
+    <style>
+        body {
+            background-color: #f7f9fc; 
+            padding-top: 80px; 
+            padding-bottom: 40px;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .wood-board {
+            max-width: 1200px; 
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 12px solid #e1b382; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            padding: 40px;
+            position: relative;
+        }
+
+        .bunting-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 45px;
+        }
+
+        .pennant {
+            width: 60px;
+            height: 75px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 15px;
+            font-size: 48px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .bg-pink   { background-color: #ffb5c6; }
+        .bg-orange { background-color: #ffd19a; }
+        .bg-green  { background-color: #aae0b0; }
+        .bg-blue   { background-color: #a3d5f5; }
+        .bg-purple { background-color: #cdb4e6; }
+        .bg-teal   { background-color: #92e0d8; }
+
+        .pocket-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 35px;
+        }
+
+        .pocket {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            border-radius: 12px;
+            background-color: #fff;
+            border: 2px solid var(--theme-color); 
+            overflow: hidden; 
+        }
+        
+        .pocket:hover { transform: translateY(-4px); }
+
+        .pocket-header {
+            background-color: var(--theme-color);
+            padding: 12px 15px;
+            text-align: center;
+            color: white;
+            font-size: 2.8rem; 
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .pocket-body {
+            background-color: #fafbfc;
+            min-height: 250px;
+            padding: 25px 25px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pocket-body ul {
+            padding-left: 25px;
+            color: #333;
+            line-height: 2; 
+            margin-bottom: 5px;
+            font-size: 1.5rem; 
+        }
+        .pocket-body li { margin-bottom: 12px; }
+        
+        .guide-question-title {
+            margin-top: 15px; 
+            font-weight: bold; 
+            color: #777; 
+            font-size: 1.8rem; 
+        }
+
+        .blank-line {
+            display: inline-block;
+            width: 70px;
+            border-bottom: 2px solid #555; 
+            margin: 0 5px;
+        }
+
+        /* 思维导图 */
+        .mindmap-container {
+            position: relative;
+            width: 100%;
+            height: 320px; 
+            margin: 15px 0;
+        }
+        .mindmap-lines {
+            position: absolute;
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+        
+        .node {
+            position: absolute;
+            background: #fff;
+            border: 2px solid var(--theme-color); 
+            border-radius: 50%;
+            display: flex !important;
+            align-items: center !important;     
+            justify-content: center !important; 
+            text-align: center;
+            z-index: 2;
+            transform: translate(-50%, -50%);
+            width: 80px; height: 80px; 
+        }
+        
+        .node-center {
+            width: 100px; height: 100px; 
+            top: 50%; left: 50%;
+            background: var(--theme-color);
+            border: none; 
+        }
+        
+        .node-text { color: #333; font-weight: bold; font-size: 1.5rem; line-height: 1; }
+        .node-center .node-text { color: white; font-size: 1.9rem; }
+
+        .node-1 { top: 8%; left: 50%; }   
+        .node-2 { top: 22%; left: 82%; }  
+        .node-3 { top: 60%; left: 92%; }  
+        .node-4 { top: 92%; left: 68%; }  
+        .node-5 { top: 92%; left: 32%; }  
+        .node-6 { top: 60%; left: 8%; }   
+        .node-7 { top: 22%; left: 18%; }  
+
+        /* 字词标签 */
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .word-tag {
+            background-color: #fff;
+            border: 2px solid var(--theme-color); 
+            padding: 8px 20px;
+            border-radius: 30px; 
+        }
+        .word-tag-text { color: #333; font-weight: bold; font-size: 1.7rem; }
+
+        /* 对话气泡框 */
+        .dialogue {
+            background: #fff;
+            border: 1px solid #eee; 
+            border-left: 5px solid var(--theme-color);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px 8px 8px 4px; 
+            line-height: 1.8;
+            font-size: 1.6rem; 
+        }
+
+        /* 单字点击变红 */
+        .clickable-char {
+            cursor: pointer;
+            transition: color 0.15s ease, transform 0.1s ease;
+            display: inline-block; 
+        }
+        .clickable-char:active { transform: scale(0.85); }
+        .clickable-char.text-red { color: #ff4757 !important; }
+        .node-center .clickable-char.text-red { color: #ffeaa7 !important; }
+
+        /* 图片悬浮提示 */
+        #imageTooltip {
+            position: fixed;
+            display: none;
+            width: 180px;
+            height: 180px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #fff;
+            border: 2px solid #ccc; 
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            z-index: 100000;
+            pointer-events: none; 
+            transform: translate(-50%, -110%); 
+        }
+
+        /* 弹窗 (Modal) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(247, 249, 252, 0.85); 
+            backdrop-filter: blur(5px); 
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        .modal-content {
+            background: transparent;
+            width: 500px; 
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1); 
+            border-radius: 12px;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1.35); }
+        
+        .modal-content .pocket { cursor: default; }
+        .modal-content .pocket:hover { transform: none; }
+
+        .close-btn {
+            position: absolute;
+            top: 30px; right: 50px;
+            font-size: 50px;
+            color: #333; 
+            cursor: pointer;
+            z-index: 10001;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: #ff4757; }
+
+        /* =========================================
+           新增/修改：作品轮播区及切换按钮样式
+           ========================================= */
+        .slideshow-container {
+            width: 100%;
+            height: 180px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #eee;
+        }
+        
+        .slide-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none; 
+            animation: fade 0.8s;
+        }
+        .slide-img.active { display: block; }
+        
+        /* 弹窗中图片可点击放大 */
+        .modal-content .slide-img { cursor: zoom-in; }
+
+        /* 左右切换箭头样式 */
+        .prev-slide, .next-slide {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: auto;
+            padding: 8px 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.3s ease;
+            user-select: none;
+            background-color: rgba(0,0,0,0.2); /* 默认半透明 */
+            z-index: 10;
+        }
+        .next-slide { right: 0; border-radius: 4px 0 0 4px; }
+        .prev-slide { left: 0; border-radius: 0 4px 4px 0; }
+        
+        .prev-slide:hover, .next-slide:hover {
+            background-color: rgba(0,0,0,0.7); /* 悬浮加深 */
+        }
+
+        @keyframes fade {
+            from { opacity: 0.5 }
+            to { opacity: 1 }
+        }
+
+        .slideshow-placeholder {
+            color: #999; 
+            border: 2px dashed #ddd; 
+            width: 100%; height: 100%; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 8px; font-size: 1.8rem;
+        }
+
+        /* 独立的全屏作品展示灯箱 */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); 
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .lightbox-overlay.active { display: flex; opacity: 1; }
+        .lightbox-img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .lightbox-overlay.active .lightbox-img { transform: scale(1); }
+        .close-lightbox {
+            position: absolute;
+            top: 20px; right: 40px;
+            font-size: 60px;
+            color: white;
+            cursor: pointer;
+            z-index: 20001;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="mecc-global-nav">
+        <a href="javascript:history.back()" class="mecc-nav-back font-zh">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+            <span>返回</span>
+        </a>
+        <h1 class="mecc-nav-title font-zh">单元：我的学校</h1>
+    </nav>
+
+    <div id="imageTooltip"></div>
+
+    <div class="wood-board fade-in">
+        <div class="bunting-container">
+            <div class="pennant bg-pink font-zh"></div>
+            <div class="pennant bg-orange font-zh">我</div>
+            <div class="pennant bg-green font-zh">的</div>
+            <div class="pennant bg-blue font-zh">学</div>
+            <div class="pennant bg-purple font-zh">校</div>
+            <div class="pennant bg-teal font-zh"></div>
+        </div>
+
+        <div class="pocket-grid">
+            
+            <div class="pocket" style="--theme-color: #ffb5c6;" onclick="openModal(this)">
+                <div class="pocket-header font-zh">学习目标 🎯</div>
+                <div class="pocket-body phrase-text">
+                    <ul class="auto-split">
+                        <li>我会说：我喜欢学校。</li>
+                        <li>我会说：学校有什么。</li>
+                    </ul>
+                    <div class="guide-question-title font-zh auto-split">引导问题：</div>
+                    <ul class="auto-split">
+                        <li>学校里有谁？</li>
+                        <li>你喜欢学校吗？为什么？</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pocket" style="--theme-color: #aae0b0;" onclick="openModal(this)">
+                <div class="pocket-header font-zh">思维导图 🧠</div>
+                <div class="pocket-body phrase-text">
+                    <div class="mindmap-container auto-split">
+                        <svg class="mindmap-lines">
+                            <line x1="50%" y1="50%" x2="50%" y2="8%" stroke="#aae0b0" stroke-width="3"/>
+                            <line x1="50%" y1="50%" x2="82%" y2="22%" stroke="#aae0b0" stroke-width="3"/>
+                            <line x1="50%" y1="50%" x2="92%" y2="60%" stroke="#aae0b0" stroke-width="3"/>
+                            <line x1="50%" y1="50%" x2="68%" y2="92%" stroke="#aae0b0" stroke-width="3"/>
+                            <line x1="50%" y1="50%" x2="32%" y2="92%" stroke="#aae0b0" stroke-width="3"/>
+                            <line x1="50%" y1="50%" x2="8%" y2="60%" stroke="#aae0b0" stroke-width="3"/>
+                            <line x1="50%" y1="50%" x2="18%" y2="22%" stroke="#aae0b0" stroke-width="3"/>
+                        </svg>
+                        
+                        <div class="node node-center hover-word" data-word="学校"><span class="node-text font-zh">学校</span></div>
+                        <div class="node node-1 hover-word" data-word="老师"><span class="node-text">老师</span></div>
+                        <div class="node node-2 hover-word" data-word="小朋友"><span class="node-text">小朋友</span></div>
+                        <div class="node node-3 hover-word" data-word="校长"><span class="node-text">校长</span></div>
+                        <div class="node node-4 hover-word" data-word="校工"><span class="node-text">校工</span></div>
+                        <div class="node node-5 hover-word" data-word="护士"><span class="node-text">护士</span></div>
+                        <div class="node node-6 hover-word" data-word="铅笔"><span class="node-text">铅笔</span></div>
+                        <div class="node node-7 hover-word" data-word="大奖"><span class="node-text">大奖</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pocket" style="--theme-color: #a3d5f5;" onclick="openModal(this)">
+                <div class="pocket-header font-zh">句子开头 📝</div>
+                <div class="pocket-body phrase-text">
+                    <div class="dialogue auto-split" style="margin-top: 25px;">
+                        学校有 <span class="blank-line"></span>。
+                    </div>
+                </div>
+            </div>
+
+            <div class="pocket" style="--theme-color: #cdb4e6;" onclick="openModal(this)">
+                <div class="pocket-header font-zh">单元对话 💬</div>
+                <div class="pocket-body phrase-text">
+                    <div class="dialogue auto-split" style="margin-top: 15px;">
+                        <strong>问：</strong>学校有什么？
+                    </div>
+                    <div class="dialogue auto-split">
+                        <strong>答：</strong>学校有 <span class="blank-line"></span>。
+                    </div>
+                </div>
+            </div>
+
+            <div class="pocket" style="--theme-color: #ffd19a;" onclick="openModal(this)">
+                <div class="pocket-header font-zh">单元字词 🔤</div>
+                <div class="pocket-body phrase-text">
+                    <div class="tag-container auto-split" style="margin-top: 10px;">
+                        <div class="word-tag hover-word" data-word="学校"><span class="word-tag-text">学校</span></div>
+                        <div class="word-tag hover-word" data-word="喜欢"><span class="word-tag-text">喜欢</span></div>
+                        <div class="word-tag hover-word" data-word="太阳"><span class="word-tag-text">太阳</span></div>
+                        <div class="word-tag hover-word" data-word="老师"><span class="word-tag-text">老师</span></div>
+                        <div class="word-tag hover-word" data-word="有"><span class="word-tag-text">有</span></div>
+                        <div class="word-tag hover-word" data-word="校长"><span class="word-tag-text">校长</span></div>
+                        <div class="word-tag hover-word" data-word="是"><span class="word-tag-text">是</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pocket" style="--theme-color: #92e0d8;" onclick="openModal(this)">
+                <div class="pocket-header font-zh">学生作业 🖼️</div>
+                <div class="pocket-body phrase-text" style="align-items: center; justify-content: center;">
+                    
+                    <div class="slideshow-container" id="slideshowWrapper">
+                        <a class="prev-slide" onclick="moveSlide(-1, event)">&#10094;</a>
+                        <a class="next-slide" onclick="moveSlide(1, event)">&#10095;</a>
+                        
+                        <div id="slideshowPlaceholder" class="slideshow-placeholder font-zh">
+                            📷 加载作品中...
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+        <span class="close-btn" onclick="closeModal(event)">&times;</span>
+        <div id="modalContent" class="modal-content"></div>
+    </div>
+
+    <div id="lightboxOverlay" class="lightbox-overlay" onclick="closeLightbox(event)">
+        <span class="close-lightbox" onclick="closeLightbox(event)">&times;</span>
+        <img id="lightboxImage" class="lightbox-img" src="" alt="放大展示">
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 作品清单配置
+        // ==========================================
+        const worksList = [
+            'work1.webp', 
+            'work2.webp',
+            'work3.webp',
+            'work4.webp', 
+            'work5.webp', 
+            'work6.webp', 
+            'work7.webp',
+            'work9.webp',
+            'work10.webp'
+        ];
+        const folderPath = '../images/student_work/book_school/';
+
+        // 初始化基础 DOM 结构的幻灯片
+        function initSlideshow() {
+            const wrapper = document.getElementById('slideshowWrapper');
+            const placeholder = document.getElementById('slideshowPlaceholder');
+            const prevBtn = wrapper.querySelector('.prev-slide');
+            const nextBtn = wrapper.querySelector('.next-slide');
+            
+            if (worksList.length > 0) {
+                placeholder.style.display = 'none'; 
+                
+                worksList.forEach((filename, index) => {
+                    const img = document.createElement('img');
+                    img.src = folderPath + filename;
+                    img.className = 'slide-img';
+                    if (index === 0) img.classList.add('active'); 
+                    
+                    // 把图片插到占位符前面，保证箭头在图片上方
+                    wrapper.insertBefore(img, placeholder);
+                });
+            } else {
+                placeholder.textContent = '📷 暂无作品';
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // 2. 幻灯片手动与自动控制 (通过 DOM 操作，完美支持克隆体)
+        // ==========================================
+        function moveSlide(step, event) {
+            event.stopPropagation(); // 阻止点击箭头时触发打开放大弹窗
+            const container = event.target.closest('.slideshow-container');
+            const slides = container.querySelectorAll('.slide-img');
+            if(slides.length <= 1) return;
+
+            let currentIndex = -1;
+            slides.forEach((slide, index) => {
+                if(slide.classList.contains('active')) currentIndex = index;
+                slide.classList.remove('active');
+            });
+
+            if(currentIndex === -1) currentIndex = 0;
+            let nextIndex = currentIndex + step;
+            
+            // 循环逻辑
+            if(nextIndex >= slides.length) nextIndex = 0;
+            if(nextIndex < 0) nextIndex = slides.length - 1;
+
+            slides[nextIndex].classList.add('active');
+        }
+
+        // 全局定时器，自动寻找所有幻灯片（包括弹窗克隆出的）并向下播放
+        setInterval(() => {
+            document.querySelectorAll('.slideshow-container').forEach(container => {
+                const slides = container.querySelectorAll('.slide-img');
+                if(slides.length <= 1) return;
+                
+                let currentIndex = -1;
+                slides.forEach((s, i) => { if(s.classList.contains('active')) currentIndex = i; });
+                
+                if(currentIndex !== -1) slides[currentIndex].classList.remove('active');
+                
+                let nextIndex = currentIndex + 1;
+                if(nextIndex >= slides.length) nextIndex = 0;
+                
+                if(slides[nextIndex]) slides[nextIndex].classList.add('active');
+            });
+        }, 4000); // 设定为 4 秒切换一次
+
+        // 执行初始化
+        initSlideshow();
+
+
+        // ==========================================
+        // 3. 全屏灯箱 (Lightbox) 控制
+        // ==========================================
+        function closeLightbox(event) {
+            if (event.target.id === 'lightboxOverlay' || event.target.className === 'close-lightbox') {
+                document.getElementById('lightboxOverlay').classList.remove('active');
+            }
+        }
+
+
+        // ==========================================
+        // 4. 单字拆分与交互同步
+        // ==========================================
+        function initSingleCharacterClick() {
+            let globalCharId = 0;
+            const containers = document.querySelectorAll('.auto-split');
+            
+            containers.forEach(container => {
+                const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+                const textNodes = [];
+                while(walker.nextNode()) { textNodes.push(walker.currentNode); }
+                
+                textNodes.forEach(node => {
+                    const text = node.nodeValue;
+                    if (!text.trim()) return; 
+                    
+                    const fragment = document.createDocumentFragment();
+                    for (let i = 0; i < text.length; i++) {
+                        const char = text[i];
+                        if (/[^\s，。！？：；（）“”‘’.,!?;:()\[\]<>-]/.test(char)) {
+                            const span = document.createElement('span');
+                            span.className = 'clickable-char';
+                            span.setAttribute('data-id', 'char_' + (++globalCharId));
+                            span.textContent = char;
+                            fragment.appendChild(span);
+                        } else {
+                            fragment.appendChild(document.createTextNode(char));
+                        }
+                    }
+                    node.parentNode.replaceChild(fragment, node);
+                });
+            });
+        }
+        initSingleCharacterClick();
+
+        // 弹窗打开关闭逻辑
+        function openModal(element) {
+            const overlay = document.getElementById('modalOverlay');
+            const contentBox = document.getElementById('modalContent');
+            
+            contentBox.innerHTML = '';
+            const clone = element.cloneNode(true);
+            clone.removeAttribute('onclick'); 
+            contentBox.appendChild(clone);
+            
+            overlay.classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (event.target.id === 'modalOverlay' || event.target.className === 'close-btn') {
+                document.getElementById('modalOverlay').classList.remove('active');
+            }
+        }
+
+        // 核心修复：给弹窗里的内容绑定事件代理（包含单字变红 和 图片点击放大）
+        document.getElementById('modalContent').addEventListener('click', function(e) {
+            // 修复点：检查是否点击了图片
+            const slideImg = e.target.closest('.slide-img');
+            if (slideImg) {
+                e.stopPropagation();
+                const lightbox = document.getElementById('lightboxOverlay');
+                const lightboxImg = document.getElementById('lightboxImage');
+                lightboxImg.src = slideImg.src;
+                lightbox.classList.add('active');
+                return; // 如果是点图片，打开灯箱后直接退出，不再执行后面的找字逻辑
+            }
+
+            // 原逻辑：处理点击字变红
+            const clickableEl = e.target.closest('.clickable-char');
+            if (clickableEl) {
+                e.stopPropagation(); 
+                const isRed = clickableEl.classList.toggle('text-red');
+                const targetId = clickableEl.getAttribute('data-id');
+                
+                if (targetId) {
+                    const originalEl = document.querySelector(`.wood-board [data-id="${targetId}"]`);
+                    if (originalEl) {
+                        if (isRed) {
+                            originalEl.classList.add('text-red');
+                        } else {
+                            originalEl.classList.remove('text-red');
+                        }
+                    }
+                }
+            }
+        });
+
+        // ==========================================
+        // 5. 悬浮字卡显示图片
+        // ==========================================
+        const tooltip = document.getElementById('imageTooltip');
+        document.addEventListener('mouseover', function(e) {
+            const hoverEl = e.target.closest('.hover-word');
+            if (hoverEl) {
+                const word = hoverEl.getAttribute('data-word');
+                if (word) {
+                    tooltip.style.backgroundImage = `url('../images/sight_words_phrases/${word}.webp')`;
+                    tooltip.style.display = 'block';
+                }
+            }
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (tooltip.style.display === 'block') {
+                tooltip.style.left = e.clientX + 'px';
+                tooltip.style.top = e.clientY + 'px';
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            const hoverEl = e.target.closest('.hover-word');
+            if (hoverEl) { tooltip.style.display = 'none'; }
+        });
+    </script>
+</body>
+</html>
