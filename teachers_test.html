@@ -136,38 +136,38 @@
             overflow: visible; 
         }
 
-        /* 🌟 老虎轮廓剪影卡片 (顶部带两个虎耳) */
+/* 🌟 老虎轮廓剪影卡片 (王字霸气外露 + 虎斑条纹) */
         .card.tiger-shape {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
             filter: drop-shadow(0 6px 12px rgba(44, 62, 80, 0.05));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 120' preserveAspectRatio='none'%3E%3Cpath d='M 25 25 L 55 25 L 65 5 Q 80 0 95 25 L 205 25 L 215 5 Q 230 0 245 25 L 275 25 C 286 25 295 34 295 45 L 295 95 C 295 106 286 115 275 115 L 25 115 C 14 115 5 106 5 95 L 5 45 C 5 34 14 25 25 25 Z' fill='%23FFFFFF' stroke='%23E8EDF2' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            /* viewBox 增加高度，为顶部的王字留出空间 */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%23E8EDF2' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%23E8EDF2' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%23E8EDF2' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%23E8EDF2' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             background-size: 100% 100%;
-            padding: 26px 16px 14px 16px !important; /* 增加顶部内边距，避开虎耳 */
+            padding: 44px 16px 14px 16px !important; /* 顶部留出超大空间给王字和耳朵 */
         }
         .card.tiger-shape:hover {
             filter: drop-shadow(0 12px 24px rgba(44, 62, 80, 0.12));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 120' preserveAspectRatio='none'%3E%3Cpath d='M 25 25 L 55 25 L 65 5 Q 80 0 95 25 L 205 25 L 215 5 Q 230 0 245 25 L 275 25 C 286 25 295 34 295 45 L 295 95 C 295 106 286 115 275 115 L 25 115 C 14 115 5 106 5 95 L 5 45 C 5 34 14 25 25 25 Z' fill='%23FFFFFF' stroke='%232C3E50' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%232C3E50' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%232C3E50' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%232C3E50' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%232C3E50' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             transform: translateY(-5px);
         }
 
-        /* 🌟 大象轮廓剪影卡片 (左侧象鼻，右侧象耳) */
+        /* 🌟 大象轮廓剪影卡片 (巨耳 + 象牙 + 象鼻褶皱细节版) */
         .card.elephant-shape {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
             filter: drop-shadow(0 6px 12px rgba(44, 62, 80, 0.05));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 120' preserveAspectRatio='none'%3E%3Cpath d='M 60 25 L 250 25 Q 270 25 270 45 C 295 55 295 85 270 95 Q 270 115 250 115 L 60 115 Q 40 115 40 95 C 40 95 0 105 5 70 C 10 35 40 45 40 45 Q 40 25 60 25 Z' fill='%23FFFFFF' stroke='%23E8EDF2' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 110 30 L 275 30 C 286 30 295 39 295 50 L 295 110 C 295 121 286 130 275 130 L 60 130 C 40 130 45 100 40 70 C 35 40 15 60 10 80 C 5 100 0 100 0 85 C 0 45 20 20 55 20 C 75 20 90 30 110 30 Z' fill='%23FFFFFF' stroke='%23E8EDF2' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 40 C 90 10 130 50 110 90 C 90 120 40 120 60 40 Z' fill='%23FFFFFF' stroke='%23E8EDF2' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 35 70 Q 15 85 10 70 Q 25 60 35 70 Z' fill='%23FFFFFF' stroke='%23E8EDF2' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 35 45 Q 40 50 45 45 M 18 55 L 28 58 M 12 65 L 20 68' fill='none' stroke='%23E8EDF2' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             background-size: 100% 100%;
-            padding: 18px 24px 18px 24px !important; /* 增加侧边内边距，避开象鼻象耳 */
+            padding: 24px 24px 18px 80px !important; /* 左侧留出超大空间给大象脸部和耳朵 */
         }
         .card.elephant-shape:hover {
             filter: drop-shadow(0 12px 24px rgba(44, 62, 80, 0.12));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 120' preserveAspectRatio='none'%3E%3Cpath d='M 60 25 L 250 25 Q 270 25 270 45 C 295 55 295 85 270 95 Q 270 115 250 115 L 60 115 Q 40 115 40 95 C 40 95 0 105 5 70 C 10 35 40 45 40 45 Q 40 25 60 25 Z' fill='%23FFFFFF' stroke='%232C3E50' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 110 30 L 275 30 C 286 30 295 39 295 50 L 295 110 C 295 121 286 130 275 130 L 60 130 C 40 130 45 100 40 70 C 35 40 15 60 10 80 C 5 100 0 100 0 85 C 0 45 20 20 55 20 C 75 20 90 30 110 30 Z' fill='%23FFFFFF' stroke='%232C3E50' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 40 C 90 10 130 50 110 90 C 90 120 40 120 60 40 Z' fill='%23FFFFFF' stroke='%232C3E50' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 35 70 Q 15 85 10 70 Q 25 60 35 70 Z' fill='%23FFFFFF' stroke='%232C3E50' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 35 45 Q 40 50 45 45 M 18 55 L 28 58 M 12 65 L 20 68' fill='none' stroke='%232C3E50' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             transform: translateY(-5px);
         }
-
         .card::after {
             content: '›';
             grid-row: 1 / 3;
