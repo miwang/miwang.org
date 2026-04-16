@@ -42,7 +42,7 @@
       "level": "Novice Mid (L2)",
       "topic": "学校生活",
       "vocab_tags": "我,喜欢,学校,有",
-      "coverImage": "../images/sentences/like_school.webp",
+      "coverImage": "/images/books/like_school.webp",
       "pages": [
         {
           "text": "我喜欢学校。",
@@ -58,7 +58,7 @@
         },
         {
           "text": "学校有校长。",
-          "image": "school_principal.webp"
+          "image": "../images/sentences/school_principal.webp"
         },
         {
           "image": "../images/sentences/school_nurse.webp",
