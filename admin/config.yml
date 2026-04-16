@@ -5,8 +5,7 @@ backend:
   base_url: https://miwang.org
   auth_endpoint: api/auth
 
-# 🌟 全局媒体配置：移除各个栏目的独立限制，统一使用 images 根目录
-# 这样在任何地方上传图片，都能看到 images 下的所有子文件夹，方便跨目录选择
+# 这是一个保底的全局图库设置，防错用
 media_folder: "images" 
 public_folder: "/images"
 
@@ -14,6 +13,8 @@ collections:
   # ======== 1. 绘本馆配置 ========
   - name: "library"
     label: "📚 分级绘本馆"
+    media_folder: "/images/books"
+    public_folder: "/images/books"
     files:
       - label: "全部绘本数据"
         name: "books"
@@ -31,19 +32,26 @@ collections:
               - { label: "阅读级别", name: "level", widget: "select", options: ["Novice Low (L1)", "Novice Mid (L2)", "Novice High (L3)"] }
               - { label: "话题分类", name: "topic", widget: "select", options: ["动物与自然", "家庭与朋友", "节日与文化", "学校生活", "食物与购物"] }
               - { label: "核心词汇", name: "vocab_tags", widget: "string", hint: "请用逗号隔开，例如: 苹果, 喜欢, 学校" }
-              - { label: "封面图片", name: "coverImage", widget: "image", required: false }
+              - label: "封面图片", name: "coverImage", widget: "image", required: false, hint: "复用句子图: ../images/sentences/词语.webp" }
               - label: "绘本页面内容"
                 name: "pages"
                 widget: "list"
                 collapsed: true
                 summary: "句子: {{fields.text}}" 
                 fields:
-                  - { label: "本页插图", name: "image", widget: "image", required: false, hint: "建议直接在 images 子文件夹中选择已有图片" }
+                  - label: "本页插图"
+                    name: "image"
+                    widget: "image"
+                    required: false
+                    # 🌟 增加提示：方便您直接复制 ../images/sentences/ 路径
+                    hint: "可点击 Insert from URL 复用已有的句子图: ../images/sentences/词语.webp"
                   - { label: "中文句子", name: "text", widget: "string" }
 
   # ======== 2. 句子排排队配置 ========
   - name: "sentences"
     label: "🧩 句子排排队"
+    media_folder: "/images/sentences"
+    public_folder: "/images/sentences"
     files:
       - label: "全部句子库"
         name: "sentences_data"
@@ -59,12 +67,19 @@ collections:
             fields:
               - { label: "词语切分", name: "words", widget: "string", hint: "按词语切分，用逗号隔开。例如：我,喜欢,吃,苹果" }
               - { label: "标点符号", name: "punctuation", widget: "string", hint: "例如：。 或者是 ？（没有可不填）", required: false }
-              - { label: "配图", name: "image", widget: "image", required: false }
+              - label: "配图"
+                name: "image"
+                widget: "image"
+                required: false
+                # 🌟 同样增加复用四会字的路径提示
+                hint: "复用四会字图片: ../images/sight_words_phrases/词语.webp"
               - { label: "主题标签", name: "tags", widget: "string", hint: "用逗号隔开。例如：动物与自然, 食物与购物", required: false }
 
   # ======== 3. 儿歌点唱机配置 ========
   - name: "songs"
     label: "🎵 儿歌点唱机"
+    media_folder: "/images/songs"
+    public_folder: "/images/songs"
     files:
       - label: "全部儿歌库"
         name: "songs_data"
@@ -91,6 +106,8 @@ collections:
   # ======== 4. 高频四会字配置 ========
   - name: "sight_words"
     label: "🔤 高频四会字"
+    media_folder: "/images/sight_words_phrases"
+    public_folder: "/images/sight_words_phrases"
     files:
       - label: "四会字库"
         name: "sight_words_data"
@@ -111,6 +128,8 @@ collections:
   # ======== 5. 古诗与顺口溜配置 ========
   - name: "poems"
     label: "📜 古诗与顺口溜"
+    media_folder: "/images/poems"
+    public_folder: "/images/poems"
     files:
       - label: "古诗顺口溜库"
         name: "poems_data"
