@@ -12,12 +12,10 @@
     <style>
         * { box-sizing: border-box; }
         
-        /* 🌟 核心修复 1：移除 *，换成具体的标签和类名 */
-        body, .btn, .char-card, .name, .cell, #btn-back-game { 
+        body, .btn, .char-card, .name, .cell, #btn-back-game, .win-msg { 
             font-family: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important; 
         }
 
-        /* 英文类，优先级可以正常覆盖上面的设定 */
         .font-en { font-family: "LXGW WenKai Lite", sans-serif !important; }
 
         body { background-color: #fff9ea; margin: 0; display: flex; flex-direction: column; align-items: center; padding-top: 60px; overflow: auto; min-height: 100vh; }
@@ -36,7 +34,7 @@
         .side-panel .icon { font-size: min(90px, 11vh); }
         .side-panel .name { font-size: 1.6rem; font-weight: bold; margin-top: 8px; color: #598586; }
 
-        #board { display: grid; grid-template-columns: repeat(9, 65px); gap: 8px; background: #598586; padding: 12px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        #board { display: grid; grid-template-columns: repeat(9, 65px); gap: 8px; background: #598586; padding: 12px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 10; }
         .cell { width: 65px; height: 65px; background: white; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; cursor: pointer; transition: 0.2s; }
         .cell:hover { background: #f0f8ff; }
         .cell.p1 { background: #74b9ff; color: white; }
@@ -45,35 +43,54 @@
         #btn-back-game { background: none; border: 1.5px solid #ccc; color: #888; border-radius: 30px; padding: 8px 24px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
         #btn-back-game:hover { border-color: #598586; color: #598586; }
 
+        #win-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); z-index: 999; 
+            flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .win-content { text-align: center; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .win-icon { font-size: 8rem; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); }
+        .win-msg { color: white; font-size: 2.5rem; margin-bottom: 30px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .win-btns { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; }
+        
+        #fireworks-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         @media (max-width: 768px) {
             body { padding-top: 56px; overflow: hidden; height: 100dvh; align-items: stretch; }
-            .mecc-nav-back span { display: none; }
-            #setup-view { width: 100%; max-width: 100%; height: calc(100dvh - 56px); display: flex; flex-direction: column; padding: 8px 8px 6px; overflow: hidden; gap: 6px; }
-            .controls { margin-bottom: 0; gap: 8px; flex-shrink: 0; }
-            .btn { font-size: 0.9rem !important; padding: 7px 14px !important; }
-            #char-grid { grid-template-columns: repeat(8, 1fr); grid-auto-rows: 1fr; gap: 4px; padding: 8px; flex: 1; min-height: 0; }
-            .char-card { aspect-ratio: unset; font-size: clamp(0.9rem, 5vw, 1.4rem); }
-
-            #game-view { padding: 4px 4px 4px; flex: 1; height: auto; min-height: unset; justify-content: space-between; gap: 3px; width: 100%; }
-            .battle-area { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; flex: 1; min-height: 0; }
-            #side-1 { order: 0; flex-direction: row; gap: 6px; opacity: 0.45; transform: none !important; justify-content: center; align-items: center; background: rgba(116,185,255,0.12); border-radius: 10px; padding: 4px 16px; width: 100%; flex-shrink: 0; }
-            #board { order: 1; }
-            #side-2 { order: 2; flex-direction: row; gap: 6px; opacity: 0.45; transform: none !important; justify-content: center; align-items: center; background: rgba(251,197,49,0.12); border-radius: 10px; padding: 4px 16px; width: 100%; flex-shrink: 0; }
-            .side-panel.active { opacity: 1; }
-            #side-1.active { opacity: 1; background: rgba(116,185,255,0.28); }
-            #side-2.active { opacity: 1; background: rgba(251,197,49,0.28); }
-            .side-panel .icon { font-size: 1.6rem; }
-            .side-panel .name { font-size: 0.95rem; margin-top: 0; }
-            #btn-back-game { display: none; }
-            #board { --cell: calc((100vw - 16px - 8 * 3px) / 9); grid-template-columns: repeat(9, var(--cell)); gap: 3px; padding: 6px; border-radius: 12px; width: 100%; }
-            .cell { width: var(--cell, 40px); height: var(--cell, 40px); font-size: clamp(1rem, 4vw, 1.5rem); border-radius: 6px; }
+            #setup-view { width: 100%; height: calc(100dvh - 56px); padding: 8px; overflow: hidden; }
+            #char-grid { grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 8px; }
+            .char-card { font-size: 1.2rem; }
+            #game-view { padding: 4px; flex: 1; justify-content: space-between; }
+            .battle-area { flex-direction: column; gap: 3px; }
+            #board { --cell: calc((100vw - 40px) / 9); grid-template-columns: repeat(9, var(--cell)); gap: 3px; padding: 6px; }
+            .cell { width: var(--cell); height: var(--cell); font-size: 1.2rem; }
+            .win-icon { font-size: 5rem; }
+            .win-msg { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
+    <div id="win-overlay">
+        <div class="win-content">
+            <div class="win-icon" id="winner-icon">🥛</div>
+            <div class="win-msg" id="winner-text">恭喜牛奶获胜！</div>
+            <div class="win-btns">
+                <button class="btn" style="background:#2ecc71; color:white; padding: 12px 30px;" onclick="restartGame()">再来一局</button>
+                <button class="btn" style="background:#fff; color:#333; padding: 12px 30px;" onclick="closeWinOverlay()">返回选字</button>
+            </div>
+        </div>
+    </div>
+    <canvas id="fireworks-canvas"></canvas>
+
     <div id="setup-view">
         <div class="controls">
-            <button class="btn" id="btn-all"   onclick="selectAll()">全选字库</button>
+            <button class="btn" id="btn-all" onclick="selectAll()">全选字库</button>
             <button class="btn" style="background:#eee;color:#555" id="btn-clear" onclick="clearAll()">全部清空</button>
             <button class="btn" style="background:#2ecc71;color:white" id="btn-start" onclick="startGame()">开始对战</button>
         </div>
@@ -82,15 +99,9 @@
 
     <div id="game-view">
         <div class="battle-area">
-            <div class="side-panel" id="side-1">
-                <div class="icon">🥛</div>
-                <div class="name" id="name-1">牛奶</div>
-            </div>
+            <div class="side-panel" id="side-1"><div class="icon">🥛</div><div class="name" id="name-1">牛奶</div></div>
             <div id="board"></div>
-            <div class="side-panel" id="side-2">
-                <div class="icon">🍪</div>
-                <div class="name" id="name-2">饼干</div>
-            </div>
+            <div class="side-panel" id="side-2"><div class="icon">🍪</div><div class="name" id="name-2">饼干</div></div>
         </div>
         <button id="btn-back-game" onclick="backToSetup()">← 重新选字</button>
     </div>
@@ -98,15 +109,15 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: { title: "自由五子棋", selectAll: "全选字库", clear: "全部清空", start: "开始对战", p1: "牛奶", p2: "饼干", backGame: "← 重新选字", alertEmpty: "请先选择一些汉字哦！" },
-            en: { title: "Connect Five", selectAll: "Select All", clear: "Clear", start: "Start Game", p1: "Milk", p2: "Cookie", backGame: "← Back to Selection", alertEmpty: "Please select some characters first!" }
+            zh: { title: "自由五子棋", selectAll: "全选字库", clear: "全部清空", start: "开始对战", p1: "牛奶", p2: "饼干", backGame: "← 重新选字", alertEmpty: "请先选择一些汉字哦！", win: "获得了胜利！" },
+            en: { title: "Connect Five", selectAll: "Select All", clear: "Clear", start: "Start Game", p1: "Milk", p2: "Cookie", backGame: "← Back to Selection", alertEmpty: "Please select some characters first!", win: "is the Winner!" }
         }[LANG];
 
         let boardState = Array.from({length: 7}, () => Array(9).fill(0));
         let boardWords = [];
         let currentPlayer = 1;
+        let lastSelectedWords = [];
 
-        // 🌟 终极强壮的发音降级系统
         let globalAudio = new Audio();
         let audioUnlocked = false;
 
@@ -158,33 +169,13 @@
 
         window.onload = async () => {
             MECC_CONFIG.renderGlobalNav(t.title);
-            document.getElementById('btn-all').innerText      = t.selectAll;
-            document.getElementById('btn-clear').innerText    = t.clear;
-            document.getElementById('btn-start').innerText    = t.start;
-            document.getElementById('name-1').innerText       = t.p1;
-            document.getElementById('name-2').innerText       = t.p2;
-            document.getElementById('btn-back-game').innerText = t.backGame;
-
-            // 🌟 核心修复 2：如果是英文环境，给所有的文字 UI 元素动态添加英文字体类
-            if (LANG === 'en') {
-                const enElements = ['btn-all', 'btn-clear', 'btn-start', 'name-1', 'name-2', 'btn-back-game'];
-                enElements.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.add('font-en');
-                });
-            }
-
             const grid = document.getElementById('char-grid');
             const words = await MECC_DATA.getSightWords();
             words.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'char-card';
                 card.innerText = item.char;
-                card.onclick = () => {
-                    MECC_AUDIO.playSfx('swoosh');
-                    playUnifiedAudio(item.char);
-                    card.classList.toggle('selected');
-                };
+                card.onclick = () => { MECC_AUDIO.playSfx('swoosh'); playUnifiedAudio(item.char); card.classList.toggle('selected'); };
                 grid.appendChild(card);
             });
         };
@@ -192,30 +183,28 @@
         function startGame() {
             const selected = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
             if (selected.length === 0) { MECC_UI.showToast(t.alertEmpty, "error"); return; }
+            lastSelectedWords = selected;
+            restartGame();
+        }
 
-            MECC_AUDIO.playSfx('tada');
+        function restartGame() {
+            closeWinOverlay();
             boardState = Array.from({length: 7}, () => Array(9).fill(0));
-            boardWords = [];
             currentPlayer = 1;
-            while (boardWords.length < 63) boardWords = boardWords.concat(selected);
+            boardWords = [];
+            while (boardWords.length < 63) boardWords = boardWords.concat(lastSelectedWords);
             boardWords = boardWords.slice(0, 63).sort(() => Math.random() - 0.5);
 
             document.getElementById('setup-view').style.display = 'none';
             document.getElementById('game-view').style.display = 'flex';
-
-            const navBack = document.querySelector('.mecc-nav-back');
-            if (navBack) { navBack.href = '#'; navBack.onclick = (e) => { e.preventDefault(); backToSetup(); }; }
-
             renderBoard();
             updateTurn();
         }
 
         function backToSetup() {
-            MECC_AUDIO.stopAll();
+            closeWinOverlay();
             document.getElementById('game-view').style.display = 'none';
             document.getElementById('setup-view').style.display = '';
-            const navBack = document.querySelector('.mecc-nav-back');
-            if (navBack) { navBack.href = MECC_CONFIG.getBackHref(); navBack.onclick = null; }
         }
 
         function renderBoard() {
@@ -230,15 +219,21 @@
                     const word = boardWords[r * 9 + c];
                     cell.innerText = word;
                     cell.onclick = () => {
-                        MECC_AUDIO.playSfx('swoosh');
-                        playUnifiedAudio(word);
-                        if (boardState[r][c] === 0) {
-                            boardState[r][c] = currentPlayer;
-                            currentPlayer = currentPlayer === 1 ? 2 : 1;
-                        } else if (boardState[r][c] === 1) boardState[r][c] = 2;
+                        if (boardState[r][c] === 0) { boardState[r][c] = currentPlayer; currentPlayer = currentPlayer === 1 ? 2 : 1; }
+                        else if (boardState[r][c] === 1) boardState[r][c] = 2;
                         else boardState[r][c] = 0;
+                        
                         renderBoard();
                         updateTurn();
+                        
+                        let win = checkWin();
+                        if (win) {
+                            showWinEffect(win);
+                        } else {
+                            // 🌟 修复：如果没有赢，才播放下棋音效和读字，避免和胜利音效/语音冲突
+                            MECC_AUDIO.playSfx('swoosh');
+                            playUnifiedAudio(word);
+                        }
                     };
                     b.appendChild(cell);
                 }
@@ -250,7 +245,74 @@
             document.getElementById('side-2').classList.toggle('active', currentPlayer === 2);
         }
 
-        function selectAll() { MECC_AUDIO.playSfx('swoosh'); document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
+        function checkWin() {
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 9; c++) {
+                    let p = boardState[r][c]; if (p === 0) continue;
+                    if (c+4<9 && p===boardState[r][c+1] && p===boardState[r][c+2] && p===boardState[r][c+3] && p===boardState[r][c+4]) return p;
+                    if (r+4<7 && p===boardState[r+1][c] && p===boardState[r+2][c] && p===boardState[r+3][c] && p===boardState[r+4][c]) return p;
+                    if (r+4<7 && c+4<9 && p===boardState[r+1][c+1] && p===boardState[r+2][c+2] && p===boardState[r+3][c+3] && p===boardState[r+4][c+4]) return p;
+                    if (r+4<7 && c-4>=0 && p===boardState[r+1][c-1] && p===boardState[r+2][c-2] && p===boardState[r+3][c-3] && p===boardState[r+4][c-4]) return p;
+                }
+            }
+            return 0;
+        }
+
+        function showWinEffect(p) {
+            // 🌟 修复：确保音效紧跟用户点击事件同步触发
+            MECC_AUDIO.playSfx('tada');
+            
+            const icon = p === 1 ? "🥛" : "🍪";
+            const name = p === 1 ? t.p1 : t.p2;
+            
+            // 🌟 顺便加了个小惊喜：让发音引擎用语音播报胜利消息！
+            playUnifiedAudio(name + t.win);
+            
+            document.getElementById('winner-icon').innerText = icon;
+            document.getElementById('winner-text').innerText = `🎉 ${name} ${t.win}`;
+            document.getElementById('win-overlay').style.display = 'flex';
+            startFireworks();
+        }
+
+        function closeWinOverlay() {
+            document.getElementById('win-overlay').style.display = 'none';
+            stopFireworks();
+        }
+
+        let fwId;
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function startFireworks() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (Math.random() < 0.1) {
+                    const x = Math.random() * canvas.width;
+                    const colors = ['#ff74b9', '#fbc531', '#4cd137', '#487eb0', '#e84118'];
+                    for(let i=0; i<30; i++) particles.push({
+                        x, y: canvas.height, 
+                        vx: Math.random() * 6 - 3, vy: Math.random() * -15 - 5,
+                        color: colors[Math.floor(Math.random()*colors.length)],
+                        life: 100
+                    });
+                }
+                particles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life--;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+                    if (p.life <= 0) particles.splice(i, 1);
+                });
+                fwId = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+        function stopFireworks() { cancelAnimationFrame(fwId); ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+        function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
         function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
     </script>
 </body>

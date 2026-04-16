@@ -2,201 +2,500 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Wall 汇总控制台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Focus Wall - 单元主题墙</title>
     
     <link rel="stylesheet" href="../css/common_nav.css">
     <link rel="stylesheet" href="../css/style.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <style>
-        body {
-            background-color: #f7f9fc;
-            padding-top: 80px;
-            padding-bottom: 40px;
+        :root {
+            /* 🌟 精确提取自截图的高级森系/看板色卡 */
+            --c1-lime: #b4d455;    /* 1. 青柠黄 */
+            --c2-emerald: #47b087; /* 2. 翡翠绿 */
+            --c3-slate: #1f5757;   /* 3. 深石板绿 */
+            --c4-navy: #15333f;    /* 4. 藏青色 */
+            --c5-mint: #62c9ae;    /* 5. 薄荷青 */
         }
 
-        /* 汇总主容器：更加紧凑 */
+        body {
+            background-color: #f4f7f9; 
+            padding-top: 80px;
+            padding-bottom: 60px;
+            overflow-x: hidden;
+        }
+
         .dashboard-wrapper {
-            max-width: 1000px; /* 缩减了整体宽度 */
+            max-width: 1400px;
             margin: 0 auto;
             background-color: #ffffff;
-            border: 8px solid #e1b382; /* 边框变细 */
-            border-radius: 12px;
-            padding: 25px 30px; /* 缩减内边距 */
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+            position: relative;
         }
 
-        /* 控制台顶部装饰 */
-        .dashboard-header {
-            text-align: center;
-            margin-bottom: 35px; /* 缩减间距 */
-        }
-
+        /* 顶部装饰三角旗 */
         .bunting-container {
             display: flex;
             justify-content: center;
-            gap: 8px; /* 缩减旗帜间距 */
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 50px;
         }
 
         .pennant {
-            width: 40px;
-            height: 55px;
+            width: 50px;
+            height: 65px;
             clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding-top: 10px;
-            font-size: 20px;
+            padding-top: 12px;
+            font-size: 24px;
             color: white;
             font-weight: bold;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* 紧凑的网格布局 */
-        .unit-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 卡片宽度缩减 */
-            gap: 15px; /* 卡片间距缩减 */
+        .bg-lime    { background-color: var(--c1-lime); }
+        .bg-emerald { background-color: var(--c2-emerald); }
+        .bg-slate   { background-color: var(--c3-slate); }
+        .bg-navy    { background-color: var(--c4-navy); }
+        .bg-mint    { background-color: var(--c5-mint); }
+
+        /* ======== 🌟 核心升级：强对比悬浮唤醒特效 ======== */
+        .swiper-main-container {
+            width: 100%;
+            padding: 30px 0 60px 0; 
         }
 
-        /* 极简扁平化卡片 */
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+            /* 未选中：大幅降低透明度，缩小，并且完全褪色（变成黑白灰） */
+            opacity: 0.35; 
+            transform: scale(0.85); 
+            filter: grayscale(100%); 
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+
+        /* 选中或鼠标悬浮：恢复色彩、放大、完全不透明 */
+        .swiper-slide-active, 
+        .swiper-slide:hover { 
+            opacity: 1; 
+            transform: scale(1.08); 
+            filter: grayscale(0%);
+            z-index: 10;
+        }
+
+        /* 单元卡片基础样式 */
         .unit-card {
             background: #ffffff;
-            border: none;
-            border-top: 5px solid var(--theme-color); /* 顶部色块装饰 */
-            border-radius: 8px; /* 较小的圆角 */
-            padding: 15px 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
             text-decoration: none;
-            color: #333;
+            color: #334155;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            height: 100%;
+        }
+
+        /* 给选中的卡片增加高亮边框和主题色阴影 */
+        .swiper-slide-active .unit-card,
+        .swiper-slide:hover .unit-card {
+            border-color: var(--theme-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        .card-header {
+            background-color: var(--theme-color);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        /* 为了让青柠黄上的白字更清晰，单独给它加一点文字阴影 */
+        .color-1 .card-header, .color-6 .card-header, .color-11 .card-header {
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .unit-badge {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .status-badge {
+            font-size: 0.85rem;
+            background: rgba(255,255,255,0.25);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-left: auto;
+            font-weight: bold;
+            text-shadow: none; /* 标签内的字不需要阴影 */
+        }
+        .unit-card[href="#"] .status-badge { background: rgba(0,0,0,0.1); }
+
+        .card-body {
+            padding: 30px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: background 0.2s, transform 0.2s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03); /* 极弱的扁平投影 */
+            flex: 1;
         }
 
-        .unit-card:hover {
-            background: #fafbfc; /* 悬浮仅改变底色 */
-            transform: translateY(-2px); /* 轻微上浮，无夸张阴影 */
-        }
-
-        /* 单元编号 (方形圆角更扁平) */
-        .unit-badge {
-            width: 36px;
-            height: 36px;
-            background-color: var(--theme-color);
-            color: white;
-            border-radius: 8px;
+        .vcg-icon-wrapper {
+            width: 100px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem; /* 字号调小 */
-            font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 25px;
+            color: var(--theme-color);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .swiper-slide-active .unit-card:hover .vcg-icon-wrapper,
+        .swiper-slide:hover .vcg-icon-wrapper {
+            transform: scale(1.15) rotate(-3deg);
+        }
+
+        .vcg-svg { width: 100%; height: 100%; }
+        .vcg-svg path, .vcg-svg circle, .vcg-svg rect {
+            fill: none;
+            stroke: var(--theme-color);
+            stroke-width: 3.5; 
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .unit-name {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 10px;
+            color: #1e293b;
+            height: 2.8em;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .unit-status {
-            font-size: 0.85rem;
-            color: #777;
-            background: #f0f2f5;
-            padding: 4px 10px;
-            border-radius: 6px;
-        }
+        /* 导航箭头颜色使用深石板绿 */
+        .swiper-button-next, .swiper-button-prev { color: var(--c3-slate); transition: transform 0.2s; }
+        .swiper-button-next:hover { transform: scale(1.2); }
+        .swiper-button-prev:hover { transform: scale(1.2); }
+        .swiper-pagination-bullet-active { background: var(--c3-slate) !important; }
 
-        /* 低饱和度马卡龙主题色 */
-        .color-1 { --theme-color: #ffb5c6; }
-        .color-2 { --theme-color: #ffd19a; }
-        .color-3 { --theme-color: #aae0b0; }
-        .color-4 { --theme-color: #a3d5f5; }
-        .color-5 { --theme-color: #cdb4e6; }
-        .color-6 { --theme-color: #92e0d8; }
-        .color-7 { --theme-color: #f7a8b8; }
-        .color-8 { --theme-color: #ffe699; }
+        /* 严格按照 1-5 循环分配颜色 */
+        .color-1,  .color-6,  .color-11 { --theme-color: var(--c1-lime); }
+        .color-2,  .color-7,  .color-12 { --theme-color: var(--c2-emerald); }
+        .color-3,  .color-8,  .color-13 { --theme-color: var(--c3-slate); }
+        .color-4,  .color-9,  .color-14 { --theme-color: var(--c4-navy); }
+        .color-5,  .color-10, .color-15 { --theme-color: var(--c5-mint); }
+
+        @media (max-width: 768px) {
+            body { padding-top: 56px; }
+            .dashboard-wrapper { padding: 15px; border-radius: 0; border: none; }
+            .unit-name { font-size: 1.15rem; }
+            .vcg-icon-wrapper { width: 70px; height: 70px; }
+            .swiper-slide-active, .swiper-slide:hover { transform: scale(1.05); } 
+        }
     </style>
 </head>
 <body>
 
     <nav class="mecc-global-nav">
-        <a href="../teachers.html" class="mecc-nav-back">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <a href="../teachers.html" class="mecc-nav-back font-zh">
+            <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 18l-6-6 6-6"/>
             </svg>
-            <span class="font-zh">返回主页</span>
+            <span>返回主页</span>
         </a>
-        <h1 class="mecc-nav-title font-en">Focus Wall <span class="font-zh">教学看板汇总</span></h1>
+        <h1 class="mecc-nav-title font-zh">Focus Wall <span class="font-zh">教学看板汇总</span></h1>
     </nav>
 
     <div class="dashboard-wrapper fade-in">
         
-        <div class="dashboard-header">
-            <div class="bunting-container">
-                <div class="pennant bg-pink font-en">F</div>
-                <div class="pennant bg-orange font-en">O</div>
-                <div class="pennant bg-green font-en">C</div>
-                <div class="pennant bg-blue font-en">U</div>
-                <div class="pennant bg-purple font-en">S</div>
-            </div>
-            <h2 class="font-zh" style="font-size: 1.8rem; color: #555;">课程大纲预览</h2>
+        <div class="bunting-container">
+            <div class="pennant bg-lime font-zh"></div>
+            <div class="pennant bg-emerald font-zh">单</div>
+            <div class="pennant bg-slate font-zh">元</div>
+            <div class="pennant bg-navy font-zh">主</div>
+            <div class="pennant bg-mint font-zh">题</div>
+            <div class="pennant bg-lime font-zh"></div>
         </div>
 
-        <div class="unit-grid">
+        <div class="swiper mySwiper swiper-main-container">
+            <div class="swiper-wrapper">
+                
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-1">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">01</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><rect x="20" y="20" width="60" height="40" rx="5"/><path d="M40 35 L40 45 M40 40 L50 40 M50 35 L50 45"/><circle cx="50" cy="20" r="3"/><path d="M15 75 L75 15 M70 15 L80 15 L80 25"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">你叫什么名字</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-2">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">02</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><rect x="15" y="60" width="70" height="30" rx="8"/><path d="M25 60 V50 M50 60 V45 M75 60 V50"/><path d="M45 45 C45 35 55 35 55 45"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">你几岁</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-3">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">03</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M80 50 C80 25, 60 10, 30 20 C10 30, 10 70, 30 80 C60 90, 80 75, 80 50 Z"/><circle cx="30" cy="40" r="5"/><circle cx="50" cy="30" r="5"/><path d="M70 20 L90 5 M85 5 L95 15"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">你喜欢什么颜色</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-4">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">04</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M25 30 V85 H75 V30 Z"/><path d="M40 30 Q50 15 60 30"/><path d="M80 60 L60 80"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">我要。。。</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-5">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">05</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M20 10 Q50 20 80 10 V60 Q50 90 20 60 Z"/><path d="M50 30 L55 42 L68 45 L58 55 L60 68 L50 62 L40 68 L42 55 L32 45 L45 42 Z"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">我会。。。</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-6">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">06</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><rect x="15" y="40" width="70" height="40" rx="5"/><path d="M15 40 Q50 20 85 40"/><circle cx="50" cy="40" r="5"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">我有。。。</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-7">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">07</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><circle cx="50" cy="20" r="12"/><path d="M50 32 V70 M30 45 Q50 35 70 45 M40 70 L30 95 M60 70 L70 95"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">身体部位</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-8">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">08</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M10 50 L50 15 L90 50 V90 H10 Z"/><path d="M30 60 Q50 45 70 60 Q50 75 30 60"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">我的家人</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-9">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">09</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><circle cx="35" cy="35" r="15"/><path d="M35 5 V15 M55 35 H65"/><path d="M60 50 C50 60, 90 60, 80 50 C95 60, 95 80, 80 90"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">天气怎么样</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-10">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">10</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M30 30 Q50 50 70 30 C90 50 70 70 50 50"/><circle cx="20" cy="20" r="10"/><circle cx="80" cy="20" r="10"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">一起</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-11">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">11</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M50 10 V90" stroke-dasharray="5 5"/><circle cx="25" cy="50" r="15"/><rect x="65" y="35" width="30" height="30" rx="3"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">一样/不一样</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="focus_wall_unit/unit_school.html" class="unit-card color-12">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">12</div>
+                            <div class="status-badge font-zh active" style="background:#dcfce3; color:#166534;">✅ 已上线</div>
+                        </div>
+                        <div class="card-body phrase-text">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M10 90 L10 40 L50 20 L90 40 L90 90 Z"/><circle cx="50" cy="50" r="10"/><path d="M50 20 L50 10"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">我的学校</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-13">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">13</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><circle cx="50" cy="40" r="15"/><path d="M50 55 L50 90 L80 75 Z"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">去哪里</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-14">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">14</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><path d="M30 70 C30 40, 60 10, 80 30 C100 50, 70 80, 40 60 Z"/><path d="M15 15 Q25 5 35 15"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">动物和植物</div>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="swiper-slide">
+                    <a href="#" class="unit-card color-15">
+                        <div class="card-header">
+                            <div class="unit-badge font-en">15</div>
+                            <div class="status-badge font-zh">⏳ 建设中</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="vcg-icon-wrapper">
+                                <svg class="vcg-svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/><path d="M50 10 C55 25 45 25 50 40"/><circle cx="90" cy="50" r="5"/></svg>
+                            </div>
+                            <div class="unit-name font-zh">一年四季</div>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
             
-            <a href="focus_wall_unit/unit_school.html" class="unit-card color-1">
-                <div class="unit-badge font-en">1</div>
-                <div class="unit-name font-zh">我的学校</div>
-                <div class="unit-status font-zh">✅ 已上线</div>
-            </a>
-
-            <a href="#" class="unit-card color-2" style="opacity: 0.65;">
-                <div class="unit-badge font-en">2</div>
-                <div class="unit-name font-zh">我的家庭</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-
-            <a href="#" class="unit-card color-3" style="opacity: 0.65;">
-                <div class="unit-badge font-en">3</div>
-                <div class="unit-name font-zh">我的身体</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-
-            <a href="#" class="unit-card color-4" style="opacity: 0.65;">
-                <div class="unit-badge font-en">4</div>
-                <div class="unit-name font-zh">食物与饮料</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-
-            <a href="#" class="unit-card color-5" style="opacity: 0.65;">
-                <div class="unit-badge font-en">5</div>
-                <div class="unit-name font-zh">动物世界</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-
-            <a href="#" class="unit-card color-6" style="opacity: 0.65;">
-                <div class="unit-badge font-en">6</div>
-                <div class="unit-name font-zh">天气与季节</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-            
-            <a href="#" class="unit-card color-7" style="opacity: 0.65;">
-                <div class="unit-badge font-en">7</div>
-                <div class="unit-name font-zh">社区与职业</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-            
-            <a href="#" class="unit-card color-8" style="opacity: 0.65;">
-                <div class="unit-badge font-en">8</div>
-                <div class="unit-name font-zh">交通与旅行</div>
-                <div class="unit-status font-zh">⏳ 建设中</div>
-            </a>
-
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        var swiper = new Swiper(".mySwiper", {
+            centeredSlides: true,
+            keyboard: {
+                enabled: true,
+                onlyInViewport: false,
+            },
+            mousewheel: {
+                forceToAxis: true,
+            },
+            breakpoints: {
+                1200: { slidesPerView: 3.5, spaceBetween: 40 },
+                768:  { slidesPerView: 2.5, spaceBetween: 20 },
+                480:  { slidesPerView: 1.2, spaceBetween: 15 }
+            },
+            pagination: { el: ".swiper-pagination", clickable: true },
+            navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+        });
+    </script>
 </body>
 </html>

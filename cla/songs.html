@@ -10,8 +10,6 @@
     
     <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
-    <script src="https://unpkg.com/pinyin-pro"></script>
-
     <style>
         :root {
             --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
@@ -25,14 +23,12 @@
 
         body { background-color: #fff9ea; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-top: 60px; }
 
-#gallery-view {
+        #gallery-view {
             flex: 1; overflow-y: auto; display: grid;
-            /* 缩小了卡片基础宽度和缝隙，取消了固定行高 */
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             align-content: start; gap: 20px; padding: 30px 40px; box-sizing: border-box;
         }
         
-        /* 阶梯式弹跳进场动画 */
         @keyframes cardPop {
             from { opacity: 0; transform: translateY(30px) scale(0.9); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -41,7 +37,7 @@
         .song-card {
             background: white; border: 3px solid #e2e8f0; border-radius: 24px;
             overflow: hidden; cursor: pointer; 
-            display: flex; flex-direction: column; height: 190px; /* 卡片整体调矮 */
+            display: flex; flex-direction: column; height: 190px; 
             box-shadow: 0 8px 16px rgba(0,0,0,0.04);
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
@@ -51,25 +47,23 @@
         .song-card:hover { 
             transform: translateY(-8px) scale(1.03); 
             border-color: var(--accent-yellow); 
-            box-shadow: 0 15px 30px rgba(243, 178, 54, 0.25); /* 炫酷的发光阴影 */
+            box-shadow: 0 15px 30px rgba(243, 178, 54, 0.25); 
             z-index: 10;
         }
         
         .card-img-wrapper { 
-            width: 100%; height: 135px; /* 图片区域压缩 */
+            width: 100%; height: 135px; 
             overflow: hidden; background: #f8f9fa; 
             display: flex; align-items: center; justify-content: center; position: relative; 
         }
         
         .song-card img { 
             width: 100%; height: 100%; object-fit: cover; 
-            transition: transform 0.5s ease; /* 平滑缩放 */
+            transition: transform 0.5s ease; 
         }
         
-        /* 鼠标悬浮时，图片轻微放大（变焦效果） */
         .song-card:hover img { transform: scale(1.1); } 
 
-        /* 隐藏的播放遮罩层 */
         .play-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.25);
@@ -81,10 +75,10 @@
         .play-icon {
             width: 48px; height: 48px; background: rgba(255,255,255,0.95);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: var(--accent-yellow); font-size: 20px; padding-left: 4px; /* 图标视觉居中 */
+            color: var(--accent-yellow); font-size: 20px; padding-left: 4px; 
             transform: scale(0.5); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .song-card:hover .play-icon { transform: scale(1); } /* 播放按钮弹出 */
+        .song-card:hover .play-icon { transform: scale(1); } 
 
         .song-info { flex: 1; padding: 6px 10px; text-align: center; display: flex; align-items: center; justify-content: center; background: white; z-index: 2; }
         .song-info h3 { margin: 0; font-size: 0.95rem; color: #2c3e50; line-height: 1.3; font-weight: bold; }
@@ -116,7 +110,11 @@
         .page-btn:hover { background: #e1a328; }
         .page-btn:active { transform: scale(0.97); }
 
-        #hover-img-container { position: fixed; display: none; z-index: 10005; padding: 10px; pointer-events: auto; }
+        /* ✨ 优化点：为悬浮框加入了渐变动画和透明度过渡 */
+        #hover-img-container { 
+            position: fixed; display: none; z-index: 10005; padding: 10px; pointer-events: auto; 
+            opacity: 0; transition: opacity 0.2s ease; 
+        }
         #global-hover-img { max-height: 40vh; max-width: 420px; border: 6px solid var(--accent-yellow); border-radius: 20px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
         .btn-delete-item { position: absolute; top: 0px; right: 0px; background: #e74c3c; color: white; border: 3px solid white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10006; transition: 0.2s; }
 
@@ -212,8 +210,6 @@
         function formatText(text, isLyrics = false) {
             if (!text) return "";
             return text.split('').map(char => {
-                // 检测是否为中文字符（包括常用汉字、扩展区、兼容区）
-                // 非中文的一切（英文、数字、括号、标点等）都用 LXGW 字体
                 const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u{20000}-\u{2a6df}]/u.test(char);
                 const isEn = !isChinese;
                 const className = isEn ? 'font-en' : 'font-zh';
@@ -240,7 +236,6 @@
             document.getElementById('head-title').innerText = t.title + " - MECC";
             document.getElementById('btn-close-play').innerText = t.backList;
 
-            // 🌟 核心：如果是家长模式，直接隐藏生字标记管理员条
             if (LANG === 'en') {
                 document.getElementById('admin-bar').style.display = 'none';
             }
@@ -268,7 +263,6 @@
                 if (imgPath && imgPath.startsWith('/')) imgPath = '..' + imgPath; 
                 else if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('../')) imgPath = '../' + imgPath;
 
-                // 核心炫酷点：根据卡片序号，计算出延迟出场的时间，形成瀑布流弹跳效果
                 const delay = Math.min(index * 0.05, 0.5);
 
                 return `
@@ -286,8 +280,6 @@
 
         function startLevel(idx) {
             currentSong = songsData[idx]; 
-            
-            // 🌟 打开播放页时，暂时隐去全局导航，保持沉浸感
             document.querySelector('.mecc-global-nav').style.display = 'none';
             
             listView.style.display = 'none'; playView.style.display = 'flex';
@@ -353,7 +345,14 @@
                                     let subparts = part.text.split(word);
                                     subparts.forEach((sub, idx) => {
                                         if (sub !== "") newParts.push({ text: sub, isMarked: false });
-                                        if (idx < subparts.length - 1) newParts.push({ text: word, isMarked: true, img: hardWords[word] });
+                                        if (idx < subparts.length - 1) {
+                                            const imgSrc = hardWords[word];
+                                            newParts.push({ text: word, isMarked: true, img: imgSrc });
+                                            
+                                            // ✨ 优化点：图片后台预加载机制，消除鼠标首次悬停时的闪烁延迟
+                                            const preImg = new Image();
+                                            preImg.src = (imgSrc && !imgSrc.startsWith('/') && !imgSrc.startsWith('http') && !imgSrc.startsWith('../')) ? '../' + imgSrc : imgSrc;
+                                        }
                                     });
                                 }
                             });
@@ -387,34 +386,52 @@
             document.getElementById('page-indicator').innerText = `${currentSlideIndex + 1} / ${currentSlides.length}`;
         }
 
+        // ✨ 优化点：丝滑的图片悬浮展示逻辑
         function showImg(e, src, word) {
             clearTimeout(hideTimer);
             let imgPath = src;
-            if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) imgPath = '../' + imgPath; 
-            globalImg.src = imgPath; imgContainer.style.display = 'block';
-            const rect = e.target.getBoundingClientRect();
+            if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http') && !imgPath.startsWith('../')) imgPath = '../' + imgPath; 
             
-            setTimeout(() => {
+            globalImg.src = imgPath; 
+            imgContainer.style.display = 'block'; // 先设为block计算高宽，此时opacity为0不可见
+            
+            // 使用 requestAnimationFrame 等待浏览器计算布局后，再定位并展示，消除闪屏
+            requestAnimationFrame(() => {
+                const rect = e.target.getBoundingClientRect();
                 let topPos = rect.top - imgContainer.offsetHeight - 10;
                 if (topPos < 10) topPos = rect.bottom + 10; 
                 let leftPos = rect.left;
                 if (leftPos + imgContainer.offsetWidth > window.innerWidth) leftPos = window.innerWidth - imgContainer.offsetWidth - 20;
-                imgContainer.style.top = topPos + 'px'; imgContainer.style.left = leftPos + 'px';
-            }, 0);
+                
+                imgContainer.style.top = topPos + 'px'; 
+                imgContainer.style.left = leftPos + 'px';
+                
+                // 下一帧开启透明度渐变
+                requestAnimationFrame(() => {
+                    imgContainer.style.opacity = '1';
+                });
+            });
 
             deleteBtn.onclick = (event) => {
                 event.stopPropagation();
                 if(confirm(`删除“${word}”的图片加注？`)) {
                     let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}");
                     delete d[word]; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d));
-                    imgContainer.style.display = 'none'; renderSlide();
+                    hideImg(); renderSlide();
                 }
             };
         }
 
-        function scheduleHide() { hideTimer = setTimeout(() => { imgContainer.style.display = 'none'; }, 250); }
+        function scheduleHide() { hideTimer = setTimeout(hideImg, 200); }
         function keepImg() { clearTimeout(hideTimer); }
-        function hideImg() { imgContainer.style.display = 'none'; }
+        
+        // ✨ 优化点：平滑隐藏
+        function hideImg() { 
+            imgContainer.style.opacity = '0';
+            setTimeout(() => { 
+                if (imgContainer.style.opacity === '0') imgContainer.style.display = 'none'; 
+            }, 200); 
+        }
 
         function toggleChar(e, el, char) {
             e.stopPropagation(); const newState = !el.classList.contains('red-word');
@@ -433,10 +450,17 @@
             } else if (e.target !== bubble) { bubble.style.display = 'none'; }
         };
 
+        // ✨ 优化点：生成文件名改为 "词语本身.webp"，默认路径指向 sight_words_phrases
         function makeHardWord() {
-            const { pinyin } = pinyinPro; const autoName = pinyin(selectedText, { toneType: 'none', type: 'array' }).join('') + ".webp";
-            const imgFile = prompt(`请填写后台的图片路径:`, `../images/songs/${autoName}`);
-            if (imgFile) { let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); d[selectedText] = imgFile; localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); bubble.style.display = 'none'; renderSlide(); }
+            const autoName = selectedText + ".webp";
+            const imgFile = prompt(`请填写后台的图片路径:`, `../images/sight_words_phrases/${autoName}`);
+            if (imgFile) { 
+                let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); 
+                d[selectedText] = imgFile; 
+                localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); 
+                bubble.style.display = 'none'; 
+                renderSlide(); 
+            }
         }
 
         function closePlay() { 
@@ -444,8 +468,6 @@
             listView.style.display = 'flex'; 
             bubble.style.display = 'none'; 
             lyricsContent.innerHTML = ''; 
-            
-            // 🌟 退出播放时，恢复全局导航
             document.querySelector('.mecc-global-nav').style.display = 'flex';
         }
 
