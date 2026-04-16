@@ -473,6 +473,12 @@
       "punctuation": "。",
       "image": "/images/sentences/school_custodian.webp",
       "tags": "学校"
+    },
+    {
+      "words": "我,一把,有,剪刀",
+      "punctuation": "。",
+      "tags": "学校",
+      "image": "../images/sight_words_phrases/one_scissors.webp"
     }
   ]
 }
