@@ -36,6 +36,39 @@
           "image": "/images/sentences/china.webp"
         }
       ]
+    },
+    {
+      "title": "我喜欢学校",
+      "level": "Novice Mid (L2)",
+      "topic": "学校生活",
+      "vocab_tags": "我,喜欢,学校,有",
+      "coverImage": "../images/sentences/like_school.webp",
+      "pages": [
+        {
+          "text": "我喜欢学校。",
+          "image": "../images/sentences/like_school.webp"
+        },
+        {
+          "text": "学校有老师。",
+          "image": "../images/sentences/school_teacher.webp"
+        },
+        {
+          "text": "学校有小朋友。",
+          "image": "../images/sentences/school_children.webp"
+        },
+        {
+          "text": "学校有校长。",
+          "image": "school_principal.webp"
+        },
+        {
+          "image": "../images/sentences/school_nurse.webp",
+          "text": "学校有护士。"
+        },
+        {
+          "text": "学校有校工。",
+          "image": "../images/sentences/school_custodian.webp"
+        }
+      ]
     }
   ]
 }
