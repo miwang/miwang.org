@@ -9,3 +9,6 @@ Desktop.ini
 Thumbs.db
 ehthumbs.db
 $RECYCLE.BIN/
+
+# Node.js 依赖包（体积巨大，不上云）
+node_modules/
