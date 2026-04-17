@@ -479,6 +479,12 @@
       "punctuation": "。",
       "tags": "学校",
       "image": "/images/sentences/one_scissors.webp"
+    },
+    {
+      "words": "我,有,很多,蜡笔",
+      "punctuation": "。",
+      "image": "/images/sentences/gemini_generated_image_246k05246k05246k.png",
+      "tags": "学校"
     }
   ]
 }
