@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教师专属工作台 — Wang Laoshi's Space</title>
+    <title>教师工具台 — 王老师的教学空间</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
         :root {
-            /* 🌿 严格同步单元页的高级森系 SaaS 配色 */
-            --c-lime: #b4d455;    /* 青柠黄 */
-            --c-emerald: #47b087; /* 翡翠绿 */
-            --c-slate: #1f5757;   /* 深石板绿 */
-            --c-navy: #15333f;    /* 藏青色 */
-            --c-mint: #62c9ae;    /* 薄荷青 */
+            /* 🌿 完美同步 unit_school.html 的高级森系 SaaS 配色 */
+            --c-lime: #c3d94e;    /* 青柠/草绿 */
+            --c-emerald: #44b88e; /* 翡翠绿 */
+            --c-slate: #1e565c;   /* 深石板绿 */
+            --c-navy: #183042;    /* 藏青色 */
+            --c-teal: #217273;    /* 水鸭青 */
+            --c-mint: #63cbb2;    /* 明亮薄荷绿 */
             
-            --bg: #f0f4f8;          /* 科技感浅灰蓝背景 */
+            --bg: #f0f4f8;          
             --card-bg: #ffffff;     
-            --text: #1e293b;        /* 深岩灰正文 */
-            --text-muted: #64748b;  /* 浅岩灰描述 */
+            --text: #334155;        /* 统一的深岩灰正文 */
+            --text-muted: #64748b;  
             --border: #e2e8f0;      
             
             --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
@@ -39,7 +40,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 顶部导航：同步科技深蓝色调 */
         .site-header {
             background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-slate) 100%); 
             min-height: 85px; 
@@ -56,14 +56,10 @@
         .site-header h1::after {
             content: '';
             display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
-            background: var(--c-emerald);
-            margin-left: 10px;
-            opacity: 0.9;
-            vertical-align: middle;
-            transform: rotate(45deg);
+            width: 10px; height: 10px;
+            border-radius: 2px; background: var(--c-emerald);
+            margin-left: 10px; opacity: 0.9;
+            vertical-align: middle; transform: rotate(45deg);
         }
 
         .site-header::after {
@@ -78,8 +74,10 @@
             display: inline-flex; align-items: center; gap: 6px;
             color: #f8fafc; text-decoration: none; font-weight: bold; font-size: 1.05rem;
             line-height: 1; transition: opacity 0.2s ease; z-index: 2;
+            white-space: nowrap;
         }
         .site-header .back-link:hover { opacity: 0.75; }
+        .circle-arrow-icon { width: 22px; height: 22px; flex-shrink: 0; }
 
         .site-header h1 {
             font-size: 1.9rem;
@@ -94,11 +92,20 @@
         }
 
         .section-title {
-            font-size: 1.3rem; font-weight: bold; color: #1e293b; 
+            font-size: 1.3rem; font-weight: bold; color: var(--text); 
             border-left: 6px solid var(--c-slate); 
             padding-left: 14px; margin-bottom: 18px;
-            letter-spacing: 1px; display: flex; align-items: center; gap: 8px;
+            letter-spacing: 1px; display: flex; align-items: center; gap: 12px;
         }
+        
+        .title-icon {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .title-icon svg { width: 20px; height: 20px; }
 
         .grid {
             display: grid;
@@ -106,7 +113,6 @@
             gap: 20px;
         }
 
-        /* 🌟 卡片基础样式 */
         .card {
             background-color: var(--card-bg);
             border-radius: var(--radius);
@@ -119,7 +125,6 @@
             transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             cursor: pointer;
             position: relative;
-            
             display: grid;
             grid-template-columns: auto 1fr auto;
             grid-template-rows: auto auto;
@@ -128,35 +133,35 @@
             min-height: 115px;
         }
 
-        /* 🌟 老虎异形卡片 (保持方框 + 王字虎斑) */
+        /* 🐯 老虎异形卡片 (王字翻出外面 + 虎斑 + 内耳廓) */
         .card.tiger-shape {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
             filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             background-size: 100% 100%;
             padding: 44px 16px 14px 16px !important; 
         }
         .card.tiger-shape:hover {
-            filter: drop-shadow(0 12px 24px rgba(31, 87, 87, 0.15));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%231f5757' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%231f5757' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%231f5757' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            filter: drop-shadow(0 12px 24px rgba(30, 86, 92, 0.15));
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             transform: translateY(-5px);
         }
 
-        /* 🌟 大象异形卡片 (重绘版：超级俏皮卷鼻子 + 传神大耳) */
+        /* 🐘 大象异形卡片 (极简传神版：更长的象牙 + 更细的象鼻 + 无褶皱) */
         .card.elephant-shape {
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
             filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 60 40 C 30 -20 110 -20 120 40 L 180 40 C 190 -20 270 -20 240 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 75 25 Q 95 15 110 35 M 225 25 Q 205 15 190 35' fill='none' stroke='%23e2e8f0' stroke-width='1.5' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 135 40 Q 140 85 190 100 C 230 110 250 70 215 50 C 190 35 170 60 190 75 Q 165 80 165 40' fill='none' stroke='%23e2e8f0' stroke-width='2.5' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 125 40 Q 100 80 75 45 M 175 40 Q 200 80 225 45' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 90 25 L 275 25 C 286 25 295 34 295 45 L 295 110 C 295 121 286 130 275 130 L 45 130 C 45 110 45 95 45 90 C 35 90 30 100 30 110 C 30 125 12 125 15 105 C 18 80 25 60 30 55 C 33 48 33 52 35 40 C 40 20 60 20 90 25 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 35 C 100 25 125 60 115 100 C 105 130 65 120 60 95 C 55 75 55 45 60 35 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 45 90 Q 10 102 2 82 Q 20 78 42 80 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 42 45 Q 47 42 52 45' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             background-size: 100% 100%;
-            padding: 44px 16px 14px 16px !important; 
+            padding: 24px 24px 18px 80px !important; 
         }
         .card.elephant-shape:hover {
-            filter: drop-shadow(0 12px 24px rgba(31, 87, 87, 0.15));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 60 40 C 30 -20 110 -20 120 40 L 180 40 C 190 -20 270 -20 240 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%231f5757' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 75 25 Q 95 15 110 35 M 225 25 Q 205 15 190 35' fill='none' stroke='%231f5757' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 135 40 Q 140 85 190 100 C 230 110 250 70 215 50 C 190 35 170 60 190 75 Q 165 80 165 40' fill='none' stroke='%231f5757' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 125 40 Q 100 80 75 45 M 175 40 Q 200 80 225 45' fill='none' stroke='%231f5757' stroke-width='2.5' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+            filter: drop-shadow(0 12px 24px rgba(30, 86, 92, 0.15));
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 90 25 L 275 25 C 286 25 295 34 295 45 L 295 110 C 295 121 286 130 275 130 L 45 130 C 45 110 45 95 45 90 C 35 90 30 100 30 110 C 30 125 12 125 15 105 C 18 80 25 60 30 55 C 33 48 33 52 35 40 C 40 20 60 20 90 25 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 35 C 100 25 125 60 115 100 C 105 130 65 120 60 95 C 55 75 55 45 60 35 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 45 90 Q 10 102 2 82 Q 20 78 42 80 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 42 45 Q 47 42 52 45' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
             transform: translateY(-5px);
         }
 
@@ -177,7 +182,6 @@
         .card.emerald-hover:hover::after { transform: translateX(5px); color: var(--c-emerald); }
         .card.mint-hover:hover::after { transform: translateX(5px); color: var(--c-mint); }
 
-        /* 锁徽章同步颜色 */
         .lock-badge {
             position: absolute; top: -12px; right: -12px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
             background: #f8fafc; border: 2px solid var(--border); color: #64748b;
@@ -192,7 +196,6 @@
         .locked-card:hover .lock-overlay { opacity: 1; }
         .locked-card:hover .lock-hint { transform: translateY(0); }
 
-        /* 🌟 实心图标盒子 */
         .card-icon {
             grid-row: 1 / 3; grid-column: 1;
             width: 58px; height: 58px; display: flex; align-items: center; justify-content: center;
@@ -213,9 +216,10 @@
         }
         .card-title .sub-title { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
         
-        .slate-hover:hover .card-title .sub-title { color: var(--c-slate); background: rgba(31, 87, 87, 0.08); border-color: rgba(31, 87, 87, 0.15); }
-        .emerald-hover:hover .card-title .sub-title { color: var(--c-emerald); background: rgba(71, 176, 135, 0.08); border-color: rgba(71, 176, 135, 0.15); }
-        .mint-hover:hover .card-title .sub-title { color: var(--c-mint); background: rgba(98, 201, 174, 0.08); border-color: rgba(98, 201, 174, 0.15); }
+        /* 精确转换为了新色板的 RGBA 透色值 */
+        .slate-hover:hover .card-title .sub-title { color: var(--c-slate); background: rgba(30, 86, 92, 0.08); border-color: rgba(30, 86, 92, 0.15); }
+        .emerald-hover:hover .card-title .sub-title { color: var(--c-emerald); background: rgba(68, 184, 142, 0.08); border-color: rgba(68, 184, 142, 0.15); }
+        .mint-hover:hover .card-title .sub-title { color: var(--c-mint); background: rgba(99, 203, 178, 0.08); border-color: rgba(99, 203, 178, 0.15); }
 
         .card-desc { 
             grid-row: 2; grid-column: 2;
@@ -223,20 +227,22 @@
             align-self: start; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        #modal-overlay { position: fixed; inset: 0; background: rgba(21, 51, 63, 0.85); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        /* 模态框统一使用藏青色遮罩 */
+        #modal-overlay { position: fixed; inset: 0; background: rgba(24, 48, 66, 0.85); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .lock-box { background: #fff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--border); border-top: 6px solid var(--c-slate); }
         
         .password-input { font-family: "LXGW WenKai Lite", monospace; font-size: 2rem; padding: 12px; width: 180px; text-align: center; border: 2px solid var(--border); border-radius: 8px; letter-spacing: 5px; background: #fff; color: var(--text); outline: none; transition: border-color 0.2s; }
         .password-input:focus { border-color: var(--c-slate); }
         .submit-btn { margin-top: 24px; padding: 12px 40px; background: var(--c-slate); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem; letter-spacing: 2px; transition: all 0.2s ease; }
-        .submit-btn:hover { background: #153d3d; }
+        .submit-btn:hover { background: #164044; }
 
         @media (max-width: 768px) {
             .site-header { min-height: 90px; padding: 50px 16px 14px; }
             .site-header .back-link { left: 50%; top: 12px; transform: translateX(-50%); }
             .site-header h1 { font-size: 1.6rem; }
             .grid { grid-template-columns: 1fr; }
-            .card.elephant-shape { padding: 16px 14px !important; }
+            .card.tiger-shape { padding: 36px 14px 14px 14px !important; }
+            .card.elephant-shape { padding: 16px 14px 16px 70px !important; }
         }
     </style>
 </head>
@@ -253,51 +259,21 @@
 
 <div class="container">
         <div class="tool-section">
-            <div class="section-title">👥 分组与轮换工具</div>
-            <div class="grid">
-                
-                <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_milk_cookie.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-comments"></i></div>
-                    <div class="card-title">大象班找搭子<span class="sub-title font-en">Turn & Talk</span></div>
-                    <div class="card-desc">随机配对练习对话。</div>
+            <div class="section-title" style="border-left-color: var(--c-emerald);">
+                <div class="title-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
                 </div>
-
-                <div class="card locked-card tiger-shape slate-hover" onclick="requirePassword('tools/tigers_milk_cookie.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-comments"></i></div>
-                    <div class="card-title">老虎班找搭子<span class="sub-title font-en">Turn & Talk</span></div>
-                    <div class="card-desc">随机配对练习对话。</div>
-                </div>
-
-                <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_centers.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <div class="card-title">大象班小组轮换 <span class="sub-title">小组管理</span></div>
-                    <div class="card-desc">管理和记录小组分组和轮换。</div>
-                </div>
-
-                <div class="card locked-card tiger-shape slate-hover" onclick="requirePassword('tools/tigers_centers.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <div class="card-title">老虎班小组轮换<span class="sub-title">小组管理</span></div>
-                    <div class="card-desc">管理和记录小组分组和轮换。</div>
-                </div>
+                <span>课堂教学工具</span>
             </div>
-        </div>
-
-        <div class="tool-section">
-            <div class="section-title" style="border-left-color: var(--c-emerald);">📖 课堂教学工具</div>
             <div class="grid">
                 <a href="work/morning_work.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-book"></i></div><div class="card-title">早作业<span class="sub-title">晨间综合练习</span></div><div class="card-desc">每日配置四会字、数字与句子。</div></a>
-                <a href="cla/words_and_phrases.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-pen"></i></div><div class="card-title">四会字学习索引<span class="sub-title">笔顺动画</span></div><div class="card-desc">核心生字库，包含发音及示范。</div></a>
-                <a href="games/sentence_builder.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-puzzle-piece"></i></div><div class="card-title">组句子<span class="sub-title">拼搭造句练习</span></div><div class="card-desc">拖拽词块组合句子，锻炼语法与表达。</div></a>
+                <a href="cla/words_and_phrases.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-pen"></i></div><div class="card-title">生字索引<span class="sub-title">笔顺动画</span></div><div class="card-desc">生字库包含发音及示范。</div></a>
+                <a href="games/sentence_builder.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-puzzle-piece"></i></div><div class="card-title">组句子<span class="sub-title">拼搭造句练习</span></div><div class="card-desc">拖拽词块组合句子。</div></a>
                 <a href="cla/library.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-book-open"></i></div><div class="card-title">分级绘本馆<span class="sub-title">绘本检索</span></div><div class="card-desc">按难度分类的阅读库。</div></a>
-                <a href="cla/focus_wall.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-chalkboard"></i></div><div class="card-title">单元主题墙<span class="sub-title font-en">Focus Wall</span></div><div class="card-desc">单元核心知识与学生习作展示。</div></a>
+                <a href="cla/focus_wall.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-chalkboard"></i></div><div class="card-title">单元主题墙<span class="sub-title font-en">Focus Wall</span></div><div class="card-desc">核心知识与习作展示。</div></a>
                 <a href="cla/songs.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-microphone"></i></div><div class="card-title">我们来唱歌<span class="sub-title">儿歌点读</span></div><div class="card-desc">随点随唱互动教学。</div></a>
                 <a href="cla/poems.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-scroll"></i></div><div class="card-title">古诗与童谣<span class="sub-title">国学启蒙</span></div><div class="card-desc">经典诗词展示。</div></a>
                 <a href="math/mecc_daily_practices.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-calendar-day"></i></div><div class="card-title">数学早会<span class="sub-title">日历天气</span></div><div class="card-desc">每日晨会数学互动。</div></a>
@@ -305,7 +281,15 @@
         </div>
 
         <div class="tool-section">
-            <div class="section-title" style="border-left-color: var(--c-mint);">🎮 课堂互动游戏</div>
+            <div class="section-title" style="border-left-color: var(--c-mint);">
+                <div class="title-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                        <path d="M6 12h4M8 10v4M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path>
+                    </svg>
+                </div>
+                <span>课堂互动游戏</span>
+            </div>
             <div class="grid">
                 <a href="games/knockknock.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-door-closed"></i></div><div class="card-title">这是谁？<span class="sub-title">家庭成员识字</span></div><div class="card-desc">通过猜测敲门者认读成员。</div></a>
                 <a href="games/cat_game.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-cat"></i></div><div class="card-title">小猫在哪里？<span class="sub-title">认读躲猫猫</span></div><div class="card-desc">在生字后面寻找可爱小猫。</div></a>
@@ -313,8 +297,52 @@
                 <a href="games/orchard_game.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-basket-shopping"></i></div><div class="card-title">果园摘水果<span class="sub-title">接水果识字</span></div><div class="card-desc">接住带有正确生字的水果。</div></a>
                 <a href="games/magic_train.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-train"></i></div><div class="card-title">魔法小火车<span class="sub-title">听音辨字</span></div><div class="card-desc">匹配语音将生字拖入车厢。</div></a>
                 <a href="games/memory_match.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-clone"></i></div><div class="card-title">汉字连连看<span class="sub-title">记忆翻牌</span></div><div class="card-desc">翻牌匹配相同汉字。</div></a>
-                <a href="games/addition_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-plus-circle"></i></div><div class="card-title">加法迷宫<span class="sub-title">数学挑战</span></div><div class="card-desc">解答算式走出迷宫。</div></a>
-                <a href="games/subtraction_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-minus-circle"></i></div><div class="card-title">减法迷宫<span class="sub-title">数学挑战</span></div><div class="card-desc">解答算式走出迷宫。</div></a>
+                <a href="math/addition_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-plus-circle"></i></div><div class="card-title">加法迷宫<span class="sub-title">数学挑战</span></div><div class="card-desc">解答算式走出迷宫。</div></a>
+                <a href="math/subtraction_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-minus-circle"></i></div><div class="card-title">减法迷宫<span class="sub-title">数学挑战</span></div><div class="card-desc">解答算式走出迷宫。</div></a>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <div class="section-title" style="border-left-color: var(--c-slate);">
+                <div class="title-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-slate)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <span>分组与轮换工具</span>
+            </div>
+            <div class="grid">
+                <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_milk_cookie.html')" role="button" tabindex="0">
+                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+                    <div class="card-icon"><i class="fas fa-comments"></i></div>
+                    <div class="card-title">大象班找搭子<span class="sub-title font-en">Turn & Talk</span></div>
+                    <div class="card-desc">随机配对。</div>
+                </div>
+                <div class="card locked-card tiger-shape slate-hover" onclick="requirePassword('tools/tigers_milk_cookie.html')" role="button" tabindex="0">
+                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+                    <div class="card-icon"><i class="fas fa-comments"></i></div>
+                    <div class="card-title">老虎班找搭子<span class="sub-title font-en">Turn & Talk</span></div>
+                    <div class="card-desc">随机配对。</div>
+                </div>
+                <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_centers.html')" role="button" tabindex="0">
+                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-title">大象班轮换 <span class="sub-title">小组管理</span></div>
+                    <div class="card-desc">管理小组分组。</div>
+                </div>
+                <div class="card locked-card tiger-shape slate-hover" onclick="requirePassword('tools/tigers_centers.html')" role="button" tabindex="0">
+                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-title">老虎班轮换<span class="sub-title">小组管理</span></div>
+                    <div class="card-desc">管理小组分组。</div>
+                </div>
             </div>
         </div>
     </div>
@@ -354,7 +382,6 @@
             }
         }
 
-        // 自动记住并恢复滚动位置
         document.addEventListener('click', (e) => {
             if (e.target.closest('.card')) {
                 sessionStorage.setItem('teachers_scroll_pos', window.scrollY);
