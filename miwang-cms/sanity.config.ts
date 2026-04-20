@@ -2,11 +2,15 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
+<<<<<<< Updated upstream
 import React from 'react' // 🌟 新增：引入 React
+=======
+>>>>>>> Stashed changes
 
 export default defineConfig({
   name: 'default',
   title: 'miwang-cms',
+<<<<<<< Updated upstream
   projectId: 'sow12t1i',
   dataset: 'production',
 
@@ -75,8 +79,19 @@ export default defineConfig({
     }),
     visionTool()
   ],
+=======
+
+  projectId: 'sow12t1i',
+  dataset: 'production',
+
+  plugins: [structureTool(), visionTool()],
+>>>>>>> Stashed changes
 
   schema: {
     types: schemaTypes,
   },
+<<<<<<< Updated upstream
 })
+=======
+})
+>>>>>>> Stashed changes

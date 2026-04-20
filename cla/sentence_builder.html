@@ -252,6 +252,15 @@
         let allSentences = []; 
         let currentFilteredList = [];
 
+        // ==========================================
+        // Sanity API 配置
+        // ==========================================
+        const PROJECT_ID = 'sow12t1i'; // ⚠️ 在这里填入你的 Project ID
+        const DATASET = 'production';
+        // GROQ 查询语句：获取所有的句子、词语、标点、标签，以及直接获取 CDN 图片网址
+        const QUERY = encodeURIComponent('*[_type == "sentence"]{_id, words, punctuation, tags, "image": image.asset->url}');
+        const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
         // --- 🌟 三级朗读降级系统（带 iOS 解锁） ---
         let globalAudio = new Audio();
 
@@ -306,6 +315,7 @@
                 });
             }
 
+<<<<<<< Updated upstream
             // 直连 Sanity 拿数据
             fetch(API_URL)
                 .then(res => res.json())
@@ -316,6 +326,20 @@
                         punctuation: item.punctuation || "", 
                         image: item.image || "", // 从 Sanity 取到的高清大图 URL
                         tags: item.tags ? item.tags.split(/[,，、\s]+/).map(t => t.trim()).filter(t => t) : []
+=======
+            // 原本读取本地 JSON，现在改成直连 Sanity 云端 API
+            fetch(API_URL)
+                .then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch from Sanity");
+                    return res.json();
+                })
+                .then(({ result }) => {
+                    allSentences = (result || []).map(item => ({
+                        words: item.words ? item.words.split(/[,，、]/).map(w => w.trim()).filter(w => w) : [],
+                        punctuation: item.punctuation || "", 
+                        image: item.image || "https://via.placeholder.com/400x200?text=无配图", // 使用 Sanity 绝对路径
+                        tags: item.tags ? item.tags.split(/[,，、]/).map(t => t.trim()).filter(t => t) : []
+>>>>>>> Stashed changes
                     }));
                     initGallery();
                 }).catch(err => { 
@@ -384,7 +408,7 @@
             if (list.length === 0) { gallery.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#999;padding:40px 0;">${t.empty}</div>`; return; }
             gallery.innerHTML = list.map((item, i) => `
                 <div class="sentence-card" onclick="startLevel(${i})">
-                    <div class="card-img-wrapper"><img src="${item.image}" onerror="this.style.display='none'"></div>
+                    <div class="card-img-wrapper"><img src="${item.image}" onerror="this.src='https://via.placeholder.com/400x200?text=未找到图片'"></div>
                     <div class="card-info font-zh">${item.words.join('')}${item.punctuation || ''}</div>
                 </div>
             `).join('');
@@ -403,9 +427,14 @@
             zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = '';
             zone.dataset.locked = ''; document.getElementById('success-controls').style.visibility = 'hidden';
             
+<<<<<<< Updated upstream
             let imgPath = currentData.image;
             // 兼容可能残留的相对路径
             if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http')) imgPath = '../' + imgPath;
+=======
+            // 修复：这里原来有拼凑 ../ 的代码，现在直接使用云端的绝对路径就可以了
+            let imgPath = currentData.image || '';
+>>>>>>> Stashed changes
             document.getElementById('main-image').style.backgroundImage = `url('${imgPath}')`;
 
             const shuffledWords = [...currentData.words].sort(() => Math.random() - 0.5);

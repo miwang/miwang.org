@@ -200,7 +200,11 @@
         // ==========================================
         // Sanity API 配置
         // ==========================================
+<<<<<<< Updated upstream
         const PROJECT_ID = 'sow12t1i'; // 已经填好你的 Project ID
+=======
+        const PROJECT_ID = 'sow12t1i'; // ⚠️ 在这里填入你的 Project ID
+>>>>>>> Stashed changes
         const DATASET = 'production';
         // GROQ 查询语句：获取所有 type 为 book 的文档，并解析出封面的真实 CDN 网址
         const QUERY = encodeURIComponent('*[_type == "book"]{_id, title, level, topic, vocab_tags, "coverImage": coverImage.asset->url}');
@@ -232,7 +236,11 @@
         }
 
         function loadBooks() {
+<<<<<<< Updated upstream
             // 直连 Sanity 云端 API
+=======
+            // 原本是 fetch('../data/books.json')，现在改成直连 Sanity 云端
+>>>>>>> Stashed changes
             fetch(API_URL)
                 .then(response => {
                     if (!response.ok) throw new Error(LANG === 'zh' ? '暂时没有找到书籍数据。' : 'Book data not found.');
@@ -287,7 +295,11 @@
                 card.addEventListener('click', () => {
                     saveScroll();
                     const suffix = LANG === 'en' ? '&role=parents' : '';
+<<<<<<< Updated upstream
                     // 我们传的是这本绘本在云端数据库里唯一的身份证号 (book._id)
+=======
+                    // ⚠️ 注意：这里我们把传递给阅读器页面的 ID，从原本的数组索引变成了 Sanity 的唯一文档 ID (book._id)
+>>>>>>> Stashed changes
                     window.location.href = `reader.html?id=${book._id}${suffix}`;
                 });
                 gridContainer.appendChild(card);
