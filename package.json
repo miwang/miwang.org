@@ -1,34 +1,37 @@
 {
-<<<<<<< Updated upstream
-  "dependencies": {
-    "@sanity/client": "^7.21.0"
-=======
-  "name": "miwang.org",
+  "name": "miwang-cms",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "package.json",
+  "license": "UNLICENSED",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "deploy-graphql": "sanity graphql deploy",
+    "dev": "sanity dev",
+    "start": "sanity start"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/miwang/miwang.org.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/miwang/miwang.org/issues"
-  },
-  "homepage": "https://github.com/miwang/miwang.org#readme",
+  "keywords": [
+    "sanity"
+  ],
   "dependencies": {
-    "@sanity/client": "^7.21.0",
-    "tinacms": "^3.7.2"
+    "@sanity/vision": "^5.21.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "sanity": "^5.21.0",
+    "styled-components": "^6.1.18"
   },
   "devDependencies": {
-    "@tinacms/cli": "^2.2.2",
-    "@types/node": "^25.6.0"
->>>>>>> Stashed changes
+    "@sanity/eslint-config-studio": "^6.0.0",
+    "@types/react": "^19.2.14",
+    "eslint": "^9.28",
+    "prettier": "^3.5",
+    "typescript": "^5.8"
+  },
+  "prettier": {
+    "bracketSpacing": false,
+    "printWidth": 100,
+    "semi": false,
+    "singleQuote": true
   }
 }

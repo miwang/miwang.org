@@ -9,11 +9,6 @@ Desktop.ini
 Thumbs.db
 ehthumbs.db
 $RECYCLE.BIN/
-<<<<<<< Updated upstream
 
 # Node.js 依赖包（体积巨大，不上云）
 node_modules/
-=======
-node_modules
-.env
->>>>>>> Stashed changes
