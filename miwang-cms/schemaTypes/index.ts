@@ -9,7 +9,7 @@ import { gameAudio } from './gameAudio'
 import { focusWall } from './focusWall'
 import { student } from './student'
 import { centerConfig } from './centerConfig'
-import { sentenceConfig } from './sentenceConfig'
+import { sentenceConfig } from './sentenceConfig' // 🌟 全局句子颜色/标签配置
 
 // 将它们统一导出
 export const schemaTypes = [
@@ -23,5 +23,5 @@ export const schemaTypes = [
   focusWall,
   student,
   centerConfig,
-  sentenceConfig,
+  sentenceConfig, // 🌟 注册进系统
 ]

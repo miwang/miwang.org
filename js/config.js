@@ -20,15 +20,7 @@ window.MECC_CONFIG = {
     VOICE: {
         RATE: 0.85, 
         PITCH: 1.1,      
-        PREFERRED_NAMES: ['Xiaoxiao', 'Google', 'Microsoft', 'Huihui', 'Kangkang'],
-        
-        // 🚀【神级预留：高级云端语音接口】
-        CLOUD_API: {
-            enabled: false,          
-            provider: 'azure',       
-            apiKey: '未来填入您的密钥', 
-            endpoint: '未来填入您的接口地址'
-        }
+        PREFERRED_NAMES: ['Xiaoxiao', 'Google', 'Microsoft', 'Huihui', 'Kangkang']
     },
 
     // 游戏通用逻辑常量
@@ -90,7 +82,7 @@ window.MECC_AUDIO = {
     unlocked: false,
     ctx: null,
     ttsVoice: null,
-    globalAudio: null, 
+    globalAudio: null, // 专门负责播放云端MP3
     
     init: function() {
         if (this.unlocked) return;
@@ -129,15 +121,18 @@ window.MECC_AUDIO = {
         if (!this.globalAudio) this.globalAudio = new Audio();
         this.globalAudio.pause();
         
+        // 预激活 iOS 媒体通道
         this.globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
         this.globalAudio.play().catch(() => {});
 
+        // 优先级 1: Sanity 云端真人录音
         if (sanityAudioUrl) {
             console.log(`[MECC_AUDIO] 播放 Sanity 云端录音`);
             this.globalAudio.src = sanityAudioUrl;
             try { await this.globalAudio.play(); return; } catch(e) { console.warn("云端录音播放失败，尝试降级", e); }
         }
 
+        // 优先级 2: Azure API
         const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
         try {
             console.log(`[MECC_AUDIO] 请求 Azure API`);
@@ -150,6 +145,7 @@ window.MECC_AUDIO = {
             }
         } catch(e) { console.warn("Azure API 失败，准备使用 TTS", e); }
 
+        // 优先级 3: 浏览器系统自带语音 TTS
         console.log(`[MECC_AUDIO] 降级使用浏览器 TTS`);
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'zh-CN';
