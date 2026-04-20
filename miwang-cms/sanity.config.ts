@@ -90,8 +90,4 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
-<<<<<<< Updated upstream
 })
-=======
-})
->>>>>>> Stashed changes
