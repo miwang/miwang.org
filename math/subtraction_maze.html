@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="head-title">智能加法迷宫 - MECC</title>
+    <title id="head-title">智能减法迷宫 - MECC</title>
     <script src="../js/config.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/common_nav.css">
@@ -32,7 +32,6 @@
             padding-top: 60px;
         }
 
-        /* 🌟 优雅的 SVG 居中返回按钮 */
         .text-back-link-unused {
             position: fixed; top: 15px; left: 20px; z-index: 9999;
             color: #555; text-decoration: none; font-weight: bold; font-size: 1.1rem;
@@ -145,12 +144,12 @@
             </svg>
             <span id="back-text">返回工具台</span>
         </a>
-        <h1 id="global-nav-title" class="mecc-nav-title">智能加法迷宫</h1>
+        <h1 id="global-nav-title" class="mecc-nav-title">智能减法迷宫</h1>
     </div>
 
     <div id="start-page" class="page active">
         <div id="start-page-content">
-            <h1 id="ui-title">智能加法迷宫</h1>
+            <h1 id="ui-title">智能减法迷宫</h1>
             <p id="ui-desc">选择一个数字，走出迷宫</p>
             <div class="number-grid" id="number-grid"></div>
         </div>
@@ -183,8 +182,8 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: { title: "智能加法迷宫", back: "返回工具台", desc: "选择一个数字，走出迷宫", target: "目标数字", check: "检查答案 ✔️", reselect: "重新选", winTitle: "🌟 太棒啦！ 🌟", winDesc: "你成功走出了数字", winBtn: "查看迷宫" },
-            en: { title: "Addition Maze", back: "Back to Parents Portal", desc: "Select a target number", target: "Target", check: "Check Path ✔️", reselect: "Reselect", winTitle: "🌟 Awesome! 🌟", winDesc: "You completed the maze for", winBtn: "View Board" }
+            zh: { title: "智能减法迷宫", back: "返回工具台", desc: "选择一个数字，走出迷宫", target: "目标数字", check: "检查答案 ✔️", reselect: "重新选", winTitle: "🌟 太棒啦！ 🌟", winDesc: "你成功走出了数字", winBtn: "查看迷宫" },
+            en: { title: "Subtraction Maze", back: "Back to Parents Portal", desc: "Select a target number", target: "Target", check: "Check Path ✔️", reselect: "Reselect", winTitle: "🌟 Awesome! 🌟", winDesc: "You completed the maze for", winBtn: "View Board" }
         }[LANG];
 
         function playSuccessSound() {
@@ -243,7 +242,8 @@
 
         function init() {
             const grid = document.getElementById('number-grid'); grid.innerHTML = '';
-            for (let i = 5; i <= 20; i++) {
+            // 目标数字范围保持不变
+            for (let i = 0; i <= 20; i++) {
                 const btn = document.createElement('button'); btn.className = 'num-btn';
                 btn.innerHTML = i; btn.onclick = () => startGame(i); grid.appendChild(btn);
             }
@@ -265,9 +265,12 @@
             renderMaze(generateMazeData(num, rows, cols));
         }
 
+        // 🌟 将生成算法改为减法
         function generateMazeData(target, rCount, cCount) {
             let data = Array(rCount).fill(0).map(() => Array(cCount).fill(null));
             let path = []; let r = 0, c = 0; path.push(`${r},${c}`);
+            
+            // 寻路算法
             while(r < rCount - 1 || c < cCount - 1) {
                 let moves = [];
                 if(r < rCount - 1) moves.push({dr: 1, dc: 0}); 
@@ -275,24 +278,33 @@
                 let move = moves[Math.floor(Math.random() * moves.length)];
                 r += move.dr; c += move.dc; path.push(`${r},${c}`);
             }
+
+            // 填充网格
             for(let i=0; i<rCount; i++) {
                 for(let j=0; j<cCount; j++) {
                     const isCorrectNode = path.includes(`${i},${j}`);
-                    let sum = isCorrectNode ? target : generateWrongSum(target);
-                    let num1 = Math.floor(Math.random() * (sum + 1));
-                    data[i][j] = { text: `${num1}+${sum - num1}`, sum: sum };
+                    // 得到需要凑出的“差值”
+                    let diff = isCorrectNode ? target : generateWrongDiff(target);
+                    // 随机生成减数（比如 1 到 9 之间）
+                    let num2 = Math.floor(Math.random() * 9) + 1; 
+                    // 计算被减数：a - b = diff => a = diff + b
+                    let num1 = diff + num2;
+                    
+                    data[i][j] = { text: `${num1}-${num2}`, sum: diff }; // 这里的 sum 变量充当差值的作用，为了不破坏下方校验逻辑
                 }
             }
             return data;
         }
 
-        function generateWrongSum(target) {
-            let wrongSum = target;
-            while(wrongSum === target) {
+        // 🌟 错误的差值生成
+        function generateWrongDiff(target) {
+            let wrongDiff = target;
+            while(wrongDiff === target) {
                 let offset = Math.floor(Math.random() * 7) - 3;
-                wrongSum = target + offset; if(wrongSum < 0) wrongSum = target + 1;
+                wrongDiff = target + offset; 
+                if(wrongDiff < 0) wrongDiff = target + 1;
             }
-            return wrongSum;
+            return wrongDiff;
         }
 
         function renderMaze(data) {

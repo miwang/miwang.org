@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学大冒险</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
+        :root {
+            --primary-font: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",sans-serif;
+            --number-font: "LXGW WenKai Lite",sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--primary-font);
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            padding-top: 60px; /* nav height */
+            transition: background 0.9s ease;
+        }
+
+        /* ─── Background theme layers ─── */
+        .bg-layer {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 0;
+            overflow: hidden;
+            opacity: 0; transition: opacity 0.9s ease;
+        }
+        .bg-layer.active { opacity: 1; }
+
+        /* Cheese / mouse theme */
+        .bg-cheese .deco { position: absolute; font-size: clamp(2rem,4vw,5rem); animation: floatDeco 6s ease-in-out infinite; }
+
+        /* Ocean theme */
+        .bg-ocean { background: linear-gradient(180deg, #b8ecff 0%, #70c8e8 40%, #1a7fa8 100%); }
+        .bg-ocean .bubble {
+            position: absolute; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.12);
+            animation: riseUp linear infinite;
+        }
+        .bg-ocean .seaplant {
+            position: absolute; bottom: 0; font-size: clamp(2.5rem,5vw,6rem);
+            animation: sway 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        .bg-ocean .coral {
+            position: absolute; bottom: 0;
+            font-size: clamp(2rem,4vw,5rem);
+        }
+        .bg-ocean .fish-deco {
+            position: absolute; font-size: clamp(1.5rem,3vw,3.5rem);
+            animation: swimLeft linear infinite;
+        }
+
+        /* Farm theme */
+        .bg-farm { background: linear-gradient(180deg, #a8d8ea 0%, #c9f0c4 55%, #7cbf6e 100%); }
+        .bg-farm .cloud {
+            position: absolute; top: 10%; font-size: clamp(3rem,6vw,7rem);
+            animation: driftRight linear infinite; opacity: 0.85;
+        }
+        .bg-farm .fence {
+            position: absolute; bottom: 0; display: flex; gap: 0;
+        }
+        .bg-farm .fence-post {
+            width: clamp(18px,2vw,28px); margin-right: clamp(22px,3vw,40px);
+            background: #c8a96e; border-radius: 4px 4px 0 0;
+            height: clamp(50px,8vh,90px); position: relative;
+        }
+        .bg-farm .fence-post::after {
+            content: ''; position: absolute; top: 20%;
+            left: -clamp(11px,1.5vw,20px); right: -clamp(11px,1.5vw,20px);
+            height: clamp(8px,1.2vh,14px); background: #c8a96e; border-radius: 3px;
+        }
+        .bg-farm .sun { position: absolute; top: 5%; right: 8%; font-size: clamp(3rem,6vw,8rem); animation: spin 30s linear infinite; }
+        .bg-farm .flower { position: absolute; font-size: clamp(1.5rem,3vw,3.5rem); bottom: clamp(60px,10vh,100px); animation: floatDeco 4s ease-in-out infinite; }
+
+        /* Space theme */
+        .bg-space { background: radial-gradient(ellipse at 50% 0%, #1a1060 0%, #060920 100%); }
+        .bg-space .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle ease-in-out infinite;
+        }
+        .bg-space .planet { position: absolute; font-size: clamp(3rem,6vw,8rem); animation: orbitFloat ease-in-out infinite; }
+        .bg-space .rocket { position: absolute; font-size: clamp(2rem,4vw,5rem); animation: rocketFly 8s ease-in-out infinite; }
+
+        /* ─── Animations ─── */
+        @keyframes floatDeco { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-12px) rotate(3deg)} }
+        @keyframes riseUp { 0%{transform:translateY(100vh) scale(0.5)} 100%{transform:translateY(-20vh) scale(1.2)} }
+        @keyframes sway { 0%,100%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} }
+        @keyframes swimLeft { 0%{transform:translateX(110vw)} 100%{transform:translateX(-20vw)} }
+        @keyframes driftRight { 0%{transform:translateX(-20vw)} 100%{transform:translateX(110vw)} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
+        @keyframes orbitFloat { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-20px) rotate(5deg)} }
+        @keyframes rocketFly { 0%{transform:translate(0,0) rotate(45deg)} 25%{transform:translate(30px,-20px) rotate(50deg)} 75%{transform:translate(-20px,15px) rotate(40deg)} 100%{transform:translate(0,0) rotate(45deg)} }
+        @keyframes bgPulse { 0%,100%{opacity:0.8} 50%{opacity:1} }
+
+        /* ─── Game wrapper ─── */
+        .game-wrapper {
+            flex: 1; position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+            padding: clamp(6px,1vh,14px) clamp(10px,2vw,24px) clamp(4px,0.8vh,10px);
+            overflow: hidden;
+        }
+
+        .level-title {
+            font-family: var(--primary-font);
+            font-size: clamp(1.1rem,2.5vw,2rem);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: clamp(6px,1vh,14px);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            transition: color 0.6s;
+            flex-shrink: 0;
+        }
+
+        /* ─── Maze canvas ─── */
+        .maze-canvas {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        /* ─── SVG connector lines ─── */
+        .connector-svg {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+            overflow: visible;
+        }
+
+        /* ─── Maze cells ─── */
+        .maze-cell {
+            position: absolute;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 5;
+            transition: left 0.01s, top 0.01s;
+        }
+
+        /* number display box */
+        .number-box {
+            width: 100%; height: 100%;
+            border-radius: clamp(10px,1.2vw,18px);
+            border: 3.5px solid var(--border-col,#4e8a8b);
+            background: var(--box-bg,#fff);
+            font-family: var(--number-font);
+            font-size: clamp(1.1rem,2vw,2.2rem);
+            font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            color: #1a2740;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        /* operation label riding on connector */
+        .op-label {
+            position: absolute;
+            font-family: var(--number-font);
+            font-size: clamp(0.75rem,1.4vw,1.2rem);
+            font-weight: bold;
+            color: #fff;
+            background: var(--op-bg,#4e8a8b);
+            border-radius: 20px;
+            padding: 2px 8px;
+            white-space: nowrap;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.4s, transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .op-label.visible { opacity: 1; transform: scale(1); }
+
+        /* input wrapper */
+        .input-wrapper {
+            width: 100%; height: 100%;
+            border: 3.5px dashed var(--border-col,#4e8a8b);
+            border-radius: clamp(10px,1.2vw,18px);
+            background: rgba(255,255,255,0.7);
+            position: relative;
+            transition: all 0.35s ease;
+            opacity: 0; transform: scale(0.7);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .input-wrapper.revealed { opacity: 1; transform: scale(1); }
+        .input-wrapper.active-input {
+            border-style: solid;
+            border-color: #f0a832;
+            background: #fffcf5;
+            box-shadow: 0 0 18px rgba(240,168,50,0.5);
+            transform: scale(1.06);
+        }
+        .input-wrapper.completed {
+            border-style: solid;
+            border-color: var(--done-col,#6bb033);
+            background: rgba(242,248,237,0.95);
+            box-shadow: 0 4px 12px rgba(107,176,51,0.25);
+            transform: scale(1);
+        }
+        .input-box {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            border: none; border-radius: 14px;
+            font-family: var(--number-font);
+            font-size: clamp(1.1rem,2vw,2.2rem);
+            font-weight: bold; text-align: center;
+            color: #1a2740; background: transparent; outline: none;
+        }
+
+        /* end emoji cell */
+        .end-cell {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: clamp(2rem,4vw,4.5rem);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            opacity: 0; transition: opacity 0.5s, transform 0.5s;
+            transform: scale(0.5);
+        }
+        .end-cell.visible { opacity: 1; transform: scale(1); }
+
+        /* player sprite */
+        .player-sprite {
+            position: absolute;
+            font-size: clamp(1.8rem,3.5vw,4rem);
+            width: clamp(36px,5vw,58px); height: clamp(36px,5vw,58px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            transition: transform 0.55s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        /* next level btn */
+        .next-btn {
+            display: none;
+            margin: clamp(8px,1.5vh,20px) auto 0;
+            padding: clamp(8px,1.5vh,14px) clamp(24px,4vw,50px);
+            background: #f3b236; color: white;
+            border: none; border-radius: 50px;
+            font-family: var(--primary-font);
+            font-size: clamp(1rem,2vw,1.5rem);
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 6px 0 #d4922a;
+            transition: box-shadow 0.1s, transform 0.1s;
+            flex-shrink: 0; position: relative; z-index: 20;
+        }
+        .next-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 #d4922a; }
+
+        /* animations */
+        @keyframes tada { 0%{transform:scale(1)} 10%,20%{transform:scale(0.88) rotate(-4deg)} 30%,50%,70%,90%{transform:scale(1.12) rotate(4deg)} 40%,60%,80%{transform:scale(1.12) rotate(-4deg)} 100%{transform:scale(1)} }
+        .success-anim { animation: tada 0.6s; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+        .wrong-anim { animation: shake 0.4s; }
+
+        /* connector path style */
+        .conn-path {
+            fill: none;
+            stroke: var(--conn-col,rgba(78,138,139,0.45));
+            stroke-width: clamp(5px,0.9vw,12px);
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: none;
+            opacity: 0;
+            transition: opacity 0.45s;
+        }
+        .conn-path.visible { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<!-- Background decoration layers -->
+<div class="bg-layer bg-cheese" id="bg0"></div>
+<div class="bg-layer bg-ocean"  id="bg1"></div>
+<div class="bg-layer bg-farm"   id="bg2"></div>
+<div class="bg-layer bg-space"  id="bg3"></div>
+
+<nav class="mecc-global-nav font-zh">数学大冒险</nav>
+
+<div class="game-wrapper" id="gameWrapper">
+    <h2 class="level-title" id="levelTitle"></h2>
+    <div class="maze-canvas" id="mazeCanvas">
+        <svg class="connector-svg" id="connSvg"></svg>
+        <div class="player-sprite" id="playerSprite"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="loadNextLevel()">🌟 陪小动物去下一关 🌟</button>
+</div>
+
+<script>
+// ─── Level definitions ───────────────────────────────────────────────────────
+// Each level has: title, emoji start/end, startNum, bgId, colors,
+// and a "shape" describing the maze layout as a sequence of (col,row) positions
+// (0-indexed) for each node (start + answer nodes). Connector direction is inferred.
+// Shapes are designed to look hand-drawn and irregular — L, S, Z, T, spiral etc.
+
+const levels = [
+    {
+        title: "第一关：老鼠找奶酪",
+        startEmoji: "🐭", endEmoji: "🧀",
+        startNum: 2,
+        bgId: 0,
+        titleColor: "#5a3200",
+        colors: { border: "#c98a2b", box: "#fff8ec", op: "#e07b10", conn: "rgba(210,140,50,0.5)", done: "#c98a2b" },
+        // Shape: horizontal row top → turn down → snake bottom
+        // Positions [col,row] 0-indexed, grid size 8×5
+        //  s . . . . → 
+        //            ↓
+        //  ← . . . .
+        //  ↓
+        //  → . . end
+        shape: [
+            [0,0],[1,0],[2,0],[3,0],[4,0],[5,0],
+            [5,1],[5,2],
+            [4,2],[3,2],[2,2],[1,2],[0,2],
+            [0,3],
+            [1,3],[2,3],[3,3],[4,3]
+        ],
+        operations: [
+            {op:"+2",ans:4},{op:"+1",ans:5},{op:"-3",ans:2},{op:"+2",ans:4},{op:"+3",ans:7},
+            {op:"-1",ans:6},{op:"+3",ans:9},
+            {op:"-3",ans:6},{op:"-2",ans:4},{op:"+3",ans:7},{op:"-1",ans:6},{op:"+4",ans:10},
+            {op:"+2",ans:12},
+            {op:"-4",ans:8},{op:"+1",ans:9},{op:"-3",ans:6},{op:"+2",ans:8}
+        ]
+    },
+    {
+        title: "第二关：海底寻宝",
+        startEmoji: "🐠", endEmoji: "🪸",
+        startNum: 5,
+        bgId: 1,
+        titleColor: "#ffffff",
+        colors: { border: "#1a7fa8", box: "rgba(255,255,255,0.88)", op: "#0d5d8a", conn: "rgba(30,140,190,0.5)", done: "#1a9e60" },
+        // S-curve shape going diagonally across grid (6×6 cells)
+        shape: [
+            [0,0],[1,0],[2,0],[3,0],
+            [3,1],[3,2],
+            [2,2],[1,2],[0,2],
+            [0,3],[0,4],
+            [1,4],[2,4],[3,4],[4,4],[5,4]
+        ],
+        operations: [
+            {op:"+4",ans:9},{op:"-2",ans:7},{op:"+5",ans:12},{op:"-3",ans:9},
+            {op:"+2",ans:11},{op:"-4",ans:7},
+            {op:"+6",ans:13},{op:"-3",ans:10},{op:"+2",ans:12},
+            {op:"-5",ans:7},{op:"+4",ans:11},
+            {op:"-1",ans:10},{op:"+3",ans:13},{op:"-4",ans:9},{op:"+2",ans:11}
+        ]
+    },
+    {
+        title: "第三关：小狗回农场",
+        startEmoji: "🐶", endEmoji: "🏡",
+        startNum: 4,
+        bgId: 2,
+        titleColor: "#2d4a1e",
+        colors: { border: "#5a8c35", box: "rgba(255,255,255,0.9)", op: "#3d6e1f", conn: "rgba(80,160,50,0.5)", done: "#5a8c35" },
+        // Zigzag / W shape
+        shape: [
+            [0,0],[1,0],[2,0],
+            [2,1],
+            [2,2],[1,2],[0,2],
+            [0,3],
+            [0,4],[1,4],[2,4],[3,4],
+            [3,3],[3,2],
+            [4,2],[5,2],[6,2]
+        ],
+        operations: [
+            {op:"+3",ans:7},{op:"-2",ans:5},{op:"+4",ans:9},
+            {op:"-3",ans:6},
+            {op:"+2",ans:8},{op:"-1",ans:7},{op:"+3",ans:10},
+            {op:"-4",ans:6},
+            {op:"+5",ans:11},{op:"-2",ans:9},{op:"+1",ans:10},{op:"-3",ans:7},
+            {op:"+4",ans:11},{op:"-2",ans:9},
+            {op:"+3",ans:12},{op:"-4",ans:8},{op:"+2",ans:10}
+        ]
+    },
+    {
+        title: "第四关：火箭冲宇宙",
+        startEmoji: "🚀", endEmoji: "⭐",
+        startNum: 6,
+        bgId: 3,
+        titleColor: "#c8d8ff",
+        colors: { border: "#7b68ee", box: "rgba(20,15,60,0.82)", op: "#5544cc", conn: "rgba(120,100,240,0.5)", done: "#9b8aff" },
+        // Spiral inward shape
+        shape: [
+            [0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],
+            [6,1],[6,2],[6,3],[6,4],
+            [5,4],[4,4],[3,4],[2,4],[1,4],
+            [1,3],[1,2],
+            [2,2],[3,2],[4,2],
+            [4,3],[3,3]
+        ],
+        operations: [
+            {op:"+2",ans:8},{op:"+1",ans:9},{op:"+3",ans:12},{op:"-4",ans:8},{op:"+5",ans:13},{op:"-3",ans:10},
+            {op:"+4",ans:14},{op:"-2",ans:12},{op:"+3",ans:15},{op:"-5",ans:10},
+            {op:"+2",ans:12},{op:"-4",ans:8},{op:"+5",ans:13},{op:"-3",ans:10},{op:"+1",ans:11},
+            {op:"+3",ans:14},{op:"-2",ans:12},
+            {op:"+4",ans:16},{op:"-5",ans:11},{op:"+2",ans:13},
+            {op:"-3",ans:10},{op:"+4",ans:14}
+        ]
+    }
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let currentLevel = 0;
+let cellSize = 70; // computed per render
+let cellPad = 22;  // gap between cells
+let nodeEls = [];  // DOM elements for each node
+let opLabelEls = [];
+let connPaths = [];
+let endCellEl = null;
+const CELL_ASPECT = 1.0; // square
+
+// ─── Background builders ──────────────────────────────────────────────────────
+function buildBgCheese() {
+    const el = document.getElementById('bg0');
+    el.innerHTML = '';
+    const items = ['🧀','🍞','🌾','🍂','🐭'];
+    for(let i=0;i<18;i++){
+        const d=document.createElement('span');
+        d.className='deco';
+        d.textContent=items[i%items.length];
+        d.style.left=Math.random()*92+'%';
+        d.style.top=Math.random()*90+'%';
+        d.style.opacity=(0.12+Math.random()*0.18).toString();
+        d.style.animationDelay=Math.random()*5+'s';
+        d.style.animationDuration=(4+Math.random()*4)+'s';
+        el.appendChild(d);
+    }
+}
+
+function buildBgOcean() {
+    const el = document.getElementById('bg1');
+    el.innerHTML = '';
+    // bubbles
+    for(let i=0;i<22;i++){
+        const b=document.createElement('div');
+        b.className='bubble';
+        const sz=6+Math.random()*20;
+        b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*95}%;bottom:-30px;animation-duration:${5+Math.random()*8}s;animation-delay:${Math.random()*8}s;`;
+        el.appendChild(b);
+    }
+    // sea plants
+    const plants=['🌿','🌱'];
+    const xPos=[2,8,12,18,24,30,38,44,50,56,62,68,74,80,86,92];
+    xPos.forEach((x,i)=>{
+        const s=document.createElement('span');
+        s.className='seaplant';
+        s.textContent=plants[i%plants.length];
+        s.style.left=x+'%';
+        s.style.fontSize=`clamp(2rem,${3+Math.random()*3}vw,6rem)`;
+        s.style.animationDelay=(Math.random()*3)+'s';
+        s.style.animationDuration=(2+Math.random()*2)+'s';
+        el.appendChild(s);
+    });
+    // corals
+    const corals=['🪸','🪨'];
+    [5,20,35,52,65,78,90].forEach((x,i)=>{
+        const c=document.createElement('span');
+        c.className='coral';
+        c.textContent=corals[i%corals.length];
+        c.style.left=x+'%';
+        c.style.fontSize=`clamp(2rem,${3+Math.random()*2}vw,5.5rem)`;
+        el.appendChild(c);
+    });
+    // fish decorations
+    for(let i=0;i<4;i++){
+        const f=document.createElement('span');
+        f.className='fish-deco';
+        f.textContent=['🐡','🐟','🦑','🐙'][i];
+        f.style.top=(15+Math.random()*50)+'%';
+        f.style.animationDuration=(12+Math.random()*10)+'s';
+        f.style.animationDelay=(-Math.random()*10)+'s';
+        el.appendChild(f);
+    }
+}
+
+function buildBgFarm() {
+    const el = document.getElementById('bg2');
+    el.innerHTML = '';
+    // sun
+    const sun=document.createElement('span');
+    sun.className='sun';sun.textContent='☀️';el.appendChild(sun);
+    // clouds
+    [5,30,65].forEach((x,i)=>{
+        const c=document.createElement('span');
+        c.className='cloud';c.textContent='☁️';
+        c.style.left=x+'%';
+        c.style.animationDuration=(35+i*12)+'s';
+        c.style.animationDelay=(-i*8)+'s';
+        el.appendChild(c);
+    });
+    // fence
+    const fence=document.createElement('div');
+    fence.className='fence';fence.style.cssText='left:0;right:0;';
+    for(let i=0;i<30;i++){const p=document.createElement('div');p.className='fence-post';fence.appendChild(p);}
+    el.appendChild(fence);
+    // flowers
+    ['🌻','🌸','🌺','🌼','🌷'].forEach((f,i)=>{
+        const fl=document.createElement('span');
+        fl.className='flower';fl.textContent=f;
+        fl.style.left=(5+i*18)+'%';
+        fl.style.animationDelay=(i*0.7)+'s';
+        el.appendChild(fl);
+    });
+}
+
+function buildBgSpace() {
+    const el = document.getElementById('bg3');
+    el.innerHTML = '';
+    // stars
+    for(let i=0;i<80;i++){
+        const s=document.createElement('div');
+        s.className='star';
+        const sz=1+Math.random()*3;
+        s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${1.5+Math.random()*3}s;animation-delay:${Math.random()*3}s;`;
+        el.appendChild(s);
+    }
+    // planets
+    ['🪐','🌙','💫'].forEach((p,i)=>{
+        const pl=document.createElement('span');
+        pl.className='planet';pl.textContent=p;
+        pl.style.left=(15+i*30)+'%';
+        pl.style.top=(8+i*12)+'%';
+        pl.style.animationDuration=(4+i*2)+'s';
+        pl.style.animationDelay=(i*1.3)+'s';
+        el.appendChild(pl);
+    });
+    // rocket
+    const r=document.createElement('span');
+    r.className='rocket';r.textContent='🛸';
+    r.style.right='12%';r.style.top='25%';
+    el.appendChild(r);
+}
+
+// ─── Layout computation ────────────────────────────────────────────────────────
+function computeCellSize(shape) {
+    const canvas = document.getElementById('mazeCanvas');
+    const W = canvas.clientWidth;
+    const H = canvas.clientHeight;
+
+    const maxCol = Math.max(...shape.map(p=>p[0])) + 1;
+    const maxRow = Math.max(...shape.map(p=>p[1])) + 1;
+
+    // Try to fit cells with some padding
+    const padX = 0.10, padY = 0.08;
+    const availW = W * (1 - padX);
+    const availH = H * (1 - padY);
+
+    const szByW = (availW - (maxCol - 1) * cellPad) / maxCol;
+    const szByH = (availH - (maxRow - 1) * cellPad) / maxRow;
+
+    return Math.floor(Math.min(szByW, szByH, 110));
+}
+
+function cellCenter(col, row, cs) {
+    const canvas = document.getElementById('mazeCanvas');
+    const W = canvas.clientWidth;
+    const H = canvas.clientHeight;
+    const shape = levels[currentLevel].shape;
+    const maxCol = Math.max(...shape.map(p=>p[0])) + 1;
+    const maxRow = Math.max(...shape.map(p=>p[1])) + 1;
+    const totalW = maxCol * cs + (maxCol - 1) * cellPad;
+    const totalH = maxRow * cs + (maxRow - 1) * cellPad;
+    const offsetX = (W - totalW) / 2;
+    const offsetY = (H - totalH) / 2;
+    return {
+        x: offsetX + col * (cs + cellPad) + cs / 2,
+        y: offsetY + row * (cs + cellPad) + cs / 2,
+        left: offsetX + col * (cs + cellPad),
+        top:  offsetY + row * (cs + cellPad)
+    };
+}
+
+// ─── Connector path generation ────────────────────────────────────────────────
+function makeConnPath(x1,y1,x2,y2,cs) {
+    // Orthogonal L-shaped connector or straight
+    const dx = x2 - x1, dy = y2 - y1;
+    const mid = 0.5;
+    if(Math.abs(dx) < 2) {
+        // vertical
+        return `M ${x1} ${y1} L ${x2} ${y2}`;
+    } else if(Math.abs(dy) < 2) {
+        // horizontal
+        return `M ${x1} ${y1} L ${x2} ${y2}`;
+    } else {
+        // L-shaped with rounded corner
+        const cx = x1, cy = y2;
+        const r = Math.min(cs * 0.3, Math.abs(dx)/2, Math.abs(dy)/2);
+        // Direction signs
+        const sx = dx > 0 ? 1 : -1;
+        const sy = dy > 0 ? 1 : -1;
+        return `M ${x1} ${y1} 
+                L ${cx} ${cy - sy*r}
+                Q ${cx} ${cy} ${cx + sx*r} ${cy}
+                L ${x2} ${y2}`;
+    }
+}
+
+// ─── Main render ──────────────────────────────────────────────────────────────
+function loadLevel(idx) {
+    if(idx >= levels.length) {
+        showEndScreen(); return;
+    }
+    currentLevel = idx;
+    const lvl = levels[idx];
+
+    // Title & colors
+    document.getElementById('levelTitle').textContent = lvl.title;
+    document.getElementById('levelTitle').style.color = lvl.titleColor;
+    document.getElementById('nextBtn').style.display = 'none';
+
+    // Background
+    document.querySelectorAll('.bg-layer').forEach((el,i)=>{
+        el.classList.toggle('active', i === lvl.bgId);
+    });
+    // Body bg
+    const bodyBgs = ['#fff6e8','#c6eaf7','#d0f0c0','#0c0e2a'];
+    document.body.style.background = bodyBgs[lvl.bgId];
+
+    // CSS vars on canvas
+    const canvas = document.getElementById('mazeCanvas');
+    canvas.style.setProperty('--border-col', lvl.colors.border);
+    canvas.style.setProperty('--box-bg', lvl.colors.box);
+    canvas.style.setProperty('--op-bg', lvl.colors.op);
+    canvas.style.setProperty('--conn-col', lvl.colors.conn);
+    canvas.style.setProperty('--done-col', lvl.colors.done);
+
+    // Player
+    document.getElementById('playerSprite').textContent = lvl.startEmoji;
+
+    // Compute cell size
+    cellSize = computeCellSize(lvl.shape);
+
+    // Clear previous nodes
+    canvas.querySelectorAll('.maze-cell').forEach(e=>e.remove());
+    document.getElementById('connSvg').innerHTML = '';
+    nodeEls = [];
+    opLabelEls = [];
+    connPaths = [];
+    endCellEl = null;
+
+    const totalNodes = lvl.shape.length; // includes start + all answer nodes (no separate end node in shape)
+    const ops = lvl.operations;
+
+    // Build start node
+    {
+        const [col,row] = lvl.shape[0];
+        const pos = cellCenter(col, row, cellSize);
+        const cell = document.createElement('div');
+        cell.className = 'maze-cell';
+        cell.style.cssText = `left:${pos.left}px;top:${pos.top}px;width:${cellSize}px;height:${cellSize}px;`;
+        cell.id = 'node-0';
+        cell.innerHTML = `<div class="number-box">${lvl.startNum}</div>`;
+        canvas.appendChild(cell);
+        nodeEls.push(cell);
+    }
+
+    // Build answer nodes + connectors
+    for(let i = 0; i < ops.length; i++) {
+        const nodeIdx = i + 1;
+        const shapeIdx = Math.min(nodeIdx, lvl.shape.length - 1);
+        const [col,row] = lvl.shape[shapeIdx];
+        const pos = cellCenter(col, row, cellSize);
+
+        // SVG connector
+        const prevShapeIdx = Math.min(i, lvl.shape.length - 1);
+        const [pc,pr] = lvl.shape[prevShapeIdx];
+        const prev = cellCenter(pc, pr, cellSize);
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+        pathEl.classList.add('conn-path');
+        pathEl.setAttribute('d', makeConnPath(prev.x, prev.y, pos.x, pos.y, cellSize));
+        pathEl.style.stroke = lvl.colors.conn;
+        document.getElementById('connSvg').appendChild(pathEl);
+        connPaths.push(pathEl);
+
+        // Operation label on connector midpoint
+        const midX = (prev.x + pos.x)/2;
+        const midY = (prev.y + pos.y)/2;
+        const opLabel = document.createElement('div');
+        opLabel.className = 'op-label';
+        opLabel.textContent = ops[i].op;
+        opLabel.style.cssText = `left:${midX}px;top:${midY}px;transform:translate(-50%,-50%) scale(0.5);background:${lvl.colors.op};`;
+        canvas.appendChild(opLabel);
+        opLabelEls.push(opLabel);
+
+        // Answer input cell
+        const cell = document.createElement('div');
+        cell.className = 'maze-cell';
+        cell.style.cssText = `left:${pos.left}px;top:${pos.top}px;width:${cellSize}px;height:${cellSize}px;`;
+        cell.id = `node-${nodeIdx}`;
+        cell.innerHTML = `
+            <div class="input-wrapper" id="wrap-${nodeIdx}">
+                <input class="input-box" id="inp-${nodeIdx}" type="text" inputmode="numeric" pattern="[0-9]*" oninput="checkAns(${nodeIdx},${ops[i].ans})">
+            </div>`;
+        canvas.appendChild(cell);
+        nodeEls.push(cell);
+    }
+
+    // End cell (emoji goal) — placed after last node
+    {
+        const lastOpIdx = ops.length;
+        const lastShapeIdx = Math.min(lastOpIdx, lvl.shape.length - 1);
+        // Try to extend one step beyond last shape node
+        const [lc,lr] = lvl.shape[lastShapeIdx];
+        // Try to add end cell one step after last node
+        let ec, er;
+        if(lastShapeIdx > 0) {
+            const [pc,pr] = lvl.shape[lastShapeIdx - 1];
+            ec = lc + (lc - pc);
+            er = lr + (lr - pr);
+        } else {
+            ec = lc + 1; er = lr;
+        }
+        // Clamp to canvas
+        const cs2 = cellSize;
+        const endPos = cellCenter(ec, er, cs2);
+        // connector from last to end
+        const lastPos = cellCenter(lc, lr, cs2);
+        const endPathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+        endPathEl.classList.add('conn-path');
+        endPathEl.id = 'conn-end';
+        endPathEl.setAttribute('d', makeConnPath(lastPos.x, lastPos.y, endPos.x, endPos.y, cs2));
+        endPathEl.style.stroke = lvl.colors.conn;
+        document.getElementById('connSvg').appendChild(endPathEl);
+
+        const cell = document.createElement('div');
+        cell.className = 'maze-cell';
+        cell.style.cssText = `left:${endPos.left}px;top:${endPos.top}px;width:${cs2}px;height:${cs2}px;`;
+        cell.id = 'node-end';
+        cell.innerHTML = `<div class="end-cell" id="endCell">${lvl.endEmoji}</div>`;
+        canvas.appendChild(cell);
+        endCellEl = cell;
+    }
+
+    // Position player at start
+    setTimeout(() => {
+        movePlayerTo(0, false);
+        showStep(1);
+    }, 60);
+}
+
+// ─── Step reveal ─────────────────────────────────────────────────────────────
+function showStep(nodeIdx) {
+    if(nodeIdx > levels[currentLevel].operations.length) return;
+    // Show connector + label + input
+    const connEl = connPaths[nodeIdx - 1];
+    if(connEl) connEl.classList.add('visible');
+    const opEl = opLabelEls[nodeIdx - 1];
+    if(opEl) {
+        opEl.classList.add('visible');
+        opEl.style.transform = 'translate(-50%,-50%) scale(1)';
+    }
+    const wrap = document.getElementById(`wrap-${nodeIdx}`);
+    if(wrap) {
+        wrap.classList.add('revealed','active-input');
+        setTimeout(()=> document.getElementById(`inp-${nodeIdx}`)?.focus(), 100);
+    }
+}
+
+// ─── Answer check ────────────────────────────────────────────────────────────
+function checkAns(nodeIdx, target) {
+    const inp = document.getElementById(`inp-${nodeIdx}`);
+    const wrap = document.getElementById(`wrap-${nodeIdx}`);
+    const val = inp.value.trim();
+    if(!val) return;
+    const tStr = target.toString();
+    if(tStr.startsWith(val) && val !== tStr) return; // wait for full input
+
+    if(parseInt(val) === target) {
+        wrap.classList.remove('active-input','wrong-anim');
+        wrap.classList.add('completed','success-anim');
+        inp.readOnly = true;
+        movePlayerTo(nodeIdx, true);
+
+        const maxOp = levels[currentLevel].operations.length;
+        if(nodeIdx < maxOp) {
+            setTimeout(()=> showStep(nodeIdx + 1), 550);
+        } else {
+            // Show end
+            setTimeout(()=>{
+                document.getElementById('conn-end')?.classList.add('visible');
+                document.getElementById('endCell')?.classList.add('visible');
+                setTimeout(()=>{
+                    movePlayerToEnd();
+                    document.getElementById('nextBtn').style.display = 'block';
+                }, 500);
+            }, 550);
+        }
+    } else {
+        wrap.classList.add('wrong-anim');
+        setTimeout(()=>{ wrap.classList.remove('wrong-anim'); inp.value=''; inp.focus(); }, 400);
+    }
+}
+
+// ─── Player movement ─────────────────────────────────────────────────────────
+function movePlayerTo(nodeIdx, animate) {
+    const sprite = document.getElementById('playerSprite');
+    const nodeEl = document.getElementById(`node-${nodeIdx}`);
+    if(!nodeEl) return;
+    const canvas = document.getElementById('mazeCanvas');
+    const cr = canvas.getBoundingClientRect();
+    const nr = nodeEl.getBoundingClientRect();
+    const sprW = sprite.offsetWidth || 48;
+    const left = (nr.left - cr.left) + (nr.width - sprW)/2;
+    const top  = (nr.top  - cr.top) - sprW * 0.55;
+    sprite.style.transition = animate
+        ? 'transform 0.55s cubic-bezier(0.34,1.56,0.64,1)'
+        : 'none';
+    sprite.style.transform = `translate(${left}px,${top}px)`;
+}
+
+function movePlayerToEnd() {
+    const sprite = document.getElementById('playerSprite');
+    const endEl = document.getElementById('node-end');
+    if(!endEl) return;
+    const canvas = document.getElementById('mazeCanvas');
+    const cr = canvas.getBoundingClientRect();
+    const er = endEl.getBoundingClientRect();
+    const sprW = sprite.offsetWidth || 48;
+    const left = (er.left - cr.left) + (er.width - sprW)/2;
+    const top  = (er.top  - cr.top) - sprW * 0.5;
+    sprite.style.transition = 'transform 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+    sprite.style.transform = `translate(${left}px,${top}px) scale(1.3)`;
+}
+
+// ─── Next level ───────────────────────────────────────────────────────────────
+function loadNextLevel() {
+    loadLevel(currentLevel + 1);
+}
+
+// ─── End screen ───────────────────────────────────────────────────────────────
+function showEndScreen() {
+    document.getElementById('playerSprite').style.display = 'none';
+    document.getElementById('mazeCanvas').innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.5);">
+            <div style="font-size:clamp(3rem,8vw,8rem)">🏆</div>
+            <h2 style="font-family:var(--primary-font);font-size:clamp(1.5rem,4vw,3rem);margin-top:20px;">太棒啦！</h2>
+            <p style="font-family:var(--primary-font);font-size:clamp(1rem,2.5vw,1.8rem);margin-top:10px;">你帮所有小动物找到了回家的路！</p>
+        </div>`;
+    document.getElementById('nextBtn').style.display = 'none';
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildBgCheese();
+buildBgOcean();
+buildBgFarm();
+buildBgSpace();
+
+window.addEventListener('resize', ()=>{
+    // Rebuild positions on resize
+    const ops = levels[currentLevel].operations;
+    const canvas = document.getElementById('mazeCanvas');
+    cellSize = computeCellSize(levels[currentLevel].shape);
+    // Reposition all nodes
+    levels[currentLevel].shape.forEach(([col,row], idx) => {
+        if(idx > ops.length) return;
+        const nodeEl = document.getElementById(`node-${idx}`);
+        if(!nodeEl) return;
+        const pos = cellCenter(col, row, cellSize);
+        nodeEl.style.left = pos.left + 'px';
+        nodeEl.style.top = pos.top + 'px';
+        nodeEl.style.width = cellSize + 'px';
+        nodeEl.style.height = cellSize + 'px';
+    });
+    // Rebuild SVG connectors
+    const svg = document.getElementById('connSvg');
+    svg.querySelectorAll('path').forEach(p => p.remove());
+    connPaths = [];
+    const lvl = levels[currentLevel];
+    for(let i = 0; i < ops.length; i++){
+        const [pc,pr] = lvl.shape[Math.min(i, lvl.shape.length-1)];
+        const [cc,cr2] = lvl.shape[Math.min(i+1, lvl.shape.length-1)];
+        const prev = cellCenter(pc,pr,cellSize);
+        const curr = cellCenter(cc,cr2,cellSize);
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+        pathEl.classList.add('conn-path');
+        const wasVis = i < ops.length; // approximate
+        if(wasVis) pathEl.classList.add('visible');
+        pathEl.setAttribute('d', makeConnPath(prev.x,prev.y,curr.x,curr.y,cellSize));
+        pathEl.style.stroke = lvl.colors.conn;
+        svg.appendChild(pathEl);
+        connPaths.push(pathEl);
+    }
+    // Reposition op labels
+    opLabelEls.forEach((lbl, i) => {
+        const [pc,pr] = lvl.shape[Math.min(i, lvl.shape.length-1)];
+        const [cc,cr2] = lvl.shape[Math.min(i+1, lvl.shape.length-1)];
+        const prev = cellCenter(pc,pr,cellSize);
+        const curr = cellCenter(cc,cr2,cellSize);
+        lbl.style.left = (prev.x+curr.x)/2 + 'px';
+        lbl.style.top = (prev.y+curr.y)/2 + 'px';
+    });
+    // Reposition player
+    // find latest completed node
+    let latest = 0;
+    for(let i = ops.length; i >= 0; i--){
+        const w = document.getElementById(`wrap-${i}`);
+        if(w && w.classList.contains('completed')){ latest = i; break; }
+    }
+    movePlayerTo(latest, false);
+});
+
+loadLevel(0);
+</script>
+</body>
+</html>

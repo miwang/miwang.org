@@ -177,7 +177,7 @@
     <div id="play-view">
         <div class="mecc-global-nav"><a href="#" class="mecc-nav-back" onclick="closePlay();return false;">← <span>返回</span></a><h1 class="mecc-nav-title" id="song-title-nav"></h1></div><div class="play-header" style="display:none;">
             <div class="play-back-btn font-zh" id="btn-close-play" onclick="closePlay()">⬅️ 返回列表</div>
-            <h1 id="song-title" class="font-zh" style="color:white; font-size: clamp(1rem, 3.5vh, 2.2rem); margin:0; text-align:center; flex:1;"></h1>
+            <h1 id="song-title" style="color:white; font-size: clamp(1rem, 3.5vh, 2.2rem); margin:0; text-align:center; flex:1;"></h1>
             <div class="play-header-spacer font-zh">⬅️ 返回列表</div>
         </div>
         <div class="lyrics-panel">
@@ -287,7 +287,8 @@
             document.querySelector('.mecc-global-nav').style.display = 'none';
             
             listView.style.display = 'none'; playView.style.display = 'flex';
-            document.getElementById('song-title').innerHTML = formatText(currentSong.title); document.getElementById('song-title-nav').innerText = currentSong.title;
+            document.getElementById('song-title').innerHTML = formatText(currentSong.title); 
+document.getElementById('song-title-nav').innerHTML = formatText(currentSong.title);
             currentSlides = []; 
             let temp = [];
             
@@ -449,18 +450,52 @@
             } else if (e.target !== bubble) { bubble.style.display = 'none'; }
         };
 
-        // 🌟 核心修改：移除 prompt，实现无感静默加注
-        function makeHardWord() {
-            const autoName = selectedText + ".webp";
-            const imgFile = `../images/sight_words_phrases/${autoName}`; // 自动补全路径
-            
-            let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); 
-            d[selectedText] = imgFile; 
-            localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); 
-            
-            bubble.style.display = 'none'; 
-            renderSlide(); 
+// 🌟 核心修改：改为异步向 Sanity 查找中心字或词组图片
+async function makeHardWord() {
+    const text = selectedText;
+    const originalBubbleText = bubble.innerText;
+    bubble.innerText = "⏳ 查找中..."; 
+
+    // GROQ 查询：精准匹配中心字或词语
+    const query = `*[_type == "word" && (char == "${text}" || "${text}" in phrase_list[].text)][0]{
+        "charImg": image.asset->url,
+        "phraseImg": phrase_list[text == "${text}"][0].image.asset->url
+    }`;
+    
+    const fetchUrl = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await fetch(fetchUrl);
+        const { result } = await res.json();
+        
+        let imgUrl = "";
+        if (result) {
+            imgUrl = result.phraseImg || result.charImg;
         }
+
+        if (!imgUrl) {
+            alert(`暂时还没有“${text}”的配图哦 😅`);
+            bubble.style.display = 'none';
+            bubble.innerText = originalBubbleText;
+            return;
+        }
+
+        // 获取到云端 URL，存入 LocalStorage (注意这里是 mecc_hard_ 和 currentSong)
+        let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); 
+        d[text] = imgUrl; 
+        localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); 
+        
+        bubble.style.display = 'none'; 
+        bubble.innerText = originalBubbleText;
+        renderSlide(); 
+
+    } catch (error) {
+        console.error("图片查找失败:", error);
+        alert("网络错误，未能连接到数据中心！");
+        bubble.style.display = 'none';
+        bubble.innerText = originalBubbleText;
+    }
+}
 
         function closePlay() { 
             playView.style.display = 'none'; 
@@ -475,6 +510,28 @@
         function resetAll() { if(confirm("确定清空吗？")) { Object.keys(localStorage).forEach(k => k.startsWith('mecc_') && localStorage.removeItem(k)); location.reload(); } }
         function prevPage() { if(currentSlideIndex > 0) { currentSlideIndex--; renderSlide(); } }
         function nextPage() { if(currentSlideIndex < currentSlides.length - 1) { currentSlideIndex++; renderSlide(); } }
+    // 🌟 新增：全局键盘与翻页笔（激光笔）事件监听
+document.addEventListener('keydown', function(event) {
+    // 只有当播放界面（幻灯片）显示时，才响应翻页操作
+    if (playView.style.display === 'flex') {
+        switch(event.key) {
+            case 'ArrowRight':  // 右方向键
+            case 'PageDown':    // 翻页笔的“下一页”通常是 PageDown
+            case ' ':           // 空格键（部分翻页笔也用空格键）
+                event.preventDefault(); // 防止空格键导致网页向下滚动
+                nextPage();
+                break;
+            case 'ArrowLeft':   // 左方向键
+            case 'PageUp':      // 翻页笔的“上一页”通常是 PageUp
+                event.preventDefault();
+                prevPage();
+                break;
+            case 'Escape':      // 额外赠送一个小功能：按 ESC 键直接退出播放界面
+                closePlay();
+                break;
+        }
+    }
+});
     </script>
 </body>
 </html>

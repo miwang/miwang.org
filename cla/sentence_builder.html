@@ -251,6 +251,7 @@
         
         let allSentences = []; 
         let currentFilteredList = [];
+        let savedScrollY = 0; // 🌟 新增：用来记录滚动位置
 
         // --- 🌟 三级朗读降级系统（带 iOS 解锁） ---
         let globalAudio = new Audio();
@@ -398,6 +399,10 @@
         function startLevel(index) {
             currentData = currentFilteredList[index];
             if (!currentData) return;
+            
+            // 🌟 新增：进入前记录当前的滚动位置
+            savedScrollY = window.scrollY || window.pageYOffset;
+            
             listView.style.display = 'none'; playView.style.display = 'flex';
             document.body.style.overflow = 'hidden';
             zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = '';
@@ -537,7 +542,14 @@
             playUnifiedAudio(fullText); 
         }
 
-        function closePlay() { listView.style.display = 'flex'; playView.style.display = 'none'; document.body.style.overflow = ''; }
+        function closePlay() { 
+            listView.style.display = 'flex'; 
+            playView.style.display = 'none'; 
+            document.body.style.overflow = ''; 
+            
+            // 🌟 新增：返回列表后恢复之前的滚动位置
+            window.scrollTo(0, savedScrollY);
+        }
     </script>
 </body>
 </html>

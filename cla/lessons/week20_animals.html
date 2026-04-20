@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动思维导图</title>
+    <style>
+        /* 全局基础设置 */
+        body {
+            font-family: "LXGW WenKai Lite", "Kaiti SC", sans-serif;
+            background-color: #fcfcfc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* 顶部虚线标题框 */
+        .title-box {
+            border: 3px dashed #b8b8bc;
+            border-radius: 8px;
+            padding: 10px 60px;
+            font-size: 3rem;
+            color: #333;
+            margin-bottom: 50px;
+            font-weight: bold;
+        }
+
+        /* 导图主容器 (Flexbox 水平布局) */
+        .mindmap-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px; /* 节点之间的水平间距 */
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        /* ----- 虚线连接器 ----- */
+        .line-horizontal {
+            width: 40px;
+            height: 2px;
+            border-bottom: 2px dashed #4a4a4a;
+        }
+
+        /* 侧边分支容器 (包含3个小圆角矩形和连线) */
+        .branch-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 240px;
+            position: relative;
+        }
+
+        /* 侧边垂直虚线 */
+        .left-branch-line {
+            position: absolute;
+            right: -22px;
+            top: 15%;
+            bottom: 15%;
+            width: 20px;
+            border-right: 2px dashed #4a4a4a;
+            border-top: 2px dashed #4a4a4a;
+            border-bottom: 2px dashed #4a4a4a;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border-left: none;
+        }
+        
+        .right-branch-line {
+            position: absolute;
+            left: -22px;
+            top: 15%;
+            bottom: 15%;
+            width: 20px;
+            border-left: 2px dashed #4a4a4a;
+            border-top: 2px dashed #4a4a4a;
+            border-bottom: 2px dashed #4a4a4a;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-right: none;
+        }
+
+        /* ----- 节点样式 ----- */
+        
+        /* 1. 中心大黄圆 */
+        .center-node {
+            width: 200px;
+            height: 200px;
+            background-color: #f1b631;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 10px 20px rgba(241, 182, 49, 0.3);
+            z-index: 2;
+        }
+        .center-node h1 { margin: 0; font-size: 2.2rem; letter-spacing: 2px;}
+        .center-node p { margin: 5px 0 0 0; font-size: 1.1rem; font-weight: bold;}
+
+        /* 2. 次级白圆 (有谁/有什么) */
+        .sub-node {
+            width: 140px;
+            height: 140px;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a1a;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 2;
+        }
+        .sub-node .icon { font-size: 2.5rem; margin-bottom: 5px; }
+
+        /* 3. 最外层药丸形状 (老师/教室等) */
+        .leaf-node {
+            background-color: #f8f9fa;
+            padding: 12px 35px;
+            border-radius: 30px;
+            font-weight: bold;
+            color: #1a1a1a;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ----- 加号按钮 ----- */
+        .btn-plus {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            position: absolute;
+        }
+        
+        /* 颜色分类 */
+        .btn-yellow { background-color: #f3b632; }
+        .btn-orange { background-color: #f09b75; }
+        .btn-green { background-color: #6bb033; }
+
+        /* 按钮位置修正 */
+        .sub-node .btn-plus { bottom: 15px; }
+        .leaf-left .btn-plus { left: -14px; }
+        .leaf-right .btn-plus { right: -14px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="title-box">Mind Map</div>
+
+    <div class="mindmap-container">
+        
+        <div class="branch-group">
+            <div class="leaf-node leaf-left">
+                <div class="btn-plus btn-yellow">+</div>
+                &nbsp;&nbsp;老师
+            </div>
+            <div class="leaf-node leaf-left">
+                <div class="btn-plus btn-orange">+</div>
+                &nbsp;&nbsp;小朋友
+            </div>
+            <div class="leaf-node leaf-left">
+                <div class="btn-plus btn-green">+</div>
+                &nbsp;&nbsp;校长
+            </div>
+            <div class="left-branch-line"></div>
+        </div>
+
+        <div class="line-horizontal"></div>
+
+        <div class="sub-node">
+            <div class="icon">💻</div>
+            有谁?
+            <div class="btn-plus btn-green">+</div>
+        </div>
+
+        <div class="line-horizontal"></div>
+
+        <div class="center-node">
+            <h1>学校</h1>
+            <p>我喜欢学校</p>
+        </div>
+
+        <div class="line-horizontal"></div>
+
+        <div class="sub-node">
+            <div class="icon">🎓</div>
+            有什么?
+            <div class="btn-plus btn-green">+</div>
+        </div>
+
+        <div class="line-horizontal"></div>
+
+        <div class="branch-group">
+            <div class="right-branch-line"></div>
+            
+            <div class="leaf-node leaf-right">
+                图书馆&nbsp;&nbsp;
+                <div class="btn-plus btn-yellow">+</div>
+            </div>
+            <div class="leaf-node leaf-right">
+                教室&nbsp;&nbsp;
+                <div class="btn-plus btn-orange">+</div>
+            </div>
+            <div class="leaf-node leaf-right">
+                操场&nbsp;&nbsp;
+                <div class="btn-plus btn-green">+</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
