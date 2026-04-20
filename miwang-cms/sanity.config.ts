@@ -2,19 +2,15 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
-<<<<<<< Updated upstream
-import React from 'react' // 🌟 新增：引入 React
-=======
->>>>>>> Stashed changes
+import React from 'react' // 🌟 必须引入 React 以支持布局组件注入
 
 export default defineConfig({
   name: 'default',
   title: 'miwang-cms',
-<<<<<<< Updated upstream
   projectId: 'sow12t1i',
   dataset: 'production',
 
-  // 🌟 终极杀手锏：利用 Sanity 官方 Layout API，将样式强行注入到 React 核心树中
+  // 🌟 核心增强：保持你之前的界面布局优化，防止面板抖动
   studio: {
     components: {
       layout: (props) => {
@@ -22,14 +18,14 @@ export default defineConfig({
           React.Fragment,
           null,
           React.createElement('style', null, `
-            /* 1. 强行锁定所有左侧导航面板的宽度为 260px，没收弹性 */
+            /* 1. 强行锁定所有左侧导航面板的宽度为 260px */
             div[data-ui="Pane"]:not([data-testid="document-pane"]) {
               min-width: 260px !important;
               max-width: 260px !important;
               width: 260px !important;
               flex: 0 0 260px !important;
             }
-            /* 2. 彻底解放最右侧的文档编辑器，让它占满剩余的所有屏幕 */
+            /* 2. 让最右侧的文档编辑器占满剩余的所有屏幕 */
             div[data-testid="document-pane"] {
               flex: 1 1 auto !important;
               max-width: none !important;
@@ -48,6 +44,7 @@ export default defineConfig({
           .title('内容管理面板')
           .id('root-list')
           .items([
+            // 🌟 核心增强：恢复你之前写好的分班管理文件夹结构
             S.listItem()
               .title('👶 学生分班管理')
               .id('student-management')
@@ -72,6 +69,7 @@ export default defineConfig({
             
             S.divider(),
 
+            // 自动加载其余所有类型（绘本、儿歌、配置等），但排除掉已经在上面定义过的 student
             ...S.documentTypeListItems().filter(
               (listItem) => !['student'].includes(listItem.getId() || '')
             ),
@@ -79,13 +77,6 @@ export default defineConfig({
     }),
     visionTool()
   ],
-=======
-
-  projectId: 'sow12t1i',
-  dataset: 'production',
-
-  plugins: [structureTool(), visionTool()],
->>>>>>> Stashed changes
 
   schema: {
     types: schemaTypes,

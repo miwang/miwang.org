@@ -161,7 +161,7 @@ window.onload = async () => {
         console.error("Sanity 获取失败");
     }
 
-    // 2. 绝对服从 Firebase 数据源，禁止任何私自涂改！
+    // 2. 绝对服从 Firebase 数据源
     db.ref(CLOUD_KEY).on('value', snap => {
         firebaseLoaded = true;
         if (snap.exists()) {
@@ -169,7 +169,6 @@ window.onload = async () => {
             if (!data.students) data.students = [];
         }
 
-        // 把现有拿到的照片贴上去，绝不动原始数组！
         if (sanityStudents.length > 0) {
             sanityStudents.forEach(ss => {
                 const st = data.students.find(fs => fs.name.trim() === ss.name.trim());
@@ -177,7 +176,6 @@ window.onload = async () => {
             });
         }
 
-        // 3. 一次性完美渲染，直接掀盖头！
         renderUI();
         showLoading(false);
     }, err => {

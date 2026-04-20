@@ -147,7 +147,7 @@
 </head>
 <body>
     <div id="attendance-section">
-        <h1 id="main-title">🐘 大象班今天谁没有来？</h1>
+        <h1>🐘 大象班今天谁没有来？</h1>
         <div class="attendance-grid" id="student-grid">
             <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #3949AB; font-size: 1.2rem;">
                 正在连接云端获取大象班学生档案...
@@ -164,19 +164,11 @@
     </div>
 
     <script>
-        // 🌟 自动计算当前学年逻辑
-        const now = new Date();
-        const currentMonth = now.getMonth(); // 0 = 1月, 11 = 12月
-        const currentYear = now.getFullYear();
-        // 美国通常 8月(month>=7) 开始新学年
-        const startYear = currentMonth >= 7 ? currentYear : currentYear - 1;
-        const endYear = startYear + 1;
-        const academicYearStr = `${startYear.toString().slice(-2)}-${endYear.toString().slice(-2)}`;
-
-        // 🌟 动态拼接云端查询语句
+        // 🌟 核心升级：直连 Sanity 云端获取学生数据
         const PROJECT_ID = 'sow12t1i';
         const DATASET = 'production';
-        const QUERY = encodeURIComponent(`*[_type == "student" && className == "elephant" && academicYear == "${academicYearStr}"] | order(_createdAt asc) { "id": _id, name, "img": avatar.asset->url }`);
+        // 仅筛选大象班 (elephant)
+        const QUERY = encodeURIComponent('*[_type == "student" && className == "elephant"] | order(_createdAt asc) { "id": _id, name, "img": avatar.asset->url }');
         const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
 
         let allStudents = [];
@@ -191,10 +183,6 @@
 
         window.onload = async () => {
             MECC_CONFIG.renderGlobalNav("大象班牛奶饼干分组");
-            
-            // 🌟 动态更新标题显示当前学年
-            document.getElementById('main-title').innerHTML = `🐘 大象班今天谁没有来？ <span style="font-size:1.1rem; color:#888;">(${academicYearStr}学年)</span>`;
-
             const nav = document.querySelector('.mecc-global-nav');
             const controls = document.createElement('div');
             controls.className = 'nav-controls';
@@ -212,7 +200,7 @@
                 allStudents = res.result || [];
                 
                 if(allStudents.length === 0) {
-                    document.getElementById('student-grid').innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #e74c3c; font-size: 1.2rem;">${academicYearStr} 学年还没有大象班的学生哦，请去 Sanity 后台添加！</div>`;
+                    document.getElementById('student-grid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #e74c3c; font-size: 1.2rem;">大象班还没有学生哦，请先去系统后台 (Sanity) 添加！</div>';
                 } else {
                     renderAttendance();
                     document.getElementById('btn-start-group').style.display = 'block';
@@ -228,7 +216,10 @@
             allStudents.forEach(student => {
                 const div = document.createElement('div');
                 div.className = `student-card ${student.isAbsent ? 'absent' : ''}`;
+                
+                // 处理没有头像的情况
                 const imgUrl = student.img || 'https://via.placeholder.com/150/EEEEEE/999999?text=🧑';
+                
                 div.innerHTML = `<img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150/EEEEEE/999999?text=🧑'"><div>${student.name}</div>`;
                 div.onclick = () => {
                     div.classList.toggle('absent');

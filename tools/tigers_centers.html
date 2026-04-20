@@ -91,7 +91,7 @@ const CLOUD_KEY = 'ClassData_tigers';
 const LOCAL_KEY  = CLOUD_KEY + '_local';
 const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
 let _localVer = 0;
-let data = { students: [], step: 0, lastDateStr: "暂无记录" };
+let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
 
 let sanityStudents = [];
 let cloudBgs = {};
@@ -412,3 +412,4 @@ document.addEventListener('keydown', e => {
 </div>
 </body>
 </html>
+}
