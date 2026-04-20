@@ -15,16 +15,14 @@
         
         * { box-sizing: border-box; }
         
-        /* 🌟 核心修复 1：移除 *，换成具体的标签和类名 */
-        body, .btn, .char-card, .target-box, .score-pill, .fruit span { 
+        body, .btn, .char-card, .target-board, .score-pill, .fruit span, .overlay-text, #ui-continue { 
             font-family: var(--kaiti) !important; 
             font-weight: bold; 
         }
 
-        /* 英文类，优先级可以正常覆盖上面的设定 */
         .font-en { font-family: "LXGW WenKai Lite", sans-serif !important; }
 
-        body { margin:0; padding:0; background:#f0f3f7; overflow:hidden; display:flex; flex-direction:column; align-items:center; height:100vh; width:100vw; user-select:none; padding-top:60px; }
+        body { margin:0; padding:0; background: #e0f7fa; overflow:hidden; display:flex; flex-direction:column; align-items:center; height:100vh; width:100vw; user-select:none; padding-top:60px; }
 
         #start-screen { display:flex; flex-direction:column; align-items:center; width:95%; max-width:1100px; padding-top:16px; background:transparent; gap:0; }
         .controls { display:flex; gap:10px; justify-content:center; margin-bottom:12px; flex-shrink:0; }
@@ -34,29 +32,90 @@
         .btn-start { background:#2ecc71; color:white; padding:10px 30px; font-size:1.2rem; box-shadow:0 4px 0 #27ae60; }
 
         #char-grid { display:grid; grid-template-columns:repeat(13,1fr); gap:10px; padding:20px; background:rgba(89,133,134,0.05); border-radius:16px; border:2px dashed #598586; width:100%; }
-        .char-card { aspect-ratio:1/1; display:flex; justify-content:center; align-items:center; font-size:1.8rem; background:white; border-radius:10px; cursor:pointer; border:2px solid #eee; transition:0.2s; }
+        .char-card { aspect-ratio:1/1; display:flex; justify-content:center; align-items:center; font-size:1.8rem; background:white; border-radius:10px; cursor:pointer; border:2px solid #eee; transition:0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .char-card.selected { background:var(--orange); color:white; border-color:#d35400; transform:scale(1.05); box-shadow:0 4px 0 #d35400; }
 
-        #game-screen { display:none; width:100%; height:calc(100vh - 60px); position:relative; background:linear-gradient(to bottom,#87CEEB 0%,#b8e8ff 55%,#c8f0c8 100%); }
-        .target-box { position:absolute; top:15px; left:50%; transform:translateX(-50%); background:white; padding:8px 30px; border-radius:50px; border:3px solid var(--teal); font-size:clamp(1.2rem,3vh,2rem); color:#333; z-index:30; white-space:nowrap; }
-        .score-pill { position:absolute; top:20px; right:15px; background:var(--accent); color:#1a2740; padding:6px 15px; border-radius:50px; font-size:1rem; z-index:40; }
+        #game-screen { 
+            display:none; width:100%; height:calc(100vh - 60px); position:relative; 
+            background: linear-gradient(to bottom, #87CEEB 0%, #e0f7fa 60%, #c8f0c8 100%); 
+            overflow:hidden;
+        }
+        
+        .target-board {
+            position:absolute; top:15px; left:50%; transform:translateX(-50%);
+            background: #fff8e1; 
+            padding: 8px 20px; border-radius: 16px; border: 5px solid #ff9800; 
+            box-shadow: 0 8px 20px rgba(255,152,0,0.3);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 30; gap: 4px; min-width: 150px;
+        }
+        .target-board::before, .target-board::after {
+            content: ''; position: absolute; top: -18px; width: 8px; height: 18px; background: #e65100; border-radius: 4px;
+        }
+        .target-board::before { left: 25px; } .target-board::after { right: 25px; }
+        
+        #target-img { width: 85px; height: 85px; object-fit: contain; background: white; border-radius: 8px; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        #target-phrase { font-size: clamp(1.4rem, 4vh, 2rem); color: #e65100; text-shadow: 1px 1px 0 rgba(255,255,255,0.8); }
 
-        #basket { position:absolute; bottom:100px; left:50%; transform:translateX(-50%); width:clamp(140px,14vw,200px); height:clamp(120px,13vh,170px); z-index:15; cursor:pointer; }
-        .fruit { position:absolute; width:clamp(80px,8vw,120px); height:clamp(80px,8vw,120px); display:flex; justify-content:center; align-items:center; cursor:pointer; z-index:10; }
-        .fruit-icon { position:absolute; font-size:clamp(3.5rem,6.5vw,8rem); line-height:1; filter:drop-shadow(2px 3px 5px rgba(0,0,0,0.25)); }
-        .fruit span { position:relative; z-index:11; color:white; font-size:clamp(1.1rem,1.5vw,1.8rem); text-shadow:1px 1px 0 rgba(0,0,0,0.9),2px 2px 8px rgba(0,0,0,0.8); }
+        .score-pill { position:absolute; top:20px; right:15px; background:#2ecc71; color:white; padding:8px 18px; border-radius:50px; font-size:1.3rem; z-index:40; box-shadow: 0 4px 10px rgba(46,204,113,0.3); border: 2px solid #27ae60; }
+
+        /* 🌟 核心修复 1：移除 Transform，纯用 absolute 与 margin 居中，取消 z-index 让图层穿透实现 3D！ */
+        #basket-container { 
+            position:absolute; bottom: min(70px, 8vh); left: 50%; margin-left: -90px; 
+            width: 180px; height: 110px; cursor: pointer;
+        }
+        .basket-back { position: absolute; top: 0; left: 10px; width: 160px; height: 60px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg"><path d="M 0 30 Q 80 80 160 30 Z" fill="%238D6E63"/></svg>'); background-size: 100% 100%; z-index: 5; }
+        .basket-front { position: absolute; bottom: 0; left: 0; width: 180px; height: 100px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 180 100" xmlns="http://www.w3.org/2000/svg"><path d="M 5 25 L 175 25 L 150 95 Q 90 110 30 95 Z" fill="%23FFB300" stroke="%23E65100" stroke-width="4"/><path d="M 25 45 L 155 45 M 28 65 L 152 65 M 32 85 L 148 85 M 60 25 L 50 95 M 90 25 L 90 100 M 120 25 L 130 95" stroke="%23E65100" stroke-width="3" opacity="0.6"/><rect x="0" y="15" width="180" height="15" rx="5" fill="%23FFCA28" stroke="%23E65100" stroke-width="4"/></svg>'); background-size: 100% 100%; z-index: 15; }
+
+        .fruit { 
+            position:absolute; width: 75px; height: 75px; z-index: 10; cursor:pointer; 
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.2), 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .fruit::before {
+            content: ''; position: absolute; top: -10px; left: 45%; width: 18px; height: 10px;
+            background: #4CAF50; border-radius: 10px 0; transform: rotate(-25deg);
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.4);
+        }
+        .fruit span { 
+            background: rgba(255,255,255,0.9); border-radius: 50%; width: 46px; height: 46px;
+            display: flex; justify-content: center; align-items: center;
+            color: #d35400; font-size: 1.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .f-apple { background: radial-gradient(circle at 30% 30%, #ff4d4d, #c0392b); border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; }
+        .f-orange { background: radial-gradient(circle at 30% 30%, #ffb300, #e65100); }
+        .f-pear { background: radial-gradient(circle at 30% 30%, #dce775, #689f38); border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%; }
+        .f-grape { background: radial-gradient(circle at 30% 30%, #ba68c8, #6a1b9a); border-radius: 40% 40% 50% 50% / 50% 50% 50% 50%; }
+        .f-peach { background: radial-gradient(circle at 30% 30%, #ffcdd2, #e91e63); }
+
+        @keyframes catchPop { 0% { transform: scale(1); } 50% { transform: scale(1.3); opacity: 0.8; } 100% { transform: scale(0); opacity: 0; } }
+        .caught-anim { animation: catchPop 0.3s ease-out forwards !important; z-index: 16 !important; }
+
+        .score-pop { position: absolute; color: #2ecc71; font-size: 2.5rem; font-weight: bold; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; z-index: 50; pointer-events: none; animation: floatUp 0.8s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-60px) scale(1.5); opacity: 0; } }
+
+        #trophy-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
+        .trophy-icon { font-size: 15vh; animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        .overlay-text { color: white; font-size: 6vh; font-weight: bold; margin: 2vh 0; text-align: center; }
 
         @media (max-width:768px) {
             body { padding-top:56px; }
             .mecc-nav-back span { display:none; }
             #start-screen { width:100%; max-width:100%; height:calc(100dvh - 56px); padding:8px 8px 6px; overflow:hidden; display:flex; flex-direction:column; gap:6px; }
-            #char-grid { grid-template-columns:repeat(6,1fr); grid-auto-rows:1fr; gap:4px; padding:8px; width:100%; flex:1; min-height:0; aspect-ratio:unset; }
-            .char-card { aspect-ratio:unset; font-size:clamp(0.9rem,5vw,1.4rem); }
-            .target-box { font-size:1.1rem; padding:6px 14px; max-width:60%; }
-            #basket { bottom:70px; width:clamp(100px,28vw,155px); height:clamp(85px,24vw,130px); }
-            .fruit { width:clamp(62px,17vw,105px); height:clamp(62px,17vw,105px); }
-            .fruit-icon { font-size:clamp(2.8rem,13vw,6rem); }
-            .fruit span { font-size:clamp(0.95rem,4vw,1.35rem); }
+            #char-grid { grid-template-columns:repeat(6,1fr); grid-auto-rows:1fr; gap:4px; padding:8px; width:100%; flex:1; min-height:0; }
+            .char-card { font-size:clamp(1.1rem,5vw,1.4rem); }
+            
+            #target-img { width: 70px; height: 70px; }
+            #target-phrase { font-size: 1.4rem; }
+            .target-board { padding: 6px 12px; top: 15px; }
+
+            /* 🌟 移动端适配调整 */
+            #basket-container { width: 140px; height: 90px; bottom: 50px; margin-left: -70px; }
+            .fruit { width: 64px; height: 64px; }
+            .fruit span { width: 40px; height: 40px; font-size: 1.5rem; }
+            
             .btn { font-size:0.9rem; padding:6px 12px; }
             .btn-start { font-size:1rem; padding:6px 20px; }
         }
@@ -74,142 +133,167 @@
     </div>
 
     <div id="game-screen">
-        <div class="target-box" id="ui-target">Catch: ...</div>
-        <div class="score-pill"><span id="ui-score-label">Score</span>: <span id="score" class="font-en">0</span></div>
-        <div id="basket" onmousedown="startDrag(event)" ontouchstart="startDrag(event)"></div>
+        <div class="target-board">
+            <img id="target-img" src="" alt="target" onerror="this.style.display='none'">
+            <div id="target-phrase">准备中...</div>
+        </div>
+        
+        <div class="score-pill"><span id="ui-score-label">进度</span>: <span id="score" class="font-en">0 / 20</span></div>
+        
+        <div id="basket-container" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
+            <div class="basket-back"></div>
+            <div class="basket-front"></div>
+        </div>
+    </div>
+
+    <div id="trophy-overlay" onclick="closeTrophy()">
+        <div class="trophy-icon">🏆</div>
+        <div class="overlay-text" id="overlay-msg">大丰收！</div>
+        <div style="color:rgba(255,255,255,0.6); font-size: 3vh;" id="ui-continue">点击任意位置继续</div>
     </div>
 
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: { nav: "果园摘水果", all: "全选", none: "清空", start: "开始挑战", target: "请接住：", score: "得分", back: "返回工具台", backWord: "返回修改字库", alert: "请至少选择4个汉字！" },
-            en: { nav: "Orchard Harvest", all: "Select All", none: "Clear", start: "Start!", target: "Catch: ", score: "Score", back: "Back to Parents Portal", backWord: "Back to Selection", alert: "Please select at least 4 characters!" }
+            zh: { nav: "果园摘水果", all: "全选", none: "清空", start: "开始挑战", score: "已摘", back: "返回工具台", backWord: "返回修改字库", alert: "请至少选择4个汉字！", loadErr: "加载字库失败！", win: "太棒了！大丰收！" },
+            en: { nav: "Orchard Harvest", all: "Select All", none: "Clear", start: "Start!", score: "Harvest", back: "Back to Dashboard", backWord: "Back to Selection", alert: "Please select at least 4 characters!", loadErr: "Failed to load words.", win: "Awesome Harvest!" }
         }[LANG];
 
-        const fruitEmojis = ['🍎','🍐','🍊','🍓','🍑','🍇'];
-        let selectedWords = []; let score = 0; let targetWord = ""; let gameActive = false; let isPaused = false;
-        let appleInterval = null; let activeWords = new Set(); let lastCorrectTime = Date.now();
+        const TARGET_CATCH_COUNT = 20; 
 
-        // 🌟 终极发音降级引擎
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
+        const QUERY = encodeURIComponent(`{
+          "words": *[_type == "word"] | order(_createdAt asc) {char, phrases, "audioUrl": audio.asset->url, phrase_list[]{text, "imageUrl": image.asset->url}},
+          "audio": *[_type == "gameAudio"][0] {"correct": correct.asset->url, "wrong": wrong.asset->url}
+        }`);
+        const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
+        let fullWordList = [];
+        let selectedWords = []; 
+        let caughtCount = 0; 
+        let targetWordObj = null; 
+        let gameActive = false; 
+        let isPaused = false;
+        
+        let activeFruits = []; 
+        let animationFrameId = null;
+        let lastSpawnTime = 0;
+        let spawnInterval = 1500; 
+
         let globalAudio = new Audio();
-        let audioUnlocked = false;
+        let sanityAudioMap = {};
+        
+        const audioUrls = { correct: '../audio/correct.mp3', wrong: '../audio/wrong.mp3' };
+        const sfxPool = {};
 
-        const unlockInteraction = () => {
-            if (audioUnlocked) return;
-            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
-            globalAudio.play().then(() => { audioUnlocked = true; }).catch(()=>{});
-            document.removeEventListener('touchstart', unlockInteraction);
-            document.removeEventListener('mousedown', unlockInteraction);
-        };
-        document.addEventListener('touchstart', unlockInteraction, { passive: true });
-        document.addEventListener('mousedown', unlockInteraction, { passive: true });
+        function createAudioPool(name, src, count = 4) {
+            sfxPool[name] = Array.from({ length: count }, () => { const a = new Audio(src); a.preload = 'auto'; a.playsInline = true; return a; });
+        }
+
+        function playSfx(name) {
+            const pool = sfxPool[name]; if (!pool) return;
+            const a = pool.find(x => x.paused || x.ended) || pool[0];
+            try { a.currentTime = 0; a.play().catch(() => null); } catch (e) {}
+        }
 
         async function playUnifiedAudio(text) {
             if (!text) return;
-            if (!audioUnlocked) {
-                globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
-                globalAudio.play().catch(()=>{});
-                audioUnlocked = true;
+            globalAudio.pause();
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().catch(()=>{});
+
+            if (sanityAudioMap[text]) {
+                globalAudio.src = sanityAudioMap[text];
+                await globalAudio.play().catch(e => console.warn("Sanity音频失败", e));
+                return;
             }
 
-            const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
             const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
-
-            try {
-                const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-                if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                    globalAudio.src = localPath;
-                    await globalAudio.play();
-                    return; 
-                }
-            } catch(e) {}
-
             try {
                 const azureRes = await fetch(azureUrl).catch(() => null);
-                if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type')?.includes('audio')) {
                     const audioBlob = await azureRes.blob();
-                    globalAudio.src = URL.createObjectURL(audioBlob);
-                    await globalAudio.play();
-                    return; 
+                    globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return; 
                 }
             } catch(e) {}
 
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
-            window.speechSynthesis.speak(msg);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; window.speechSynthesis.speak(msg);
         }
-
-        function renderBasket() {
-            document.getElementById('basket').innerHTML = `
-            <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;pointer-events:none">
-              <defs>
-                <linearGradient id="bG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4883A"/><stop offset="100%" stop-color="#A0522D"/></linearGradient>
-                <linearGradient id="rG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B4513"/><stop offset="100%" stop-color="#5C2A0A"/></linearGradient>
-                <clipPath id="bC"><path d="M18,58 L182,58 Q178,150 100,154 Q22,150 18,58 Z"/></clipPath>
-              </defs>
-              <path d="M58,56 Q100,-5,142,56" fill="none" stroke="#5C2A0A" stroke-width="13" stroke-linecap="round"/>
-              <path d="M58,56 Q100,-5,142,56" fill="none" stroke="#A0522D" stroke-width="7" stroke-linecap="round"/>
-              <path d="M18,58 L182,58 Q178,150 100,154 Q22,150 18,58 Z" fill="url(#bG)"/>
-              <g clip-path="url(#bC)" stroke="#6B3010" stroke-width="3" opacity="0.5">
-                <line x1="0" y1="76"  x2="200" y2="76"/>
-                <line x1="0" y1="96"  x2="200" y2="96"/>
-                <line x1="0" y1="116" x2="200" y2="116"/>
-                <line x1="0" y1="136" x2="200" y2="136"/>
-              </g>
-              <g clip-path="url(#bC)" stroke="#6B3010" stroke-width="2" opacity="0.38">
-                <line x1="42"  y1="56" x2="35"  y2="154"/>
-                <line x1="67"  y1="56" x2="63"  y2="154"/>
-                <line x1="92"  y1="56" x2="92"  y2="154"/>
-                <line x1="117" y1="56" x2="117" y2="154"/>
-                <line x1="142" y1="56" x2="148" y2="154"/>
-                <line x1="165" y1="56" x2="175" y2="148"/>
-              </g>
-              <rect x="13" y="51" width="174" height="15" rx="7.5" fill="url(#rG)"/>
-              <ellipse cx="100" cy="56" rx="55" ry="4" fill="white" opacity="0.2"/>
-            </svg>`;
-        }
-
-        document.addEventListener('visibilitychange', () => { if (document.hidden) { isPaused = true; } else { isPaused = false; } });
 
         window.onload = async () => {
             MECC_CONFIG.renderGlobalNav(t.nav);
-            renderBasket();
             updateBackBtn(t.back, MECC_CONFIG.getBackHref());
+            
             document.getElementById('ui-all').innerText = t.all;
             document.getElementById('ui-none').innerText = t.none;
             document.getElementById('ui-start').innerText = t.start;
             document.getElementById('ui-score-label').innerText = t.score;
+            document.getElementById('ui-continue').innerText = LANG === 'en' ? "Tap to continue" : "点击继续";
 
-            // 🌟 核心修复 2：英文环境添加英文字体类
             if (LANG === 'en') {
-                const enElements = ['ui-all', 'ui-none', 'ui-start', 'ui-target', 'ui-score-label'];
-                enElements.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.add('font-en');
+                ['ui-all', 'ui-none', 'ui-start', 'ui-score-label', 'target-phrase', 'overlay-msg', 'ui-continue'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.classList.add('font-en');
                 });
             }
 
             const grid = document.getElementById('char-grid');
-            const dataObj = await MECC_DATA.getSightWords();
-            dataObj.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'char-card'; card.innerText = item.char;
-                card.onclick = () => card.classList.toggle('selected');
-                grid.appendChild(card);
-            });
+            
+            try {
+                const res = await fetch(API_URL).then(r => r.json());
+                const list = res.result.words || [];
+                
+                if (res.result.audio) {
+                    if (res.result.audio.correct) audioUrls.correct = res.result.audio.correct;
+                    if (res.result.audio.wrong) audioUrls.wrong = res.result.audio.wrong;
+                }
+                createAudioPool('correct', audioUrls.correct, 3);
+                createAudioPool('wrong', audioUrls.wrong, 3);
+                
+                list.forEach(item => {
+                    if (item.audioUrl) sanityAudioMap[item.char] = item.audioUrl;
+                    
+                    let phraseText = item.char;
+                    let phraseImg = '';
+                    
+                    if (item.phrase_list && item.phrase_list.length > 0) {
+                        phraseText = item.phrase_list[0].text || item.char;
+                        phraseImg = item.phrase_list[0].imageUrl || '';
+                    } else if (item.phrases && typeof item.phrases === 'string') {
+                        phraseText = item.phrases.split(/[,，、]/)[0].trim();
+                    }
+                    
+                    fullWordList.push({ char: item.char, phrase: phraseText, phraseImg: phraseImg });
+                    
+                    const card = document.createElement('div');
+                    card.className = 'char-card'; card.innerText = item.char;
+                    card.onclick = () => { card.classList.toggle('selected'); MECC_AUDIO.playSfx('swoosh'); playUnifiedAudio(item.char); };
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#e74c3c;">${t.loadErr}</div>`;
+            }
         };
 
+        document.addEventListener('visibilitychange', () => { isPaused = document.hidden; });
+
+        // 🌟 核心修复 2：获取绝对真实坐标，无视 Margin 干扰
         window.addEventListener('keydown', (e) => {
             if(!gameActive || isPaused) return;
-            const basket = document.getElementById('basket');
-            const step = 50; const cur = basket.offsetLeft;
-            if(e.key === 'ArrowLeft') moveBasket(cur - step);
-            else if(e.key === 'ArrowRight') moveBasket(cur + step);
+            const basket = document.getElementById('basket-container');
+            const rect = basket.getBoundingClientRect();
+            const curX = rect.left + rect.width / 2; // 当前的物理中心 X
+            const step = 60; 
+            
+            if(e.key === 'ArrowLeft') moveBasket(curX - step);
+            else if(e.key === 'ArrowRight') moveBasket(curX + step);
         });
 
+        // 🌟 核心修复 3：坐标对齐
         function moveBasket(nx) {
-            const b = document.getElementById('basket');
+            const b = document.getElementById('basket-container');
             const limit = b.offsetWidth / 2;
             b.style.left = Math.max(limit, Math.min(window.innerWidth - limit, nx)) + "px";
         }
@@ -219,7 +303,6 @@
             if(btn) {
                 const span = btn.querySelector('span');
                 if(span) { span.innerText = txt; } else { btn.innerText = txt; }
-                
                 if(isAct) { btn.removeAttribute('href'); btn.onclick = (e) => { e.preventDefault(); backToSetup(); }; }
                 else { btn.href = href; btn.onclick = null; }
             }
@@ -229,77 +312,146 @@
         function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
 
         function startGame() {
-            selectedWords = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
-            if (selectedWords.length < 4) { alert(t.alert); return; }
-            if (!MECC_AUDIO.ctx) MECC_AUDIO.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            MECC_AUDIO.ctx.resume();
+            const selectedChars = Array.from(document.querySelectorAll('.char-card.selected')).map(el => el.innerText);
+            if (selectedChars.length < 4) { alert(t.alert); return; }
+            
+            selectedWords = fullWordList.filter(w => selectedChars.includes(w.char));
+            
+            // 🌟 核心修复 4：移除强制自动播放的 Hack 代码，杜绝开局爆音
             
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             updateBackBtn(t.backWord, "#", true);
-            score = 0; document.getElementById('score').innerText = "0";
-            gameActive = true; activeWords.clear();
+            
+            caughtCount = 0; document.getElementById('score').innerText = `${caughtCount} / ${TARGET_CATCH_COUNT}`;
+            gameActive = true; 
+            activeFruits.forEach(f => f.el.remove()); activeFruits = [];
+            
             nextTarget();
-            appleInterval = setInterval(spawnFruit, 1600);
+            lastSpawnTime = performance.now();
+            requestAnimationFrame(gameLoop);
         }
 
         function backToSetup() {
-            gameActive = false; clearInterval(appleInterval);
-            document.querySelectorAll('.fruit').forEach(f => f.remove());
+            gameActive = false; cancelAnimationFrame(animationFrameId);
+            activeFruits.forEach(f => f.el.remove()); activeFruits = [];
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
             updateBackBtn(t.back, MECC_CONFIG.getBackHref());
         }
 
         function nextTarget() {
-            targetWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
-            document.getElementById('ui-target').innerHTML = `${t.target} <span style="color:var(--orange);">"${targetWord}"</span>`;
-            playUnifiedAudio(targetWord);
-            lastCorrectTime = Date.now();
+            targetWordObj = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+            
+            const imgEl = document.getElementById('target-img');
+            const phraseEl = document.getElementById('target-phrase');
+            
+            const imgPath = targetWordObj.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${targetWordObj.phrase}.webp`;
+            imgEl.src = imgPath;
+            imgEl.style.display = 'block';
+            imgEl.onerror = () => { imgEl.style.display = 'none'; };
+            
+            phraseEl.innerText = targetWordObj.phrase;
+            
+            playUnifiedAudio(targetWordObj.char);
+        }
+
+        function showPopText(x, y) {
+            const pop = document.createElement('div');
+            pop.className = 'score-pop font-en';
+            pop.innerText = '+1';
+            pop.style.left = (x - 20) + 'px';
+            pop.style.top = y + 'px';
+            document.getElementById('game-screen').appendChild(pop);
+            setTimeout(() => pop.remove(), 800);
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameActive) return;
+            if (isPaused) { animationFrameId = requestAnimationFrame(gameLoop); return; }
+
+            if (timestamp - lastSpawnTime > spawnInterval) {
+                spawnFruit();
+                lastSpawnTime = timestamp;
+                spawnInterval = Math.max(800, 1500 - (caughtCount * 25)); 
+            }
+
+            const basket = document.getElementById('basket-container');
+            const bRect = basket.getBoundingClientRect();
+            const basketCatchY = bRect.top + 20; 
+            const basketLeft = bRect.left + 15;
+            const basketRight = bRect.right - 15;
+
+            for (let i = activeFruits.length - 1; i >= 0; i--) {
+                let f = activeFruits[i];
+                f.y += f.speed;
+                f.el.style.top = f.y + 'px';
+
+                const fRect = f.el.getBoundingClientRect();
+                const fruitCenterY = fRect.top + (fRect.height / 2);
+                const fruitCenterX = fRect.left + (fRect.width / 2);
+
+                if (fruitCenterY >= basketCatchY && fruitCenterY <= basketCatchY + 30 && fruitCenterX > basketLeft && fruitCenterX < basketRight) {
+                    
+                    if (f.char === targetWordObj.char) {
+                        caughtCount++; 
+                        document.getElementById('score').innerText = `${caughtCount} / ${TARGET_CATCH_COUNT}`;
+                        playSfx('correct'); 
+                        
+                        showPopText(fruitCenterX, basketCatchY);
+                        
+                        f.el.classList.add('caught-anim');
+                        setTimeout(() => f.el.remove(), 300);
+                        activeFruits.splice(i, 1);
+                        
+                        if (caughtCount >= TARGET_CATCH_COUNT) {
+                            showWin();
+                        } else {
+                            nextTarget(); 
+                        }
+                    } else {
+                        playSfx('wrong'); 
+                        f.el.classList.add('caught-anim');
+                        setTimeout(() => f.el.remove(), 300);
+                        activeFruits.splice(i, 1);
+                    }
+                    continue;
+                }
+
+                if (f.y > window.innerHeight) {
+                    f.el.remove();
+                    activeFruits.splice(i, 1);
+                }
+            }
+
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
 
         function spawnFruit() {
-            if(!gameActive || isPaused) return;
-            const fruit = document.createElement('div');
-            fruit.className = 'fruit';
+            const fruitEl = document.createElement('div');
             
-            let word;
-            if (Date.now() - lastCorrectTime > 4000) { word = targetWord; } 
-            else {
-                const available = selectedWords.filter(w => !activeWords.has(w));
-                word = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : selectedWords[0];
+            const fruitStyles = ['f-apple', 'f-orange', 'f-pear', 'f-grape', 'f-peach'];
+            const randomStyle = fruitStyles[Math.floor(Math.random() * fruitStyles.length)];
+            fruitEl.className = `fruit ${randomStyle}`;
+            
+            let wordObj;
+            if (Math.random() < 0.35) {
+                wordObj = targetWordObj;
+            } else {
+                wordObj = selectedWords[Math.floor(Math.random() * selectedWords.length)];
             }
 
-            if (word === targetWord) lastCorrectTime = Date.now();
-            activeWords.add(word);
+            fruitEl.innerHTML = `<span>${wordObj.char}</span>`;
             
-            const emoji = fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
-            fruit.innerHTML = `<div class="fruit-icon">${emoji}</div><span>${word}</span>`;
-            fruit.style.left = (Math.random() * (window.innerWidth - 100) + 50) + "px";
-            fruit.style.top = "-120px";
-            document.getElementById('game-screen').appendChild(fruit);
+            const fruitWidth = window.innerWidth <= 768 ? 64 : 75;
+            const randomLeft = Math.max(10, Math.random() * (window.innerWidth - fruitWidth - 10));
+            fruitEl.style.left = randomLeft + "px";
+            fruitEl.style.top = "-100px";
+            
+            document.getElementById('game-screen').appendChild(fruitEl);
 
-            let pos = -120; const speed = 2.5 + Math.random() * 2;
-            const timer = setInterval(() => {
-                if(!gameActive) { clearInterval(timer); fruit.remove(); return; }
-                if(isPaused) return;
-
-                pos += speed; fruit.style.top = pos + "px";
-                const bRect = document.getElementById('basket').getBoundingClientRect();
-                const fRect = fruit.getBoundingClientRect();
-                
-                if (fRect.bottom >= bRect.top + 20 && fRect.left < bRect.right && fRect.right > bRect.left && fRect.top < bRect.bottom) {
-                    if (word === targetWord) {
-                        score += 10; document.getElementById('score').innerText = score;
-                        MECC_AUDIO.playSfx('tada'); 
-                        activeWords.delete(word); fruit.remove(); clearInterval(timer); nextTarget();
-                    } else {
-                        MECC_AUDIO.playSfx('wrong'); 
-                        activeWords.delete(word); fruit.remove(); clearInterval(timer);
-                    }
-                }
-                if (pos > window.innerHeight) { activeWords.delete(word); fruit.remove(); clearInterval(timer); }
-            }, 16);
+            const speed = (window.innerHeight <= 800 ? 2.5 : 3.5) + Math.random() * 1.5 + (caughtCount * 0.05);
+            activeFruits.push({ el: fruitEl, char: wordObj.char, y: -100, speed: speed });
         }
 
         function startDrag(e) {
@@ -310,6 +462,19 @@
             };
             window.addEventListener('mousemove', mv); window.addEventListener('mouseup', ed);
             window.addEventListener('touchmove', mv, {passive: false}); window.addEventListener('touchend', ed);
+        }
+
+        function showWin() {
+            gameActive = false;
+            cancelAnimationFrame(animationFrameId);
+            playUnifiedAudio(t.win);
+            document.getElementById('overlay-msg').innerText = t.win;
+            document.getElementById('trophy-overlay').style.display = 'flex';
+        }
+
+        function closeTrophy() {
+            document.getElementById('trophy-overlay').style.display = 'none';
+            backToSetup();
         }
     </script>
 </body>

@@ -21,20 +21,11 @@
 
         * { box-sizing: border-box; font-family: var(--wenkai) !important; }
         
-        /* 🌟 给全局导航栏留出空间，防止遮挡内容 */
         body { 
             background-color: #fff9ea; margin: 0; padding: 0; 
             height: 100vh; width: 100vw; overflow: hidden; 
             display: flex; flex-direction: column; 
             padding-top: 70px; 
-        }
-
-        /* 🌟 生日按钮往下挪一点，避开导航栏 */
-        #bday-nav-btn {
-            position: fixed; top: 80px; right: 20px; z-index: 9999;
-            background: var(--main-teal); border: none; color: white; padding: 6px 15px; 
-            border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 1rem; 
-            font-family: var(--kaiti) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .content-frame { flex: 1; position: relative; width: 100%; overflow: hidden; }
@@ -43,7 +34,21 @@
 
         /* --- P1 (v5.1): 日历 --- */
         .calendar-container { width: 100%; max-width: 1100px; background: white; border: 5px solid var(--main-teal); border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; flex: 1; }
-        .cal-header { background: var(--main-teal); color: white; padding: 8px; text-align: center; font-size: 1.8rem; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        
+        .cal-header { position: relative; background: var(--main-teal); color: white; padding: 8px; text-align: center; font-size: 1.8rem; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        
+        /* 🌟 核心修复：还原半透明高级质感的生日按钮 */
+        #bday-nav-btn {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2); border: 1.5px solid rgba(255, 255, 255, 0.4); 
+            color: white; padding: 6px 16px;
+            border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 0.95rem;
+            font-family: var(--kaiti) !important; box-shadow: none; z-index: 10;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
+        }
+        #bday-nav-btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-50%) scale(1.02); }
+        #bday-nav-btn:active { transform: translateY(-50%) scale(0.98); }
+
         .cal-grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 2px; }
         .weekday { background: #f8f9fa; padding: 3px 0; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; border-bottom: 1px solid #ddd; }
         .weekday .zh { font-size: clamp(1rem, 1.8vw, 1.6rem); color: var(--main-teal); font-weight: bold; font-family: var(--kaiti) !important; }
@@ -56,7 +61,9 @@
         .pv-label { font-family: var(--kaiti) !important; }
         .day-cell { background: white; cursor: pointer; display: flex; flex-direction: row; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: #333; }
         .day-cell.today { background: #fffceb; box-shadow: inset 0 0 0 4px var(--accent-yellow); }
-        .special-icon { font-size: 1.2rem; margin-left: 3px; vertical-align: middle; }
+        
+        /* 🌟 特殊图标样式优化 */
+        .special-icon { font-size: 1.2rem; margin-left: 3px; vertical-align: middle; letter-spacing: -2px; }
         .holiday-tag { font-size: 1.1rem; margin-left: 3px; vertical-align: middle; font-family: sans-serif !important; }
 
         /* --- P2 (v4.4): 天气 --- */
@@ -125,7 +132,7 @@
         .nav-btn { background: var(--accent-yellow); border: none; padding: 6px 40px; border-radius: 50px; font-size: 1.3rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #d49a2a; min-width: 220px; font-family: var(--kaiti) !important; }
 
         @media (max-width: 768px) {
-            #bday-nav-btn { padding: 4px 10px; font-size: 0.85rem; top: 65px; }
+            #bday-nav-btn { padding: 4px 8px; font-size: 0.85rem; right: 8px; }
             .weather-hub { flex: 0 0 auto !important; gap: 8px !important; }
             .weather-card .icon { font-size: clamp(2.5rem, 8vw, 4rem) !important; }
             .weather-card .label { font-size: clamp(1rem, 4vw, 1.6rem) !important; margin-top: 4px !important; }
@@ -146,8 +153,6 @@
 </head>
 <body>
 
-    <button id="bday-nav-btn" onclick="openBirthdayMgr()">🎂 生日管理</button>
-
     <div class="content-frame">
         <div class="page active" id="page-1">
             <div class="calendar-container">
@@ -155,15 +160,17 @@
                     <span class="cal-nav-btn" onclick="changeMonth(-1)" style="cursor:pointer;font-size:1.6rem;padding:0 12px;user-select:none;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">◀</span>
                     <span style="display:flex;gap:20px;align-items:center;"><span id="header-en"></span><span id="header-zh"></span></span>
                     <span class="cal-nav-btn" onclick="changeMonth(1)" style="cursor:pointer;font-size:1.6rem;padding:0 12px;user-select:none;opacity:0.8;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">▶</span>
+                    
+                    <button id="bday-nav-btn" onclick="openBirthdayMgr()">🎂 生日管理</button>
                 </div>
                 <div class="cal-grid" id="cal-grid-body">
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Sunday</span><span>星期天</span></div>
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Monday</span><span>星期一</span></div>
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Tuesday</span><span>星期二</span></div>
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Wednesday</span><span>星期三</span></div>
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Thursday</span><span>星期四</span></div>
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Friday</span><span>星期五</span></div>
-                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Saturday</span><span>星期六</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Sunday</span><span class="zh">星期天</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Monday</span><span class="zh">星期一</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Tuesday</span><span class="zh">星期二</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Wednesday</span><span class="zh">星期三</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Thursday</span><span class="zh">星期四</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Friday</span><span class="zh">星期五</span></div>
+                    <div class="weekday"><span class="en" style="font-size:clamp(0.6rem,1vw,0.9rem)">Saturday</span><span class="zh">星期六</span></div>
                 </div>
             </div>
         </div>
@@ -274,43 +281,85 @@
         </div>
     </div>
 
-    <div id="birthday-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10001; align-items:center; justify-content:center;">
-        <div style="background:white; padding:24px; border-radius:20px; width:420px; max-height:80vh; overflow-y:auto; border:4px solid var(--main-teal); position:relative; font-family:var(--kaiti);">
-            <button onclick="closeBirthdayMgr()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;">✕</button>
-            <div style="font-size:1.3rem;font-weight:bold;color:var(--main-teal);margin-bottom:14px;">🎂 学生生日管理</div>
-            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;">
-                <input id="bday-name" placeholder="名字 (First Name)" style="flex:1;padding:6px 10px;border:2px solid #ddd;border-radius:8px;font-size:1rem;font-family:var(--kaiti);">
-                <select id="bday-month" style="padding:6px;border:2px solid #ddd;border-radius:8px;font-family:var(--kaiti);">
-                    <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
-                    <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
-                    <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
-                    <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-                </select>
-                <input id="bday-day" type="number" min="1" max="31" placeholder="日" style="width:60px;padding:6px;border:2px solid #ddd;border-radius:8px;font-size:1rem;text-align:center;font-family:var(--kaiti);">
-                <button onclick="addBirthday()" style="background:var(--main-teal);color:white;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:1rem;font-family:var(--kaiti);">添加</button>
+    <div id="birthday-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10001; align-items:center; justify-content:center; backdrop-filter: blur(3px);">
+        <div style="background:white; padding:24px; border-radius:20px; width:90%; max-width:380px; max-height:85vh; display:flex; flex-direction:column; border:none; box-shadow:0 15px 35px rgba(0,0,0,0.2); position:relative; font-family:var(--kaiti);">
+            <button onclick="closeBirthdayMgr()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999;transition:0.2s;" onmouseover="this.style.color='#555'" onmouseout="this.style.color='#999'">✕</button>
+            <div style="font-size:1.4rem;font-weight:bold;color:var(--main-teal);margin-bottom:20px;display:flex;align-items:center;gap:8px;">🎂 生日管理</div>
+            
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+                <input id="bday-name" placeholder="名字 (First Name)" style="width:100%; padding:10px 12px; border:2px solid #eee; border-radius:10px; font-size:1rem; font-family:var(--kaiti); outline:none; transition:0.2s;" onfocus="this.style.borderColor='var(--main-teal)'" onblur="this.style.borderColor='#eee'">
+                
+                <div style="display:flex; gap:8px;">
+                    <select id="bday-month" style="flex:1; padding:10px; border:2px solid #eee; border-radius:10px; font-family:var(--kaiti); outline:none; background:white; cursor:pointer;">
+                        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                    </select>
+                    <input id="bday-day" type="number" min="1" max="31" placeholder="日" style="width:70px; padding:10px; border:2px solid #eee; border-radius:10px; font-size:1rem; text-align:center; font-family:var(--kaiti); outline:none;" onfocus="this.style.borderColor='var(--main-teal)'" onblur="this.style.borderColor='#eee'">
+                    <button onclick="addBirthday()" style="background:var(--main-teal); color:white; border:none; padding:0 20px; border-radius:10px; cursor:pointer; font-size:1rem; font-family:var(--kaiti); font-weight:bold; white-space:nowrap; transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">添加</button>
+                </div>
             </div>
-            <div style="margin-bottom:10px;display:flex;gap:8px;">
-                <button onclick="document.getElementById('bday-csv-input').click()" style="background:#f3b236;color:#1e2e46;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-family:var(--kaiti);">📂 批量导入 CSV</button>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee;">
+                <button onclick="document.getElementById('bday-csv-input').click()" style="background:#f3b236; color:#1e2e46; border:none; padding:8px 16px; border-radius:10px; cursor:pointer; font-size:0.95rem; font-family:var(--kaiti); font-weight:bold; display:flex; align-items:center; gap:6px; transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">📂 批量导入 CSV</button>
                 <input id="bday-csv-input" type="file" accept=".csv" hidden onchange="importBirthdayCSV(this)">
-                <span style="font-size:0.75rem;color:#999;align-self:center;font-family:var(--kaiti);">格式：名字,月,日</span>
+                <span style="font-size:0.85rem; color:#aaa; font-family:var(--kaiti);">格式：名字,月,日</span>
             </div>
-            <div id="birthday-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+
+            <div id="birthday-list" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:4px;"></div>
         </div>
     </div>
 
     <script>
         let curr = 1;
-        let currentNavTitle = ""; // 记录当前导航栏标题
+        let currentNavTitle = ""; 
         let schoolDays = parseInt(localStorage.getItem('mecc_school_days') || "0");
         const events = JSON.parse(localStorage.getItem('mecc_daily_events') || "{}");
         const wStats = JSON.parse(localStorage.getItem('mecc_weather_stats') || '{"sunny":0,"cloudy":0,"rainy":0,"snowy":0,"windy":0}');
         let selectedDateKey = "";
         const holidays = { "2026-1-1": "🎆", "2026-1-19": "✊🏾", "2026-2-14": "💝", "2026-2-16": "🎩", "2026-3-17": "☘️", "2026-4-5": "🐰", "2026-5-10": "💐", "2026-5-25": "🎖️", "2026-6-19": "✊🏿", "2026-7-4": "🎇", "2026-9-7": "👷", "2026-10-31":"🎃", "2026-11-11":"🎗️", "2026-11-26":"🦃", "2026-12-25":"🎄" };
 
-        // 🌟 核心：智能替换全局导航栏文本
+        let audioUnlocked = false;
+        const unlockInteraction = () => {
+            if (audioUnlocked) return;
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().then(() => { audioUnlocked = true; }).catch(()=>{});
+            document.removeEventListener('touchstart', unlockInteraction);
+            document.removeEventListener('mousedown', unlockInteraction);
+        };
+        document.addEventListener('touchstart', unlockInteraction, { passive: true });
+        document.addEventListener('mousedown', unlockInteraction, { passive: true });
+
+        let globalAudio = new Audio();
+        let p6CurrentEqTextZh = ""; 
+        
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            if (!audioUnlocked) {
+                globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+                globalAudio.play().catch(()=>{});
+                audioUnlocked = true;
+            }
+            
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+            try {
+                const azureRes = await fetch(azureUrl).catch(() => null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type')?.includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio.src = URL.createObjectURL(audioBlob);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
+
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; window.speechSynthesis.speak(msg);
+        }
+
         function updateGlobalTitleText(newTitle) {
             if (!currentNavTitle || currentNavTitle === newTitle) return;
-            // 通过底层DOM直接寻址替换文本，绝不破坏现有结构
             const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
             let node;
             while (node = walker.nextNode()) {
@@ -336,7 +385,6 @@
             const t_titles = lang === 'en' ? titles_en : titles_zh;
             const t_labels = lang === 'en' ? labels_en : labels_zh;
 
-            // 🌟 每次翻页，自动将全局导航栏的文字换成当前页面对应的标题！
             updateGlobalTitleText(t_titles[curr-1]);
 
             document.getElementById('prev-btn').disabled = (curr === 1);
@@ -348,8 +396,6 @@
             else document.getElementById('next-btn').innerText = lang === 'en' ? `Next →` : `下一项 →`;
             
             if (curr === 6) genNewMath();
-            // 生日按钮只在日历页显示
-            document.getElementById('bday-nav-btn').style.display = (curr === 1) ? '' : 'none';
         }
 
         let calYear = new Date().getFullYear(); let calMonth = new Date().getMonth() + 1;
@@ -389,8 +435,24 @@
             }
         }
 
-        function setSpecialIcon(icon) { if(icon==="") delete events[selectedDateKey]; else events[selectedDateKey]=icon; localStorage.setItem('mecc_daily_events', JSON.stringify(events)); location.reload(); }
+        // 🌟 核心修复：支持在同一天追加叠加多个事件图标，不刷新直接闭合弹窗
+        function setSpecialIcon(icon) { 
+            if (icon === "") {
+                delete events[selectedDateKey]; 
+            } else {
+                const current = events[selectedDateKey] || "";
+                // 防止连续添加一模一样的同一个图标，但允许叠加不同图标
+                if (!current.includes(icon)) {
+                    events[selectedDateKey] = current + icon;
+                }
+            }
+            localStorage.setItem('mecc_daily_events', JSON.stringify(events)); 
+            initCalendar();
+            closeModal();
+        }
+        
         function closeModal() { document.getElementById('event-modal').style.display = 'none'; }
+        
         function changeW(t, a) { event.stopPropagation(); wStats[t] = Math.max(0, wStats[t]+a); localStorage.setItem('mecc_weather_stats', JSON.stringify(wStats)); updateW(); }
         function updateW() { for(let k in wStats) { const el = document.getElementById(`count-${k}`); if(el) el.innerText = wStats[k]; } }
         function resetWeather() { if(confirm("确定重置本月统计吗？")) { for(let k in wStats) wStats[k]=0; updateW(); } }
@@ -452,12 +514,14 @@
             mathX = Math.floor(Math.random() * 9) + 1; mathAns = 10 + mathX;
             const r = Math.floor(Math.random() * 6);
             const display = document.getElementById('equation-display');
-            if      (r === 0) { display.innerHTML = `10 + ${mathX} = <div class="blank-box">?</div>`; }
-            else if (r === 1) { display.innerHTML = `${mathX} + 10 = <div class="blank-box">?</div>`; }
-            else if (r === 2) { display.innerHTML = `<div class="blank-box">?</div> = 10 + ${mathX}`; }
-            else if (r === 3) { display.innerHTML = `<div class="blank-box">?</div> = ${mathX} + 10`; }
-            else if (r === 4) { mathAns = mathX; display.innerHTML = `10 + <div class="blank-box">?</div> = ${10 + mathX}`; }
-            else              { mathAns = mathX; display.innerHTML = `<div class="blank-box">?</div> + 10 = ${10 + mathX}`; }
+            
+            if      (r === 0) { display.innerHTML = `10 + ${mathX} = <div class="blank-box">?</div>`; p6CurrentEqTextZh = `10加${mathX}等于${mathAns}`; }
+            else if (r === 1) { display.innerHTML = `${mathX} + 10 = <div class="blank-box">?</div>`; p6CurrentEqTextZh = `${mathX}加10等于${mathAns}`; }
+            else if (r === 2) { display.innerHTML = `<div class="blank-box">?</div> = 10 + ${mathX}`; p6CurrentEqTextZh = `${mathAns}等于10加${mathX}`; }
+            else if (r === 3) { display.innerHTML = `<div class="blank-box">?</div> = ${mathX} + 10`; p6CurrentEqTextZh = `${mathAns}等于${mathX}加10`; }
+            else if (r === 4) { mathAns = mathX; display.innerHTML = `10 + <div class="blank-box">?</div> = ${10 + mathX}`; p6CurrentEqTextZh = `10加${mathX}等于${10 + mathX}`; }
+            else              { mathAns = mathX; display.innerHTML = `<div class="blank-box">?</div> + 10 = ${10 + mathX}`; p6CurrentEqTextZh = `${mathX}加10等于${10 + mathX}`; }
+            
             renderP6Visual(mathX); renderNumPad(r >= 4);
         }
 
@@ -493,8 +557,10 @@
             const blank = document.querySelector('.blank-box'); if (!blank) return;
             if (n === mathAns) {
                 playCorrect();
+                playUnifiedAudio(p6CurrentEqTextZh);
+                
                 blank.innerText = n; blank.style.color = "#4CAF50"; blank.style.borderColor = "#4CAF50";
-                setTimeout(genNewMath, 1200);
+                setTimeout(genNewMath, 1500); 
             } else {
                 playWrong();
                 blank.innerText = n; blank.style.color = "#e74c3c"; blank.style.borderColor = "#e74c3c";
@@ -514,16 +580,18 @@
             renderBirthdayList(); initCalendar();
         }
         function deleteBirthday(idx) { const arr = getBirthdays(); arr.splice(idx, 1); saveBirthdays(arr); renderBirthdayList(); initCalendar(); }
+        
         function renderBirthdayList() {
             const arr = getBirthdays(); const months = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
             const list = document.getElementById('birthday-list');
-            if (arr.length === 0) { list.innerHTML = '<div style="color:#999;font-size:0.9rem;text-align:center;">暂无生日记录</div>'; return; }
+            if (arr.length === 0) { list.innerHTML = '<div style="color:#aaa;font-size:0.95rem;text-align:center;padding:20px 0;">暂无生日记录</div>'; return; }
             list.innerHTML = arr.map((b, i) => `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f8f9fa;border-radius:8px;font-family:var(--kaiti);">
-                    <span>🎂 ${b.name}</span><span style="color:#888;font-size:0.9rem;">${months[b.month]} ${b.day}日</span>
-                    <button onclick="deleteBirthday(${i})" style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1rem;">✕</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border-radius:10px;font-family:var(--kaiti);border:1px solid #eee;">
+                    <span style="font-weight:bold;color:#333;">🎂 ${b.name}</span><span style="color:#888;font-size:0.95rem;">${months[b.month]} ${b.day}日</span>
+                    <button onclick="deleteBirthday(${i})" style="background:#ffeeee;border:none;color:#e74c3c;cursor:pointer;font-size:1rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='#ffcccc'" onmouseout="this.style.background='#ffeeee'">✕</button>
                 </div>`).join('');
         }
+        
         function importBirthdayCSV(input) {
             if (!input.files[0]) return; const reader = new FileReader();
             reader.onload = e => {
@@ -548,7 +616,6 @@
             const titles_en = ["📅 Calendar", "🌦️ Weather", "📐 Shapes", "🔢 Hundreds Chart", "🏫 Days in School", "➕ Teen Numbers"];
             const t_titles = lang === 'en' ? titles_en : titles_zh;
 
-            // 🌟 1. 初始化时，先把全局导航栏的标题设为第一页的标题
             currentNavTitle = t_titles[0];
             MECC_CONFIG.renderGlobalNav(currentNavTitle); 
 

@@ -77,7 +77,6 @@
             word-break: break-word;
         }
 
-        /* 🌟 修复：使用 Flex 完美居中文字，去除会挤压文字的左右 padding */
         .speak-btn {
             margin: 20px auto 0; 
             display: flex;
@@ -151,38 +150,16 @@
             .nav-btn { height: 42px; width: 80px; font-size: 1.4rem; }
         }
 
-        /* 🌟 修复：手机端重新分配空间，填平“鱼塘” */
         @media (max-width: 768px) {
             body { padding-top: 56px; }
             .reader-shell { padding: 10px; }
-            .reader-main { 
-                padding: 15px 14px; 
-                border-radius: 20px; 
-                justify-content: center; /* 恢复垂直居中，不再把元素全顶到上面 */
-                gap: 15px; /* 用 gap 来控制图文按钮间距 */
-            } 
-            .book-image { 
-                max-height: 52vh; /* 图片更霸气 */
-                width: 100%; 
-                border-radius: 12px; 
-                margin-top: 0; 
-            } 
-            .book-text { 
-                font-size: clamp(1.8rem, 8vw, 2.6rem); /* 字体更大 */
-                margin-top: 5px; 
-                line-height: 1.4; 
-            } 
+            .reader-main { padding: 15px 14px; border-radius: 20px; justify-content: center; gap: 15px; } 
+            .book-image { max-height: 52vh; width: 100%; border-radius: 12px; margin-top: 0; } 
+            .book-text { font-size: clamp(1.8rem, 8vw, 2.6rem); margin-top: 5px; line-height: 1.4; } 
             .reader-footer { gap: 20px; padding-top: 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
             .nav-btn { width: 80px; height: 46px; font-size: 1.4rem; }
             .center-indicator { font-size: 1rem; }
-            .speak-btn { 
-                width: 85%; 
-                max-width: 320px; 
-                height: 52px; /* 按钮变高，更好按 */
-                padding: 0; /* 彻底去掉内边距，靠 flex 完美居中 */
-                font-size: 1.3rem; 
-                margin-top: 10px; 
-            } 
+            .speak-btn { width: 85%; max-width: 320px; height: 52px; padding: 0; font-size: 1.3rem; margin-top: 10px; } 
         }
     </style>
 </head>
@@ -212,6 +189,10 @@
             zh: { baseTitle: '绘本阅读', back: '返回图书馆', notFound: '未找到书籍编号。请从图书馆重新进入。', missing: '这本书的内容还在路上哦。', loadFail: '数据加载失败，请重试。', prev: '←', next: '→', speak: '朗读', noSpeech: '抱歉，您的浏览器不支持语音朗读功能。' },
             en: { baseTitle: 'Reader', back: 'Back to Library', notFound: 'Book ID not found. Please reopen from the library.', missing: 'This book is not ready yet.', loadFail: 'Failed to load book data. Please try again.', prev: '←', next: '→', speak: 'Read Aloud', noSpeech: 'Sorry, your browser does not support speech synthesis.' }
         }[LANG];
+
+        // Sanity API 配置
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
 
         let currentBookData = null;
         let currentPageIndex = 0;
@@ -264,13 +245,6 @@
             });
         }
 
-        function normalizeImagePath(src) {
-            if (!src) return '';
-            if (src.startsWith('http') || src.startsWith('../')) return src;
-            if (src.startsWith('/')) return `..${src}`;
-            return `../${src}`;
-        }
-
         function showMessage(message, isError = false) {
             titleEl.textContent = t.baseTitle; counterEl.textContent = '—'; footerIndicator.textContent = '—';
             imageEl.style.display = 'none'; textEl.textContent = message; textEl.className = 'message-box';
@@ -279,13 +253,21 @@
         }
 
         function loadBook() {
-            if (bookId === null) { showMessage(t.notFound); return; }
-            fetch(`../data/books.json?v=${Date.now()}`)
+            if (!bookId) { showMessage(t.notFound); return; }
+            
+            // 构建 GROQ 查询：通过唯一 ID 提取这本书，并解析出它 pages 数组里的图片真实 CDN 网址
+            const query = encodeURIComponent(`*[_type == "book" && _id == "${bookId}"][0]{title, "pages": pages[]{text, "imageUrl": image.asset->url, "imageString": image}}`);
+            const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${query}`;
+
+            fetch(API_URL)
                 .then(response => { if (!response.ok) throw new Error('Data not found'); return response.json(); })
-                .then(data => {
-                    const booksList = data.book_list || []; currentBookData = booksList[bookId];
-                    if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) { renderPage(); } 
-                    else { showMessage(t.missing); }
+                .then(({ result }) => {
+                    currentBookData = result;
+                    if (currentBookData && currentBookData.pages && currentBookData.pages.length > 0) { 
+                        renderPage(); 
+                    } else { 
+                        showMessage(t.missing); 
+                    }
                 })
                 .catch(() => { showMessage(t.loadFail, true); });
         }
@@ -303,7 +285,12 @@
             const navTitle = document.querySelector('.mecc-nav-title');
             if (navTitle) navTitle.innerText = currentTitle;
 
-            const imgSrc = normalizeImagePath(currentPage.image || '');
+            // 兼容新版云端 CDN 图片和旧版相对路径
+            let imgSrc = currentPage.imageUrl; 
+            if (!imgSrc && typeof currentPage.imageString === 'string') {
+                imgSrc = currentPage.imageString.startsWith('http') ? currentPage.imageString : `../${currentPage.imageString.replace(/^\.\.\//, '')}`;
+            }
+
             if (imgSrc) { imageEl.src = imgSrc; imageEl.style.display = 'block'; } 
             else { imageEl.style.display = 'none'; }
 

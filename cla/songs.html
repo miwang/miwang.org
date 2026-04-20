@@ -110,7 +110,6 @@
         .page-btn:hover { background: #e1a328; }
         .page-btn:active { transform: scale(0.97); }
 
-        /* ✨ 优化点：为悬浮框加入了渐变动画和透明度过渡 */
         #hover-img-container { 
             position: fixed; display: none; z-index: 10005; padding: 10px; pointer-events: auto; 
             opacity: 0; transition: opacity 0.2s ease; 
@@ -231,6 +230,11 @@
 
         let currentSong = null, currentSlides = [], currentSlideIndex = 0, selectedText = "", hideTimer = null;
 
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
+        const QUERY = encodeURIComponent('*[_type == "song"] | order(_createdAt asc) {id, title, "cover": cover.asset->url, youtubeId, startTime, lyrics}');
+        const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
         window.onload = () => {
             MECC_CONFIG.renderGlobalNav(t.title);
             document.getElementById('head-title').innerText = t.title + " - MECC";
@@ -240,19 +244,19 @@
                 document.getElementById('admin-bar').style.display = 'none';
             }
 
-            fetch(`../data/songs.json?v=${new Date().getTime()}`)
+            fetch(API_URL)
                 .then(res => res.json())
-                .then(data => {
-                    const list = data.song_list || [];
+                .then(({ result }) => {
+                    const list = result || [];
                     songsData = list.map(song => {
                         let lyricsArray = [];
                         if (song.lyrics) lyricsArray = song.lyrics.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                        return { ...song, lyrics: lyricsArray };
+                        return { ...song, lyrics: lyricsArray, id: song.id || song._id }; 
                     });
                     initGallery();
                 })
                 .catch(err => {
-                    document.getElementById('gallery-view').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;">未能加载儿歌数据，请确保后台配置正常！</div>';
+                    document.getElementById('gallery-view').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;font-size:1.1rem;padding:40px 0;">未能连接到云端数据库，请刷新重试！</div>';
                 });
         };
 
@@ -349,7 +353,6 @@
                                             const imgSrc = hardWords[word];
                                             newParts.push({ text: word, isMarked: true, img: imgSrc });
                                             
-                                            // ✨ 优化点：图片后台预加载机制，消除鼠标首次悬停时的闪烁延迟
                                             const preImg = new Image();
                                             preImg.src = (imgSrc && !imgSrc.startsWith('/') && !imgSrc.startsWith('http') && !imgSrc.startsWith('../')) ? '../' + imgSrc : imgSrc;
                                         }
@@ -386,16 +389,14 @@
             document.getElementById('page-indicator').innerText = `${currentSlideIndex + 1} / ${currentSlides.length}`;
         }
 
-        // ✨ 优化点：丝滑的图片悬浮展示逻辑
         function showImg(e, src, word) {
             clearTimeout(hideTimer);
             let imgPath = src;
             if(imgPath && !imgPath.startsWith('/') && !imgPath.startsWith('http') && !imgPath.startsWith('../')) imgPath = '../' + imgPath; 
             
             globalImg.src = imgPath; 
-            imgContainer.style.display = 'block'; // 先设为block计算高宽，此时opacity为0不可见
+            imgContainer.style.display = 'block';
             
-            // 使用 requestAnimationFrame 等待浏览器计算布局后，再定位并展示，消除闪屏
             requestAnimationFrame(() => {
                 const rect = e.target.getBoundingClientRect();
                 let topPos = rect.top - imgContainer.offsetHeight - 10;
@@ -406,7 +407,6 @@
                 imgContainer.style.top = topPos + 'px'; 
                 imgContainer.style.left = leftPos + 'px';
                 
-                // 下一帧开启透明度渐变
                 requestAnimationFrame(() => {
                     imgContainer.style.opacity = '1';
                 });
@@ -425,7 +425,6 @@
         function scheduleHide() { hideTimer = setTimeout(hideImg, 200); }
         function keepImg() { clearTimeout(hideTimer); }
         
-        // ✨ 优化点：平滑隐藏
         function hideImg() { 
             imgContainer.style.opacity = '0';
             setTimeout(() => { 
@@ -450,17 +449,17 @@
             } else if (e.target !== bubble) { bubble.style.display = 'none'; }
         };
 
-        // ✨ 优化点：生成文件名改为 "词语本身.webp"，默认路径指向 sight_words_phrases
+        // 🌟 核心修改：移除 prompt，实现无感静默加注
         function makeHardWord() {
             const autoName = selectedText + ".webp";
-            const imgFile = prompt(`请填写后台的图片路径:`, `../images/sight_words_phrases/${autoName}`);
-            if (imgFile) { 
-                let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); 
-                d[selectedText] = imgFile; 
-                localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); 
-                bubble.style.display = 'none'; 
-                renderSlide(); 
-            }
+            const imgFile = `../images/sight_words_phrases/${autoName}`; // 自动补全路径
+            
+            let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); 
+            d[selectedText] = imgFile; 
+            localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); 
+            
+            bubble.style.display = 'none'; 
+            renderSlide(); 
         }
 
         function closePlay() { 

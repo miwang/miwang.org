@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>数字 11-20 Wang Laoshi</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+<style>
+    /* 强制打印背景色 */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box;
+    }
+
+    @page {
+        size: letter;
+        margin: 0;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f0f3f7;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* 悬浮打印按钮样式 */
+    .print-btn {
+        position: fixed;
+        top: 30px;
+        left: 30px;
+        z-index: 999;
+        padding: 12px 24px;
+        background-color: #f0a832;
+        color: #1a2740;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: "LXGW WenKai Lite", sans-serif;
+        font-size: 1.1rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: transform 0.2s, background-color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .print-btn:hover {
+        background-color: #d4922a;
+        transform: scale(1.05);
+    }
+
+    .print-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* 打印时隐藏按钮 */
+    @media print {
+        .print-btn {
+            display: none !important;
+        }
+        body { background: white; }
+        .page { 
+            box-shadow: none; 
+            margin: 0 auto;
+        }
+    }
+
+    /* 页面容器：缩小绝对高度以适应打印机物理边距 */
+    .page {
+        width: 8.5in;
+        height: 10.3in; /* 从 11in 缩小至 10.3in，留出安全边距防溢出 */
+        background: white;
+        margin: 20px auto;
+        page-break-after: always;
+        page-break-inside: avoid;
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        padding: 0.5in 0 0.2in 0; /* 稍微压缩上下内边距 */
+        position: relative; 
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        overflow: hidden; /* 防止任何子元素撑破容器 */
+    }
+
+    /* 右上角头像 */
+    .avatar-logo {
+        position: absolute;
+        top: 0.4in;
+        right: 0.4in;
+        width: 1.1in; /* 稍微缩小一点点确保安全 */
+        height: auto;
+    }
+    
+    .text-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        gap: 0.05in;
+    }
+
+    .number {
+        font-family: "LXGW WenKai Lite", sans-serif;
+        font-size: 2.6in; 
+        line-height: 0.8;
+        color: #1a2740;
+        text-align: center;
+    }
+    
+    .chinese {
+        font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+        font-size: 1.4in; 
+        line-height: 1;
+        color: #1a2740;
+        text-align: center;
+        margin-bottom: 0.1in;
+    }
+    
+    .ten-frames-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25in; 
+        align-items: center; 
+        margin-top: 0.2in;
+        flex-grow: 1; 
+    }
+    
+    .ten-frame {
+        display: grid;
+        grid-template-columns: repeat(5, 1.2in);
+        grid-template-rows: repeat(2, 1.2in);
+        border: 6px solid #1a2740;
+    }
+    
+    .cell {
+        border: 3px solid #1a2740;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .dot {
+        width: 0.9in; 
+        height: 0.9in;
+        background-color: #1a2740;
+        border-radius: 50%;
+    }
+
+    .footer-text {
+        font-family: "LXGW WenKai Lite", sans-serif;
+        font-size: 0.25in;
+        color: #598586;
+        font-weight: bold;
+        letter-spacing: 0.05in;
+        margin-top: auto;
+    }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+    打印全部页面
+</button>
+
+<div id="app"></div>
+
+<script>
+    const numbersData = [
+        { num: 11, ch: '十一', dots: 11 },
+        { num: 12, ch: '十二', dots: 12 },
+        { num: 13, ch: '十三', dots: 13 },
+        { num: 14, ch: '十四', dots: 14 },
+        { num: 15, ch: '十五', dots: 15 },
+        { num: 16, ch: '十六', dots: 16 },
+        { num: 17, ch: '十七', dots: 17 },
+        { num: 18, ch: '十八', dots: 18 },
+        { num: 19, ch: '十九', dots: 19 },
+        { num: 20, ch: '二十', dots: 20 }
+    ];
+
+    const app = document.getElementById('app');
+
+    numbersData.forEach(data => {
+        let page = document.createElement('div');
+        page.className = 'page';
+
+        let framesHTML = '';
+        let dotsRemaining = data.dots;
+
+        for(let f = 0; f < 2; f++) {
+            framesHTML += '<div class="ten-frame">';
+            for(let c = 0; c < 10; c++) {
+                if(dotsRemaining > 0) {
+                    framesHTML += '<div class="cell"><div class="dot"></div></div>';
+                    dotsRemaining--;
+                } else {
+                    framesHTML += '<div class="cell"></div>';
+                }
+            }
+            framesHTML += '</div>';
+        }
+
+        page.innerHTML = `
+            <img class="avatar-logo" src="../images/avatars/wanglaoshi.webp" alt="Avatar" onerror="this.style.display='none'">
+            <div class="text-container">
+                <div class="number">${data.num}</div>
+                <div class="chinese">${data.ch}</div>
+            </div>
+            <div class="ten-frames-container">${framesHTML}</div>
+            <div class="footer-text">Mi Wang @ MECC 2026</div>
+        `;
+        app.appendChild(page);
+    });
+</script>
+
+</body>
+</html>

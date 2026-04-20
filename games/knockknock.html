@@ -26,243 +26,110 @@
         * { box-sizing: border-box; }
 
         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-            background: var(--cream);
-            font-family: var(--kaiti-font) !important;
+            margin: 0; padding: 0; width: 100%; min-height: 100%;
+            background: var(--cream); font-family: var(--kaiti-font) !important;
             -webkit-font-smoothing: antialiased;
         }
 
-        body {
-            padding-top: var(--nav-h);
-            color: #1e2e46;
-            overflow-x: hidden;
-        }
+        body { padding-top: var(--nav-h); color: #1e2e46; overflow-x: hidden; }
 
-        h1, h2, div, p, button, span, input {
-            font-family: var(--kaiti-font) !important;
-        }
-
-        /* 🌟 新增：英文类，确保能覆盖上面的基础设定 */
-        .font-en {
-            font-family: "LXGW WenKai Lite", sans-serif !important;
-        }
+        h1, h2, div, p, button, span, input { font-family: var(--kaiti-font) !important; }
+        .font-en { font-family: "LXGW WenKai Lite", sans-serif !important; }
 
         .container {
-            min-height: calc(100svh - var(--nav-h));
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 12px 8px;
+            min-height: calc(100svh - var(--nav-h)); width: 100%;
+            display: flex; flex-direction: column; align-items: center; padding: 12px 16px;
         }
 
-        #memory-screen,
-        #play-screen {
-            width: min(100%, 1480px);
-        }
+        #memory-screen, #play-screen { width: min(100%, 1480px); }
 
         #memory-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding-bottom: 4px;
+            display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 8px;
         }
 
         .timer-box {
-            font-size: clamp(1.7rem, 4.2vh, 3.6rem);
-            color: var(--red);
-            font-weight: bold;
-            line-height: 1.05;
-            text-align: center;
+            font-size: clamp(1.8rem, 4.5vh, 4rem);
+            color: var(--red); font-weight: bold; line-height: 1.05; text-align: center;
         }
 
+        /* 🌟 UI 放大：调整了 Grid 间距和卡片内边距 */
         .memory-grid {
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-            align-items: stretch;
+            width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px; align-items: stretch;
         }
 
         .memory-card {
-            background: rgba(255,255,255,0.92);
-            border-radius: 22px;
-            padding: 10px 8px;
-            cursor: pointer;
-            box-shadow: 0 8px 22px rgba(30,46,70,0.07);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: rgba(255,255,255,0.95); border-radius: 24px; padding: 15px 10px;
+            cursor: pointer; box-shadow: 0 10px 25px rgba(30,46,70,0.08);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: transform 0.16s ease, box-shadow 0.16s ease;
-            min-height: 0;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            min-height: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
         }
 
-        .memory-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(30,46,70,0.10);
-        }
+        .memory-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(30,46,70,0.12); border: 2px solid var(--gold); }
+        .memory-card:active { transform: translateY(1px) scale(0.98); }
 
-        .memory-card:active { transform: translateY(1px) scale(0.99); }
-
+        /* 🌟 UI 放大：大幅增加了图片的最大高度 */
         .memory-card img {
-            height: min(16vh, 180px);
-            width: auto;
-            max-width: 100%;
-            object-fit: contain;
-            display: block;
+            height: min(20vh, 220px); width: auto; max-width: 100%; object-fit: contain; display: block;
         }
 
+        /* 🌟 UI 放大：显著增大了记忆阶段的文字字号 */
         .memory-card p {
-            font-size: clamp(1.2rem, 2.9vh, 2.35rem);
-            margin: 4px 0 0;
-            color: #333;
-            font-weight: bold;
-            line-height: 1.08;
+            font-size: clamp(1.5rem, 3.5vh, 2.8rem); margin: 8px 0 0; color: #333; font-weight: bold; line-height: 1.08;
         }
 
         .start-btn {
-            background: linear-gradient(180deg, #2e3f66 0%, #1e2e46 100%);
-            color: var(--gold);
-            border: none;
-            padding: 12px 40px;
-            border-radius: 999px;
-            font-size: clamp(1.2rem, 2.6vh, 1.8rem);
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(30,46,70,0.22);
-            margin-top: 2px;
-            -webkit-tap-highlight-color: transparent;
+            background: linear-gradient(180deg, #2e3f66 0%, #1e2e46 100%); color: var(--gold);
+            border: none; padding: 14px 45px; border-radius: 999px;
+            font-size: clamp(1.3rem, 2.8vh, 2rem); font-weight: bold; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(30,46,70,0.22); margin-top: 10px; -webkit-tap-highlight-color: transparent;
         }
-
         .start-btn:active { transform: translateY(2px); }
 
         #play-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 8px;
-            min-height: calc(100svh - var(--nav-h) - 4px);
-            padding-bottom: var(--bottom-btn-space);
+            display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+            gap: 8px; min-height: calc(100svh - var(--nav-h) - 4px); padding-bottom: var(--bottom-btn-space);
         }
 
-        .status-msg {
-            font-size: clamp(1.55rem, 3.4vh, 2.8rem);
-            color: #333;
-            font-weight: bold;
-            min-height: 1.25em;
-            line-height: 1.08;
-            text-align: center;
-            margin-top: 0;
-            padding: 0 8px;
-        }
+        .status-msg { font-size: clamp(1.55rem, 3.4vh, 2.8rem); color: #333; font-weight: bold; min-height: 1.25em; line-height: 1.08; text-align: center; margin-top: 0; padding: 0 8px; }
 
         .game-stage {
-            position: relative;
-            width: min(98%, 1080px);
-            height: min(40vh, 440px);
-            min-height: 210px;
-            background: url('../images/family/door.webp') no-repeat center bottom;
-            background-size: cover;
-            border: 7px solid var(--teal);
-            border-radius: 32px;
-            box-shadow: 0 10px 24px rgba(30,46,70,0.08);
-            overflow: hidden;
+            position: relative; width: min(98%, 1080px); height: min(40vh, 440px); min-height: 210px;
+            background: url('../images/family/door.webp') no-repeat center bottom; background-size: cover;
+            border: 7px solid var(--teal); border-radius: 32px; box-shadow: 0 10px 24px rgba(30,46,70,0.08); overflow: hidden;
         }
 
         #char-container {
-            position: absolute;
-            bottom: 4%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 95%;
-            opacity: 0;
-            transition: opacity 0.32s ease-out;
-            background-repeat: no-repeat;
-            background-position: bottom center;
-            background-size: contain;
+            position: absolute; bottom: 4%; left: 50%; transform: translateX(-50%); width: 90%; height: 95%;
+            opacity: 0; transition: opacity 0.32s ease-out; background-repeat: no-repeat; background-position: bottom center; background-size: contain;
         }
 
-        .answer-grid {
-            width: min(98%, 1000px);
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
-            align-items: stretch;
-        }
+        .answer-grid { width: min(98%, 1000px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
 
         .ans-btn {
-            background: #f3b236;
-            color: #1e2e46;
-            border: none;
-            padding: 12px 8px;
-            border-radius: 20px;
-            font-size: clamp(1.15rem, 2.2vh, 1.75rem);
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 7px 0 #d49a2a;
-            transition: transform 0.12s ease;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            min-height: 58px;
-            line-height: 1.1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            background: #f3b236; color: #1e2e46; border: none; padding: 12px 8px; border-radius: 20px;
+            font-size: clamp(1.15rem, 2.2vh, 1.75rem); font-weight: bold; cursor: pointer; box-shadow: 0 7px 0 #d49a2a;
+            transition: transform 0.12s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+            min-height: 58px; line-height: 1.1; display: flex; align-items: center; justify-content: center; text-align: center;
         }
-
-        .ans-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 4px 0 #d49a2a;
-        }
-
-        .ans-btn.wrong {
-            background: #ff4757 !important;
-            color: white !important;
-            box-shadow: 0 7px 0 #c0392b !important;
-        }
-
-        .ans-btn.correct {
-            background: #4CAF50 !important;
-            color: white !important;
-            box-shadow: 0 7px 0 #3e8e41 !important;
-        }
+        .ans-btn:active { transform: translateY(3px); box-shadow: 0 4px 0 #d49a2a; }
+        .ans-btn.wrong { background: #ff4757 !important; color: white !important; box-shadow: 0 7px 0 #c0392b !important; }
+        .ans-btn.correct { background: #4CAF50 !important; color: white !important; box-shadow: 0 7px 0 #3e8e41 !important; }
 
         .next-btn {
-            position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: max(2px, env(safe-area-inset-bottom));
-            z-index: 9500;
-            background: linear-gradient(180deg, #2e3f66 0%, #1e2e46 100%);
-            color: var(--gold);
-            border: none;
-            padding: 10px 36px;
-            border-radius: 999px;
-            font-size: clamp(1.1rem, 2.1vh, 1.55rem);
-            font-weight: bold;
-            cursor: pointer;
-            visibility: hidden;
-            box-shadow: 0 8px 18px rgba(30,46,70,0.22);
-            min-width: min(68vw, 340px);
-            -webkit-tap-highlight-color: transparent;
+            position: fixed; left: 50%; transform: translateX(-50%); bottom: max(2px, env(safe-area-inset-bottom));
+            z-index: 9500; background: linear-gradient(180deg, #2e3f66 0%, #1e2e46 100%); color: var(--gold);
+            border: none; padding: 10px 36px; border-radius: 999px; font-size: clamp(1.1rem, 2.1vh, 1.55rem);
+            font-weight: bold; cursor: pointer; visibility: hidden; box-shadow: 0 8px 18px rgba(30,46,70,0.22);
+            min-width: min(68vw, 340px); -webkit-tap-highlight-color: transparent;
         }
-
         .next-btn.show { visibility: visible; }
         .next-btn:active { transform: translateX(-50%) translateY(2px); }
 
         @media (max-width: 980px) {
             .memory-grid, .answer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .memory-card img { height: min(15vh, 132px); }
+            .memory-card img { height: min(18vh, 160px); }
             #play-screen { gap: 6px; padding-bottom: 48px; }
             .game-stage { height: min(28vh, 285px); min-height: 162px; }
             .answer-grid { width: 100%; gap: 10px; grid-auto-rows: 1fr; }
@@ -271,62 +138,29 @@
 
         @media (max-width: 768px) {
             :root { --nav-h: 54px; --bottom-btn-space: 46px; }
-            .container { min-height: calc(100dvh - var(--nav-h)); padding: 5px 10px 6px; }
-            #memory-screen { gap: 6px; justify-content: flex-start; }
-            .timer-box { font-size: clamp(1.3rem, 4.5vw, 2.1rem); }
-            .memory-grid { gap: 8px; }
-            .memory-card { border-radius: 17px; padding: 7px 6px; }
-            .memory-card img { height: min(11vh, 90px); }
-            .memory-card p { font-size: clamp(0.9rem, 5vw, 1.5rem); margin-top: 2px; }
-            .start-btn { width: min(84vw, 320px); padding: 10px 14px; font-size: 1.08rem; }
+            .container { min-height: calc(100dvh - var(--nav-h)); padding: 8px 10px 10px; }
+            #memory-screen { gap: 8px; justify-content: flex-start; }
+            .timer-box { font-size: clamp(1.4rem, 5vw, 2.2rem); }
+            .memory-grid { gap: 12px; }
+            .memory-card { border-radius: 18px; padding: 10px 8px; }
+            .memory-card img { height: min(15vh, 120px); }
+            .memory-card p { font-size: clamp(1.2rem, 6vw, 1.8rem); margin-top: 6px; }
+            .start-btn { width: min(84vw, 320px); padding: 12px 14px; font-size: 1.15rem; }
             #play-screen { gap: 5px; padding-bottom: var(--bottom-btn-space); }
             .status-msg { font-size: clamp(1.04rem, 4.6vw, 1.6rem); min-height: 1.45em; }
             .game-stage { width: 100%; height: min(22vh, 180px); min-height: 128px; border-width: 5px; border-radius: 20px; }
             .answer-grid { gap: 8px; width: 100%; }
             .ans-btn { min-height: clamp(56px, 9.2vh, 88px); padding: 8px 4px; border-radius: 15px; font-size: clamp(1.02rem, 5.8vw, 1.52rem); box-shadow: 0 5px 0 #d49a2a; }
-            .ans-btn.wrong { box-shadow: 0 5px 0 #c0392b !important; }
-            .ans-btn.correct { box-shadow: 0 5px 0 #3e8e41 !important; }
             .next-btn { width: min(78vw, 290px); min-width: 0; padding: 9px 14px; font-size: 1.02rem; bottom: 1px; }
-        }
-
-        @media (max-width: 420px) {
-            .game-stage { height: min(20vh, 165px); }
-            .status-msg { font-size: clamp(0.98rem, 4.5vw, 1.42rem); }
-            .ans-btn { font-size: clamp(0.98rem, 5.5vw, 1.36rem); min-height: clamp(54px, 8.6vh, 78px); }
-        }
-
-        @media (max-height: 820px) && (max-width: 980px) {
-            .container { padding-top: 4px; padding-bottom: 4px; }
-            .timer-box { font-size: clamp(1.2rem, 4vw, 1.85rem); }
-            .memory-card img { height: min(10vh, 82px); }
-            .memory-card p { font-size: clamp(0.88rem, 4.5vw, 1.35rem); }
-            .start-btn { font-size: 1rem; padding: 9px 14px; }
-            #play-screen { gap: 4px; padding-bottom: 42px; }
-            .status-msg { font-size: clamp(0.96rem, 4.2vw, 1.4rem); }
-            .game-stage { height: min(18vh, 150px); min-height: 118px; }
-            .ans-btn { min-height: clamp(50px, 8vh, 68px); padding: 8px 4px; font-size: clamp(0.95rem, 4.6vw, 1.24rem); }
-        }
-
-        @media (min-width: 700px) && (max-width: 1100px) && (max-height: 900px) {
-            .container { padding-top: 4px; }
-            .timer-box { font-size: clamp(1.35rem, 3.2vh, 2rem); }
-            .memory-card img { height: min(10vh, 88px); }
-            .memory-card p { font-size: clamp(0.92rem, 2.5vh, 1.45rem); }
-            .start-btn { padding: 10px 20px; font-size: 1.05rem; }
-            #play-screen { padding-bottom: 44px; }
-            .status-msg { font-size: clamp(1rem, 2.8vh, 1.48rem); }
-            .game-stage { height: min(16vh, 140px); min-height: 114px; }
-            .answer-grid { gap: 8px; }
-            .ans-btn { min-height: clamp(50px, 7vh, 66px); padding: 8px 6px; font-size: clamp(1rem, 2.2vh, 1.3rem); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="memory-screen">
-            <div class="timer-box" id="countdown"></div>
+            <div class="timer-box" id="countdown">正在连接云端家谱...</div>
             <div class="memory-grid" id="memory-grid"></div>
-            <button class="start-btn" id="ui-start-btn" onclick="startGame()"></button>
+            <button class="start-btn" id="ui-start-btn" onclick="startGame()" style="display:none;"></button>
         </div>
 
         <div id="play-screen">
@@ -342,17 +176,19 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: { navTitle: "这是谁？", timer: "倒计时", start: "开始挑战！", next: "下一位家人", success: "你真棒！是", back: "返回工具台", restart: "重新记忆", wrong: "不对哦", allDone: "全认识了！" },
-            en: { navTitle: "Who is it?", timer: "Timer", start: "Start!", next: "Next Person", success: "Great job! It's ", back: "Back to Parents Portal", restart: "Restart", wrong: "Try again", allDone: "Amazing!" }
+            zh: { navTitle: "这是谁？", timer: "倒计时", start: "开始挑战！", next: "下一位", success: "你真棒！是", back: "返回工具台", restart: "重新记忆", wrong: "不对哦", allDone: "全认识了！" },
+            en: { navTitle: "Who is it?", timer: "Timer", start: "Start!", next: "Next Person", success: "Great job! It's ", back: "Back to Dashboard", restart: "Restart", wrong: "Try again", allDone: "Amazing!" }
         }[LANG];
 
-        const members = ['爷爷', '奶奶', '爸爸', '妈妈', '哥哥', '姐姐', '弟弟', '妹妹'];
-        const pinyinMap = {
-            '爷爷':'yeye', '奶奶':'nainai', '爸爸':'baba', '妈妈':'mama',
-            '哥哥':'gege', '姐姐':'jiejie', '弟弟':'didi', '妹妹':'meimei'
-        };
-
+        // 🌟 核心：直连 Sanity 获取数据
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
+        const FAMILY_QUERY = encodeURIComponent('*[_type == "familyMember"] | order(_createdAt asc) {name, "imageUrl": image.asset->url, "audioUrl": audio.asset->url}');
+        const AUDIO_QUERY = encodeURIComponent('*[_type == "gameAudio"][0] {"doorbell": doorbell.asset->url, "correct": correct.asset->url, "wrong": wrong.asset->url}');
+        
+        let familyData = []; // 存储抓取到的家人数据
         let remainingMembers = [];
+        
         let timeLeft = 60;
         let timerId = null;
         let currentTarget = null;
@@ -360,7 +196,9 @@
 
         let audioUnlocked = false;
         let audioCtx = null;
-        const audioUrls = { doorbell: '../audio/doorbell.mp3', correct: '../audio/correct.mp3', wrong: '../audio/wrong.mp3' };
+        
+        // 默认本地回退路径
+        let audioUrls = { doorbell: '../audio/doorbell.mp3', correct: '../audio/correct.mp3', wrong: '../audio/wrong.mp3' };
         const sfxPool = {};
 
         function createAudioPool(name, src, count = 4) {
@@ -400,32 +238,26 @@
             try { a.currentTime = 0; a.play().catch(() => null); } catch (e) {}
         }
 
-        // ==========================================
-        // 🌟 统一的三级音频降级系统 (完全版)
-        // ==========================================
         let globalAudio = null;
 
-        async function sayName(name) {
+        // 🌟 发音引擎更新：接收传入的云端专有音频
+        async function sayName(name, sanityAudioUrl) {
             unlockAudio();
             if (globalAudio) { globalAudio.pause(); globalAudio = null; }
 
-            const localPath = `../audio/${pinyinMap[name]}.mp3`;
+            // 1. 优先使用后台图纸配置的云端音频
+            if (sanityAudioUrl) {
+                globalAudio = new Audio(sanityAudioUrl);
+                await globalAudio.play().catch(e => console.warn("Sanity音频失败", e));
+                return;
+            }
+
             const azureUrl = `/api/tts?text=${encodeURIComponent(name)}`;
 
-            // 闯关 1: 本地录音
+            // 2. Azure 晓晓
             try {
-                const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-                if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                    globalAudio = new Audio(localPath);
-                    await globalAudio.play();
-                    return; 
-                }
-            } catch(e) {}
-
-            // 闯关 2: Azure 晓晓
-            try {
-                const azureRes = await fetch(azureUrl);
-                if (azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+                const azureRes = await fetch(azureUrl).catch(()=>null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
                     const audioBlob = await azureRes.blob();
                     globalAudio = new Audio(URL.createObjectURL(audioBlob));
                     await globalAudio.play();
@@ -433,13 +265,12 @@
                 }
             } catch(e) {}
 
-            // 闯关 3: 兜底系统声音
+            // 3. 系统兜底
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(name);
             utterance.lang = 'zh-CN'; utterance.rate = 0.9;
             window.speechSynthesis.speak(utterance);
         }
-        // ==========================================
 
         function updateCountdown() { document.getElementById('countdown').innerText = `${t.timer}: ${timeLeft}s`; }
 
@@ -464,11 +295,7 @@
             buttons.forEach(btn => btn.style.fontSize = chosen + 'px');
         }
 
-        window.onload = () => {
-            createAudioPool('doorbell', audioUrls.doorbell, 3);
-            createAudioPool('correct', audioUrls.correct, 3);
-            createAudioPool('wrong', audioUrls.wrong, 3);
-
+        window.onload = async () => {
             MECC_CONFIG.renderGlobalNav(t.navTitle);
             const btn = document.querySelector('.mecc-nav-back');
             if (btn) { btn.dataset.mode = 'back'; updateNavBackText(); }
@@ -476,7 +303,6 @@
             document.getElementById('ui-start-btn').innerText = t.start;
             document.getElementById('next-btn').innerText = t.next;
 
-            // 🌟 新增：如果是英文环境，给所有的文字控制 UI 元素动态添加英文字体类
             if (LANG === 'en') {
                 const enElements = ['countdown', 'ui-start-btn', 'msg', 'next-btn'];
                 enElements.forEach(id => {
@@ -485,25 +311,55 @@
                 });
             }
 
-            updateCountdown();
+            // 🌟 核心：并行获取家谱和全局音效
+            try {
+                const [familyRes, audioRes] = await Promise.all([
+                    fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${FAMILY_QUERY}`).then(r => r.json()),
+                    fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${AUDIO_QUERY}`).then(r => r.json())
+                ]);
 
-            document.getElementById('memory-grid').innerHTML = members.map(m => `
-                <div class="memory-card" onclick="sayName('${m}')">
-                    <img src="../images/family/${pinyinMap[m]}.webp" alt="${m}">
-                    <p>${m}</p>
-                </div>`).join('');
+                // 替换全局音效为云端路径（如果存在）
+                if (audioRes.result) {
+                    if (audioRes.result.doorbell) audioUrls.doorbell = audioRes.result.doorbell;
+                    if (audioRes.result.correct) audioUrls.correct = audioRes.result.correct;
+                    if (audioRes.result.wrong) audioUrls.wrong = audioRes.result.wrong;
+                }
 
-            document.getElementById('btn-container').innerHTML = members.map(m => `<button class="ans-btn" onclick="check(this, '${m}')">${m}</button>`).join('');
+                // 实例化音效池
+                createAudioPool('doorbell', audioUrls.doorbell, 3);
+                createAudioPool('correct', audioUrls.correct, 3);
+                createAudioPool('wrong', audioUrls.wrong, 3);
 
-            autoFitAnswerButtons();
+                familyData = familyRes.result || [];
+                if (familyData.length === 0) throw new Error("Empty Data");
+
+                // 渲染记忆卡片（动态图片）
+                document.getElementById('memory-grid').innerHTML = familyData.map(m => `
+                    <div class="memory-card" onclick="sayName('${m.name}', '${m.audioUrl || ''}')">
+                        <img src="${m.imageUrl || 'https://via.placeholder.com/150'}" alt="${m.name}">
+                        <p>${m.name}</p>
+                    </div>`).join('');
+
+                // 渲染答案按钮
+                document.getElementById('btn-container').innerHTML = familyData.map(m => `<button class="ans-btn" onclick="check(this, '${m.name}')">${m.name}</button>`).join('');
+
+                document.getElementById('ui-start-btn').style.display = 'block';
+                updateCountdown();
+                autoFitAnswerButtons();
+
+                timerId = setInterval(() => { timeLeft--; updateCountdown(); if (timeLeft <= 0) startGame(); }, 1000);
+
+            } catch (e) {
+                document.getElementById('countdown').innerText = "加载失败，请检查配置";
+                document.getElementById('countdown').style.color = "var(--teal)";
+            }
+
             window.addEventListener('resize', () => { updateNavBackText(); autoFitAnswerButtons(); });
-
-            timerId = setInterval(() => { timeLeft--; updateCountdown(); if (timeLeft <= 0) startGame(); }, 1000);
             ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => { document.addEventListener(evt, unlockAudio, { passive: true, once: true }); });
         };
 
         function startGame() {
-            unlockAudio(); clearInterval(timerId); remainingMembers = [...members];
+            unlockAudio(); clearInterval(timerId); remainingMembers = [...familyData];
             document.getElementById('memory-screen').style.display = 'none'; document.getElementById('play-screen').style.display = 'flex';
             const btn = document.querySelector('.mecc-nav-back');
             if (btn) { btn.removeAttribute('href'); btn.dataset.mode = 'restart'; updateNavBackText(); btn.onclick = (e) => { e.preventDefault(); location.reload(); }; }
@@ -511,8 +367,10 @@
         }
 
         function nextRound() {
-            if (remainingMembers.length === 0) { alert(t.allDone); remainingMembers = [...members]; }
-            isLocked = false; currentTarget = remainingMembers.splice(Math.floor(Math.random() * remainingMembers.length), 1)[0];
+            if (remainingMembers.length === 0) { alert(t.allDone); remainingMembers = [...familyData]; }
+            isLocked = false; 
+            currentTarget = remainingMembers.splice(Math.floor(Math.random() * remainingMembers.length), 1)[0];
+            
             document.getElementById('msg').innerText = "";
             const charDiv = document.getElementById('char-container');
             charDiv.style.opacity = "0"; charDiv.style.backgroundImage = "none";
@@ -522,13 +380,19 @@
         }
 
         function check(btn, name) {
-            sayName(name);
-            if (name === currentTarget) {
+            const targetData = familyData.find(f => f.name === name);
+            sayName(name, targetData ? targetData.audioUrl : '');
+            
+            if (name === currentTarget.name) {
                 if (!btn.classList.contains('correct')) {
                     btn.classList.add('correct');
                     document.getElementById('msg').innerText = `${t.success}${name}！`; document.getElementById('msg').style.color = "#4CAF50";
+                    
                     const charDiv = document.getElementById('char-container');
-                    charDiv.style.backgroundImage = `url('../images/family/${pinyinMap[name]}.webp')`; charDiv.style.opacity = "1";
+                    // 🌟 动态加载正确人物的云端配图
+                    charDiv.style.backgroundImage = `url('${currentTarget.imageUrl || ''}')`; 
+                    charDiv.style.opacity = "1";
+                    
                     document.getElementById('next-btn').classList.add('show');
                     if (!isLocked) { setTimeout(() => playSfx('correct'), 220); }
                 }

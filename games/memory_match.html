@@ -18,32 +18,40 @@
     
     * { box-sizing: border-box; }
     
-    /* 🌟 核心修复 1：移除 *，换成具体的标签和类名 */
-    body, .instructions, .btn, .game-header, .overlay-text, #ui-continue, .char-card, .memory-card-front, .memory-card-back { 
+    body, .instructions, .btn, .game-header, .overlay-text, #ui-continue, .char-card, .memory-card-front, .memory-card-back, .diff-tab { 
         font-family: var(--kaiti) !important; 
     }
 
-    /* 英文类，优先级可以正常覆盖上面的设定 */
     .font-en { font-family: var(--wenkai) !important; }
     
     body { 
         background-color: #fff9ea; margin: 0; 
         height: 100vh; width: 100vw; 
         overflow: hidden; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        padding-top: 60px; /* 全局导航栏 */
+        display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+        padding-top: 60px; 
     }
 
+    /* 🌟 修复：顶部大片空白消失，改为自然从上往下排布 */
     #setup-view {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         background: transparent; width: 95vw; height: calc(100vh - 60px);
+        padding-top: 3vh; 
     }
     
-    #setup-view .instructions { color: #666; margin: 0 0 2.5vh 0; font-size: 3vh; line-height: 1.6; text-align: center; }
+    #setup-view .instructions { color: #598586; margin: 0 0 2vh 0; font-size: clamp(1.2rem, 2.5vh, 1.8rem); line-height: 1.6; text-align: center; font-weight: bold; }
     
-    .controls { margin-bottom: 3vh; display: flex; gap: 1.5vw; justify-content: center; }
+    /* 🌟 新增：难度选择器 */
+    .diff-tabs { display: flex; gap: 15px; justify-content: center; margin-bottom: 2.5vh; flex-wrap: wrap; }
+    .diff-tab {
+        padding: 10px 24px; border-radius: 30px; background: white; border: 2px solid #ddd;
+        cursor: pointer; transition: 0.2s; color: #888; font-weight: bold; font-size: clamp(1rem, 2.2vh, 1.4rem);
+    }
+    .diff-tab.active { background: #f3b236; color: white; border-color: #d49a2a; box-shadow: 0 4px 12px rgba(243,178,54,0.3); transform: scale(1.05); }
+
+    .controls { margin-bottom: 2.5vh; display: flex; gap: 15px; justify-content: center; }
     .controls .btn {
-        padding: 1.5vh 3vw; font-size: 3vh; background-color: #f8f9fa; color: #555;
+        padding: 1vh 2.5vw; font-size: clamp(1.1rem, 2.5vh, 1.5rem); background-color: #f8f9fa; color: #555;
         border: 2px solid #ddd; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;
     }
     .controls .btn:hover { background-color: #eee; transform: translateY(-2px); }
@@ -52,29 +60,32 @@
 
     #char-grid {
         display: grid; grid-template-columns: repeat(13, 1fr); 
-        gap: 0.7vw; justify-content: center; align-content: center;
+        gap: 0.7vw; justify-content: center; align-content: start;
         padding: 2.5vh 1.5vw; background: rgba(89, 133, 134, 0.05); 
-        border-radius: 16px; width: 94vw; max-width: 1250px; border: 2px dashed #598586;
+        border-radius: 16px; width: 96vw; max-width: 1250px; border: 2px dashed #598586;
+        overflow-y: auto; flex: 1; margin-bottom: 20px;
     }
     .char-card {
         aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
-        font-size: 4.8vh; background-color: white; color: #333; border-radius: 1.2vh;
+        font-size: clamp(1.5rem, 4vh, 2.5rem); background-color: white; color: #333; border-radius: 1.2vh;
         cursor: pointer; transition: all 0.2s; border: 2px solid #eee; 
         box-shadow: 0 4px 8px rgba(0,0,0,0.05); user-select: none;
     }
     .char-card.selected { background-color: #74b9ff; color: white; border: 3px solid #fbc531; transform: scale(1.05); z-index: 2; box-shadow: 0 6px 15px rgba(116, 185, 255, 0.4); }
 
-    #game-view { display: none; width: 100vw; height: calc(100vh - 60px); flex-direction: column; align-items: center; justify-content: center; }
+    #game-view { display: none; width: 100vw; height: calc(100vh - 60px); flex-direction: column; align-items: center; justify-content: center; padding-bottom: 2vh; }
     
-    .game-header { display: flex; justify-content: space-between; width: 85vh; margin-bottom: 2vh; font-size: 3vh; color: #598586; font-weight: bold; }
+    .game-header { display: flex; justify-content: space-between; width: min(95vw, 800px); margin-bottom: 2vh; font-size: clamp(1.2rem, 3vh, 1.8rem); color: #598586; font-weight: bold; }
     
+    /* 🌟 修复：响应式动态棋盘 */
     #memory-board { 
-        display: grid; grid-template-columns: repeat(6, 12.5vh); grid-template-rows: repeat(5, 12.5vh);    
+        display: grid; 
         gap: 1.5vh; justify-content: center; align-content: center;
         background-color: rgba(89, 133, 134, 0.08); padding: 2.5vh; border-radius: 20px;
+        width: min(95vw, 90vh); max-width: 900px;
     }
 
-    .memory-card { width: 100%; height: 100%; perspective: 1000px; cursor: pointer; }
+    .memory-card { width: 100%; aspect-ratio: 1 / 1; perspective: 1000px; cursor: pointer; }
     .memory-card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
     .memory-card.flipped .memory-card-inner { transform: rotateY(180deg); }
     .memory-card.matched { visibility: hidden; opacity: 0; cursor: default; }
@@ -84,9 +95,9 @@
         backface-visibility: hidden; display: flex; justify-content: center; align-items: center;
         border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    .memory-card-front { background-color: #598586; color: white; font-size: 6vh; border: 2px solid #4a6f70; }
+    .memory-card-front { background-color: #598586; color: white; font-size: clamp(2rem, 5vmin, 4rem); border: 2px solid #4a6f70; }
     .memory-card-front:hover { background-color: #6a9c9d; }
-    .memory-card-back { background-color: #fff; color: #333; font-size: 7vh; transform: rotateY(180deg); border: 3px solid #74b9ff; transition: all 0.3s ease; }
+    .memory-card-back { background-color: #fff; color: #333; font-size: clamp(2.5rem, 6vmin, 5rem); font-weight: bold; transform: rotateY(180deg); border: 3px solid #74b9ff; transition: all 0.3s ease; }
 
     .memory-card.active-pick .memory-card-back { border: 4px solid #fbc531; box-shadow: 0 0 20px rgba(251, 197, 49, 0.8); background-color: #fffdf5; transform: rotateY(180deg) scale(1.05); }
 
@@ -98,26 +109,35 @@
     #trophy-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
     .trophy-icon { font-size: 15vh; animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
     @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-    .overlay-text { color: white; font-size: 8vh; font-weight: bold; margin: 2vh 0; }
+    .overlay-text { color: white; font-size: 8vh; font-weight: bold; margin: 2vh 0; text-align: center; }
 
     @media (max-width: 768px) {
-        body { overflow-y: auto; overflow-x: hidden; justify-content: flex-start; height: auto; position: static; padding-top: 56px;}
-        #setup-view { height: auto; justify-content: flex-start; padding-top: 4vh; }
-        #game-view { height: auto; padding-top: 4vh; padding-bottom: 5vh; justify-content: flex-start; }
-        #memory-board { grid-template-columns: repeat(5, 17vw); grid-template-rows: repeat(6, 17vw); width: 95vw; padding: 3vw; }
-        .memory-card-front { font-size: 8vw; }
-        .memory-card-back { font-size: 10vw; border-width: 2px; }
-        .game-header { width: 90vw; font-size: 4vw; margin-top: 2vh; }
+        body { overflow-y: auto; overflow-x: hidden; height: auto; position: static; padding-top: 56px;}
+        #setup-view { height: auto; padding-top: 2vh; min-height: calc(100vh - 56px); overflow: visible; }
+        .diff-tabs { gap: 10px; }
+        .diff-tab { padding: 8px 16px; font-size: 0.95rem; }
+        .controls .btn { padding: 8px 16px; font-size: 1.1rem; }
+        #char-grid { grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 10px; overflow-y: visible; flex: none; }
+        .char-card { font-size: 1.2rem; }
+        #game-view { height: auto; min-height: calc(100vh - 56px); padding-top: 2vh; justify-content: flex-start; }
+        #memory-board { width: 96vw; padding: 2vw; gap: 2vw; }
+        .memory-card-front { font-size: 6vw; }
+        .memory-card-back { font-size: 8vw; border-width: 2px; }
+        .game-header { width: 92vw; margin-top: 1vh; }
     }
 </style>
 </head>
 <body>
 
     <div id="setup-view">
-        <div class="instructions">
-            <span style="color: #ff4757; font-weight: bold;" id="ui-rule">规则：选择 15 个字开始。</span><br>
-            <span style="color: #598586;" id="ui-desc">点击翻开卡片，选出两个相同的字即可消除。</span>
+        <div class="instructions" id="ui-desc">请选择难度，系统会自动从字库中抽取汉字。</div>
+        
+        <div class="diff-tabs font-zh">
+            <div class="diff-tab active" data-diff="easy" onclick="setDiff('easy')">🟢 简单 (4x4)</div>
+            <div class="diff-tab" data-diff="medium" onclick="setDiff('medium')">🟡 中等 (5x4)</div>
+            <div class="diff-tab" data-diff="hard" onclick="setDiff('hard')">🔴 困难 (6x5)</div>
         </div>
+
         <div class="controls">
             <button class="btn" id="btn-all" onclick="selectAll()">全选</button>
             <button class="btn" id="btn-clear" onclick="clearAll()">清空</button>
@@ -128,32 +148,83 @@
 
     <div id="game-view">
         <div class="game-header">
-            <div id="matches-counter">找到对子: 0 / 15</div>
+            <div id="matches-counter">找到对子: 0 / 8</div>
             <div id="moves-counter">匹配尝试: 0</div>
         </div>
         <div id="memory-board"></div>
-        <button class="btn" id="btn-back" style="margin-top:3vh; padding: 1.5vh 3vw; font-size: 2.5vh; border-radius: 40px; cursor: pointer; border: 2px solid #ddd; background: #f8f9fa;" onclick="showSetup()">← 返回修改字库</button>
+        <button class="btn font-zh" id="btn-back" style="margin-top:3vh; padding: 1.5vh 3vw; font-size: 2.5vh; border-radius: 40px; cursor: pointer; border: 2px solid #ddd; background: #f8f9fa;" onclick="showSetup()">← 返回修改字库</button>
     </div>
 
     <div id="trophy-overlay" onclick="closeTrophy()">
         <div class="trophy-icon">🎯</div>
-        <div class="overlay-text" id="overlay-msg">太厉害了！</div>
-        <div style="color:rgba(255,255,255,0.6); font-size: 3vh;" id="ui-continue">点击任意位置继续</div>
+        <div class="overlay-text" id="overlay-msg">你真棒！</div>
+        <div style="color:rgba(255,255,255,0.6); font-size: 3vh;" class="font-zh" id="ui-continue">点击任意位置继续</div>
     </div>
 
 <script>
     const LANG = MECC_CONFIG.getLang();
     const t = {
-        zh: { title: "🃏 汉字连连看", rule: "规则：选择 15 个字开始。", desc: "点击翻开卡片，选出两个相同的字即可消除。", all: "全选", clear: "清空", start: "开始挑战", match: "找到对子: ", move: "匹配尝试: ", back: "返回修改字库", win: "太厉害了！全部找齐！", cont: "点击任意位置继续", alertSelect: "请先在字库中选满 15 个字！", alertTrim: "你选的字太多了，系统将自动使用前 15 个字。" },
-        en: { title: "🃏 Memory Match", rule: "Rule: Select 15 words to begin.", desc: "Flip cards and match the identical ones.", all: "All", clear: "Clear", start: "Start", match: "Matches: ", move: "Moves: ", back: "← Back to Words", win: "Awesome! All matched!", cont: "Tap anywhere to continue", alertSelect: "Please select 15 words first!", alertTrim: "You selected too many. The system will use the first 15." }
+        zh: { title: "🃏 汉字连连看", desc: "请选择难度，然后点击全选。系统会自动抽取汉字！", diffEasy: "🟢 简单 (8对)", diffMedium: "🟡 中等 (10对)", diffHard: "🔴 困难 (15对)", all: "全选", clear: "清空", start: "开始挑战", match: "找到对子: ", move: "匹配尝试: ", back: "返回修改字库", win: "你真棒！", cont: "点击任意位置继续", alertSelect: (n) => `请至少在字库中选择 ${n} 个字哦！`, loadErr: "获取字库失败，请检查网络！" },
+        en: { title: "🃏 Memory Match", desc: "Select a difficulty and pick your words.", diffEasy: "🟢 Easy (8 pairs)", diffMedium: "🟡 Medium (10 pairs)", diffHard: "🔴 Hard (15 pairs)", all: "Select All", clear: "Clear", start: "Start", match: "Matches: ", move: "Moves: ", back: "Back to Words", win: "Awesome! All matched!", cont: "Tap anywhere to continue", alertSelect: (n) => `Please select at least ${n} words!`, loadErr: "Failed to load words." }
     }[LANG];
+
+    // 🌟 难度配置
+    const diffConfig = {
+        'easy':   { pairs: 8,  cols: 4, rows: 4 }, // 4x4 = 16卡片
+        'medium': { pairs: 10, cols: 5, rows: 4 }, // 5x4 = 20卡片
+        'hard':   { pairs: 15, cols: 6, rows: 5 }  // 6x5 = 30卡片
+    };
+    let currentDiff = 'easy';
 
     let fullWordList = [];
     
+    // 🌟 Sanity 音频系统
+    const PROJECT_ID = 'sow12t1i';
+    const DATASET = 'production';
+    const QUERY = encodeURIComponent('*[_type == "word"] | order(_createdAt asc) {char, "audioUrl": audio.asset->url}');
+    const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
+    let sanityAudioMap = {};
+    let globalAudio = new Audio();
+
+    async function playUnifiedAudio(text) {
+        if (!text) return;
+        globalAudio.pause();
+        globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+        globalAudio.play().catch(() => {});
+
+        if (sanityAudioMap[text]) {
+            globalAudio.src = sanityAudioMap[text];
+            await globalAudio.play().catch(e => console.warn("Sanity音频失败", e));
+            return;
+        }
+
+        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+        const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+        try {
+            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
+            if (localRes && localRes.ok && localRes.headers.get('content-type')?.includes('audio')) {
+                globalAudio.src = localPath; await globalAudio.play(); return; 
+            }
+        } catch(e) {}
+
+        try {
+            const azureRes = await fetch(azureUrl).catch(() => null);
+            if (azureRes && azureRes.ok && azureRes.headers.get('content-type')?.includes('audio')) {
+                const audioBlob = await azureRes.blob();
+                globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return; 
+            }
+        } catch(e) {}
+
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-CN'; msg.rate = 0.85; window.speechSynthesis.speak(msg);
+    }
+
     window.onload = async () => {
         MECC_CONFIG.renderGlobalNav(t.title.replace(/🃏/g, '').trim());
         document.getElementById('head-title').innerText = t.title + " - MECC";
-        document.getElementById('ui-rule').innerText = t.rule;
         document.getElementById('ui-desc').innerText = t.desc;
         document.getElementById('btn-all').innerText = t.all;
         document.getElementById('btn-clear').innerText = t.clear;
@@ -161,32 +232,43 @@
         document.getElementById('btn-back').innerText = t.back;
         document.getElementById('ui-continue').innerText = t.cont;
 
-        // 🌟 核心修复 2：英文环境动态添加英文字体类
+        document.querySelector('[data-diff="easy"]').innerText = t.diffEasy;
+        document.querySelector('[data-diff="medium"]').innerText = t.diffMedium;
+        document.querySelector('[data-diff="hard"]').innerText = t.diffHard;
+
         if (LANG === 'en') {
-            const enElements = [
-                'ui-rule', 'ui-desc', 'btn-all', 'btn-clear', 'btn-start', 
-                'btn-back', 'matches-counter', 'moves-counter', 'overlay-msg', 'ui-continue'
-            ];
-            enElements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('font-en');
-            });
+            const enElements = ['ui-desc', 'btn-all', 'btn-clear', 'btn-start', 'btn-back', 'matches-counter', 'moves-counter', 'overlay-msg', 'ui-continue'];
+            enElements.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('font-en'); });
         }
 
         const grid = document.getElementById('char-grid');
-        const savedWords = JSON.parse(localStorage.getItem('memoryMatch15_TeacherWords')) || [];
+        const savedWords = JSON.parse(localStorage.getItem('memoryMatch_TeacherWords')) || [];
         
-        fullWordList = await MECC_DATA.getSightWords();
-        fullWordList.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'char-card font-zh'; card.innerText = item.char;
-            if (savedWords.includes(item.char)) card.classList.add('selected');
-            card.onclick = () => card.classList.toggle('selected');
-            grid.appendChild(card);
-        });
+        try {
+            const res = await fetch(API_URL).then(r => r.json());
+            fullWordList = res.result || [];
+            
+            fullWordList.forEach(item => {
+                if (item.audioUrl) sanityAudioMap[item.char] = item.audioUrl;
+                const card = document.createElement('div');
+                card.className = 'char-card font-zh'; card.innerText = item.char;
+                if (savedWords.includes(item.char)) card.classList.add('selected');
+                card.onclick = () => { MECC_AUDIO.playSfx('swoosh'); playUnifiedAudio(item.char); card.classList.toggle('selected'); };
+                grid.appendChild(card);
+            });
+        } catch (e) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#e74c3c;font-weight:bold;margin-top:20px;">${t.loadErr}</div>`;
+        }
     };
 
     let gameCards = []; let activeCards = []; let matchedPairs = 0; let totalPairs = 0; let moves = 0; let lockBoard = false; 
+
+    function setDiff(level) {
+        currentDiff = level;
+        document.querySelectorAll('.diff-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`[data-diff="${level}"]`).classList.add('active');
+        MECC_AUDIO.playSfx('tada');
+    }
 
     function selectAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.add('selected')); }
     function clearAll() { document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected')); }
@@ -198,15 +280,18 @@
     }
 
     function startGame() {
+        const requiredPairs = diffConfig[currentDiff].pairs;
         const selected = document.querySelectorAll('.char-card.selected');
         let words = Array.from(selected).map(el => el.innerText);
         
-        if (words.length < 15) { alert(`${t.alertSelect}\n(Selected: ${words.length})`); return; }
-        if (words.length > 15) { alert(t.alertTrim); words = words.slice(0, 15); }
+        if (words.length < requiredPairs) { alert(t.alertSelect(requiredPairs)); return; }
         
-        localStorage.setItem('memoryMatch15_TeacherWords', JSON.stringify(words));
-        totalPairs = words.length; matchedPairs = 0; moves = 0; activeCards = []; lockBoard = false;
+        localStorage.setItem('memoryMatch_TeacherWords', JSON.stringify(words));
         
+        // 🌟 核心：打乱选中池，截取当前难度需要的数量
+        words = words.sort(() => Math.random() - 0.5).slice(0, requiredPairs);
+        
+        totalPairs = requiredPairs; matchedPairs = 0; moves = 0; activeCards = []; lockBoard = false;
         updateScoreboard();
 
         document.getElementById('setup-view').style.display = 'none';
@@ -220,7 +305,15 @@
     }
 
     function renderBoard() {
-        const board = document.getElementById('memory-board'); board.innerHTML = '';
+        const board = document.getElementById('memory-board'); 
+        board.innerHTML = '';
+        
+        // 🌟 根据难度动态设定 CSS Grid
+        const cols = diffConfig[currentDiff].cols;
+        const rows = diffConfig[currentDiff].rows;
+        board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
         gameCards.forEach((char) => {
             const card = document.createElement('div'); card.className = 'memory-card'; card.dataset.char = char;
             card.innerHTML = `<div class="memory-card-inner"><div class="memory-card-front font-zh">❓</div><div class="memory-card-back font-zh">${char}</div></div>`;
@@ -230,7 +323,10 @@
 
     function processClick(card) {
         if (lockBoard || card.classList.contains('matched') || card.classList.contains('flipped')) return;
-        MECC_AUDIO.playSfx('swoosh'); 
+        
+        // 点击翻牌时读出声音
+        playUnifiedAudio(card.dataset.char);
+        
         card.classList.add('flipped'); card.classList.add('active-pick'); activeCards.push(card);
 
         if (activeCards.length === 2) { moves++; updateScoreboard(); checkForMatch(); }
@@ -263,7 +359,7 @@
         document.getElementById('moves-counter').innerText = `${t.move}${moves}`;
     }
 
-    function showTrophy() { document.getElementById('overlay-msg').innerText = t.win; document.getElementById('trophy-overlay').style.display = 'flex'; }
+    function showTrophy() { document.getElementById('overlay-msg').innerText = t.win; document.getElementById('trophy-overlay').style.display = 'flex'; playUnifiedAudio("你真棒！"); }
     function closeTrophy() { document.getElementById('trophy-overlay').style.display = 'none'; showSetup(); }
 </script>
 </body>

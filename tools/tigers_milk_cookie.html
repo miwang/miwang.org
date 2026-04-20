@@ -61,19 +61,22 @@
         .attendance-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(80px, 10vw, 120px), 1fr));
             gap: clamp(8px, 1.2vw, 16px); width: 100%; max-width: 1400px; padding: 10px; justify-content: center;
+            overflow-y: auto; max-height: calc(100vh - 160px); align-content: start;
         }
         .student-card {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center;
             cursor: pointer; background: white; border-radius: 10px; padding: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 2px solid transparent;
-            font-weight: bold; font-size: clamp(0.8rem, 1.3vw, 1.1rem); transition: all 0.18s ease;
+            font-weight: bold; font-size: clamp(0.8rem, 1.3vw, 1.1rem); transition: all 0.18s ease; height: 100%;
         }
-        .student-card img { width: clamp(50px, 6vw, 75px); height: clamp(50px, 6vw, 75px); border-radius: 50%; object-fit: cover; background: #ddd; margin-bottom: 6px; }
+        .student-card img { width: clamp(50px, 6vw, 75px); height: clamp(50px, 6vw, 75px); border-radius: 50%; object-fit: cover; background: #eee; margin-bottom: 6px; }
         .student-card.absent { opacity: 0.3; filter: grayscale(100%); background: #eee; transform: scale(0.95); }
         .btn-finished {
             font-size: 1.5rem; padding: 12px 40px; background-color: #4CAF50; color: white; border:none; border-radius: 8px;
             font-weight: bold; cursor: pointer; white-space: nowrap; font-family: var(--font-main) !important;
+            box-shadow: 0 4px 0 #388E3C; transition: 0.1s;
         }
+        .btn-finished:active { transform: translateY(4px); box-shadow: none; }
 
         #pairing-section { display: none; flex-grow: 1; flex-direction: column; padding: 5px; position: relative; }
         #pairs-container {
@@ -89,11 +92,10 @@
         .role-box {
             flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
             border-radius: 8px; position: relative; gap: 4px; border: 3px solid transparent;
-            transition: none;
-            transform: translateZ(0);
+            transition: none; transform: translateZ(0);
         }
         .role-box img {
-            width: min(14vh, 120px); height: min(14vh, 120px); border-radius: 50%; object-fit: cover;
+            width: min(14vh, 120px); height: min(14vh, 120px); border-radius: 50%; object-fit: cover; background: #eee;
             border: 4px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.08); display: block; z-index: 5;
         }
         .target-img { visibility: hidden; }
@@ -101,16 +103,9 @@
             font-size: clamp(1.1rem, 2.4vh, 1.7rem); font-weight: bold; margin-top: 2px; line-height: 1; white-space: nowrap; z-index: 5; text-align: center;
         }
         .role-icon {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            font-size: clamp(1.35rem, 2.7vh, 1.9rem);
-            line-height: 1;
-            z-index: 8;
-            pointer-events: none;
-            user-select: none;
-            opacity: 0.98;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18));
+            position: absolute; top: 8px; left: 8px; font-size: clamp(1.35rem, 2.7vh, 1.9rem);
+            line-height: 1; z-index: 8; pointer-events: none; user-select: none;
+            opacity: 0.98; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18));
         }
         .milk-side { background-color: var(--milk-color); color: #0D47A1; }
         .cookie-side { background-color: var(--cookie-color); color: #E65100; }
@@ -129,7 +124,7 @@
         .vs-text { font-size: clamp(0.8rem, 2vh, 1.2rem); color: #ccc; font-weight: bold; width: 40px; flex-shrink: 0; text-align: center; }
 
         .flying-avatar {
-            position: absolute; width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 3px solid white;
+            position: absolute; width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 3px solid white; background:#eee;
             box-shadow: 0 6px 16px rgba(0,0,0,0.22); z-index: 9999; pointer-events: none; left: 0; top: 0;
             transform: translate3d(var(--start-x), var(--start-y), 0) scale(0.12);
             transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.12s ease;
@@ -146,15 +141,20 @@
             .nav-btn { padding: 7px 10px; font-size: 0.82rem; }
             .nav-btn svg { width: 14px; height: 14px; }
             .nav-btn.center-btn { min-width: 170px; font-size: 0.95rem; }
+            .attendance-grid { padding-bottom: 20px; }
         }
     </style>
 </head>
 <body>
     <div id="attendance-section">
-        <h1>🐯 老虎班今天谁没有来？</h1>
-        <div class="attendance-grid" id="student-grid"></div>
-        <div style="margin-top: 8px;">
-            <button class="btn-finished" onclick="startGroupingWithAnimation()">点名完成，开始分组</button>
+        <h1 id="main-title">🐯 老虎班今天谁没有来？</h1>
+        <div class="attendance-grid" id="student-grid">
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #3949AB; font-size: 1.2rem;">
+                正在连接云端获取老虎班学生档案...
+            </div>
+        </div>
+        <div style="margin-top: 15px; padding-bottom: 10px;">
+            <button class="btn-finished" id="btn-start-group" style="display:none;" onclick="startGroupingWithAnimation()">点名完成，开始分组</button>
         </div>
     </div>
 
@@ -164,32 +164,22 @@
     </div>
 
     <script>
-        const allStudents = [
-            { id: 1, name: "寇令怡", img: "../images/avatars/tigers 25-26/Alivia.webp" },
-            { id: 2, name: "潘佳媛", img: "../images/avatars/tigers 25-26/Amayra.webp" },
-            { id: 3, name: "罗燕婉", img: "../images/avatars/tigers 25-26/Ariah.webp" },
-            { id: 4, name: "高  叶", img: "../images/avatars/tigers 25-26/Avya.webp" },
-            { id: 5, name: "冉未央", img: "../images/avatars/tigers 25-26/Avyan.webp" },
-            { id: 6, name: "金博雷", img: "../images/avatars/tigers 25-26/Bradley.webp" },
-            { id: 7, name: "董小小", img: "../images/avatars/tigers 25-26/Charlotte.webp" },
-            { id: 8, name: "康佳明", img: "../images/avatars/tigers 25-26/Dakota.webp" },
-            { id: 9, name: "白芮萌", img: "../images/avatars/tigers 25-26/Emerson.webp" },
-            { id: 10, name: "窦文怡", img: "../images/avatars/tigers 25-26/Everleigh D.webp" },
-            { id: 11, name: "芮依晨", img: "../images/avatars/tigers 25-26/Everleigh R.webp" },
-            { id: 12, name: "何佳莹", img: "../images/avatars/tigers 25-26/Gabri'ella.webp" },
-            { id: 13, name: "万家火", img: "../images/avatars/tigers 25-26/Gabriel.webp" },
-            { id: 14, name: "况何夕", img: "../images/avatars/tigers 25-26/Hadley.webp" },
-            { id: 15, name: "阮看山", img: "../images/avatars/tigers 25-26/Kimani.webp" },
-            { id: 16, name: "莫若兰", img: "../images/avatars/tigers 25-26/Leyla.webp" },
-            { id: 17, name: "兰琦玉", img: "../images/avatars/tigers 25-26/Luke.webp" },
-            { id: 18, name: "潘美伦", img: "../images/avatars/tigers 25-26/Ma'Laysia.webp" },
-            { id: 19, name: "罗大韦", img: "../images/avatars/tigers 25-26/Maxwell.webp" },
-            { id: 20, name: "杜  坤", img: "../images/avatars/tigers 25-26/Nikolas.webp" },
-            { id: 21, name: "唐花花", img: "../images/avatars/tigers 25-26/Scarlet.webp" },
-            { id: 22, name: "吴若即", img: "../images/avatars/tigers 25-26/Taraji.webp" },
-            { id: 23, name: "裴  同", img: "../images/avatars/tigers 25-26/Thomas.webp" },
-            { id: 24, name: "段卫龙", img: "../images/avatars/tigers 25-26/Waylon.webp" }
-        ];
+        // 🌟 自动计算当前学年逻辑
+        const now = new Date();
+        const currentMonth = now.getMonth(); // 0 = 1月, 11 = 12月
+        const currentYear = now.getFullYear();
+        // 美国通常 8月(month>=7) 开始新学年
+        const startYear = currentMonth >= 7 ? currentYear : currentYear - 1;
+        const endYear = startYear + 1;
+        const academicYearStr = `${startYear.toString().slice(-2)}-${endYear.toString().slice(-2)}`;
+
+        // 🌟 动态拼接云端查询语句
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
+        const QUERY = encodeURIComponent(`*[_type == "student" && className == "tiger" && academicYear == "${academicYearStr}"] | order(_createdAt asc) { "id": _id, name, "img": avatar.asset->url }`);
+        const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
+        let allStudents = [];
         let presentStudents = [], currentPairs = [], turnState = 0;
 
         const ICONS = {
@@ -199,8 +189,12 @@
             switch: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`
         };
 
-        window.onload = () => {
+        window.onload = async () => {
             MECC_CONFIG.renderGlobalNav("老虎班牛奶饼干分组");
+            
+            // 🌟 动态更新标题显示当前学年
+            document.getElementById('main-title').innerHTML = `🐯 老虎班今天谁没有来？ <span style="font-size:1.1rem; color:#888;">(${academicYearStr}学年)</span>`;
+
             const nav = document.querySelector('.mecc-global-nav');
             const controls = document.createElement('div');
             controls.className = 'nav-controls';
@@ -211,7 +205,21 @@
                 <button class="nav-btn" onclick="reshuffleWithAnimation()">${ICONS.shuffle}<span>重新组合</span></button>
             `;
             nav.appendChild(controls);
-            renderAttendance();
+
+            // 🌟 请求 Sanity 数据
+            try {
+                const res = await fetch(API_URL).then(r => r.json());
+                allStudents = res.result || [];
+                
+                if(allStudents.length === 0) {
+                    document.getElementById('student-grid').innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #e74c3c; font-size: 1.2rem;">${academicYearStr} 学年还没有老虎班的学生哦，请去 Sanity 后台添加！</div>`;
+                } else {
+                    renderAttendance();
+                    document.getElementById('btn-start-group').style.display = 'block';
+                }
+            } catch(e) {
+                document.getElementById('student-grid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #e74c3c; font-size: 1.2rem;">获取学生名单失败，请检查网络。</div>';
+            }
         };
 
         function renderAttendance() {
@@ -220,7 +228,8 @@
             allStudents.forEach(student => {
                 const div = document.createElement('div');
                 div.className = `student-card ${student.isAbsent ? 'absent' : ''}`;
-                div.innerHTML = `<img src="${student.img}" onerror="this.src='https://via.placeholder.com/60'"><div>${student.name}</div>`;
+                const imgUrl = student.img || 'https://via.placeholder.com/150/EEEEEE/999999?text=🧑';
+                div.innerHTML = `<img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150/EEEEEE/999999?text=🧑'"><div>${student.name}</div>`;
                 div.onclick = () => {
                     div.classList.toggle('absent');
                     student.isAbsent = div.classList.contains('absent');
@@ -231,7 +240,7 @@
 
         function startGroupingWithAnimation() {
             presentStudents = allStudents.filter(s => !s.isAbsent);
-            if (presentStudents.length < 2) return alert("人数不足！");
+            if (presentStudents.length < 2) return alert("人数不足！请至少保证 2 人在场。");
             document.getElementById('attendance-section').style.display = 'none';
             document.getElementById('pairing-section').style.display = 'flex';
             document.querySelector('.mecc-nav-title').style.display = 'none';
@@ -258,25 +267,29 @@
             container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
             currentPairs.forEach(pair => {
+                const img0 = pair[0].img || 'https://via.placeholder.com/150/EEEEEE/999999?text=🧑';
+                const img1 = pair[1].img || 'https://via.placeholder.com/150/EEEEEE/999999?text=🧑';
+                
                 let html = `
                     <div class="pair-card">
                         <div class="role-box milk-side">
                             <span class="role-icon">🥛</span>
-                            <img src="${pair[0].img}" id="target-img-${pair[0].id}" class="target-img">
+                            <img src="${img0}" id="target-img-${pair[0].id}" class="target-img">
                             <div class="role-name">${pair[0].name}</div>
                         </div>
                         <div class="vs-text">VS</div>
                         <div class="role-box cookie-side">
                             <span class="role-icon">🍪</span>
-                            <img src="${pair[1].img}" id="target-img-${pair[1].id}" class="target-img">
+                            <img src="${img1}" id="target-img-${pair[1].id}" class="target-img">
                             <div class="role-name">${pair[1].name}</div>
                         </div>
                 `;
                 if (pair.length === 3) {
+                    const img2 = pair[2].img || 'https://via.placeholder.com/150/EEEEEE/999999?text=🧑';
                     html += `
                         <div class="role-box cookie-side" style="margin-left:4px">
                             <span class="role-icon">🍪</span>
-                            <img src="${pair[2].img}" id="target-img-${pair[2].id}" class="target-img">
+                            <img src="${img2}" id="target-img-${pair[2].id}" class="target-img">
                             <div class="role-name">${pair[2].name}</div>
                         </div>
                     `;
@@ -306,7 +319,7 @@
             const flyingEls = [];
             targetsData.forEach((item, i) => {
                 const avatar = document.createElement('img');
-                avatar.src = item.avatarUrl;
+                avatar.src = item.avatarUrl || 'https://via.placeholder.com/150/EEEEEE/999999?text=🧑';
                 avatar.className = 'flying-avatar';
                 const t = item.tRect;
                 const targetX = t.left - rect.left + t.width / 2 - 32;

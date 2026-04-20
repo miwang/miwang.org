@@ -17,14 +17,11 @@
             --wenkai: "LXGW WenKai Lite", sans-serif;
         }
 
-        /* --- 优化后的字体规则 --- */
-        /* 默认使用楷体，但不使用 * 通配符强制覆盖所有元素 */
         body, .instruction, .block, .shadow-text, .bubble-text { 
             font-family: var(--kaiti) !important; 
             font-weight: bold; 
         }
 
-        /* 英文专用类：确保优先级高于上面的默认规则 */
         .font-en { 
             font-family: var(--wenkai) !important; 
         }
@@ -72,8 +69,21 @@
         .train-car::after, .train-car::before { content: ""; position: absolute; bottom: -16px; width: 22px; height: 22px; background: #333; border: 3px solid #ccc; border-radius: 50%; }
         .train-car::before { left: 15px; } .train-car::after { right: 15px; }
 
+        /* 🌟 新增：放错位置时的晃动特效 */
+        .wrong-car-anim { 
+            animation: carShake 0.4s cubic-bezier(.36,.07,.19,.97) both; 
+            border-color: #ff4757 !important; 
+            background-color: #ffebee !important;
+        }
+        @keyframes carShake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
         .shadow-text { font-size: clamp(2rem,5vw,3rem); color: rgba(255,255,255,0.3); }
-        .train-car.filled { background: #4caf50; transform: scale(1.04); }
+        .train-car.filled { background: #4caf50; transform: scale(1.04); border-color: #fff !important; }
         .bubble { position: absolute; top: -115px; background: white; padding: 6px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 6px 15px rgba(0,0,0,0.15); opacity: 0; transform: translateY(15px); transition: 0.4s ease-out; pointer-events: none; min-width: 80px; }
         .bubble img { width: 75px; height: 75px; border-radius: 8px; object-fit: contain; margin-bottom: 4px; }
         .bubble-text { font-size: 1rem; color: #e91e63; }
@@ -102,7 +112,7 @@
 <body>
 
     <div id="game-wrapper">
-        <div class="instruction" id="ui-instruction">请把中文四会字放到火车上。</div>
+        <div class="instruction" id="ui-instruction">正在连接云端字库...</div>
         <div id="blocks-container"></div>
         <div id="train-track-wrapper">
             <div id="train-container">
@@ -114,35 +124,44 @@
 
 <script>
     let fullWordList = [];
+    let sanityAudioMap = {};
+    let globalWrongAudioUrl = ''; // 存储云端放错音效
+
     const LANG = MECC_CONFIG.getLang();
     const t = {
-        zh: { title: "🚂 魔法识字小火车", instruction: "请把四会字放到火车上。", winMsg: "呜呜呜！小火车出发啦！" },
-        en: { title: "🚂 Magic Word Train", instruction: "Drag the characters onto the train.", winMsg: "Choo choo! The train is departing!" }
+        zh: { title: "🚂 魔法识字小火车", instruction: "请把四会字放到火车上。", winMsg: "呜呜呜！小火车出发啦！", wrong: "放错位置了哦！" },
+        en: { title: "🚂 Magic Word Train", instruction: "Drag the characters onto the train.", winMsg: "Choo choo! The train is departing!", wrong: "Try again!" }
     }[LANG];
+
+    const PROJECT_ID = 'sow12t1i';
+    const DATASET = 'production';
+    // 🌟 获取字词数据的同时，获取全局游戏音效中的 wrong 音效
+    const QUERY = encodeURIComponent(`{
+      "words": *[_type == "word"] | order(_createdAt asc) {
+        char, phrases, "audioUrl": audio.asset->url, phrase_list[]{text, "imageUrl": image.asset->url}
+      },
+      "audio": *[_type == "gameAudio"][0] {"wrong": wrong.asset->url}
+    }`);
+    const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
 
     let globalAudio = new Audio();
 
-    async function playUnifiedAudio(text) {
-        if (!text) return;
+    async function playUnifiedAudio(text, sanityAudioUrl) {
+        if (!text && !sanityAudioUrl) return;
         globalAudio.pause();
         globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
         globalAudio.play().catch(() => {});
 
-        const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+        if (sanityAudioUrl) {
+            globalAudio.src = sanityAudioUrl;
+            await globalAudio.play().catch(e => console.warn("播放失败", e));
+            return;
+        }
+
         const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
-
-        try {
-            const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
-            if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                globalAudio.src = localPath;
-                await globalAudio.play();
-                return; 
-            }
-        } catch(e) {}
-
         try {
             const azureRes = await fetch(azureUrl).catch(() => null);
-            if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
+            if (azureRes && azureRes.ok && azureRes.headers.get('content-type')?.includes('audio')) {
                 const audioBlob = await azureRes.blob();
                 globalAudio.src = URL.createObjectURL(audioBlob);
                 await globalAudio.play();
@@ -152,29 +171,53 @@
 
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+        msg.lang = 'zh-CN'; msg.rate = 0.85;
         window.speechSynthesis.speak(msg);
     }
 
-    document.addEventListener('touchstart', () => {
-        new Audio('data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA').play().catch(() => {});
-    }, { passive: true, once: true });
+    // 🌟 播放放错位置的反馈音效
+    function playWrongSfx() {
+        if (globalWrongAudioUrl) {
+            const wrongAudio = new Audio(globalWrongAudioUrl);
+            wrongAudio.play().catch(() => {});
+        } else {
+            // 兜底本地音效
+            const localWrong = new Audio('../audio/wrong.mp3');
+            localWrong.play().catch(() => {});
+        }
+    }
 
     window.onload = async () => {
         MECC_CONFIG.renderGlobalNav(t.title.replace(/🚂/g, '').trim());
         document.getElementById('head-title').innerText = t.title + " - MECC";
         
-        // 🌟 核心修复：处理提示文字及其字体
-        const instructionEl = document.getElementById('ui-instruction');
-        instructionEl.innerText = t.instruction;
-        if (LANG === 'en') {
-            instructionEl.classList.add('font-en');
-        } else {
-            instructionEl.classList.remove('font-en');
-        }
+        try {
+            const res = await fetch(API_URL).then(r => r.json());
+            const list = res.result.words || [];
+            globalWrongAudioUrl = res.result.audio?.wrong || ''; // 🌟 获取云端音效
+            
+            list.forEach(item => {
+                if (item.audioUrl) sanityAudioMap[item.char] = item.audioUrl;
+                let phraseText = item.char;
+                let phraseImg = '';
+                
+                if (item.phrase_list && item.phrase_list.length > 0) {
+                    phraseText = item.phrase_list[0].text || item.char;
+                    phraseImg = item.phrase_list[0].imageUrl || '';
+                } else if (item.phrases && typeof item.phrases === 'string') {
+                    phraseText = item.phrases.split(/[,，、]/)[0].trim();
+                }
+                
+                fullWordList.push({ char: item.char, phrase: phraseText, phraseImg: phraseImg });
+            });
 
-        fullWordList = await MECC_DATA.getSightWords();
-        if (fullWordList.length > 0) startGame();
+            document.getElementById('ui-instruction').innerText = t.instruction;
+            if (LANG === 'en') document.getElementById('ui-instruction').classList.add('font-en');
+
+            if (fullWordList.length > 0) startGame();
+        } catch (e) {
+            document.getElementById('ui-instruction').innerText = "加载失败，请重试。";
+        }
     };
 
     function startGame() {
@@ -193,13 +236,11 @@
         selected.forEach(word => {
             const car = document.createElement('div');
             car.className = 'train-car'; car.dataset.char = word.char;
-            const phrase = word.phrases ? word.phrases.split(',')[0].trim() : word.char;
-            const imgPath = `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${phrase}.webp`;
-            car.innerHTML = `<div class="bubble"><img src="${imgPath}" onerror="this.style.display='none';"><span class="bubble-text">${phrase}</span></div><div class="shadow-text">${word.char}</div>`;
-            car.style.touchAction = 'manipulation';
+            const imgPath = word.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.phrase}.webp`;
+            car.innerHTML = `<div class="bubble"><img src="${imgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><div class="shadow-text">${word.char}</div>`;
+            car.addEventListener('click', onCarClick);
             car.ondragover = e => e.preventDefault();
             car.ondrop = handleDrop;
-            car.addEventListener('click', onCarClick);
             tc.insertBefore(car, tc.querySelector('.locomotive'));
         });
 
@@ -207,12 +248,8 @@
             wrapper.style.transition = 'transform 2s cubic-bezier(0.45, 0.05, 0.55, 0.95)';
             wrapper.style.transform = 'translateX(0)';
             selected.sort(() => 0.5 - Math.random()).forEach(word => {
-                const phrase = word.phrases ? word.phrases.split(',')[0].trim() : word.char;
                 const b = document.createElement('div');
-                b.className = 'block';
-                b.innerText = word.char;
-                b.dataset.phrase = phrase;
-                b.style.touchAction = 'manipulation';
+                b.className = 'block'; b.innerText = word.char; b.dataset.phrase = word.phrase;
                 b.draggable = true;
                 b.ondragstart = e => e.dataTransfer.setData('text', word.char);
                 b.addEventListener('click', onBlockClick);
@@ -226,33 +263,45 @@
     let selectedBlock = null;
     const ghost = document.getElementById('drag-ghost');
 
-    function fillCar(car, char, block) {
-        if (car.dataset.char !== char || car.classList.contains('filled')) return false;
-        car.classList.add('filled');
-        block.style.visibility = 'hidden';
-        block.style.boxShadow  = '';
-        checkWin();
-        return true;
+    // 🌟 增强版反馈函数：支持成功与失败
+    function tryFillCar(car, char, block) {
+        if (car.classList.contains('filled')) return;
+
+        if (car.dataset.char === char) {
+            // 成功逻辑
+            car.classList.add('filled');
+            block.style.visibility = 'hidden';
+            block.style.boxShadow  = '';
+            const phrase = block.dataset.phrase || char;
+            if (phrase === char) {
+                playUnifiedAudio(char, sanityAudioMap[char]);
+            } else {
+                playUnifiedAudio(`${phrase}的${char}`);
+            }
+            checkWin();
+        } else {
+            // 🌟 失败反馈：播放错音效并触发晃动动画
+            playWrongSfx();
+            car.classList.add('wrong-car-anim');
+            setTimeout(() => car.classList.remove('wrong-car-anim'), 450);
+        }
     }
 
     function onBlockClick(e) {
-        const block  = e.currentTarget;
+        const block = e.currentTarget;
         if (block.style.visibility === 'hidden') return;
         document.querySelectorAll('.block').forEach(b => {
             if (b.style.visibility !== 'hidden') b.style.boxShadow = '0 6px 0 #fbc02d, 0 10px 15px rgba(0,0,0,0.1)';
         });
-        selectedChar   = block.innerText;
-        selectedBlock  = block;
+        selectedChar = block.innerText;
+        selectedBlock = block;
         block.style.boxShadow = '0 0 0 5px #ff5722, 0 0 20px rgba(255,87,34,0.5)';
-        playUnifiedAudio(selectedChar);
+        playUnifiedAudio(selectedChar, sanityAudioMap[selectedChar]);
     }
 
     function onCarClick(e) {
         if (!selectedChar || !selectedBlock) return;
-        const phrase = selectedBlock.dataset.phrase || selectedChar;
-        if (fillCar(e.currentTarget, selectedChar, selectedBlock)) {
-            playUnifiedAudio(phrase === selectedChar ? selectedChar : `${phrase}的${selectedChar}`);
-        }
+        tryFillCar(e.currentTarget, selectedChar, selectedBlock);
         document.querySelectorAll('.block').forEach(b => {
             if (b.style.visibility !== 'hidden') b.style.boxShadow = '0 6px 0 #fbc02d, 0 10px 15px rgba(0,0,0,0.1)';
         });
@@ -260,76 +309,56 @@
     }
 
     function onTouchStart(e) {
-        const block  = e.currentTarget;
+        const block = e.currentTarget;
         if (block.style.visibility === 'hidden') return;
-        const char   = block.innerText;
-        const phrase = block.dataset.phrase || char;
-        
-        playUnifiedAudio(char);
+        const char = block.innerText;
+        playUnifiedAudio(char, sanityAudioMap[char]);
 
-        const startX = e.touches[0].clientX;
-        const startY = e.touches[0].clientY;
+        const startX = e.touches[0].clientX, startY = e.touches[0].clientY;
         let isDragging = false;
 
         const onMove = (me) => {
-            const dx = me.touches[0].clientX - startX;
-            const dy = me.touches[0].clientY - startY;
+            const dx = me.touches[0].clientX - startX, dy = me.touches[0].clientY - startY;
             if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
                 isDragging = true;
-                ghost.innerText = char;
-                ghost.style.display = 'flex';
+                ghost.innerText = char; ghost.style.display = 'flex';
             }
             if (isDragging) {
                 me.preventDefault();
-                moveGhost(me.touches[0].clientX, me.touches[0].clientY);
-                const el  = document.elementFromPoint(me.touches[0].clientX, me.touches[0].clientY);
-                document.querySelectorAll('.train-car').forEach(c => c.style.outline = '');
-                const car = el && el.closest('.train-car');
-                if (car && !car.classList.contains('filled')) car.style.outline = '3px solid #ffeb3b';
+                ghost.style.left = me.touches[0].clientX + 'px';
+                ghost.style.top = me.touches[0].clientY + 'px';
             }
         };
 
         const onEnd = (ue) => {
             document.removeEventListener('touchmove', onMove);
             ghost.style.display = 'none';
-            document.querySelectorAll('.train-car').forEach(c => c.style.outline = '');
             if (isDragging) {
                 const touch = ue.changedTouches[0];
-                const el    = document.elementFromPoint(touch.clientX, touch.clientY);
-                const car   = el && el.closest('.train-car');
-                if (car && fillCar(car, char, block)) {
-                    playUnifiedAudio(phrase === char ? char : `${phrase}的${char}`);
-                }
+                const el = document.elementFromPoint(touch.clientX, touch.clientY);
+                const car = el && el.closest('.train-car');
+                if (car) tryFillCar(car, char, block);
             }
         };
-
         document.addEventListener('touchmove', onMove, { passive: false });
-        document.addEventListener('touchend',  onEnd,  { once: true });
-    }
-
-    function moveGhost(x, y) {
-        ghost.style.left = x + 'px';
-        ghost.style.top  = y + 'px';
+        document.addEventListener('touchend', onEnd, { once: true });
     }
 
     function handleDrop(e) {
-        const char  = e.dataTransfer.getData('text');
+        e.preventDefault();
+        const char = e.dataTransfer.getData('text');
         const block = [...document.querySelectorAll('.block')].find(b => b.innerText === char && b.style.visibility !== 'hidden');
-        if (!block) return;
-        const phrase = block.dataset.phrase || char;
-        if (fillCar(this, char, block)) {
-            playUnifiedAudio(phrase === char ? char : `${phrase}的${char}`);
-        }
+        if (block) tryFillCar(this, char, block);
     }
 
     function checkWin() {
         if (document.querySelectorAll('.train-car.filled').length === MECC_CONFIG.GAME.TRAIN_LENGTH) {
             setTimeout(() => {
                 MECC_UI.fireConfetti();
-                playUnifiedAudio(LANG === 'en' ? '太棒了！' : t.winMsg);
+                playUnifiedAudio(t.winMsg);
                 document.getElementById('train-track-wrapper').classList.add('train-departing');
-                setTimeout(startGame, MECC_CONFIG.GAME.AUTO_NEXT_DELAY);
-            }, 3500);
+                setTimeout(startGame, 4500);
+            }, 3000);
         }
     }
 </script>

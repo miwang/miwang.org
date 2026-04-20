@@ -13,10 +13,7 @@
     <style>
         :root { --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif; --wenkai: "LXGW WenKai Lite", sans-serif; --main-teal: #598586; --accent-yellow: #f3b236; }
         
-        /* 🌟 核心修复 1：移除 *，换成具体的标签和类名，并加上 .char-circle 保证汉字不受影响 */
         body, h1, h2, .btn, .char-card, .char-circle, .name, #result-text { font-family: var(--kaiti) !important; font-weight: bold; }
-        
-        /* 英文类，优先级可以正常覆盖上面的设定 */
         .score, .font-en { font-family: var(--wenkai) !important; }
         
         body { margin: 0; padding: 0; background-color: #1f2e46; color: white; overflow: auto; display: flex; flex-direction: column; align-items: center; min-height: 100vh; width: 100vw; user-select: none; padding-top: 60px; }
@@ -42,9 +39,22 @@
         .card-container { position: relative; width: clamp(120px, 18vw, 220px); height: clamp(120px, 18vw, 220px); }
         .char-circle { position: absolute; inset: 0; background-color: var(--main-teal); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 8rem; color: var(--accent-yellow); cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border: 5px solid transparent; transition: 0.2s; }
         .char-circle:hover { transform: translateY(-10px); border-color: var(--accent-yellow); }
+        
+        /* 变红变绿动画保留 */
+        .correct-anim { border-color: #2ecc71 !important; color: #2ecc71 !important; transform: scale(1.15); box-shadow: 0 15px 35px rgba(46, 204, 113, 0.5); z-index: 10; }
+        .wrong-anim { animation: wrongShake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff4757 !important; color: #ff4757 !important; }
+        @keyframes wrongShake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
         .hidden-cat { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(3.5rem, 7vw, 8rem); opacity: 0; }
         .cat-found-anim { animation: bounceCat 0.5s infinite; opacity: 1 !important; }
         @keyframes bounceCat { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, -80%); } }
+        
+        /* 恢复你原本的飞走轨迹特效 */
         .fly-away { animation: magicVanish 0.8s forwards; pointer-events: none; }
         @keyframes magicVanish { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0) translateY(-500px) rotate(360deg); opacity: 0; } }
 
@@ -55,29 +65,16 @@
         @media (max-width: 768px) {
             .mecc-nav-back span { display: none; }
             body { height: 100dvh; padding-top: 56px; overflow: hidden; }
-
-            #start-screen {
-                height: calc(100dvh - 56px); padding: 8px 8px 6px !important;
-                justify-content: flex-start !important; overflow: hidden; gap: 6px;
-            }
+            #start-screen { height: calc(100dvh - 56px); padding: 8px 8px 6px !important; justify-content: flex-start !important; overflow: hidden; gap: 6px; }
             .controls { gap: 8px !important; flex-wrap: wrap; margin-bottom: 0 !important; justify-content: center; flex-shrink: 0; }
             .btn { padding: 8px 16px !important; font-size: 0.95rem !important; }
-            #char-grid {
-                grid-template-columns: repeat(8, 1fr) !important;
-                grid-auto-rows: 1fr !important;
-                gap: 4px !important; padding: 6px !important;
-                width: 100% !important; max-width: 100% !important;
-                flex: 1 !important; min-height: 0 !important;
-                align-content: unset !important;
-            }
+            #char-grid { grid-template-columns: repeat(8, 1fr) !important; grid-auto-rows: 1fr !important; gap: 4px !important; padding: 6px !important; width: 100% !important; max-width: 100% !important; flex: 1 !important; min-height: 0 !important; align-content: unset !important; }
             .char-card { aspect-ratio: unset !important; font-size: clamp(1rem, 5.5vw, 1.4rem) !important; }
-
             .game-top-bar { height: auto !important; flex-direction: column !important; padding: 8px 0 6px !important; gap: 6px !important; align-items: center !important; }
             #vs-scoreboard { position: static !important; transform: none !important; width: 90% !important; max-width: 360px !important; display: flex !important; justify-content: center !important; margin: 0 auto !important; padding: 6px 16px !important; gap: 12px !important; }
             .player-box .score { font-size: 1.6rem !important; }
             .player-box .name { font-size: 0.9rem !important; }
             .avatar { width: 28px !important; height: 28px !important; }
-
             #game-screen { justify-content: space-between !important; padding: 16px 0 24px !important; box-sizing: border-box !important; overflow: hidden !important; }
             .game-board { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; padding: 0 16px !important; width: 100% !important; flex: 1 !important; align-content: center !important; align-items: center !important; }
             .card-container { width: 44vw !important; height: 44vw !important; }
@@ -135,8 +132,9 @@
                 teacher: "王老师", student: "小朋友", prompt: "小猫在 ______ 的后面。", 
                 foundT: (char) => `找到啦！是“${char}”！小朋友加一分！`, 
                 foundP: (char) => `找到啦！是“${char}”！`, 
-                teacherWinAlert: "王老师截胡成功！", hiddenBehind: (char) => `哈哈！躲在“${char}”后面！`, 
-                nextBtn: "下一组 ➔", backSetup: "返回字库", alertMin: "请至少选择4个字来玩小猫藏猫猫哦！" 
+                teacherWinAlert: "王老师截胡成功！", hiddenBehind: (char) => `哈哈！小猫在“${char}”后面！`, 
+                nextBtn: "下一组 ➔", backSetup: "返回字库", alertMin: "请至少选择4个字来玩小猫藏猫猫哦！",
+                loadingErr: "获取字库失败，请检查网络！"
             },
             en: { 
                 title: "😸 Where is the Cat?", selectAll: "Select All", clearAll: "Clear", startGame: "Start Game", 
@@ -144,19 +142,31 @@
                 foundT: (char) => `Found it! It's "${char}"! +1 for Student!`, 
                 foundP: (char) => `Found it! It's "${char}"!`, 
                 teacherWinAlert: "Teacher intercepted!", hiddenBehind: (char) => `Haha! Hiding behind "${char}"!`, 
-                nextBtn: "Next Group ➔", backSetup: "Back to Words", alertMin: "Please select at least 4 characters to play!" 
+                nextBtn: "Next Group ➔", backSetup: "Back to Words", alertMin: "Please select at least 4 characters to play!",
+                loadingErr: "Failed to load words."
             }
         }[LANG];
 
-        // 🌟 统一的三级音频降级系统
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
+        const QUERY = encodeURIComponent('*[_type == "word"] | order(_createdAt asc) {char, "audioUrl": audio.asset->url}');
+        const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
+        let sanityAudioMap = {};
         let globalAudio = new Audio();
 
-        async function playUnifiedAudio(text) {
+        async function playUnifiedAudio(text, sanityAudioUrl) {
             if (!text) return;
             
             globalAudio.pause();
             globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
             globalAudio.play().catch(() => {});
+
+            if (sanityAudioUrl) {
+                globalAudio.src = sanityAudioUrl;
+                await globalAudio.play().catch(e => console.warn("Sanity音频播放失败", e));
+                return;
+            }
 
             const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
             const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
@@ -164,9 +174,7 @@
             try {
                 const localRes = await fetch(localPath, { method: 'HEAD' }).catch(() => null);
                 if (localRes && localRes.ok && localRes.headers.get('content-type') && localRes.headers.get('content-type').includes('audio')) {
-                    globalAudio.src = localPath;
-                    await globalAudio.play();
-                    return; 
+                    globalAudio.src = localPath; await globalAudio.play(); return; 
                 }
             } catch(e) {}
 
@@ -174,9 +182,7 @@
                 const azureRes = await fetch(azureUrl).catch(() => null);
                 if (azureRes && azureRes.ok && azureRes.headers.get('content-type') && azureRes.headers.get('content-type').includes('audio')) {
                     const audioBlob = await azureRes.blob();
-                    globalAudio.src = URL.createObjectURL(audioBlob);
-                    await globalAudio.play();
-                    return; 
+                    globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return; 
                 }
             } catch(e) {}
 
@@ -198,16 +204,12 @@
             document.getElementById('next-btn').innerText = t.nextBtn;
             document.getElementById('btn-back-setup').innerText = t.backSetup;
 
-            // 🌟 核心修复 2：如果是英文环境，给所有的文字 UI 元素动态添加英文字体类
             if (LANG === 'en') {
                 document.getElementById('vs-scoreboard').style.display = 'none';
-                
-                // 把需要变成 LXGW 英文字体的元素 ID 列出来
                 const enElements = [
                     'result-text', 'btn-select-all', 'btn-clear-all', 'btn-start', 
                     'ui-teacher-name', 'ui-student-name', 'next-btn', 'btn-back-setup'
                 ];
-                
                 enElements.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('font-en');
@@ -217,13 +219,22 @@
             const grid = document.getElementById('char-grid');
             const saved = JSON.parse(localStorage.getItem('catGameWords')) || [];
             
-            const list = await MECC_DATA.getSightWords();
-            list.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'char-card' + (saved.includes(item.char) ? ' selected' : '');
-                card.innerText = item.char; card.onclick = () => card.classList.toggle('selected');
-                grid.appendChild(card);
-            });
+            try {
+                const res = await fetch(API_URL).then(r => r.json());
+                const list = res.result || [];
+                
+                list.forEach(item => {
+                    if (item.audioUrl) sanityAudioMap[item.char] = item.audioUrl;
+
+                    const card = document.createElement('div');
+                    card.className = 'char-card' + (saved.includes(item.char) ? ' selected' : '');
+                    card.innerText = item.char; 
+                    card.onclick = () => card.classList.toggle('selected');
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#e74c3c;">${t.loadingErr}</div>`;
+            }
         };
 
         let selectedChars = []; let teacherScore = 0; let studentScore = 0; let wrongAttempts = 0; let roundOver = false; let currentChars = []; let targetIdx = -1;
@@ -276,31 +287,46 @@
                 const cat = document.createElement('div'); cat.className = 'hidden-cat'; cat.innerText = '😸'; cat.id = 'cat-'+i;
                 const circle = document.createElement('div'); circle.className = 'char-circle'; circle.innerText = char; circle.id = 'circle-'+i;
                 
-                // pointerdown 在 iOS 上更早触发
-                circle.addEventListener('pointerdown', () => { playUnifiedAudio(char); });
+                circle.addEventListener('pointerdown', () => { 
+                    playUnifiedAudio(char, sanityAudioMap[char]); 
+                });
 
                 circle.onclick = () => {
-                    if (roundOver || circle.classList.contains('fly-away')) return;
-                    circle.classList.add('fly-away');
+                    if (roundOver || circle.classList.contains('fly-away') || circle.classList.contains('wrong-anim')) return;
                     
                     if (i === targetIdx) {
-                        roundOver = true; MECC_AUDIO.playSfx('tada'); cat.classList.add('cat-found-anim');
+                        roundOver = true; 
+                        
+                        circle.classList.add('correct-anim');
+                        MECC_AUDIO.playSfx('tada'); // 原汁原味的音效
+                        
+                        setTimeout(() => {
+                            circle.classList.add('fly-away');
+                            cat.classList.add('cat-found-anim');
+                        }, 300);
+
                         if (LANG === 'zh') {
                             studentScore++; document.getElementById('score-student').innerText = studentScore;
                             document.getElementById('result-text').innerText = t.foundT(char);
                         } else { document.getElementById('result-text').innerText = t.foundP(char); }
                         document.getElementById('next-btn').style.display = 'block';
                     } else {
-                        MECC_AUDIO.playSfx('swoosh');
+                        circle.classList.add('wrong-anim');
+                        MECC_AUDIO.playSfx('swoosh'); // 原汁原味的音效
+                        
+                        setTimeout(() => {
+                            circle.classList.add('fly-away');
+                        }, 400);
+
                         if (LANG === 'zh') {
                             wrongAttempts++;
                             if (wrongAttempts === 3) {
                                 roundOver = true; teacherScore++; document.getElementById('score-teacher').innerText = teacherScore;
                                 document.getElementById('result-text').innerText = t.teacherWinAlert;
                                 document.getElementById('result-text').style.color = '#ff4757';
-                                MECC_AUDIO.playSfx('wrong');
+                                MECC_AUDIO.playSfx('wrong'); // 原汁原味的音效
                                 setTimeout(() => {
-                                    MECC_AUDIO.playSfx('tada');
+                                    MECC_AUDIO.playSfx('tada'); // 原汁原味的音效
                                     document.getElementById('circle-'+targetIdx).classList.add('fly-away');
                                     document.getElementById('cat-'+targetIdx).classList.add('cat-found-anim');
                                     document.getElementById('result-text').innerText = t.hiddenBehind(currentChars[targetIdx]);

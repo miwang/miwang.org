@@ -69,7 +69,6 @@
             line-height: 1;
         }
 
-        /* 🌟 优雅的 SVG 居中返回按钮 */
         .text-back-link-unused {
             position: fixed; top: 15px; left: 20px; z-index: 9999;
             color: #555; text-decoration: none; font-weight: bold; font-size: 1.1rem;
@@ -80,7 +79,6 @@
         .text-back-link-unused:hover { transform: scale(1.05); opacity: 0.8; }
         .circle-arrow-icon { width: 22px; height: 22px; }
 
-        /* ── Main layout ── */
         .main-area {
             flex: 1; display: flex; flex-direction: row;
             align-items: stretch; gap: 20px;
@@ -98,7 +96,6 @@
             min-width: 0;
         }
 
-        /* ── Visual toggle ── */
         .vis-toggle { display: flex; gap: 8px; }
         .vis-btn {
             padding: 7px 22px; border-radius: 20px;
@@ -111,7 +108,6 @@
         .vis-btn.active { background: var(--main-teal); color: white; }
         .vis-btn:hover:not(.active) { background: #eef6f6; }
 
-        /* ── Visual aid area ── */
         .visual-aid {
             display: flex; gap: 20px; align-items: flex-end;
             min-height: 140px; justify-content: center;
@@ -119,7 +115,6 @@
             border-radius: 18px; width: 100%; border: 2px solid #eee;
         }
 
-        /* ── Equation ── */
         .equation-box {
             font-size: clamp(2.8rem, 6vw, 5rem);
             font-weight: bold; color: var(--main-teal);
@@ -138,7 +133,6 @@
             transition: color 0.2s, border-color 0.2s;
         }
 
-        /* ── Num pad ── */
         .num-pad {
             display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 10px; width: 100%; max-width: 320px;
@@ -174,7 +168,6 @@
             }
         }
 
-        /* ── Ten frame (shared with visual) ── */
         .mini-ten-frame {
             border: 2px solid #333;
             display: grid; grid-template-columns: repeat(5, 1fr);
@@ -186,7 +179,6 @@
         }
         .mini-cell.filled { background: #dc3545; }
 
-        /* ── Streak animation ── */
         @keyframes streakGlow {
             0%   { box-shadow: 0 4px 15px rgba(0,0,0,0.07); }
             50%  { box-shadow: 0 8px 24px rgba(243,178,54,0.28); }
@@ -194,7 +186,6 @@
         }
         .streak-pop { animation: streakGlow 0.35s ease-out; }
 
-        /* ── Mobile ── */
         @media (max-width: 768px) {
             body {
                 height: 100dvh;
@@ -337,6 +328,32 @@
 
     <script>
         let mathAns = 0; let mathX = 0; let visMode = 'blocks'; let streak = 0;
+        let currentEqTextZh = ""; // 🌟 存储要朗读的中文算式文本
+
+        // 🌟 中文统一发音引擎
+        let globalAudio = new Audio();
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            globalAudio.pause();
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().catch(() => {});
+
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+            try {
+                const azureRes = await fetch(azureUrl).catch(() => null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type')?.includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio.src = URL.createObjectURL(audioBlob);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
+
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; 
+            window.speechSynthesis.speak(msg);
+        }
 
         let audioCtx = null;
         function getAudioCtx() {
@@ -437,8 +454,14 @@
             const blank = document.querySelector('.blank-box'); if (!blank) return;
             if (n === mathAns) {
                 playCorrect();
+                
+                // 🌟 答对后，立刻用纯正中文朗读完整算式！
+                playUnifiedAudio(currentEqTextZh);
+                
                 blank.innerText = n; blank.style.color = "#4CAF50"; blank.style.borderColor = "#4CAF50";
-                streak++; updateScore(); setTimeout(genNewMath, 900);
+                
+                // 给足孩子听完完整发音的时间，所以将进入下一题的延迟增加到 1500 毫秒
+                streak++; updateScore(); setTimeout(genNewMath, 1500);
             } else {
                 playWrong();
                 blank.innerText = n; blank.style.color = "#e74c3c"; blank.style.borderColor = "#e74c3c";
@@ -459,12 +482,35 @@
             mathX = Math.floor(Math.random() * 9) + 1; mathAns = 10 + mathX;
             const r = Math.floor(Math.random() * 6);
             const display = document.getElementById('equation-display');
-            if      (r === 0) { display.innerHTML = `10 + ${mathX} = <div class="blank-box">?</div>`; }
-            else if (r === 1) { display.innerHTML = `${mathX} + 10 = <div class="blank-box">?</div>`; }
-            else if (r === 2) { display.innerHTML = `<div class="blank-box">?</div> = 10 + ${mathX}`; }
-            else if (r === 3) { display.innerHTML = `<div class="blank-box">?</div> = ${mathX} + 10`; }
-            else if (r === 4) { mathAns = mathX; display.innerHTML = `10 + <div class="blank-box">?</div> = ${10 + mathX}`; }
-            else              { mathAns = mathX; display.innerHTML = `<div class="blank-box">?</div> + 10 = ${10 + mathX}`; }
+            
+            // 🌟 记录当前的中文语音算式文案
+            if (r === 0) { 
+                display.innerHTML = `10 + ${mathX} = <div class="blank-box">?</div>`; 
+                currentEqTextZh = `10加${mathX}等于${10 + mathX}`; 
+            }
+            else if (r === 1) { 
+                display.innerHTML = `${mathX} + 10 = <div class="blank-box">?</div>`; 
+                currentEqTextZh = `${mathX}加10等于${10 + mathX}`; 
+            }
+            else if (r === 2) { 
+                display.innerHTML = `<div class="blank-box">?</div> = 10 + ${mathX}`; 
+                currentEqTextZh = `${10 + mathX}等于10加${mathX}`; 
+            }
+            else if (r === 3) { 
+                display.innerHTML = `<div class="blank-box">?</div> = ${mathX} + 10`; 
+                currentEqTextZh = `${10 + mathX}等于${mathX}加10`; 
+            }
+            else if (r === 4) { 
+                mathAns = mathX; 
+                display.innerHTML = `10 + <div class="blank-box">?</div> = ${10 + mathX}`; 
+                currentEqTextZh = `10加${mathX}等于${10 + mathX}`; 
+            }
+            else { 
+                mathAns = mathX; 
+                display.innerHTML = `<div class="blank-box">?</div> + 10 = ${10 + mathX}`; 
+                currentEqTextZh = `${mathX}加10等于${10 + mathX}`; 
+            }
+            
             renderVisual(mathX); renderNumPad(r >= 4);
         }
 

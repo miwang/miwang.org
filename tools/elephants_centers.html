@@ -16,8 +16,6 @@
             --bg-color: #f0f2f5; --accent-color: #f3b236; --text-dark: #2c3e50;
             --font-main: 'STKaiti', 'KaiTi', '楷体', "LXGW WenKai Lite", serif;
         }
-        
-        /* 🌟 核心修复 1：增加数字/英文专属字体类 */
         .font-en { font-family: "LXGW WenKai Lite", system-ui, sans-serif !important; }
 
         * { box-sizing: border-box; }
@@ -27,7 +25,7 @@
         .mecc-nav-title { display: none !important; }
         .mecc-nav-back { position: static !important; margin-right: 15px; background: transparent !important; border: none !important; }
         .nav-status-area { display: flex; align-items: center; color: white; gap: 12px; margin-right: auto; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.3); }
-        .nav-status-main { font-size: 1.3rem; font-weight: bold; color: var(--accent-yellow); }
+        .nav-status-main { font-size: 1.3rem; font-weight: bold; color: var(--accent-yellow); display: flex; align-items: center; }
         .nav-status-date  { font-size: 0.9rem; opacity: 0.9; font-weight: bold; }
         .nav-btn-group { display: flex; align-items: center; gap: 4px; }
         .nav-btn { border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; color: white; font-size: 0.9rem; font-weight: bold; background: rgba(255,255,255,0.1); transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: inherit; }
@@ -54,24 +52,26 @@
 
         .math-shapes-panel { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 6px; justify-content: center; }
         .math-row  { flex: 0 0 31%; display: flex; align-items: center; background: #f8f9fa; border-radius: 10px; padding: 0 10px; border: 1px solid #eee; overflow: hidden; }
-        .math-icon { width: 80px; flex-shrink: 0; font-size: min(10vh, 75px); text-align: center; display: flex; align-items: center; justify-content: center; }
-        .math-list { flex: 1; display: flex; align-items: center; gap: 10px; overflow: hidden; justify-content: flex-end; }
+        .math-icon { width: 70px; flex-shrink: 0; font-size: min(8vh, 60px); text-align: center; display: flex; align-items: center; justify-content: center; }
+        .math-list { flex: 1; display: flex; align-items: center; gap: 10px; overflow-x: auto; overflow-y: hidden; justify-content: flex-start; padding-left: 5px; scrollbar-width: none; min-width: 0; }
+        .math-list::-webkit-scrollbar { display: none; }
         .icon-cir { color: #d63031; } .icon-tri { color: #00b894; } .icon-squ { color: #0984e3; }
 
         .avatar-circle { width: min(20vh, 155px); height: min(20vh, 155px); border-radius: 50%; background: white; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; cursor: grab; transform: translate3d(0,0,0); }
         .math-list .avatar-circle { width: min(15vh, 115px); height: min(15vh, 115px); border-width: 3px; }
-        .avatar-img  { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; pointer-events: none; }
+        .avatar-img  { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; pointer-events: none; background: #eee; }
         .name-tooltip { position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); background: var(--text-dark); color: white; padding: 4px 12px; border-radius: 8px; font-size: 14px; font-weight: bold; opacity: 0; z-index: 60; white-space: nowrap; transition: opacity 0.2s; pointer-events: none; }
         .avatar-circle:hover .name-tooltip { opacity: 1; }
         .action-btn { position: absolute; width: 22px; height: 22px; border-radius: 50%; color: white; display: none; align-items: center; justify-content: center; cursor: pointer; top: -2px; right: -2px; background: #ff7675; z-index: 100; font-family: sans-serif; }
         .avatar-circle:hover .action-btn { display: flex; }
         .photo-mask { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; cursor: pointer; z-index: 20; }
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,46,70,0.8); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; font-size: 24px; gap: 12px; }
-        #loading-msg { font-size: 16px; opacity: 0.8; }
+        
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1f2e46; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; font-size: 24px; gap: 12px; }
+        #loading-msg { font-size: 16px; opacity: 0.8; letter-spacing: 2px; font-family: var(--font-main); }
     </style>
 </head>
 <body>
-<div id="loading"><i class="fas fa-spinner fa-spin"></i><div id="loading-msg">处理中...</div></div>
+<div id="loading"><i class="fas fa-spinner fa-spin"></i><div id="loading-msg">正在安全加载云端排版...</div></div>
 
 <script>
 const firebaseConfig = {
@@ -87,63 +87,25 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const CLOUD_KEY = 'ClassData_elephants';
-const LOCAL_KEY  = CLOUD_KEY + '_local';
 const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
 let _localVer = 0;
-let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null,null,null,null] };
+let data = { students: [], step: 0, lastDateStr: "暂无记录" };
 
-const allStudentsList = [
-    { name: "聂文举", img: "../images/avatars/elephants 25-26/Andrew.webp" },
-    { name: "毕夏",   img: "../images/avatars/elephants 25-26/Asiah.webp" },
-    { name: "毛不亦", img: "../images/avatars/elephants 25-26/Aubree.webp" },
-    { name: "葛金",   img: "../images/avatars/elephants 25-26/Jaylin.webp" },
-    { name: "包不同", img: "../images/avatars/elephants 25-26/Axton.webp" },
-    { name: "康雨安", img: "../images/avatars/elephants 25-26/Ayuk.webp" },
-    { name: "福本来", img: "../images/avatars/elephants 25-26/Bennett.webp" },
-    { name: "高文良", img: "../images/avatars/elephants 25-26/Calix.webp" },
-    { name: "寇心怡", img: "../images/avatars/elephants 25-26/Charlotte.webp" },
-    { name: "柏梦君", img: "../images/avatars/elephants 25-26/Emmalyn.webp" },
-    { name: "万江水", img: "../images/avatars/elephants 25-26/Francis.webp" },
-    { name: "艾天骄", img: "../images/avatars/elephants 25-26/George.webp" },
-    { name: "范红红", img: "../images/avatars/elephants 25-26/Hannah.webp" },
-    { name: "穆知远", img: "../images/avatars/elephants 25-26/Jaden.webp" },
-    { name: "都雨润", img: "../images/avatars/elephants 25-26/Jerrin.webp" },
-    { name: "苏凯",   img: "../images/avatars/elephants 25-26/Kase.webp" },
-    { name: "那天",   img: "../images/avatars/elephants 25-26/Latia.webp" },
-    { name: "饶梁音", img: "../images/avatars/elephants 25-26/Lyanna.webp" },
-    { name: "王梦洁", img: "../images/avatars/elephants 25-26/Majesty.webp" },
-    { name: "江林炘", img: "../images/avatars/elephants 25-26/Noe.webp" },
-    { name: "福秉仁", img: "../images/avatars/elephants 25-26/Rhyus.webp" },
-    { name: "习志强", img: "../images/avatars/elephants 25-26/Seth.webp" },
-    { name: "魏千语", img: "../images/avatars/elephants 25-26/Silvia.webp" },
-    { name: "唐天天", img: "../images/avatars/elephants 25-26/Skylar.webp" },
-    { name: "危芷若", img: "../images/avatars/elephants 25-26/Zuri.webp" },
-];
-
-function saveLocal() { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(data)); } catch(e) {} }
-function loadLocal() {
-    try {
-        const raw = localStorage.getItem(LOCAL_KEY) || localStorage.getItem(CLOUD_KEY);
-        if (raw) return JSON.parse(raw);
-    } catch(e) {}
-    return null;
-}
+let sanityStudents = [];
+let cloudBgs = {}; // 🌟 存储云端拉取的背景图
+let academicYearStr = "";
 
 function commit() {
     _localVer++; data._sid = SESSION_ID; data._ver = _localVer;
-    saveLocal(); renderUI(); db.ref(CLOUD_KEY).set(data);
+    renderUI(); db.ref(CLOUD_KEY).set(data);
 }
-function commitAndWait() {
-    _localVer++; data._sid = SESSION_ID; data._ver = _localVer;
-    saveLocal(); renderUI();
-    return Promise.race([db.ref(CLOUD_KEY).set(data), new Promise(r => setTimeout(r, 5000))]);
-}
+
 function showLoading(on, msg) {
     document.getElementById('loading').style.display = on ? 'flex' : 'none';
     if (msg) document.getElementById('loading-msg').innerText = msg;
 }
 
-window.onload = () => {
+window.onload = async () => {
     MECC_CONFIG.renderGlobalNav("");
     const nav = document.querySelector('.mecc-global-nav');
     const ctrl = document.createElement('div'); ctrl.style.display = 'contents';
@@ -154,6 +116,7 @@ window.onload = () => {
         </div>
         <div class="nav-btn-group">
             <button class="nav-btn" onclick="addStudentAuto()"><i class="fas fa-plus"></i> 加人</button>
+            <button class="nav-btn" onclick="syncRoster()"><i class="fas fa-sync-alt"></i> 同步名单</button>
             <button class="nav-btn" onclick="rotatePrev()" id="btn-prev"><i class="fas fa-undo"></i> 撤销</button>
             <button class="nav-btn nav-btn-next" onclick="rotateNext()">下一步 <i class="fas fa-arrow-right"></i></button>
             <button class="nav-btn" onclick="saveData()">备份</button>
@@ -162,74 +125,153 @@ window.onload = () => {
         </div>`;
     nav.appendChild(ctrl);
 
-    const cached = loadLocal();
-    if (cached) {
-        data = cached;
-        if (!data.bgImages) data.bgImages = [null,null,null,null];
-        _localVer = data._ver || 0;
-        renderUI();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const startYear = currentMonth >= 7 ? currentYear : currentYear - 1;
+    academicYearStr = `${startYear.toString().slice(-2)}-${(startYear + 1).toString().slice(-2)}`;
+
+    // 1. 并发拉取 Sanity 花名册 和 全局背景图
+    let firebaseLoaded = false;
+    const PROJECT_ID = 'sow12t1i';
+    const DATASET = 'production';
+    const QUERY_STUDENTS = encodeURIComponent(`*[_type == "student" && className == "elephant" && academicYear == "${academicYearStr}"] { name, "img": avatar.asset->url }`);
+    const API_URL_STUDENTS = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY_STUDENTS}`;
+    
+    // 🌟 查询背景图数据
+    const QUERY_CONFIG = encodeURIComponent(`*[_type == "centerConfig"][0] { "mathBg": mathBg.asset->url, "wangBg": wangBg.asset->url, "zhangBg": zhangBg.asset->url, "computerBg": computerBg.asset->url }`);
+    const API_URL_CONFIG = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY_CONFIG}`;
+
+    try {
+        const [resStudents, resConfig] = await Promise.all([
+            fetch(API_URL_STUDENTS).then(r=>r.json()),
+            fetch(API_URL_CONFIG).then(r=>r.json())
+        ]);
+        sanityStudents = resStudents.result || [];
+        cloudBgs = resConfig.result || {};
+        
+        if (firebaseLoaded) {
+            sanityStudents.forEach(ss => {
+                const st = data.students.find(fs => fs.name.trim() === ss.name.trim());
+                if (st && ss.img) st._sanityPhoto = ss.img; 
+            });
+            renderUI();
+        }
+    } catch(e) {
+        console.error("Sanity 获取失败");
     }
 
+    // 2. 绝对服从 Firebase 数据源，禁止任何私自涂改！
     db.ref(CLOUD_KEY).on('value', snap => {
-        const val = snap.val();
-        if (!val) return;
-        if (val._sid === SESSION_ID) return;
-        if ((val._ver || 0) <= _localVer) return;
-        data = val;
-        _localVer = val._ver || 0;
-        if (!data.bgImages) data.bgImages = [null,null,null,null];
-        saveLocal();
+        firebaseLoaded = true;
+        if (snap.exists()) {
+            data = snap.val();
+            if (!data.students) data.students = [];
+        }
+
+        // 把现有拿到的照片贴上去，绝不动原始数组！
+        if (sanityStudents.length > 0) {
+            sanityStudents.forEach(ss => {
+                const st = data.students.find(fs => fs.name.trim() === ss.name.trim());
+                if (st && ss.img) st._sanityPhoto = ss.img; 
+            });
+        }
+
+        // 3. 一次性完美渲染，直接掀盖头！
         renderUI();
+        showLoading(false);
     }, err => {
-        console.warn('Firebase 连接失败，使用本地缓存：', err.message);
+        showLoading(false);
+        alert('无法连接云端数据库，请检查网络！');
     });
 };
 
-function rotateNext() { data.step++; recalcMathGroups(); updateDate(); commit(); }
-function rotatePrev() { if (data.step > 0) { data.step--; recalcMathGroups(); commit(); } }
+function syncRoster() {
+    if(!sanityStudents.length) {
+        alert("云端名单尚未加载完成，请稍后再试！");
+        return;
+    }
+    if(!confirm("此操作将与 Sanity 云端名单同步：\n1. 自动删除已退学的学生\n2. 自动追加新学生到默认组\n现有学生的排版位置将完全保留。\n是否继续？")) return;
+
+    let changed = false;
+    const initialLen = data.students.length;
+    
+    data.students = data.students.filter(s => sanityStudents.some(ss => ss.name.trim() === s.name.trim()));
+    if (data.students.length !== initialLen) changed = true;
+
+    sanityStudents.forEach(ss => {
+        const cleanName = ss.name.trim();
+        if (!data.students.find(fs => fs.name.trim() === cleanName)) {
+            data.students.push({
+                id: Date.now() + Math.random(),
+                name: cleanName,
+                groupIndex: (0 - (data.step || 0) % 4 + 4) % 4,
+                mathSubGroup: 0,
+                rank: 9999,
+                photo: null
+            });
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        normalizeRanks();
+        commit();
+        alert("名单同步完成！");
+    } else {
+        alert("本地名单已经是最新，无需同步。");
+    }
+}
+
+function rotateNext() { data.step++; updateDate(); commit(); }
+function rotatePrev() { if (data.step > 0) { data.step--; updateDate(); commit(); } }
 function updateDate() {
     const now = new Date(), d = ["日","一","二","三","四","五","六"];
     data.lastDateStr = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 星期${d[now.getDay()]}`;
 }
-function recalcMathGroups() {
-    const off = data.step % 4, cyc = Math.floor(data.step / 4) % 3;
-    const ms = data.students.filter(s => (s.groupIndex + off) % 4 === 0).sort((a,b) => a.rank - b.rank);
-    let c = 0; ms.forEach(s => { s.mathSubGroup = ((c < 2 ? 0 : c < 4 ? 1 : 2) + cyc) % 3; c++; });
-}
+
 function normalizeRanks() {
     data.students.sort((a,b) => a.groupIndex !== b.groupIndex ? a.groupIndex - b.groupIndex : a.rank - b.rank);
     data.students.forEach((s,i) => s.rank = i + 1);
 }
 
-const ZONE_DEFAULTS = [
-    { id:0, html:'<img src="../images/centers/math_center.webp" class="uploaded-img">' },
-    { id:1, html:'<img src="../images/centers/wanglaoshi.webp" class="uploaded-img">' },
-    { id:3, html:'<img src="../images/centers/zhanglaoshi.webp" class="uploaded-img">' },
-    { id:2, html:'<img src="../images/centers/computer_center.webp" class="uploaded-img">' }
-];
-
 function renderUI() {
     for (let i = 0; i < 3; i++) { const el = document.getElementById('col-'+i); if(el) el.innerHTML=''; }
     for (let i = 1; i <= 3; i++) { const el = document.getElementById('cont-'+i); if(el) el.innerHTML=''; }
     
-    // 🌟 强行使用本地高清背景图，无视 Firebase 里的压缩图
+    // 🌟 动态注入：云端配置优先，没有就用本地兜底
+    const bgMath = cloudBgs.mathBg || '../images/centers/math_center.webp';
+    const bgWang = cloudBgs.wangBg || '../images/centers/wanglaoshi.webp';
+    const bgZhang = cloudBgs.zhangBg || '../images/centers/zhanglaoshi.webp';
+    const bgComp = cloudBgs.computerBg || '../images/centers/computer_center.webp';
+
+    const ZONE_DEFAULTS = [
+        { id:0, html:`<img src="${bgMath}" class="uploaded-img">` },
+        { id:1, html:`<img src="${bgWang}" class="uploaded-img">` },
+        { id:3, html:`<img src="${bgZhang}" class="uploaded-img">` },
+        { id:2, html:`<img src="${bgComp}" class="uploaded-img">` }
+    ];
+
     ZONE_DEFAULTS.forEach(d => {
         const el = document.getElementById('img-cont-'+d.id); if(!el) return;
         el.className = ''; 
         el.innerHTML = d.html; 
     });
     
-    // 🌟 核心修复 2：使用 innerHTML 并用正则把所有数字包裹上英文字体类，避免楷体数字
-    document.getElementById('status-main').innerHTML = `第 <span class="font-en">${data.step + 1}</span> 轮`;
+    document.getElementById('status-main').innerHTML = `第 <span class="font-en">${data.step + 1}</span> 轮 <span style="font-size:0.8rem;color:#fff;opacity:0.7;margin-left:8px;font-weight:normal;">(${academicYearStr} 学年)</span>`;
     document.getElementById('status-date').innerHTML = data.lastDateStr.replace(/\d+/g, '<span class="font-en">$&</span>');
     document.getElementById('btn-prev').style.opacity = data.step <= 0 ? '0.3' : '1';
     
     const off = data.step % 4, zones = [[],[],[],[]];
     data.students.forEach(s => zones[(s.groupIndex + off) % 4].push(s));
+
     zones.forEach((list, vz) => {
         list.sort((a,b) => a.rank - b.rank);
         if (vz === 0) {
-            list.forEach(s => { const c = document.getElementById('col-'+(s.mathSubGroup||0)); if(c) c.appendChild(makeAvatar(s)); });
+            list.forEach(s => { 
+                const c = document.getElementById('col-'+(s.mathSubGroup !== undefined ? s.mathSubGroup : 0)); 
+                if(c) c.appendChild(makeAvatar(s)); 
+            });
         } else {
             const p = document.getElementById('cont-'+vz); if(!p) return;
             p.className = `kids-panel ${list.length > 6 ? 'cols-4' : 'cols-3'}`;
@@ -239,15 +281,14 @@ function renderUI() {
 }
 
 function makeAvatar(s) {
-    const info = allStudentsList.find(x => x.name === s.name) || {};
-    const photo = info.img || s.photo || null;
+    const photo = s._sanityPhoto || s.photo || null; 
     const div = document.createElement('div');
     div.className = 'avatar-circle'; div.draggable = true;
     div.ondragstart = e => e.dataTransfer.setData('text', s.id);
     const img = photo
-        ? `<img src="${photo}" class="avatar-img">`
+        ? `<img src="${photo}" class="avatar-img" onerror="this.src='https://via.placeholder.com/150/EEEEEE/999999?text=🧑'">`
         : `<i class="fas fa-user" style="color:#dfe6e9;font-size:45px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"></i>`;
-    div.innerHTML = `<div class="action-btn" onclick="del(${s.id})">×</div>${img}<div class="photo-mask" onclick="handleAvatarClick(${s.id})"></div><div class="name-tooltip">${s.name}</div>`;
+    div.innerHTML = `<div class="action-btn" onclick="del(${s.id})" title="删除">×</div>${img}<div class="photo-mask" onclick="handleAvatarClick(${s.id})"></div><div class="name-tooltip">${s.name}</div>`;
     return div;
 }
 
@@ -257,17 +298,20 @@ function addStudentAuto() {
     data.students.push({ id: Date.now()+Math.random(), name: n.trim(), groupIndex: (0-data.step%4+4)%4, mathSubGroup: 0, rank: 9999, photo: null });
     normalizeRanks(); commit();
 }
-function del(id) { if (!confirm('确认删除?')) return; data.students = data.students.filter(x => x.id !== id); commit(); }
+
+function del(id) { 
+    if (!confirm('确认删除?')) return; 
+    data.students = data.students.filter(x => x.id !== id); 
+    commit(); 
+}
+
 function handleAvatarClick(id) {
     if (confirm('确定：改名 / 取消：换图')) {
         const s = data.students.find(x => x.id === id);
         const n = prompt('新名字：', s.name);
         if (n && n.trim()) { s.name = n.trim(); commit(); }
-    } else { upPhoto(id); }
+    } else { tf(f => compress(f, 300, 0.85, res => { const s = data.students.find(x => x.id === id); if(s) { s.photo = res; commit(); } })); }
 }
-
-function upPhoto(id) { tf(f => compress(f, 300, 0.85, res => { const s = data.students.find(x => x.id === id); if(s) { s.photo = res; commit(); } })); }
-function upBg(z)     { tf(f => compress(f, 800, 0.85,  res => { data.bgImages[z] = res; commit(); })); }
 
 function tf(cb) {
     const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
@@ -284,29 +328,6 @@ function compress(file, maxPx, q, cb) {
         cb(cvs.toDataURL('image/jpeg',q));
     };};
 }
-function recompressDataUrl(dataUrl, maxPx, q) {
-    return new Promise(resolve => {
-        if (!dataUrl) return resolve(null);
-        const img = new Image(); img.src = dataUrl;
-        img.onload = () => {
-            let w=img.width, h=img.height;
-            if(w>h){if(w>maxPx){h=h*maxPx/w;w=maxPx;}}else{if(h>maxPx){w=w*maxPx/h;h=maxPx;}}
-            const cvs=document.createElement('canvas'); cvs.width=w; cvs.height=h;
-            const ctx=cvs.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
-            resolve(cvs.toDataURL('image/jpeg',q));
-        };
-        img.onerror = () => resolve(null);
-    });
-}
-async function recompressAllImages(parsed) {
-    const result = { step: parsed.step||0, lastDateStr: parsed.lastDateStr||'暂无记录', bgImages:[null,null,null,null], students:[] };
-    const bgs = parsed.bgImages||[null,null,null,null];
-    for (let i=0;i<4;i++) result.bgImages[i] = await recompressDataUrl(bgs[i],800,0.85); 
-    for (const s of (parsed.students||[])) {
-        result.students.push({ id:s.id, name:s.name, groupIndex:s.groupIndex, mathSubGroup:s.mathSubGroup||0, rank:s.rank, photo: await recompressDataUrl(s.photo,300,0.85) }); 
-    }
-    return result;
-}
 
 function dropInZone(ev, vz) {
     ev.preventDefault(); if(vz===0) return;
@@ -316,24 +337,40 @@ function dropInZone(ev, vz) {
 function dropMathSub(ev, sub) {
     ev.preventDefault(); ev.stopPropagation();
     const s = data.students.find(x=>x.id===Number(ev.dataTransfer.getData('text')));
-    if(s){s.groupIndex=(0-data.step%4+4)%4;s.mathSubGroup=sub;s.rank=99999;normalizeRanks();commit();}
+    if(s){
+        s.groupIndex=(0-data.step%4+4)%4;
+        s.mathSubGroup = sub; 
+        s.rank=99999;
+        normalizeRanks();
+        commit();
+    }
 }
 
 function saveData() {
     const b=new Blob([JSON.stringify(data)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Elephants_Sync_Backup.json';a.click();
 }
+
 function loadData(el) {
     if(!el.files[0]) return;
     const r=new FileReader();
     r.onload=e=>{
         try {
             const parsed=JSON.parse(e.target.result);
-            showLoading(true,'正在压缩图片...');
-            recompressAllImages(parsed).then(c=>{data=c;normalizeRanks();showLoading(true,'保存中...');return commitAndWait();})
-                .then(()=>{showLoading(false);alert('导入成功！');})
-                .catch(()=>{showLoading(false);alert('导入成功（离线模式）。');});
-        } catch(x){alert('导入失败，文件格式有误。');}
+            showLoading(true,'正在恢复您完美的排版...');
+            
+            data = parsed;
+            normalizeRanks();
+            db.ref(CLOUD_KEY).set(data).then(() => {
+                alert('恢复成功，排版已永久保存！');
+            }).catch(err => {
+                showLoading(false);
+                alert('恢复成功（云端同步稍有延迟）。');
+            });
+        } catch(x){
+            showLoading(false);
+            alert('导入失败，文件格式有误。');
+        }
     };
     r.readAsText(el.files[0]);
 }
@@ -347,7 +384,7 @@ document.addEventListener('keydown', e => {
 
 <div id="board">
     <div class="zone layout-reverse" id="zone-0" ondragover="event.preventDefault()" ondrop="dropMathSub(event,0)">
-        <div class="big-img-panel" onclick="upBg(0)"><div id="img-cont-0" class="color-block bg-red">1 2 3</div></div>
+        <div class="big-img-panel"><div id="img-cont-0" class="color-block bg-red"></div></div>
         <div class="math-shapes-panel">
             <div class="math-row" ondragover="event.preventDefault()" ondrop="dropMathSub(event,0)">
                 <div class="math-icon icon-cir"><i class="fas fa-circle"></i></div>
@@ -364,15 +401,15 @@ document.addEventListener('keydown', e => {
         </div>
     </div>
     <div class="zone layout-normal" id="zone-1" ondragover="event.preventDefault()" ondrop="dropInZone(event,1)">
-        <div class="big-img-panel" onclick="upBg(1)"><div id="img-cont-1" class="color-block bg-green"><i class="fas fa-chalkboard-teacher"></i></div></div>
+        <div class="big-img-panel"><div id="img-cont-1" class="color-block bg-green"></div></div>
         <div class="kids-panel cols-3" id="cont-1"></div>
     </div>
     <div class="zone layout-reverse" id="zone-3" ondragover="event.preventDefault()" ondrop="dropInZone(event,3)">
-        <div class="big-img-panel" onclick="upBg(3)"><div id="img-cont-3" class="color-block bg-yellow"><i class="fas fa-pencil-alt"></i></div></div>
+        <div class="big-img-panel"><div id="img-cont-3" class="color-block bg-yellow"></div></div>
         <div class="kids-panel cols-3" id="cont-3"></div>
     </div>
     <div class="zone layout-normal" id="zone-2" ondragover="event.preventDefault()" ondrop="dropInZone(event,2)">
-        <div class="big-img-panel" onclick="upBg(2)"><div id="img-cont-2" class="color-block bg-blue"><i class="fas fa-laptop"></i></div></div>
+        <div class="big-img-panel"><div id="img-cont-2" class="color-block bg-blue"></div></div>
         <div class="kids-panel cols-3" id="cont-2"></div>
     </div>
 </div>

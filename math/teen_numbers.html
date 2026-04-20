@@ -14,7 +14,6 @@
         * { box-sizing: border-box; font-family: "LXGW WenKai Lite", sans-serif !important; }
         body { background-color: #f8fafc; margin: 0; display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
 
-        /* 🌟 优雅的 SVG 居中返回按钮 */
         .text-back-link-unused {
             position: fixed; top: 15px; left: 20px; z-index: 9999;
             color: #555; text-decoration: none; font-weight: bold; font-size: 1.1rem;
@@ -92,6 +91,31 @@
     <script>
         let currentTarget = 0; let options = []; let selectedIndices = []; let consecutiveCorrect = 0;
         
+        // 🌟 中文统一发音引擎
+        let globalAudio = new Audio();
+        async function playUnifiedAudio(text) {
+            if (!text) return;
+            globalAudio.pause();
+            globalAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+            globalAudio.play().catch(() => {});
+
+            const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+            try {
+                const azureRes = await fetch(azureUrl).catch(() => null);
+                if (azureRes && azureRes.ok && azureRes.headers.get('content-type')?.includes('audio')) {
+                    const audioBlob = await azureRes.blob();
+                    globalAudio.src = URL.createObjectURL(audioBlob);
+                    await globalAudio.play();
+                    return; 
+                }
+            } catch(e) {}
+
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-CN'; msg.rate = 0.85; 
+            window.speechSynthesis.speak(msg);
+        }
+
         let audioCtx = null;
         function getAudioCtx() {
             if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -196,6 +220,10 @@
 
             if (sum === currentTarget && hasTen) {
                 playWinSound();
+                
+                // 🌟 答对后，立刻用纯正中文朗读完整算式！
+                playUnifiedAudio(`10加${currentTarget-10}等于${currentTarget}`);
+
                 c1.style.borderColor = "#4CAF50"; c2.style.borderColor = "#4CAF50";
                 
                 document.getElementById('message').innerText = `Bingo! 10 + ${currentTarget-10} = ${currentTarget}!`;

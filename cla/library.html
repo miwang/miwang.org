@@ -197,6 +197,15 @@
         const SCROLL_KEY = `mecc_library_scroll_${LANG}`;
         let allBooks = [];
 
+        // ==========================================
+        // Sanity API 配置
+        // ==========================================
+        const PROJECT_ID = 'sow12t1i'; // 已经填好你的 Project ID
+        const DATASET = 'production';
+        // GROQ 查询语句：获取所有 type 为 book 的文档，并解析出封面的真实 CDN 网址
+        const QUERY = encodeURIComponent('*[_type == "book"]{_id, title, level, topic, vocab_tags, "coverImage": coverImage.asset->url}');
+        const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
         window.onload = () => {
             MECC_CONFIG.renderGlobalNav(t.title);
             document.getElementById('head-title').innerText = `${t.title} - MECC`;
@@ -222,25 +231,20 @@
             sessionStorage.setItem(SCROLL_KEY, String(window.scrollY || window.pageYOffset || 0));
         }
 
-        function normalizeImagePath(src) {
-            if (!src) return 'https://via.placeholder.com/220x220?text=%E6%97%A0%E5%B0%81%E9%9D%A2';
-            if (src.startsWith('http') || src.startsWith('../')) return src;
-            if (src.startsWith('/')) return `..${src}`;
-            return `../${src}`;
-        }
-
         function loadBooks() {
-            fetch(`../data/books.json?v=${Date.now()}`)
+            // 直连 Sanity 云端 API
+            fetch(API_URL)
                 .then(response => {
                     if (!response.ok) throw new Error(LANG === 'zh' ? '暂时没有找到书籍数据。' : 'Book data not found.');
                     return response.json();
                 })
-                .then(data => {
-                    allBooks = (data.book_list || []).map((book, index) => ({ ...book, originalId: index }));
+                .then(({ result }) => {
+                    // Sanity 返回的数据存放在 result 数组里
+                    allBooks = result || [];
                     applyFilters();
                 })
                 .catch(error => {
-                    gridContainer.innerHTML = `<div class="error-state">${error.message}</div>`;
+                    gridContainer.innerHTML = `<div class="error-state">无法连接到云端数据库，请刷新重试。<br>${error.message}</div>`;
                 });
         }
 
@@ -268,18 +272,23 @@
             booksToShow.forEach(book => {
                 const card = document.createElement('div');
                 card.className = 'book-card';
+                // 这里的 book.coverImage 已经是 Sanity 直接给的 CDN 高清压缩图地址了
+                const imageUrl = book.coverImage || 'https://via.placeholder.com/220x220?text=%E6%97%A0%E5%B0%81%E9%9D%A2';
+                
                 card.innerHTML = `
-                    <img class="book-cover" src="${normalizeImagePath(book.coverImage)}" alt="${book.title}">
+                    <img class="book-cover" src="${imageUrl}" alt="${book.title}">
                     <div class="book-info">
                         <div class="book-level">${book.level || ''}</div>
                         <h3 class="book-title">${book.title || ''}</h3>
                         <div class="book-tags">🏷️ ${book.topic || '—'}<br>📝 ${book.vocab_tags || '—'}</div>
                     </div>
                 `;
+                
                 card.addEventListener('click', () => {
                     saveScroll();
                     const suffix = LANG === 'en' ? '&role=parents' : '';
-                    window.location.href = `reader.html?id=${book.originalId}${suffix}`;
+                    // 我们传的是这本绘本在云端数据库里唯一的身份证号 (book._id)
+                    window.location.href = `reader.html?id=${book._id}${suffix}`;
                 });
                 gridContainer.appendChild(card);
             });
