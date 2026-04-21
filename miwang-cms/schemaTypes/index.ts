@@ -9,7 +9,8 @@ import { gameAudio } from './gameAudio'
 import { focusWall } from './focusWall'
 import { student } from './student'
 import { centerConfig } from './centerConfig'
-import { sentenceConfig } from './sentenceConfig' // 🌟 全局句子颜色/标签配置
+import { sentenceConfig } from './sentenceConfig'
+import { extraPhrase } from './extraPhrase' // 🌟 1. 引入新加的补充词汇模型
 
 // 将它们统一导出
 export const schemaTypes = [
@@ -23,5 +24,6 @@ export const schemaTypes = [
   focusWall,
   student,
   centerConfig,
-  sentenceConfig, // 🌟 注册进系统
+  sentenceConfig, 
+  extraPhrase, // 🌟 2. 注册进系统
 ]

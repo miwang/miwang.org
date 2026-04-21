@@ -451,15 +451,20 @@ document.getElementById('song-title-nav').innerHTML = formatText(currentSong.tit
         };
 
 // 🌟 核心修改：改为异步向 Sanity 查找中心字或词组图片
+async function // 🌟 核心修改：同时向 Sanity 查找四会字中心字、词组以及额外补充词汇
 async function makeHardWord() {
     const text = selectedText;
     const originalBubbleText = bubble.innerText;
     bubble.innerText = "⏳ 查找中..."; 
 
-    // GROQ 查询：精准匹配中心字或词语
-    const query = `*[_type == "word" && (char == "${text}" || "${text}" in phrase_list[].text)][0]{
-        "charImg": image.asset->url,
-        "phraseImg": phrase_list[text == "${text}"][0].image.asset->url
+    // GROQ 查询升级：双管齐下
+    // 逻辑：如果文档是 word 或者是 extraPhrase 并且匹配上了文字，就抓取。
+    // 使用 coalesce 优先提取四会字词组里的图，如果没有，再提取自带的 image (适用于中心字或 extraPhrase)。
+    const query = `*[(_type == "word" && (char == "${text}" || "${text}" in phrase_list[].text)) || (_type == "extraPhrase" && text == "${text}")][0]{
+        "imgUrl": coalesce(
+            phrase_list[text == "${text}"][0].image.asset->url,
+            image.asset->url
+        )
     }`;
     
     const fetchUrl = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(query)}`;
@@ -468,10 +473,8 @@ async function makeHardWord() {
         const res = await fetch(fetchUrl);
         const { result } = await res.json();
         
-        let imgUrl = "";
-        if (result) {
-            imgUrl = result.phraseImg || result.charImg;
-        }
+        // 解析图片 URL
+        let imgUrl = result ? result.imgUrl : "";
 
         if (!imgUrl) {
             alert(`暂时还没有“${text}”的配图哦 😅`);
@@ -480,7 +483,7 @@ async function makeHardWord() {
             return;
         }
 
-        // 获取到云端 URL，存入 LocalStorage (注意这里是 mecc_hard_ 和 currentSong)
+        // 获取到云端 URL，存入 LocalStorage
         let d = JSON.parse(localStorage.getItem(`mecc_hard_${currentSong.id}`) || "{}"); 
         d[text] = imgUrl; 
         localStorage.setItem(`mecc_hard_${currentSong.id}`, JSON.stringify(d)); 
