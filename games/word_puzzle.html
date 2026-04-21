@@ -12,7 +12,7 @@
             overflow: hidden; 
             touch-action: none;
             user-select: none;
-            background-color: #e4d7c5; /* 模拟真实的木头桌面背景 */
+            background-color: #e4d7c5; 
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -27,44 +27,42 @@
             justify-content: center;
         }
 
-        /* 🌟 还原你照片里的白色一体化底板 */
         .puzzle-board {
             background-color: #fcfcfc;
             border: 2px solid #ddd;
-            border-radius: 16px;
-            padding: 40px;
+            border-radius: 20px;
+            padding: 40px 45px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 0 20px rgba(0,0,0,0.02);
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 照片里是多列排列 */
-            gap: 20px;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 25px;
             z-index: 1;
-            /* 照片右下角有标题，我们留一点位置 */
             position: relative;
         }
 
-        /* ⬇️ 凹陷的坑位：用 SVG 做背景，完美模拟被挖空的洞 */
+        /* ⬇️ 坑位：取消了导致特效被切的 clip-path */
         .drop-slot {
-            width: 120px; 
-            height: 120px;
+            width: 145px; 
+            height: 145px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center; 
-            /* 让放进去的图片也被裁剪成饼干形状，不漏出边角 */
-            clip-path: url(#biscuitClip);
         }
 
-        /* 坑里的图片 */
+        /* 坑里的图片：调成70%尺寸并带一点柔和圆角，完美卧在饼干坑的内部 */
         .drop-slot img {
-            width: 85%;
-            height: 85%;
+            width: 70%;
+            height: 70%;
             object-fit: contain;
-            opacity: 0.7; 
+            opacity: 0.8; 
             pointer-events: none;
+            border-radius: 35%; 
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            transition: opacity 0.3s ease;
         }
 
-        /* 坑位底部的 SVG 内阴影（靠 JS 注入） */
+        /* 饼干坑位的阴影背景 */
         .slot-bg {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -72,20 +70,21 @@
             pointer-events: none;
         }
 
-        /* ⬇️ 汉字木块：带粗黑描边的实体玩具 */
         .wood-block {
             position: absolute;
-            width: 120px; 
-            height: 120px;
+            width: 145px;  
+            height: 145px;
             cursor: grab;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
-            /* 这里不需要背景色和边框了，全靠里面的 SVG 撑起外观 */
             filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
         }
 
-        /* 木块里的字和 SVG 完全融合，点击时不会选中字 */
-        .wood-block svg { pointer-events: none; }
+        /* 让 SVG 不再裁剪越界的描边特效 */
+        .wood-block svg { 
+            pointer-events: none; 
+            overflow: visible !important; 
+        }
 
         .wood-block.dragging {
             cursor: grabbing;
@@ -95,20 +94,57 @@
             z-index: 999;
         }
 
-        /* 匹配成功后：放进坑里，阴影消失，严丝合缝 */
         .wood-block.locked {
             cursor: default;
             pointer-events: none;
             width: 100%;
             height: 100%;
             transform: none !important;
-            filter: none; /* 贴合后阴影消失 */
+            filter: none; 
         }
 
-        /* 翻页按钮 */
-        .pagination-controls { position: absolute; top: 15px; right: 20px; display: flex; gap: 15px; z-index: 50; }
-        .page-btn { background: #fff; border: 3px solid #2d3436; border-radius: 12px; padding: 8px 16px; font-weight: bold; box-shadow: 0 4px 0 #2d3436; cursor: pointer; }
-        .page-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2d3436; }
+        /* 🌟 七彩呼吸发光特效（这次绝不会被切掉了） */
+        @keyframes rainbowStroke {
+            0%   { stroke: #ff4757; filter: drop-shadow(0 0 12px #ff4757); }
+            20%  { stroke: #ffa502; filter: drop-shadow(0 0 12px #ffa502); }
+            40%  { stroke: #2ed573; filter: drop-shadow(0 0 12px #2ed573); }
+            60%  { stroke: #1e90ff; filter: drop-shadow(0 0 12px #1e90ff); }
+            80%  { stroke: #9c88ff; filter: drop-shadow(0 0 12px #9c88ff); }
+            100% { stroke: #ff4757; filter: drop-shadow(0 0 12px #ff4757); }
+        }
+
+        /* 嵌进去之后，首个 path (饼干外轮廓) 触发彩色特效 */
+        .wood-block.locked svg path:first-child {
+            animation: rainbowStroke 2.5s linear infinite;
+            stroke-width: 6; /* 加粗轮廓 */
+        }
+
+        /* 🌟 超大号儿童翻页按钮 */
+        .pagination-controls { 
+            position: absolute; 
+            top: 20px; 
+            right: 30px; 
+            display: flex; 
+            gap: 20px; 
+            z-index: 50; 
+        }
+        
+        .page-btn { 
+            background: #fff; 
+            border: 4px solid #2d3436; 
+            border-radius: 18px; 
+            padding: 12px 30px; /* 大幅度增加内边距 */
+            font-size: 1.4rem;  /* 字体放大 */
+            font-weight: bold; 
+            box-shadow: 0 6px 0 #2d3436; 
+            cursor: pointer; 
+            transition: transform 0.1s;
+        }
+        
+        .page-btn:active { 
+            transform: translateY(6px); 
+            box-shadow: 0 0 0 #2d3436; 
+        }
 
         @keyframes tada {
             0% { transform: scale(1); }
@@ -117,26 +153,26 @@
             40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
             100% { transform: scale(1); }
         }
-        .success-anim { animation: tada 0.5s forwards; }
-        .loading { grid-column: span 4; text-align: center; font-size: 1.5rem; color: #555; }
+        .success-anim { animation: tada 0.6s forwards; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) scale(1); }
+            20%, 60% { transform: translateX(-8px) rotate(-5deg) scale(1); }
+            40%, 80% { transform: translateX(8px) rotate(5deg) scale(1); }
+        }
+        .shake-anim { animation: shake 0.4s ease-in-out; }
+
+        .loading { grid-column: span 5; text-align: center; font-size: 1.5rem; color: #555; }
     </style>
 </head>
 <body>
-
-    <svg width="0" height="0" style="position:absolute;">
-        <defs>
-            <clipPath id="biscuitClip" clipPathUnits="userSpaceOnUse">
-                <path d="M60,6 C90,-6 126,30 114,60 C126,90 90,126 60,114 C30,126 -6,90 6,60 C-6,30 30,-6 60,6 Z"/>
-            </clipPath>
-        </defs>
-    </svg>
 
     <nav class="mecc-global-nav">
         <a href="javascript:history.back()" class="mecc-nav-back">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             <span class="font-zh">返回</span>
         </a>
-        <h1 class="mecc-nav-title font-zh">四会字拼图</h1>
+        <h1 class="mecc-nav-title font-zh">四会字拼拼乐</h1>
     </nav>
 
     <div class="game-container" id="gameContainer">
@@ -163,27 +199,27 @@
 
         let allWords = [];
         let currentPage = 0;
-        const ITEMS_PER_PAGE = 8; 
+        const ITEMS_PER_PAGE = 15; 
 
-        // 你照片里出现的颜色：粉色、绿色、蓝色、黄色等
         const toyColors = ['#ff8fa3', '#80ed99', '#7cd4fd', '#ffdc5e', '#e4c1f9', '#ffb5a7'];
         
-        // 🌟 核心：生成“饼干形状”的 SVG 图像。完美复刻你的玩具！
+        // 核心形状（保持不变）
         const pathStr = "M60,6 C90,-6 126,30 114,60 C126,90 90,126 60,114 C30,126 -6,90 6,60 C-6,30 30,-6 60,6 Z";
         
+        // 🌟 修复核心1：viewBox 从 "0 0 120 120" 改成了 "-15 -15 150 150"
+        // 这样给四周留出了 15 个单位的安全边距，粗描边和不规则曲线再也不会被切断了！
         function generateSlotSVG() {
-            // 这是被挖空的坑位：底色深灰，带内阴影
-            return `<svg class="slot-bg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            return `<svg class="slot-bg" viewBox="-15 -15 150 150" xmlns="http://www.w3.org/2000/svg">
                 <path d="${pathStr}" fill="#e9ecef" />
-                <path d="${pathStr}" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="8" clip-path="url(#biscuitClip)"/>
+                <path d="${pathStr}" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="8" />
             </svg>`;
         }
 
         function generateBlockSVG(color, char) {
-            // 这是你拿在手里的玩具块：填充颜色，粗黑描边，正中间写字
-            return `<svg width="100%" height="100%" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            // 🌟 修复核心2：同样的扩大 viewBox，并把字体大小提到了 65，完美居中对齐 y=82
+            return `<svg width="100%" height="100%" viewBox="-15 -15 150 150" xmlns="http://www.w3.org/2000/svg">
                 <path d="${pathStr}" fill="${color}" stroke="#222" stroke-width="4" stroke-linejoin="round"/>
-                <text x="60" y="78" font-family="STKaiti, Kaiti SC, 楷体, sans-serif" font-size="55" font-weight="bold" fill="#111" text-anchor="middle">${char}</text>
+                <text x="60" y="82" font-family="STKaiti, Kaiti SC, 楷体, sans-serif" font-size="65" font-weight="bold" fill="#111" text-anchor="middle">${char}</text>
             </svg>`;
         }
 
@@ -213,19 +249,48 @@
             } catch (error) { boardZone.innerHTML = '<div class="loading font-zh">网络错误</div>'; }
         }
 
-        function scatterElement(el) {
-            const margin = 20; const w = 120; 
-            const screenW = window.innerWidth; const screenH = window.innerHeight;
-            const safeZones = [
-                { x: [margin, Math.max(margin, (screenW - 650)/2 - w)], y: [80, screenH - w] }, // 左侧
-                { x: [Math.min(screenW - w, (screenW + 650)/2), screenW - w - margin], y: [80, screenH - w] } // 右侧
-            ];
-            
-            const validZones = safeZones.filter(z => z.x[1] > z.x[0]);
-            const targetZone = validZones.length > 0 ? validZones[Math.floor(Math.random() * validZones.length)] : { x: [margin, screenW - w - margin], y: [80, screenH - w - margin] };
+        let placedRects = [];
 
-            el.style.left = `${Math.max(0, Math.random() * (targetZone.x[1] - targetZone.x[0]) + targetZone.x[0])}px`;
-            el.style.top = `${Math.max(60, Math.random() * (targetZone.y[1] - targetZone.y[0]) + targetZone.y[0])}px`;
+        function scatterElement(el) {
+            const margin = 20; 
+            const w = 145; 
+            const screenW = window.innerWidth; 
+            const screenH = window.innerHeight;
+            
+            const boardRect = boardZone.getBoundingClientRect();
+            
+            let attempts = 0;
+            let finalX = 0, finalY = 0;
+            let placed = false;
+            
+            while (!placed && attempts < 100) {
+                attempts++;
+                const rx = margin + Math.random() * (screenW - w - margin * 2);
+                const ry = 80 + Math.random() * (screenH - w - 80 - margin);
+                
+                const overlapBoard = !(rx + w < boardRect.left - 10 || rx > boardRect.right + 10 || ry + w < boardRect.top - 10 || ry > boardRect.bottom + 10);
+                if (overlapBoard) continue;
+                
+                let overlapBlocks = false;
+                for (let rect of placedRects) {
+                    const dist = Math.hypot(rect.x - rx, rect.y - ry);
+                    if (dist < w + 5) { overlapBlocks = true; break; }
+                }
+                if (overlapBlocks) continue;
+                
+                finalX = rx; finalY = ry;
+                placed = true;
+            }
+            
+            if (!placed) {
+                 finalX = margin + Math.random() * (screenW - w - margin * 2);
+                 finalY = Math.max(80, screenH - w - margin); 
+            }
+            
+            placedRects.push({x: finalX, y: finalY});
+            
+            el.style.left = `${finalX}px`;
+            el.style.top = `${finalY}px`;
             el.style.setProperty('--rot', Math.floor(Math.random() * 40 - 20));
             el.style.transform = `rotate(${el.style.getPropertyValue('--rot')}deg)`;
         }
@@ -233,6 +298,7 @@
         function renderPage() {
             boardZone.innerHTML = '';
             document.querySelectorAll('.wood-block').forEach(b => b.remove());
+            placedRects = []; 
 
             const totalPages = Math.ceil(allWords.length / ITEMS_PER_PAGE);
             prevBtn.style.opacity = currentPage === 0 ? '0.5' : '1';
@@ -246,7 +312,6 @@
                 slot.className = 'drop-slot';
                 slot.dataset.char = item.char;
                 
-                // 注入被挖空的坑位背景，以及你在云端的图片
                 let innerHtml = generateSlotSVG();
                 if (item.imageUrl) innerHtml += `<img src="${item.imageUrl}">`;
                 slot.innerHTML = innerHtml;
@@ -255,19 +320,20 @@
                 boardZone.appendChild(slot);
             });
 
-            shuffledWords.forEach((item, index) => {
-                const block = document.createElement('div');
-                block.className = 'wood-block';
-                block.dataset.char = item.char;
-                
-                // 注入带粗黑描边的实体玩具块 SVG
-                const bgColor = toyColors[currentWords.findIndex(w => w.char === item.char) % toyColors.length];
-                block.innerHTML = generateBlockSVG(bgColor, item.char);
+            setTimeout(() => {
+                shuffledWords.forEach((item, index) => {
+                    const block = document.createElement('div');
+                    block.className = 'wood-block';
+                    block.dataset.char = item.char;
+                    
+                    const bgColor = toyColors[currentWords.findIndex(w => w.char === item.char) % toyColors.length];
+                    block.innerHTML = generateBlockSVG(bgColor, item.char);
 
-                gameContainer.appendChild(block);
-                scatterElement(block); 
-                makeDraggable(block);
-            });
+                    gameContainer.appendChild(block);
+                    scatterElement(block); 
+                    makeDraggable(block);
+                });
+            }, 50);
         }
 
         prevBtn.addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderPage(); } });
@@ -298,11 +364,11 @@
                 isDragging = false;
                 element.classList.remove('dragging');
                 element.releasePointerCapture(e.pointerId);
-                checkCollision(element, initialLeft, initialTop);
+                checkCollision(element);
             });
         }
 
-        function checkCollision(element, oldLeft, oldTop) {
+        function checkCollision(element) {
             const slots = document.querySelectorAll('.drop-slot:not(.filled)');
             const elRect = element.getBoundingClientRect();
             const elCenterX = elRect.left + elRect.width / 2;
@@ -318,7 +384,7 @@
                         playSound('success');
                         
                         slot.classList.add('filled');
-                        // 盖上之后，坑底的图片就看不见了
+                        // 隐藏底下的图片和挖坑阴影
                         slot.querySelectorAll('img, .slot-bg').forEach(el => el.style.opacity = '0');
                         
                         element.style.position = 'absolute';
@@ -333,15 +399,17 @@
 
             if (!isMatched) {
                 playSound('error');
-                element.style.transition = 'all 0.3s ease';
-                element.style.left = `${oldLeft}px`;
-                element.style.top = `${oldTop}px`;
-                setTimeout(() => { element.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; }, 300);
+                element.classList.add('shake-anim');
+                setTimeout(() => { element.classList.remove('shake-anim'); }, 400);
             }
         }
 
         fetchSanityAndInit();
-        window.addEventListener('resize', () => document.querySelectorAll('.wood-block:not(.locked)').forEach(scatterElement));
+        
+        window.addEventListener('resize', () => {
+            placedRects = [];
+            document.querySelectorAll('.wood-block:not(.locked)').forEach(scatterElement);
+        });
     </script>
 </body>
 </html>

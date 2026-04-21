@@ -335,6 +335,17 @@
                 window.speechSynthesis.speak(utterance);
             }
         }
+        // 监听键盘和激光笔翻页事件
+        document.addEventListener('keydown', function(event) {
+            // 匹配向右箭头或激光笔的“前进”键 (PageDown)
+            if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+                goNext();
+            } 
+            // 匹配向左箭头或激光笔的“后退”键 (PageUp)
+            else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+                goPrev();
+            }
+        });
     </script>
 </body>
 </html>
