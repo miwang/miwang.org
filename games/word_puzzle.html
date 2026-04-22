@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>四会字认读拼图</title>
+    <title id="pageTitle">四会字认读拼图</title>
     <link rel="stylesheet" href="../css/common_nav.css">
     <link rel="stylesheet" href="../css/style.css">
     
@@ -19,17 +19,73 @@
             margin: 0;
         }
 
-        /* 🌟 游戏主容器：全屏绝对定位的主舞台 */
+        /* 🌟 导航栏布局与文字 */
+        .mecc-global-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            padding: 0 25px;
+            box-sizing: border-box;
+            height: 60px;
+        }
+
+        .mecc-nav-title {
+            position: absolute; 
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .nav-controls {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+        }
+
+        .btn-refresh { 
+            background: transparent; 
+            color: #ffffff; 
+            border: 2px solid rgba(255, 255, 255, 0.6); 
+            border-radius: 12px; 
+            padding: 5px 14px; 
+            font-size: 1.05rem;  
+            font-weight: bold; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            box-shadow: none; 
+            transition: all 0.2s ease;
+        }
+        
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
+        }
+
+        .btn-refresh:active { 
+            transform: scale(0.95); 
+        }
+
+        .btn-refresh svg {
+            width: 22px; height: 22px;
+            stroke-width: 7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         .game-container {
-            position: fixed;
-            top: 60px; /* 避开导航栏 */
-            left: 0; right: 0; bottom: 0;
+            flex: 1;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* 🌟 中央实木相框棋盘 */
+        /* 棋盘 */
         .puzzle-board {
             background-color: #faf8f5;
             border: 6px solid #8b2b2b; 
@@ -59,6 +115,7 @@
             display: flex;
             align-items: center;
             justify-content: center; 
+            transition: transform 0.1s;
         }
 
         .slot-bg {
@@ -69,7 +126,22 @@
             transition: opacity 0.3s;
         }
 
-        /* ⬇️ 3D 闪卡容器：全程绝对定位，杜绝脱节 */
+        /* 空白坑位的呼吸灯特效 */
+        @keyframes emptySlotGlow {
+            0%, 100% { stroke: rgba(139, 43, 43, 0.2); stroke-width: 6; }
+            50% { stroke: rgba(243, 178, 54, 0.85); stroke-width: 9; }
+        }
+        
+        body.game-unlocked .drop-slot:not(.filled) .slot-stroke {
+            animation: emptySlotGlow 1.8s infinite ease-in-out;
+        }
+
+        .slot-img-inner {
+            transition: opacity 0.4s ease;
+            pointer-events: none; 
+        }
+
+        /* 3D 闪卡容器 */
         .wood-block {
             position: absolute;
             width: 115px;  
@@ -88,7 +160,6 @@
 
         .wood-block.is-flipped .flip-inner { transform: rotateY(180deg); }
 
-        /* 半空换皮：防穿透 */
         .flip-front, .flip-back {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         }
@@ -100,27 +171,56 @@
         .wood-block.is-flipped .flip-back { opacity: 1; }
 
         .wood-block svg { width: 100%; height: 100%; pointer-events: none; overflow: visible !important; }
-        .front-img-inner, .slot-img-inner { transition: opacity 0.4s ease; }
+        .front-img-inner { transition: opacity 0.4s ease; }
 
-        /* 拖拽与锁定状态 */
+        /* 拖拽状态与锁定状态 */
         .wood-block.ready-to-drag { cursor: grab; }
         .wood-block.ready-to-drag.dragging {
-            cursor: grabbing; transform: scale(1.15) !important; z-index: 999;
+            cursor: grabbing; transition: none; transform: scale(1.15) !important; z-index: 999;
         }
+        
         .wood-block.locked {
-            cursor: default; pointer-events: none; width: 115px !important; height: 115px !important; transform: none !important;
+            cursor: pointer; 
+            pointer-events: auto; 
+            width: 100%; height: 100%; 
+            transform: none !important;
         }
         .wood-block.locked .flip-inner { transform: rotateY(180deg); }
 
-        /* 弹跳解锁特效 */
         @keyframes popReady {
             0% { transform: rotateY(180deg) scale(1); }
             50% { transform: rotateY(180deg) scale(1.15); }
             100% { transform: rotateY(180deg) scale(1); }
         }
-        .pop-ready { animation: popReady 0.3s ease-in-out; }
+        .pop-ready { animation: popReady 0.35s ease-in-out; }
 
-        /* 彩色发光轮廓 */
+        /* 游戏规则提示横幅 */
+        .rule-banner {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(253, 250, 245, 0.95);
+            border: 3px solid #e6c27a;
+            padding: 10px 25px;
+            border-radius: 30px;
+            color: #8b2b2b;
+            font-weight: bold;
+            font-size: 1.15rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            z-index: 50;
+            text-align: center;
+            white-space: nowrap;
+            transition: all 0.4s ease;
+        }
+
+        .rule-banner.unlocked {
+            background: #598586;
+            border-color: #3e6061;
+            color: white;
+            transform: translateX(-50%) scale(1.05);
+        }
+
         @keyframes rainbowStroke {
             0%   { stroke: #ff4757; filter: drop-shadow(0 0 10px #ff4757); }
             33%  { stroke: #2ed573; filter: drop-shadow(0 0 10px #2ed573); }
@@ -131,23 +231,13 @@
             animation: rainbowStroke 2.5s linear infinite; stroke-width: 6; 
         }
 
-        /* 🌟 幽灵图片，复刻 SVG */
         .ghost-img {
-            position: absolute; width: 115px; height: 115px; z-index: 1000;
+            position: fixed; width: 115px; height: 115px; z-index: 1000;
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); pointer-events: none;
         }
 
-        /* 导航栏换一局按钮 */
-        .nav-controls { position: absolute; top: 15px; right: 25px; display: flex; gap: 15px; z-index: 50; }
-        .btn-refresh { 
-            background: #fdfaf5; color: #8b2b2b; border: 3px solid #8b2b2b; 
-            border-radius: 12px; padding: 6px 18px; font-size: 1.1rem;  
-            font-weight: bold; box-shadow: 0 4px 0 #8b2b2b; cursor: pointer; 
-        }
-        .btn-refresh:active { transform: translateY(4px); box-shadow: 0 0 0 #8b2b2b; }
-
-        /* 🌟 完美的通关弹窗 */
+        /* 通关弹窗 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
@@ -167,7 +257,7 @@
         .modal-btns { display: flex; gap: 20px; justify-content: center; }
         .m-btn {
             border: none; border-radius: 12px; padding: 12px 25px; font-size: 1.3rem; font-weight: bold;
-            cursor: pointer; transition: transform 0.1s;
+            cursor: pointer; transition: transform 0.1s; text-decoration: none; display: flex; align-items: center;
         }
         .m-btn.play { background: #598586; color: white; box-shadow: 0 5px 0 #3e6061; }
         .m-btn.exit { background: #e0e0e0; color: #333; box-shadow: 0 5px 0 #bdbdbd; }
@@ -201,34 +291,90 @@
     </svg>
 
     <nav class="mecc-global-nav">
-        <a href="javascript:history.back()" class="mecc-nav-back">
+        <a id="nav-back-link" href="../teachers.html" class="mecc-nav-back">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-            <span class="font-zh">返回</span>
+            <span id="nav-back-text" class="font-zh">返回工具台</span>
         </a>
-        <h1 class="mecc-nav-title font-zh">四会字认读拼图</h1>
+        <h1 id="nav-title" class="mecc-nav-title font-zh">四会字认读拼图</h1>
         <div class="nav-controls">
-            <button onclick="renderPage()" class="btn-refresh font-zh">🔄 换一局</button>
+            <button onclick="renderPage()" class="btn-refresh font-zh">
+                <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                    <path d="M 45 18 C 20 22 10 45 15 65 C 20 85 45 90 65 80 C 85 70 90 45 80 25" />
+                    <path d="M 60 20 L 80 25 L 75 45" />
+                </svg>
+                <span id="btn-refresh-text">换一局</span>
+            </button>
         </div>
     </nav>
 
     <div class="game-container" id="gameContainer">
         <div class="puzzle-board" id="boardZone">
-            <div class="font-zh" style="grid-column: span 5; text-align: center; color: #8b2b2b;">正在研墨取字...</div>
+            <div id="loading-text" class="font-zh" style="grid-column: span 5; text-align: center; color: #8b2b2b;">正在研墨取字...</div>
         </div>
-        </div>
+        
+        <div id="ruleText" class="rule-banner font-zh"></div>
+    </div>
 
     <div class="modal-overlay" id="successModal">
         <div class="modal-box">
-            <div class="modal-title font-zh">🎉 太棒啦！拼图完成！</div>
+            <div id="modal-title" class="modal-title font-zh">🎉 太棒啦！拼图完成！</div>
             <div class="modal-btns">
-                <button onclick="history.back()" class="m-btn exit font-zh">退出返回</button>
-                <button onclick="startNextRound()" class="m-btn play font-zh">再玩一次</button>
+                <a id="modal-btn-exit" href="../teachers.html" class="m-btn exit font-zh">退出返回</a>
+                <button id="modal-btn-play" onclick="startNextRound()" class="m-btn play font-zh">再玩一次</button>
             </div>
         </div>
     </div>
 
     <script>
-        // TTS 语音引擎
+        // =====================================
+        // 语言与路由检测逻辑
+        // =====================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const isEnglish = urlParams.get('role') === 'parents' || document.referrer.includes('parents.html');
+        const LANG = isEnglish ? 'en' : 'zh';
+        
+        const t = {
+            zh: {
+                title: "四会字认读拼图",
+                back: "返回工具台",
+                refresh: "换一局",
+                loading: "正在研墨取字...",
+                rule: "💡 请先点击所有卡片完成认读，全部翻开后即可开始拼图哦！",
+                unlocked: "🌟 认读完成！快把汉字拖进对应的空位里吧！",
+                successTitle: "🎉 太棒啦！拼图完成！",
+                exit: "退出返回",
+                playAgain: "再玩一次",
+                backUrl: "../teachers.html"
+            },
+            en: {
+                title: "Character Puzzle",
+                back: "Back to Dashboard",
+                refresh: "New Game",
+                loading: "Loading characters...",
+                rule: "💡 Tap all cards to review the words. The puzzle unlocks after all cards are flipped!",
+                unlocked: "🌟 Review complete! Now drag the characters to the correct slots!",
+                successTitle: "🎉 Awesome! Puzzle Completed!",
+                exit: "Exit",
+                playAgain: "Play Again",
+                backUrl: "../parents.html"
+            }
+        }[LANG];
+
+        document.title = t.title;
+        document.getElementById('nav-title').innerText = t.title;
+        document.getElementById('nav-back-text').innerText = t.back;
+        document.getElementById('btn-refresh-text').innerText = t.refresh;
+        document.getElementById('loading-text').innerText = t.loading;
+        document.getElementById('modal-title').innerText = t.successTitle;
+        document.getElementById('modal-btn-exit').innerText = t.exit;
+        document.getElementById('modal-btn-play').innerText = t.playAgain;
+        
+        document.getElementById('nav-back-link').href = t.backUrl;
+        document.getElementById('modal-btn-exit').href = t.backUrl;
+
+        // =====================================
+        // Azure TTS 统一音频播放
+        // =====================================
         let globalAudio = new Audio();
         async function playUnifiedAudio(text, sanityAudioUrl) {
             if (!text) return;
@@ -259,6 +405,50 @@
             window.speechSynthesis.speak(msg);
         }
 
+        // 欢快的通关庆祝音效
+        function playHappySound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine';
+
+                osc.frequency.setValueAtTime(987.77, ctx.currentTime); // B5
+                osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1); // E6
+
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.4);
+            } catch(e){}
+        }
+
+        // 可爱的卡通果冻弹簧音 (Boop)
+        function playBoopSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine';
+                
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+                
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e){}
+        }
+
+        // =====================================
+        // 游戏核心逻辑
+        // =====================================
         const PROJECT_ID = 'sow12t1i'; 
         const DATASET = 'production';         
         const query = encodeURIComponent(`*[_type == "word" && defined(image)]{ char, "imageUrl": image.asset->url, "audioUrl": audio.asset->url }`);
@@ -266,21 +456,22 @@
 
         const boardZone = document.getElementById('boardZone');
         const gameContainer = document.getElementById('gameContainer');
+        const ruleBanner = document.getElementById('ruleText');
 
         let allWords = [];
         const ITEMS_PER_PAGE = 15; 
         let matchedCount = 0;
+        let flippedCount = 0; 
 
         const toyColors = ['#ff8fa3', '#80ed99', '#7cd4fd', '#ffdc5e', '#e4c1f9', '#ffb5a7'];
         const pathStr = "M60,6 C90,-6 126,30 114,60 C126,90 90,126 60,114 C30,126 -6,90 6,60 C-6,30 30,-6 60,6 Z";
         
-        // 🌟 完全一致的 SVG 嵌套结构，100% 防变形和层级穿透
         function generateSlotSVG(imageUrl) {
             const imgTag = imageUrl ? `<image href="${imageUrl}" x="8" y="8" width="104" height="104" preserveAspectRatio="xMidYMid slice" clip-path="url(#biscuitClip)" opacity="0" class="slot-img-inner" />` : '';
             return `<svg class="slot-bg" viewBox="-15 -15 150 150" xmlns="http://www.w3.org/2000/svg">
                 <path d="${pathStr}" fill="#e6dfd1" />
                 ${imgTag}
-                <path d="${pathStr}" fill="none" stroke="rgba(139, 43, 43, 0.2)" stroke-width="6" />
+                <path class="slot-stroke" d="${pathStr}" fill="none" stroke="rgba(139, 43, 43, 0.2)" stroke-width="6" />
             </svg>`;
         }
 
@@ -290,7 +481,7 @@
             if (isFront && imageUrl) {
                 contentHtml = `<image href="${imageUrl}" x="8" y="8" width="104" height="104" preserveAspectRatio="xMidYMid slice" clip-path="url(#biscuitClip)" class="front-img-inner" />`;
             } else if (!isFront) {
-                contentHtml = `<text x="60" y="82" font-family="STKaiti, Kaiti SC, 楷体, sans-serif" font-size="58" font-weight="bold" fill="#111" text-anchor="middle">${char}</text>`;
+                contentHtml = `<text x="60" y="60" dominant-baseline="central" class="font-zh" font-size="58" font-weight="bold" fill="#111" text-anchor="middle">${char}</text>`;
             }
             return `<svg viewBox="-15 -15 150 150" xmlns="http://www.w3.org/2000/svg">
                 <path d="${pathStr}" fill="${fillColor}" stroke="#333" stroke-width="4" stroke-linejoin="round"/>
@@ -298,14 +489,20 @@
             </svg>`;
         }
 
+        // 🌟 修复语法错误：加上了正确的大括号
         async function fetchSanityAndInit() {
             try {
                 const response = await fetch(sanityUrl);
                 const result = await response.json();
                 allWords = result.result || [];
-                if (allWords.length > 0) renderPage();
-                else boardZone.innerHTML = '<div class="font-zh">未找到数据</div>';
-            } catch (error) { boardZone.innerHTML = '<div class="font-zh">网络错误</div>'; }
+                if (allWords.length > 0) {
+                    renderPage();
+                } else {
+                    boardZone.innerHTML = '<div class="font-zh">未找到数据</div>';
+                }
+            } catch (error) { 
+                boardZone.innerHTML = '<div class="font-zh">网络错误</div>'; 
+            }
         }
 
         function startNextRound() {
@@ -313,57 +510,58 @@
             renderPage();
         }
 
-        // 🌟 终极两翼网格布局算法：完美整齐，绝对不叠在一起
-        function arrangeInGrid(blocks) {
-            const containerRect = gameContainer.getBoundingClientRect();
-            const boardRect = boardZone.getBoundingClientRect();
-            const w = 115;
-            
-            // 计算棋盘左右两侧的可用空间
-            const boardLeft = boardRect.left - containerRect.left;
-            const boardRight = boardRect.right - containerRect.left;
-            
+        function arrangeGrid(blocks) {
+            const w = 115; 
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+
+            const sidebarWidth = 250; 
+            const cols = 2; 
+            const startY = 80;
+            const usableH = screenH - startY - 20;
+
             const placeBlocks = (arr, isLeft) => {
-                const startX = isLeft ? 10 : boardRight + 10;
-                const areaW = isLeft ? Math.max(w * 2, boardLeft - 20) : Math.max(w * 2, containerRect.width - boardRight - 20);
-                
-                const cols = 2;
-                const rows = 4;
-                const colStep = areaW / cols;
-                // 确保上下留有边距
-                const rowStep = (containerRect.height - 40) / rows; 
-                
-                arr.forEach((block, index) => {
-                    const c = index % cols;
-                    const r = Math.floor(index / cols);
+                const startX = isLeft ? 20 : screenW - sidebarWidth + 20;
+                const rows = Math.ceil(arr.length / cols);
+                const hStep = Math.min(w + 15, usableH / rows); 
+                const wStep = (sidebarWidth - 40 - w) / (cols - 1);
+
+                arr.forEach((block, i) => {
+                    const r = Math.floor(i / cols);
+                    const c = i % cols;
                     
-                    let cx = startX + c * colStep + colStep / 2;
-                    let cy = 20 + r * rowStep + rowStep / 2;
+                    let posX = startX + c * wStep;
+                    if (arr.length <= cols && i === 0 && arr.length === 1) {
+                         posX = startX + (sidebarWidth - 40 - w)/2;
+                    }
                     
-                    let x = cx - w / 2;
-                    let y = cy - w / 2;
-                    
-                    block.style.transition = 'all 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
-                    block.style.left = `${x}px`;
-                    block.style.top = `${y}px`;
-                    block.style.transform = 'none';
-                    
-                    // 移动到位后取消过渡，确保拖拽不延迟
-                    setTimeout(() => { block.style.transition = 'none'; }, 500);
+                    let posY = startY + r * hStep + (Math.random() * 8); 
+
+                    block.style.left = `${posX}px`;
+                    block.style.top = `${posY}px`;
+                    block.style.setProperty('--rot', Math.floor(Math.random() * 20 - 10));
+                    block.style.transform = `rotate(${block.style.getPropertyValue('--rot')}deg)`;
                 });
             };
             
-            // 左边 8 个，右边 7 个
-            placeBlocks(blocks.slice(0, 8), true);
-            placeBlocks(blocks.slice(8, 15), false);
+            const leftArr = blocks.slice(0, 8);
+            const rightArr = blocks.slice(8, 15);
+            
+            placeBlocks(leftArr, true);
+            placeBlocks(rightArr, false);
         }
 
         function renderPage() {
             boardZone.innerHTML = '';
             document.querySelectorAll('.wood-block, .ghost-img').forEach(b => b.remove());
+            
+            document.body.classList.remove('game-unlocked');
             matchedCount = 0;
+            flippedCount = 0; 
+            ruleBanner.innerText = t.rule;
+            ruleBanner.style.opacity = '1';
+            ruleBanner.classList.remove('unlocked');
 
-            // 每次全是重新洗牌，随机抽取
             const currentWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, ITEMS_PER_PAGE);
             const shuffledForPanels = [...currentWords].sort(() => Math.random() - 0.5);
 
@@ -395,11 +593,6 @@
                         </div>
                     `;
 
-                    // 初始化放置在中间，等待飞出排列
-                    block.style.left = '50%';
-                    block.style.top = '50%';
-                    block.style.transform = 'translate(-50%, -50%) scale(0.1)';
-
                     gameContainer.appendChild(block);
                     createdBlocks.push(block);
 
@@ -414,20 +607,49 @@
                         block.classList.add('is-flipped'); 
                         
                         if (item.imageUrl) {
-                            setTimeout(() => animateImageFlight(item, block), 150);
+                            setTimeout(() => animateImageFlight(item, block, checkAllFlipped), 150);
                         } else {
-                            setTimeout(() => unlockDrag(block), 600);
+                            setTimeout(() => checkAllFlipped(), 600);
                         }
                     });
                 });
 
-                // 将方块向两侧阵列散开
-                arrangeInGrid(createdBlocks);
+                arrangeGrid(createdBlocks);
             }, 50);
         }
 
-        // 🌟 完全一致渲染的飞行动画
-        function animateImageFlight(item, block) {
+        function checkAllFlipped() {
+            flippedCount++;
+            if (flippedCount === ITEMS_PER_PAGE) {
+                ruleBanner.innerText = t.unlocked;
+                ruleBanner.classList.add('unlocked');
+                
+                document.body.classList.add('game-unlocked');
+
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                    osc.start(); osc.stop(ctx.currentTime + 0.5);
+                } catch(e) {}
+
+                const blocks = document.querySelectorAll('.wood-block');
+                blocks.forEach((block, idx) => {
+                    setTimeout(() => {
+                        block.classList.add('ready-to-drag');
+                        makeDraggable(block);
+                        const inner = block.querySelector('.flip-inner');
+                        inner.classList.add('pop-ready');
+                        setTimeout(() => inner.classList.remove('pop-ready'), 350);
+                    }, idx * 60); 
+                });
+            }
+        }
+
+        function animateImageFlight(item, block, callback) {
             const targetSlot = document.getElementById(`slot-${item.char}`);
             if (!targetSlot) return;
 
@@ -441,12 +663,11 @@
                 <image href="${item.imageUrl}" x="8" y="8" width="104" height="104" preserveAspectRatio="xMidYMid slice" clip-path="url(#biscuitClip)" />
             </svg>`;
             
-            // 绝对定位在 gameContainer 内部
             ghost.style.left = (blockRect.left - containerRect.left) + 'px';
             ghost.style.top = (blockRect.top - containerRect.top) + 'px';
             gameContainer.appendChild(ghost);
             
-            ghost.getBoundingClientRect(); // 强制触发重绘
+            ghost.getBoundingClientRect(); 
 
             ghost.style.left = (slotRect.left - containerRect.left) + 'px';
             ghost.style.top = (slotRect.top - containerRect.top) + 'px';
@@ -454,20 +675,23 @@
             setTimeout(() => {
                 ghost.remove();
                 const slotImg = targetSlot.querySelector('.slot-img-inner');
-                if (slotImg) slotImg.setAttribute('opacity', '0.85'); 
-                unlockDrag(block);
+                
+                if (slotImg) {
+                    slotImg.setAttribute('opacity', '0.85'); 
+                    targetSlot.style.cursor = 'pointer';
+                    targetSlot.onclick = (e) => {
+                        if (!targetSlot.classList.contains('filled')) {
+                            playUnifiedAudio(item.char, item.audioUrl);
+                            targetSlot.style.transform = 'scale(0.95)';
+                            setTimeout(() => { targetSlot.style.transform = 'scale(1)'; }, 100);
+                        }
+                    };
+                }
+                
+                callback(); 
             }, 600);
         }
 
-        function unlockDrag(block) {
-            block.classList.add('ready-to-drag');
-            makeDraggable(block);
-            const inner = block.querySelector('.flip-inner');
-            inner.classList.add('pop-ready');
-            setTimeout(() => inner.classList.remove('pop-ready'), 300);
-        }
-
-        // 🌟 脱节克星：全程基于 left/top 绝对定位计算，不再脱离父元素
         function makeDraggable(element) {
             let startX = 0, startY = 0, initialLeft = 0, initialTop = 0, isDragging = false;
             
@@ -477,7 +701,6 @@
                 element.classList.add('dragging');
                 element.setPointerCapture(e.pointerId);
                 
-                // 去除可能存在的过渡动画，保证鼠标立刻吸附跟手
                 element.style.transition = 'none';
 
                 initialLeft = parseFloat(element.style.left) || 0;
@@ -515,44 +738,44 @@
                 if (elCenterX > slotRect.left && elCenterX < slotRect.right && elCenterY > slotRect.top && elCenterY < slotRect.bottom) {
                     if (element.dataset.char === slot.dataset.char) {
                         isMatched = true;
-                        
-                        try {
-                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                            const osc = ctx.createOscillator(); const gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
-                            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
-                            gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                            osc.start(); osc.stop(ctx.currentTime + 0.3);
-                        } catch(err){}
 
                         slot.classList.add('filled');
                         slot.querySelectorAll('.slot-img-inner, .slot-bg').forEach(el => el.style.opacity = '0');
                         
-                        // 精确吸附：计算相对 gameContainer 的偏移量
-                        element.style.left = `${slotRect.left - containerRect.left}px`;
-                        element.style.top = `${slotRect.top - containerRect.top}px`;
+                        element.style.position = 'absolute';
+                        element.style.left = '0px';
+                        element.style.top = '0px';
+                        element.style.transform = 'none';
                         element.classList.add('locked', 'success-anim');
+                        slot.appendChild(element); 
                         
+                        const wordData = allWords.find(w => w.char === element.dataset.char);
+                        if (wordData) {
+                            playUnifiedAudio(wordData.char, wordData.audioUrl);
+
+                            element.onclick = (e) => {
+                                e.stopPropagation(); 
+                                playUnifiedAudio(wordData.char, wordData.audioUrl);
+                                element.style.transform = 'scale(0.95)';
+                                setTimeout(() => { element.style.transform = 'none'; }, 100);
+                            };
+                        }
+
                         matchedCount++;
                         if (matchedCount === ITEMS_PER_PAGE) {
-                            setTimeout(() => { document.getElementById('successModal').classList.add('active'); }, 1000);
+                            ruleBanner.style.opacity = '0';
+                            document.body.classList.remove('game-unlocked'); 
+                            
+                            setTimeout(() => { playHappySound(); }, 400);
+                            setTimeout(() => { document.getElementById('successModal').classList.add('active'); }, 1200);
                         }
                     }
                 }
             });
 
             if (!isMatched) {
-                try {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-                    osc.connect(gain); gain.connect(ctx.destination);
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(150, ctx.currentTime);
-                    gain.gain.setValueAtTime(0.3, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-                    osc.start(); osc.stop(ctx.currentTime + 0.3);
-                } catch(err){}
+                playBoopSound(); 
 
-                // 错误弹回并抖动
                 element.style.transition = 'all 0.3s ease';
                 element.style.left = `${oldLeft}px`;
                 element.style.top = `${oldTop}px`;
@@ -565,21 +788,9 @@
 
         fetchSanityAndInit();
         
-        // 窗口拉伸时重新排列防出界
         window.addEventListener('resize', () => {
             const blocks = Array.from(document.querySelectorAll('.wood-block:not(.locked)'));
-            if(blocks.length > 0) arrangeInGrid(blocks);
-            
-            // 锁定在棋盘里的也要跟着窗口适应新坐标
-            const containerRect = gameContainer.getBoundingClientRect();
-            document.querySelectorAll('.wood-block.locked').forEach(block => {
-                const slot = document.getElementById(`slot-${block.dataset.char}`);
-                if (slot) {
-                    const slotRect = slot.getBoundingClientRect();
-                    block.style.left = `${slotRect.left - containerRect.left}px`;
-                    block.style.top = `${slotRect.top - containerRect.top}px`;
-                }
-            });
+            if(blocks.length > 0) arrangeGrid(blocks);
         });
     </script>
 </body>

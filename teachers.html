@@ -10,17 +10,17 @@
     <style>
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
         :root {
-            /* 🌿 完美同步 unit_school.html 的高级森系 SaaS 配色 */
-            --c-lime: #c3d94e;    /* 青柠/草绿 */
-            --c-emerald: #44b88e; /* 翡翠绿 */
-            --c-slate: #1e565c;   /* 深石板绿 */
-            --c-navy: #183042;    /* 藏青色 */
-            --c-teal: #217273;    /* 水鸭青 */
-            --c-mint: #63cbb2;    /* 明亮薄荷绿 */
+            /* 🌿 高级森系 SaaS 配色 */
+            --c-lime: #c3d94e;    
+            --c-emerald: #44b88e; 
+            --c-slate: #1e565c;   
+            --c-navy: #183042;    
+            --c-teal: #217273;    
+            --c-mint: #63cbb2;    
             
             --bg: #f0f4f8;          
             --card-bg: #ffffff;     
-            --text: #334155;        /* 统一的深岩灰正文 */
+            --text: #334155;        
             --text-muted: #64748b;  
             --border: #e2e8f0;      
             
@@ -86,10 +86,90 @@
         }
 
         .container {
-            width: 94%; max-width: 1080px; margin: 30px auto 50px;
+            width: 94%; max-width: 1080px; margin: 0 auto 50px;
             display: flex; flex-direction: column; gap: 35px;
             position: relative; z-index: 2; 
         }
+
+        /* 🌟 仪表盘控制区 (过滤器 + 搜索) */
+        .dashboard-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 0;
+            background: rgba(240, 244, 248, 0.85); /* 半透明底色匹配网页背景 */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 1.05rem;
+            font-family: var(--font-zh);
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .filter-btn:hover { border-color: var(--c-emerald); color: var(--c-emerald); }
+        
+        .filter-btn.active {
+            background: var(--c-slate);
+            color: #fff;
+            border-color: var(--c-slate);
+            box-shadow: 0 6px 12px rgba(30, 86, 92, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 280px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 2px solid var(--border);
+            border-radius: 30px;
+            font-family: var(--font-zh);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            color: var(--text);
+            background: #fff;
+        }
+        .search-box input:focus { border-color: var(--c-emerald); }
+
+        /* 区块隐藏动画 */
+        .tool-section { transition: opacity 0.3s ease; }
+        .tool-section.hidden { display: none; }
 
         .section-title {
             font-size: 1.3rem; font-weight: bold; color: var(--text); 
@@ -132,8 +212,9 @@
             align-items: center;
             min-height: 115px;
         }
+        .card.hidden { display: none; }
 
-        /* 🐯 老虎异形卡片 (王字翻出外面 + 虎斑 + 内耳廓) */
+        /* 🐯 老虎异形卡片 */
         .card.tiger-shape {
             background-color: transparent !important;
             border: none !important;
@@ -149,7 +230,7 @@
             transform: translateY(-5px);
         }
 
-        /* 🐘 大象异形卡片 (极简传神版：更长的象牙 + 更细的象鼻 + 无褶皱) */
+        /* 🐘 大象异形卡片 */
         .card.elephant-shape {
             background-color: transparent !important;
             border: none !important;
@@ -216,7 +297,6 @@
         }
         .card-title .sub-title { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
         
-        /* 精确转换为了新色板的 RGBA 透色值 */
         .slate-hover:hover .card-title .sub-title { color: var(--c-slate); background: rgba(30, 86, 92, 0.08); border-color: rgba(30, 86, 92, 0.15); }
         .emerald-hover:hover .card-title .sub-title { color: var(--c-emerald); background: rgba(68, 184, 142, 0.08); border-color: rgba(68, 184, 142, 0.15); }
         .mint-hover:hover .card-title .sub-title { color: var(--c-mint); background: rgba(99, 203, 178, 0.08); border-color: rgba(99, 203, 178, 0.15); }
@@ -227,7 +307,7 @@
             align-self: start; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        /* 模态框统一使用藏青色遮罩 */
+        /* 模态框 */
         #modal-overlay { position: fixed; inset: 0; background: rgba(24, 48, 66, 0.85); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .lock-box { background: #fff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--border); border-top: 6px solid var(--c-slate); }
         
@@ -243,6 +323,8 @@
             .grid { grid-template-columns: 1fr; }
             .card.tiger-shape { padding: 36px 14px 14px 14px !important; }
             .card.elephant-shape { padding: 16px 14px 16px 70px !important; }
+            .dashboard-controls { justify-content: center; }
+            .search-box { width: 100%; max-width: none; }
         }
     </style>
 </head>
@@ -257,8 +339,22 @@
         <h1>王老师的教学工具台</h1>
     </header>
 
-<div class="container">
-        <div class="tool-section">
+    <div class="container">
+        
+        <div class="dashboard-controls">
+            <div class="filter-tabs">
+                <button class="filter-btn active" data-filter="all">全部模块</button>
+                <button class="filter-btn" data-filter="tool-tools">教学工具</button>
+                <button class="filter-btn" data-filter="tool-games">互动游戏</button>
+                <button class="filter-btn" data-filter="tool-groups">分组轮换</button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜索工具或游戏..." autocomplete="off">
+            </div>
+        </div>
+
+        <div class="tool-section" id="tool-tools">
             <div class="section-title" style="border-left-color: var(--c-emerald);">
                 <div class="title-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -280,7 +376,7 @@
             </div>
         </div>
 
-        <div class="tool-section">
+        <div class="tool-section" id="tool-games">
             <div class="section-title" style="border-left-color: var(--c-mint);">
                 <div class="title-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -291,6 +387,7 @@
                 <span>课堂互动游戏</span>
             </div>
             <div class="grid">
+                <a href="games/word_puzzle.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-shapes"></i></div><div class="card-title">四会字拼拼乐<span class="sub-title">认读拼图</span></div><div class="card-desc">听读字卡，拼图配对。</div></a>
                 <a href="games/knockknock.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-door-closed"></i></div><div class="card-title">这是谁？<span class="sub-title">家庭成员识字</span></div><div class="card-desc">通过猜测敲门者认读成员。</div></a>
                 <a href="games/cat_game.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-cat"></i></div><div class="card-title">小猫在哪里？<span class="sub-title">认读躲猫猫</span></div><div class="card-desc">在生字后面寻找可爱小猫。</div></a>
                 <a href="games/connect_5.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-chess-board"></i></div><div class="card-title">自由五子棋<span class="sub-title">牛奶对战饼干</span></div><div class="card-desc">以汉字为棋子的博弈游戏。</div></a>
@@ -302,7 +399,7 @@
             </div>
         </div>
 
-        <div class="tool-section">
+        <div class="tool-section" id="tool-groups">
             <div class="section-title" style="border-left-color: var(--c-slate);">
                 <div class="title-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-slate)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -356,6 +453,7 @@
     </div>
 
     <script>
+        // 密码功能
         const CORRECT_PASSWORD = "5683";
         let targetUrl = "";
 
@@ -382,21 +480,86 @@
             }
         }
 
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.card')) {
-                sessionStorage.setItem('teachers_scroll_pos', window.scrollY);
-            }
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
         });
 
-        window.addEventListener('pageshow', () => {
+        // 🌟 选项卡过滤与搜索逻辑
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const searchInput = document.getElementById('searchInput');
+            const sections = document.querySelectorAll('.tool-section');
+            const allCards = document.querySelectorAll('.card');
+
+            // 1. 点击选项卡过滤
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 更新按钮状态
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const filter = btn.dataset.filter;
+                    
+                    // 清空搜索框
+                    searchInput.value = '';
+                    allCards.forEach(c => c.classList.remove('hidden'));
+
+                    sections.forEach(sec => {
+                        if (filter === 'all' || sec.id === filter) {
+                            sec.classList.remove('hidden');
+                        } else {
+                            sec.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // 2. 搜索框过滤
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
+                
+                // 搜索时自动切回“全部模块”
+                if (term.length > 0) {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-filter="all"]').classList.add('active');
+                }
+
+                sections.forEach(sec => {
+                    let hasVisibleCard = false;
+                    const cards = sec.querySelectorAll('.card');
+                    
+                    cards.forEach(card => {
+                        const title = card.querySelector('.card-title').textContent.toLowerCase();
+                        const desc = card.querySelector('.card-desc').textContent.toLowerCase();
+                        
+                        if (title.includes(term) || desc.includes(term)) {
+                            card.classList.remove('hidden');
+                            hasVisibleCard = true;
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    });
+
+                    // 如果整个区块没有匹配的卡片，就隐藏该区块
+                    if (hasVisibleCard) {
+                        sec.classList.remove('hidden');
+                    } else {
+                        sec.classList.add('hidden');
+                    }
+                });
+            });
+
+            // 记住滚动位置
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.card')) {
+                    sessionStorage.setItem('teachers_scroll_pos', window.scrollY);
+                }
+            });
+
             const saved = sessionStorage.getItem('teachers_scroll_pos');
             if (saved) {
                 window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' });
             }
-        });
-
-        document.getElementById('modal-overlay').addEventListener('click', function(e) {
-            if (e.target === this) this.style.display = 'none';
         });
     </script>
 </body>

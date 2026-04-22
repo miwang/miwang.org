@@ -1,235 +1,264 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wang Laoshi's Space</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wang Laoshi's Space — 文墨学堂</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
+        /* 🌿 引入文楷字体 */
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
         :root {
-            --primary:   #1e2e46;
-            --accent:    #f3b236;
-            --accent-dk: #d4942a;
-            --teal:      #598586;
-            --bg:        #f4f6f8;
-            --card-bg:   #ffffff;
-            --text:      #1f2e46;
-            --text-muted:#6b7a8d;
-            --border:    #e4e9ef;
+            --c-navy:    #183042;
+            --c-gold:    #e6c27a;
+            --c-lacquer: #a32e2e;
+            --c-teal:    #217273;
+            --bg-paper:  #faf6ed;
+            
+            --card-bg:   rgba(255, 255, 255, 0.78);
+            --text-main: #2c3e50;
+            --text-muted:#566573;
+            
+            /* 🌟 核心修正 1：字体兜底逻辑 (楷体 -> 文楷 -> 系统) */
             --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
-            --font-en: "LXGW WenKai Lite", system-ui, sans-serif;
-            --radius: 14px;
-            --shadow: 0 4px 16px rgba(30,46,70,0.09);
-            --shadow-hover: 0 10px 28px rgba(30,46,70,0.16);
+            --font-en: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+            
+            --radius: 22px;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        /* 🌟 核心修正 2：锁定一屏高度，禁止滚动 */
         body {
             font-family: var(--font-en);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            height: 100vh; 
+            overflow: hidden; 
             display: flex;
             flex-direction: column;
+            background-color: var(--bg-paper);
+            background-image: url('images/bg-landscape.webp');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+        }
+        
+        /* 🌟 核心修正 3：极轻薄的蒙版，背景画不再被遮挡 */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, rgba(250, 246, 237, 0.1) 0%, rgba(250, 246, 237, 0.35) 100%);
+            backdrop-filter: blur(1px);
+            -webkit-backdrop-filter: blur(1px);
+            z-index: -1;
         }
 
-        /* ── Header ── */
+        /* ─── 紧凑型头部 ─── */
         .site-header {
-            background: var(--primary);
-            padding: 16px 24px 14px;
+            padding: 30px 24px 10px; /* 压缩上下留白 */
             text-align: center;
-            border-bottom: 5px solid var(--accent);
-            position: relative;
+            flex-shrink: 0;
         }
+
         .site-header h1 {
             font-family: var(--font-en);
             font-size: 2.8rem;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-        .site-header .zh-sub {
-            font-family: var(--font-zh);
-            font-size: 1.1rem;
-            color: var(--accent);
-            letter-spacing: 4px;
-            margin-bottom: 8px;
-            display: block;
-        }
-        .site-header .tagline {
-            font-family: var(--font-en);
-            font-size: 1rem;
-            color: rgba(255,255,255,0.6);
+            font-weight: 800;
+            color: var(--c-navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
             letter-spacing: 1px;
         }
 
-        /* ── Portal cards ── */
-        .portal-container {
+        .vsg-symbol { flex-shrink: 0; }
+
+        .site-header p {
+            font-family: var(--font-zh);
+            font-size: 1.2rem;
+            color: var(--c-lacquer);
+            letter-spacing: 8px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        /* ─── 内容展示区：让卡片在屏幕中间自动对齐 ─── */
+        .portal-main {
             flex: 1;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 32px;
-            padding: 16px 24px 40px;
-            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 24px;
+        }
+
+        .portal-container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px; 
+            position: relative;
+        }
+
+        /* 墨竹点缀 */
+        .deco-bamboo { 
+            position: absolute; left: -100px; bottom: -20px; z-index: -1; 
+            opacity: 0.6; pointer-events: none;
+        }
+        
+        /* 🌟 核心修正 4：书法级“王”字印章 */
+        .deco-seal { 
+            position: absolute; right: -15px; top: -55px; z-index: 5; 
+            opacity: 0.95;
+            filter: drop-shadow(0 4px 10px rgba(163, 46, 46, 0.3));
         }
 
         .portal-card {
-            background: var(--card-bg);
+            background-color: var(--card-bg);
             border-radius: var(--radius);
-            width: 300px;
+            padding: 45px 30px; /* 保持原卡片大小的核心内边距 */
             text-decoration: none;
-            color: var(--text);
-            box-shadow: var(--shadow);
-            border: 2px solid var(--border);
-            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            color: var(--text-main);
+            border: 1px solid rgba(230, 194, 122, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 30px rgba(24, 48, 66, 0.04);
         }
+
         .portal-card:hover {
             transform: translateY(-8px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--accent);
+            border-color: var(--c-gold);
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 15px 40px rgba(163, 46, 46, 0.1);
         }
 
-        .card-top-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--accent);
-        }
-        .card-top-bar.teal { background: var(--teal); }
-
-        .card-body { padding: 32px 24px 28px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-
-        .card-avatar {
-            width: 150px; height: 150px;
+        .image-placeholder {
+            width: 110px; height: 110px;
+            border: 3px solid var(--c-gold);
             border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--accent);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-            margin-bottom: 20px;
-            font-size: 3.2rem;
+            margin-bottom: 25px;
             display: flex; align-items: center; justify-content: center;
-            background: #f0f4f8;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+            transition: transform 0.5s ease;
+            background-size: 65%; background-position: center; background-repeat: no-repeat;
         }
-        .card-avatar.teal-border { border-color: var(--teal); }
-        .card-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .portal-card:hover .image-placeholder { transform: rotate(5deg) scale(1.05); }
+
+        .teacher-card .image-placeholder {
+            background-color: var(--c-navy);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z' fill='none' stroke='%23e6c27a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M50 25 L50 65' stroke='%23e6c27a' stroke-width='4'/%3E%3Cpath d='M35 40 L45 35 M65 40 L55 35' stroke='%23e6c27a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+        }
+
+        .parent-card .image-placeholder {
+            background-color: var(--c-lacquer);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 60 L50 40 L70 60 L70 75 L30 75 Z' fill='none' stroke='%23faf6ed' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 50 L50 25 L80 50' fill='none' stroke='%23faf6ed' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M45 75 L45 55 L55 55 L55 75' fill='none' stroke='%23faf6ed' stroke-width='4'/%3E%3C/svg%3E");
+        }
 
         .card-title-en {
-            font-family: var(--font-en);
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 4px;
+            font-size: 1.8rem; font-weight: bold; line-height: 1.1;
+            color: var(--c-navy); margin-bottom: 8px;
         }
         .card-title-zh {
-            font-family: var(--font-zh);
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-bottom: 14px;
-            display: block;
+            font-family: var(--font-zh); /* 🌟 应用正确的字体兜底 */
+            display: block; font-size: 1.15rem; font-weight: bold; color: var(--c-teal); 
+            letter-spacing: 3px; margin-bottom: 20px;
         }
+
         .card-desc {
-            font-family: var(--font-en);
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.6;
+            font-size: 1rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;
+            padding: 0 10px;
         }
+
         .card-cta {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 9px 22px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            background: var(--accent);
-            color: #fff;
-            transition: background 0.2s;
+            margin-top: auto;
+            font-family: var(--font-en); font-weight: bold; font-size: 1.1rem;
+            color: var(--c-lacquer); display: flex; align-items: center; gap: 8px;
         }
-        .card-cta.teal { background: var(--teal); }
-        .portal-card:hover .card-cta { background: var(--accent-dk); }
-        .portal-card:hover .card-cta.teal { background: #457273; }
 
-        /* ── Footer ── */
+        /* ─── 紧凑页脚 ─── */
         .site-footer {
-            text-align: center;
-            padding: 24px;
+            text-align: center; padding: 20px;
             font-family: var(--font-en);
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
+            font-size: 0.85rem; color: var(--text-muted);
+            border-top: 1px solid rgba(230, 194, 122, 0.2);
+            flex-shrink: 0;
         }
-        .site-footer .zh { font-family: var(--font-zh); }
+        .site-footer b { color: var(--c-teal); font-family: var(--font-zh); }
 
-        /* ── Responsive ── */
-        @media (max-width: 600px) {
-            .site-header h1 { font-size: 2rem; }
-            .portal-card { width: 100%; max-width: 360px; }
-            .portal-container { padding: 36px 16px; gap: 20px; }
-        }
-
-        /* 平板（768px 以下） */
         @media (max-width: 768px) {
-            .site-header { padding: 36px 20px 30px; }
+            body { overflow-y: auto; height: auto; }
             .site-header h1 { font-size: 2.2rem; }
-            .portal-container { gap: 24px; padding: 40px 20px; }
-            .portal-card { width: 100%; max-width: 420px; }
-        }
-
-        /* 宽屏（1200px 以上）卡片不要太宽 */
-        @media (min-width: 1200px) {
-            .portal-card { width: 320px; }
+            .portal-container { grid-template-columns: 1fr; width: 90%; gap: 30px; }
+            .deco-bamboo, .deco-seal { display: none; }
         }
     </style>
 </head>
 <body>
 
     <header class="site-header">
-        <span class="zh-sub">王老师的教学基地</span>
-        <h1>Wang Laoshi's Space 🐼</h1>
-        <p class="tagline">Please select your portal &nbsp;／&nbsp; 请选择入口</p>
+        <div class="header-content">
+            <h1>
+                <svg class="vsg-symbol" width="50" height="35" viewBox="0 0 24 15" fill="none" stroke="var(--c-gold)" stroke-width="1.8">
+                    <path d="M17.5 12c2.5 0 4.5-2 4.5-4.5S20 3 17.5 3c-.5 0-1 .1-1.5.3C15 1.2 12 0 8.5 0 4.4 0 1 3.4 1 7.5c0 3.6 2.6 6.5 6 6.5h10.5z" stroke-linecap="round"/>
+                </svg>
+                Wang Laoshi's Space
+                <svg class="vsg-symbol" width="30" height="50" viewBox="0 0 24 40">
+                    <rect x="4" y="8" width="16" height="22" rx="8" fill="var(--c-lacquer)"/>
+                    <rect x="8" y="5" width="8" height="3" fill="var(--c-gold)"/>
+                    <rect x="8" y="30" width="8" height="3" fill="var(--c-gold)"/>
+                    <line x1="12" y1="33" x2="12" y2="38" stroke="var(--c-gold)" stroke-width="2"/>
+                    <line x1="12" y1="0" x2="12" y2="5" stroke="#333" stroke-width="1.5"/>
+                </svg>
+            </h1>
+            <p>文墨学堂 · 家校门户</p>
+        </div>
     </header>
 
-    <main class="portal-container">
+    <main class="portal-main">
+        <div class="portal-container">
+            <svg class="deco-seal" width="70" height="70" viewBox="0 0 40 40">
+                <rect x="4" y="4" width="32" height="32" rx="4" fill="var(--c-lacquer)"/>
+                <path d="M14 15H26" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M17 21H23" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M11 28H29" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M20 15V28" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> </svg>
 
-        <a href="parents.html" class="portal-card">
-            <div class="card-top-bar teal"></div>
-            <div class="card-body">
-                <div class="card-avatar teal-border">
-                    <img src="images/parent_avatar.webp" alt="Parents & Students" onerror="this.parentElement.textContent='🐼'">
-                </div>
+            <svg class="deco-bamboo" width="130" height="220" viewBox="0 0 60 100" fill="none">
+                <path d="M30 100V75 M30 70V40 M30 35V5" stroke="var(--c-teal)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M30 75 Q42 68 52 75 Q42 78 30 75Z" fill="var(--c-teal)" opacity="0.6"/>
+                <path d="M30 75 Q18 68 8 75 Q18 78 30 75Z" fill="var(--c-teal)" opacity="0.6"/>
+                <path d="M30 40 Q45 32 55 40 Q45 45 30 40Z" fill="var(--c-teal)" opacity="0.8"/>
+            </svg>
+
+            <a href="parents.html" class="portal-card parent-card">
+                <div class="image-placeholder"></div>
                 <div class="card-title-en">Parents &amp; Students</div>
                 <span class="card-title-zh">学生与家长入口</span>
-                <p class="card-desc">Games, Math Station, vocabulary practice, and writing exercises.</p>
-                <span class="card-cta teal">Enter →</span>
-            </div>
-        </a>
+                <p class="card-desc">Practice vocabulary, explore the library, and play learning games together.</p>
+                <span class="card-cta">Enter Portal →</span>
+            </a>
 
-        <a href="teachers.html" class="portal-card">
-            <div class="card-top-bar"></div>
-            <div class="card-body">
-                <div class="card-avatar">
-                    <img src="images/avatars/wanglaoshi.webp" alt="Wang Laoshi">
-                </div>
+            <a href="teachers.html" class="portal-card teacher-card">
+                <div class="image-placeholder"></div>
                 <div class="card-title-en">Teacher's Tools</div>
                 <span class="card-title-zh">教师专属工具台</span>
-                <p class="card-desc"><span style="font-family:var(--font-zh)">课堂管理、分组轮换、生字教学与互动游戏工具。</span></p>
-                <span class="card-cta">Enter →</span>
-            </div>
-        </a>
-
+                <p class="card-desc">Lesson management, student group rotations, and teaching resources.</p>
+                <span class="card-cta">Access Tools →</span>
+            </a>
+        </div>
     </main>
 
     <footer class="site-footer">
-        Created with ❤️ by <span class="zh">王老师</span> Wang Laoshi
+        © 2026 <b>王老师</b> Wang Laoshi. <br>Tradition Meets Innovation.
     </footer>
 
 </body>
