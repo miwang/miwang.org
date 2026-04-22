@@ -58,7 +58,12 @@
         .num-btn {
             background-color: white; border: 3px solid var(--primary); border-radius: 12px;
             font-size: 1.8em; padding: 15px 0; cursor: pointer; transition: transform 0.2s, background 0.2s;
-            font-family: "LXGW WenKai Lite", sans-serif;
+            font-family: "LXGW WenKai Lite", sans-serif; /* 数字用 LXGW */
+        }
+
+        /* 中文文字标签用楷体，英文模式通过 JS 动态切换 */
+        #ui-title, #ui-desc, .target-label, .modal-content p {
+            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
         }
         .num-btn:hover { transform: scale(1.05); background-color: var(--selected); }
 
@@ -71,7 +76,7 @@
         }
         .target-box { text-align: center; margin-bottom: 30px; }
         .target-label { font-size: 1.6em; font-weight: bold; display: block; color: var(--text); }
-        #current-target { font-size: 4em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; font-family: "LXGW WenKai Lite", sans-serif; }
+        #current-target { font-size: 4em; color: #E65100; text-shadow: 2px 2px 0px white; display: block; margin-top: 5px; font-weight: bold; font-family: "LXGW WenKai Lite", sans-serif; /* 数字用 LXGW */ }
         .controls { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: auto; }
 
         .game-area { flex: 1; padding: 25px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
@@ -88,7 +93,7 @@
             .game-area { padding: 10px; }
         }
 
-        .btn { padding: 15px; font-size: 1.2em; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; text-align: center; font-family: inherit; transition: transform 0.1s; }
+        .btn { padding: 15px; font-size: 1.2em; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; text-align: center; font-family: "LXGW WenKai Lite", sans-serif; transition: transform 0.1s; }
         .btn:active { transform: scale(0.95); }
         .back-btn { background-color: #9E9E9E; color: white; }
         .check-btn { background-color: #4CAF50; color: white; box-shadow: 0 4px 0 #388E3C; }
@@ -163,8 +168,8 @@
                 <span id="current-target">5</span>
             </div>
             <div class="controls">
-                <button class="btn check-btn" id="btn-check" onclick="checkAnswers()">检查答案 ✔️</button>
-                <button class="btn back-btn" id="btn-reselect" onclick="showStartPage()">重新选</button>
+                <button class="btn check-btn" id="btn-check" onclick="checkAnswers()">Check Path ✔️</button>
+                <button class="btn back-btn" id="btn-reselect" onclick="showStartPage()">Reselect</button>
             </div>
         </div>
         <div class="game-area">
@@ -231,6 +236,14 @@
             document.getElementById('ui-title').innerText = t.title;
             document.getElementById('ui-desc').innerText = t.desc;
             document.getElementById('ui-target-label').innerText = t.target;
+            // 中文用楷体，英文用 LXGW
+            const zhFont = '"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif';
+            const enFont = '"LXGW WenKai Lite",sans-serif';
+            const labelFont = LANG === 'zh' ? zhFont : enFont;
+            ['ui-title','ui-desc','ui-target-label','btn-check','btn-reselect'].forEach(id => {
+                document.getElementById(id).style.fontFamily = labelFont;
+            });
+            document.querySelectorAll('.modal-content p').forEach(el => el.style.fontFamily = labelFont);
             document.getElementById('btn-check').innerText = t.check;
             document.getElementById('btn-reselect').innerText = t.reselect;
             document.getElementById('ui-win-title').innerText = t.winTitle;

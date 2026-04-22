@@ -676,15 +676,38 @@
         });
 
         // ==========================================
-        // 悬浮图片显示
+        // 悬浮图片显示（从 Sanity 云端加载）
         // ==========================================
         const tooltip = document.getElementById('imageTooltip');
+
+        // 预加载所有词的图片 URL（word type + extraPhrase type 都查）
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET = 'production';
+        const WORD_QUERY = encodeURIComponent('*[_type == "word"]{char, "imageUrl": image.asset->url}');
+        const PHRASE_QUERY = encodeURIComponent('*[_type == "extraPhrase"]{text, "imageUrl": image.asset->url}');
+
+        const imageMap = {}; // word/text -> imageUrl
+
+        async function loadImageMap() {
+            try {
+                const [wordRes, phraseRes] = await Promise.all([
+                    fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${WORD_QUERY}`).then(r => r.json()),
+                    fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${PHRASE_QUERY}`).then(r => r.json())
+                ]);
+                (wordRes.result || []).forEach(item => { if (item.char && item.imageUrl) imageMap[item.char] = item.imageUrl; });
+                (phraseRes.result || []).forEach(item => { if (item.text && item.imageUrl) imageMap[item.text] = item.imageUrl; });
+            } catch(e) {
+                console.warn('图片数据加载失败', e);
+            }
+        }
+        loadImageMap();
+
         document.addEventListener('mouseover', function(e) {
             const hoverEl = e.target.closest('.hover-word');
             if (hoverEl) {
                 const word = hoverEl.getAttribute('data-word');
-                if (word) {
-                    tooltip.style.backgroundImage = `url('../../images/sight_words_phrases/${word}.webp')`;
+                if (word && imageMap[word]) {
+                    tooltip.style.backgroundImage = `url('${imageMap[word]}')`;
                     tooltip.style.display = 'block';
                 }
             }

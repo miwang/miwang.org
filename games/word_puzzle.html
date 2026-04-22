@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="../css/style.css">
     
     <style>
+        /* 🌟 核心修复 1：强制引入 LXGW 字体 */
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
+        /* 🌟 核心修复 2：明确区分中英文的字体类 */
+        .font-zh { font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important; }
+        .font-en { font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif !important; }
+
         body {
             overflow: hidden; 
             touch-action: none;
@@ -333,6 +340,20 @@
         const isEnglish = urlParams.get('role') === 'parents' || document.referrer.includes('parents.html');
         const LANG = isEnglish ? 'en' : 'zh';
         
+        // 🌟 核心修复 3：如果是英文模式，瞬间把所有静态 UI 文字的“外套”换成 font-en (强制使用 LXGW)
+        // 🌟 英文模式下的优雅字体切换
+if (isEnglish) {
+    // 1. 触发 common_nav.css 里写好的专属导航栏英文规则
+    document.getElementById('nav-back-link').classList.add('en');
+    document.getElementById('nav-title').classList.add('en');
+
+    // 2. 其余普通元素（比如“换一局”按钮），利用 style.css 的全局类名切换
+    document.querySelectorAll('.font-zh').forEach(el => {
+        el.classList.remove('font-zh');
+        el.classList.add('font-en');
+    });
+}
+        
         const t = {
             zh: {
                 title: "四会字认读拼图",
@@ -348,7 +369,7 @@
             },
             en: {
                 title: "Character Puzzle",
-                back: "Back to Dashboard",
+                back: "Back to Parents Portal",
                 refresh: "New Game",
                 loading: "Loading characters...",
                 rule: "💡 Tap all cards to review the words. The puzzle unlocks after all cards are flipped!",
@@ -481,6 +502,7 @@
             if (isFront && imageUrl) {
                 contentHtml = `<image href="${imageUrl}" x="8" y="8" width="104" height="104" preserveAspectRatio="xMidYMid slice" clip-path="url(#biscuitClip)" class="front-img-inner" />`;
             } else if (!isFront) {
+                // 🌟 木块上动态生成的汉字坚决保留 font-zh，永远使用楷体
                 contentHtml = `<text x="60" y="60" dominant-baseline="central" class="font-zh" font-size="58" font-weight="bold" fill="#111" text-anchor="middle">${char}</text>`;
             }
             return `<svg viewBox="-15 -15 150 150" xmlns="http://www.w3.org/2000/svg">
@@ -489,7 +511,6 @@
             </svg>`;
         }
 
-        // 🌟 修复语法错误：加上了正确的大括号
         async function fetchSanityAndInit() {
             try {
                 const response = await fetch(sanityUrl);
@@ -498,10 +519,10 @@
                 if (allWords.length > 0) {
                     renderPage();
                 } else {
-                    boardZone.innerHTML = '<div class="font-zh">未找到数据</div>';
+                    boardZone.innerHTML = `<div class="${isEnglish ? 'font-en' : 'font-zh'}">未找到数据 / No data found</div>`;
                 }
             } catch (error) { 
-                boardZone.innerHTML = '<div class="font-zh">网络错误</div>'; 
+                boardZone.innerHTML = `<div class="${isEnglish ? 'font-en' : 'font-zh'}">网络错误 / Network Error</div>`; 
             }
         }
 

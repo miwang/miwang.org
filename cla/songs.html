@@ -450,8 +450,7 @@ document.getElementById('song-title-nav').innerHTML = formatText(currentSong.tit
             } else if (e.target !== bubble) { bubble.style.display = 'none'; }
         };
 
-// 🌟 核心修改：改为异步向 Sanity 查找中心字或词组图片
-async function // 🌟 核心修改：同时向 Sanity 查找四会字中心字、词组以及额外补充词汇
+// 🌟 核心修改：同时向 Sanity 查找四会字中心字、词组以及额外补充词汇
 async function makeHardWord() {
     const text = selectedText;
     const originalBubbleText = bubble.innerText;

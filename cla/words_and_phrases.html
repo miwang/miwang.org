@@ -33,6 +33,7 @@
         @media (max-width: 768px) { body { padding-top: 68px; } .container { width: 94%; margin-bottom: 24px; } .progress-summary { padding: 18px 16px; gap: 12px; margin-bottom: 22px; } .summary-title { font-size: 1.1rem; } .summary-detail { font-size: 0.95rem; white-space: normal; flex: 1 1 auto; } .progress-inline { flex: 0 0 42%; min-width: 120px; gap: 8px; } .top-pct { font-size: 0.95rem; } .week-section { padding: 18px 16px; margin-bottom: 24px; } .week-title { font-size: 1.35rem; margin-bottom: 16px; } .char-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } .char-card { height: 96px; } .char-text { font-size: 3rem; } }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="progress-summary" id="progress-summary">
@@ -48,6 +49,7 @@
         <div id="main-content"></div>
     </div>
     <script>
+        
         const LANG = MECC_CONFIG.getLang();
         const t = {
             zh: { title: "四会字学习进度 📘", progress: "学习进度", mastered: (done, total) => `本月已掌握 ${done} / ${total} 个汉字`, error: "未能加载数据，请确保网络通畅！" },
@@ -117,6 +119,41 @@
                 }).join('');
             } catch (e) { content.innerHTML = `<div style="text-align:center;padding:40px;color:#e74c3c;">${t.error}</div>`; }
         };
+    </script>
+    <script>
+        (function() {
+            const SCROLL_KEY = 'wordsIndexScrollPos';
+
+            // 1. 离开页面前：拍下当前滚动高度的“快照”
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.char-card') || e.target.closest('a')) {
+                    sessionStorage.setItem(SCROLL_KEY, window.scrollY);
+                }
+            });
+
+            function restoreScroll() {
+                const savedPos = sessionStorage.getItem(SCROLL_KEY);
+                if (savedPos) {
+                    window.scrollTo({ top: parseInt(savedPos, 10), behavior: 'instant' });
+                }
+            }
+
+            // 2. 浏览器直接读取缓存时恢复
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) restoreScroll();
+            });
+
+            // 3. 智能等待：监控 Sanity 数据生成字卡后再精准跳回
+            const observer = new MutationObserver((mutations, obs) => {
+                if (document.querySelector('.char-card')) {
+                    setTimeout(restoreScroll, 50); // 稍微等页面撑开
+                    obs.disconnect(); // 跳回成功，断开监控
+                }
+            });
+
+            // 启动监控
+            observer.observe(document.body, { childList: true, subtree: true });
+        })();
     </script>
 </body>
 </html>

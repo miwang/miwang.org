@@ -36,22 +36,22 @@
     #setup-view {
         display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         background: transparent; width: 95vw; height: calc(100vh - 60px);
-        padding-top: 3vh; 
+        padding-top: 1vh; 
     }
     
-    #setup-view .instructions { color: #598586; margin: 0 0 2vh 0; font-size: clamp(1.2rem, 2.5vh, 1.8rem); line-height: 1.6; text-align: center; font-weight: bold; }
+    #setup-view .instructions { color: #598586; margin: 0 0 1vh 0; font-size: clamp(1rem, 2vh, 1.5rem); line-height: 1.4; text-align: center; font-weight: bold; }
     
     /* 🌟 新增：难度选择器 */
-    .diff-tabs { display: flex; gap: 15px; justify-content: center; margin-bottom: 2.5vh; flex-wrap: wrap; }
+    .diff-tabs { display: flex; gap: 12px; justify-content: center; margin-bottom: 1vh; flex-wrap: wrap; }
     .diff-tab {
         padding: 10px 24px; border-radius: 30px; background: white; border: 2px solid #ddd;
         cursor: pointer; transition: 0.2s; color: #888; font-weight: bold; font-size: clamp(1rem, 2.2vh, 1.4rem);
     }
     .diff-tab.active { background: #f3b236; color: white; border-color: #d49a2a; box-shadow: 0 4px 12px rgba(243,178,54,0.3); transform: scale(1.05); }
 
-    .controls { margin-bottom: 2.5vh; display: flex; gap: 15px; justify-content: center; }
+    .controls { margin-bottom: 1vh; display: flex; gap: 15px; justify-content: center; }
     .controls .btn {
-        padding: 1vh 2.5vw; font-size: clamp(1.1rem, 2.5vh, 1.5rem); background-color: #f8f9fa; color: #555;
+        padding: 0.7vh 2vw; font-size: clamp(1rem, 2vh, 1.4rem); background-color: #f8f9fa; color: #555;
         border: 2px solid #ddd; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;
     }
     .controls .btn:hover { background-color: #eee; transform: translateY(-2px); }
@@ -60,17 +60,18 @@
 
     #char-grid {
         display: grid; grid-template-columns: repeat(13, 1fr); 
-        gap: 0.7vw; justify-content: center; align-content: start;
-        padding: 2.5vh 1.5vw; background: rgba(89, 133, 134, 0.05); 
+        gap: 8px; justify-content: center; align-content: start;
+        padding: 12px; background: rgba(89, 133, 134, 0.05); 
         border-radius: 16px; width: 96vw; max-width: 1250px; border: 2px dashed #598586;
-        overflow-y: auto; flex: 1; margin-bottom: 20px;
+        overflow-y: auto; flex: 1; margin-bottom: 8px;
     }
     .char-card {
         aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
-        font-size: clamp(1.5rem, 4vh, 2.5rem); background-color: white; color: #333; border-radius: 1.2vh;
-        cursor: pointer; transition: all 0.2s; border: 2px solid #eee; 
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05); user-select: none;
+        font-size: clamp(1.2rem, 2.8vh, 1.8rem); background: white; color: #333; border-radius: 10px;
+        cursor: pointer; transition: 0.2s; border: 2px solid #eee; 
+        user-select: none;
     }
+    .char-card.selected { background: #74b9ff; color: white; border-color: #fbc531; transform: scale(1.05); }
     .char-card.selected { background-color: #74b9ff; color: white; border: 3px solid #fbc531; transform: scale(1.05); z-index: 2; box-shadow: 0 6px 15px rgba(116, 185, 255, 0.4); }
 
     #game-view { display: none; width: 100vw; height: calc(100vh - 60px); flex-direction: column; align-items: center; justify-content: center; padding-bottom: 2vh; }
@@ -133,15 +134,15 @@
         <div class="instructions" id="ui-desc">请选择难度，系统会自动从字库中抽取汉字。</div>
         
         <div class="diff-tabs font-zh">
-            <div class="diff-tab active" data-diff="easy" onclick="setDiff('easy')">🟢 简单 (4x4)</div>
-            <div class="diff-tab" data-diff="medium" onclick="setDiff('medium')">🟡 中等 (5x4)</div>
-            <div class="diff-tab" data-diff="hard" onclick="setDiff('hard')">🔴 困难 (6x5)</div>
+            <div class="diff-tab active" data-diff="easy" onclick="setDiff('easy')">🟢 Easy (8 pairs)</div>
+            <div class="diff-tab" data-diff="medium" onclick="setDiff('medium')">🟡 Medium (10 pairs)</div>
+            <div class="diff-tab" data-diff="hard" onclick="setDiff('hard')">🔴 Hard (15 pairs)</div>
         </div>
 
         <div class="controls">
-            <button class="btn" id="btn-all" onclick="selectAll()">全选</button>
-            <button class="btn" id="btn-clear" onclick="clearAll()">清空</button>
-            <button class="btn start-btn" id="btn-start" onclick="startGame()">开始挑战</button>
+            <button class="btn" id="btn-all" onclick="selectAll()">Select All</button>
+            <button class="btn" id="btn-clear" onclick="clearAll()">Clear</button>
+            <button class="btn start-btn" id="btn-start" onclick="startGame()">Start</button>
         </div>
         <div id="char-grid"></div>
     </div>
@@ -239,6 +240,7 @@
         if (LANG === 'en') {
             const enElements = ['ui-desc', 'btn-all', 'btn-clear', 'btn-start', 'btn-back', 'matches-counter', 'moves-counter', 'overlay-msg', 'ui-continue'];
             enElements.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('font-en'); });
+            document.querySelectorAll('.diff-tab').forEach(el => el.classList.add('font-en'));
         }
 
         const grid = document.getElementById('char-grid');
