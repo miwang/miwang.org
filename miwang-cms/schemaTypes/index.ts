@@ -11,6 +11,7 @@ import { student } from './student'
 import { centerConfig } from './centerConfig'
 import { sentenceConfig } from './sentenceConfig'
 import { extraPhrase } from './extraPhrase' // 🌟 1. 引入新加的补充词汇模型
+import { focusWall } from './focusWall'
 
 // 将它们统一导出
 export const schemaTypes = [
@@ -26,4 +27,5 @@ export const schemaTypes = [
   centerConfig,
   sentenceConfig, 
   extraPhrase, // 🌟 2. 注册进系统
+  focusWall,
 ]
