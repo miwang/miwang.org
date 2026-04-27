@@ -165,7 +165,7 @@
         .tag-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding: 0 20px; }
         .tag-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; }
         .tag-row-label { font-size: 0.7rem; color: #aaa; margin-right: 4px; align-self: center; white-space: nowrap; letter-spacing: 1px; }
-        .tag-pill { padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 2px solid transparent; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .tag-pill { padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 2px solid transparent; cursor: pointer; transition: 0.2s; white-space: nowrap; font-family: var(--wenkai) !important; }
         .tag-pill.theme { background: #e8f5f5; color: #4a7a7b; border-color: #c5dfdf; }
         .tag-pill.theme:hover { background: #d0ecec; border-color: var(--main-teal); }
         .tag-pill.theme.active { background: var(--main-teal); color: white; border-color: var(--main-teal); }
@@ -338,16 +338,16 @@
             const bar = document.getElementById('tag-bar');
             
             let allText = LANG === 'en' 
-                ? `All <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「全部」</span>`
-                : `「全部」<span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">All</span>`;
+                ? `<span class="font-en">All</span> <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「全部」</span>`
+                : `<span class="font-zh">「全部」</span><span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">All</span>`;
 
             let html = `<div class="tag-row"><div class="tag-pill all ${!activeThemeTag && !activeKeyword ? 'active' : ''}" onclick="clearFilters()" style="display:flex;align-items:center;">${allText}</div>`;
             
             themeKeys.forEach(tag => {
                 const def = tagDefinitions[tag];
                 let innerText = LANG === 'en' 
-                    ? `${def.en} <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「${def.zh}」</span>`
-                    : `「${def.zh}」<span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">${def.en}</span>`;
+                    ? `<span class="font-en">${def.en}</span> <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「${def.zh}」</span>`
+                    : `<span class="font-zh">「${def.zh}」</span><span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">${def.en}</span>`;
                 html += `<div class="tag-pill theme ${activeThemeTag === tag ? 'active' : ''}" onclick="toggleThemeTag('${tag}')" style="display:flex;align-items:center;">${innerText}</div>`;
             });
             
@@ -355,8 +355,8 @@
             
             kw.forEach(k => {
                 let innerText = LANG === 'en' 
-                    ? `${k.en} <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「${k.zh}」</span>`
-                    : `「${k.zh}」<span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">${k.en}</span>`;
+                    ? `<span class="font-en">${k.en}</span> <span class="font-zh" style="font-size:0.85rem;opacity:0.75;margin-left:4px;">「${k.zh}」</span>`
+                    : `<span class="font-zh">「${k.zh}」</span><span class="font-en" style="font-size:0.65rem;opacity:0.75;margin-left:2px;">${k.en}</span>`;
                 html += `<div class="tag-pill keyword ${activeKeyword === k.zh ? 'active' : ''}" onclick="toggleKeyword('${k.zh}')" style="display:flex;align-items:center;">${innerText}</div>`;
             });
             html += `</div>`;

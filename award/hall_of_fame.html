@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>荣誉殿堂 - Hall of Fame</title>
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        :root {
+            --gold: #FFD700;
+            --dark-gold: #B8860B;
+            --ribbon-red: #D32F2F;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            padding-top: 50px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-shadow: 0 0 20px rgba(255,215,0,0.8);
+            margin-bottom: 10px;
+        }
+
+        .month-display {
+            font-size: 1.5rem;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--gold);
+        }
+
+        .fame-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            width: 90%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        /* 核心勋章样式 */
+        .badge-container {
+            perspective: 1000px;
+            animation: zoomIn 0.8s ease-out;
+        }
+
+        .badge {
+            width: 280px;
+            height: 280px;
+            background: linear-gradient(135deg, #fff9c4, #fbc02d, #f57f17);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            border: 8px solid #fff;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .badge:hover {
+            transform: rotateY(15deg) scale(1.05);
+        }
+
+        .badge::before {
+            content: '';
+            position: absolute;
+            top: -15px; left: -15px; right: -15px; bottom: -15px;
+            border: 2px dashed var(--gold);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        .student-photo {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background: #eee;
+            z-index: 2;
+        }
+
+        .badge-title {
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            background: white;
+            padding: 2px 15px;
+            border-radius: 10px;
+            z-index: 2;
+        }
+
+        .student-name {
+            font-size: 1.8rem;
+            color: #333;
+            font-family: var(--font-zh), "楷体", "KaiTi", serif;
+            margin-top: 5px;
+            font-weight: 900;
+            z-index: 2;
+        }
+
+        .ribbon {
+            position: absolute;
+            bottom: -20px;
+            background: var(--ribbon-red);
+            color: white;
+            padding: 5px 30px;
+            font-size: 1rem;
+            transform: skewX(-10deg);
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1 class="font-zh">🏆 荣誉殿堂</h1>
+        <div id="currentMonth" class="month-display">加载中...</div>
+    </div>
+
+    <div class="fame-grid" id="fameGrid">
+        </div>
+
+    <script>
+        async function initHallOfFame() {
+            const grid = document.getElementById('fameGrid');
+            const monthLabel = document.getElementById('currentMonth');
+            
+            try {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const currentYearMonth = `${year}-${month}`; 
+                
+                monthLabel.innerText = `${year}年 ${month}月 榜单`;
+
+                // 1. 准备查询语句 (使用更稳健的 string::startsWith)
+                const query = `*[_type == "hallOfFame" && string::startsWith(awardMonth, "${currentYearMonth}")] | order(_createdAt desc){
+                    "studentName": studentRef->name,
+                    awardTitle,
+                    "photoUrl": studentRef->avatar.asset->url
+                }`;
+
+                // 2. 绕过 Sanity 库，直接拼接原生的 API 请求链接
+                const projectId = 'sow12t1i';
+                const dataset = 'production';
+                const apiVersion = '2023-05-03';
+                const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+
+                // 3. 发送纯原生请求！
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP 错误！状态码: ${response.status}`);
+                }
+
+                // 4. 解析返回的数据
+                const data = await response.json();
+                const students = data.result;
+
+                if (!students || students.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                            <h3>📅 ${year}年${month}月 暂时还没有上榜学生</h3>
+                            <p style="color: #eee;">提示：去 Sanity 后台加个学生试试吧！</p>
+                        </div>`;
+                    return;
+                }
+
+                // 5. 渲染动态炫酷勋章
+                grid.innerHTML = students.map(s => `
+                    <div class="badge-container">
+                        <div class="badge">
+                            <img src="${s.photoUrl || 'https://via.placeholder.com/150?text=No+Photo'}" class="student-photo" alt="Student">
+                            <div class="badge-title font-zh">${s.awardTitle || '中文之星'}</div>
+                            <div class="student-name font-zh">${s.studentName || '未命名'}</div>
+                            <div class="ribbon font-en">CLASS OF ${year}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('加载错误:', err);
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; background: rgba(255,0,0,0.2); padding: 20px; border-radius: 10px;">
+                        <p>❌ 数据加载失败，原生的错误信息：${err.message}</p>
+                    </div>`;
+            }
+        }
+
+        initHallOfFame();
+    </script>
+</body>
+</html>

@@ -12,6 +12,9 @@ import { centerConfig } from './centerConfig'
 import { sentenceConfig } from './sentenceConfig'
 import { extraPhrase } from './extraPhrase' // 🌟 1. 引入新加的补充词汇模型
 import { studentWork } from './studentWork'
+import { hallOfFame } from './hallOfFame'
+
+
 
 
 // 将它们统一导出
@@ -29,4 +32,5 @@ export const schemaTypes = [
   sentenceConfig, 
   extraPhrase, // 🌟 2. 注册进系统
   studentWork,
+  hallOfFame,
  ]
