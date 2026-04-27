@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Work Showcase - 王老师的教室</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/common_nav.css">
+  <script src="../js/config.js"></script>
+  <script src="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js">
+  </script>
+
+  <style>
+    /* ══════════════════════════════════════════
+       铁律字体逻辑
+       中文：楷体优先
+       英文 / 数字 / 符号：永远 LXGW WenKai Lite
+    ══════════════════════════════════════════ */
+    :root {
+      --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+      --font-en: "LXGW WenKai Lite", sans-serif;
+      --teal: #598586;
+      --teal-light: #f0f7f7;
+      --bg: #faf6ed;
+    }
+
+    body,
+    h1,
+    h2,
+    h3,
+    p,
+    span,
+    div,
+    button {
+      font-family: var(--font-zh);
+    }
+    .font-en,
+    #current-page,
+    #total-pages,
+    .page-label,
+    .author-label,
+    #view-book,
+    .card-author-tag,
+    .info-label {
+      font-family: var(--font-en) !important;
+    }
+    .bilingual-label {
+      font-family: var(--font-en) !important;
+    }
+
+    body {
+      padding-top: 80px;
+      background-color: var(--bg);
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════════
+       列表页 Gallery
+    ══════════════════════════════════════════ */
+    #work-gallery {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 25px;
+      padding: 20px;
+    }
+    .work-item-card {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: transform 0.3s;
+      border-bottom: 4px solid var(--teal);
+    }
+    .work-item-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .card-thumb {
+      height: 220px;
+      background: #f0f0f0;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-thumb canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── 修改：卡片底部元信息 → 一行 flex 布局 ── */
+    .card-meta {
+      padding: 10px 12px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+    .card-meta h3 {
+      margin: 0;
+      color: var(--teal);
+      font-size: 0.95rem;
+      font-family: var(--font-zh);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    /* 仅当没有作者时让标题居中占满 */
+    .card-meta h3:only-child {
+      text-align: center;
+      flex: 1;
+    }
+
+    .card-author-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .card-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--teal);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--teal-light);
+    }
+    .card-author-name {
+      display: inline-block;
+      padding: 2px 7px;
+      background: var(--teal-light);
+      color: var(--teal);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-family: var(--font-zh);
+      white-space: nowrap;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ══════════════════════════════════════════
+       详情页 Viewer — 全屏单页，无顶部 nav
+    ══════════════════════════════════════════ */
+    #work-viewer-section {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      padding: 0;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    .viewer-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      height: 52px;
+      box-sizing: border-box;
+    }
+    .back-btn {
+      background: var(--teal);
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-zh);
+      font-size: 0.9rem;
+    }
+    .page-counter-wrap {
+      color: var(--teal);
+      font-weight: bold;
+      font-family: var(--font-en);
+      font-size: 0.9rem;
+    }
+
+    .viewer-body {
+      display: flex;
+      height: calc(100dvh - 52px);
+      overflow: hidden;
+    }
+
+    /* 左侧 PDF 区 */
+    .viewer-left {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── 修改：pdf-frame 加上尺寸约束，overflow 兜底 ── */
+    .pdf-frame {
+      position: relative;
+      max-width: 100%;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── 修改：canvas 移除 max-width/max-height，由 JS 精确控制 ── */
+    #pdf-canvas {
+      display: block;
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      /* 宽高由 JS 设置像素值，CSS 不做二次缩放 */
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
+    }
+
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(89, 133, 134, 0.85);
+      color: white;
+      border: none;
+      width: 38px;
+      height: 64px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.2s;
+      z-index: 5;
+    }
+    .nav-btn:hover {
+      background: var(--teal);
+    }
+    .prev-btn {
+      left: 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .next-btn {
+      right: 0;
+      border-radius: 8px 0 0 8px;
+    }
+
+    /* 右侧信息栏 */
+    .viewer-right {
+      width: 240px;
+      flex-shrink: 0;
+      background: white;
+      border-left: 5px solid var(--teal);
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+
+    .detail-author-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid #eee;
+    }
+    .detail-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid var(--teal);
+      object-fit: cover;
+      background: var(--teal-light);
+    }
+    .detail-author-name {
+      font-family: var(--font-zh);
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: var(--teal);
+      text-align: center;
+    }
+    .author-label {
+      font-family: var(--font-en);
+      font-size: 0.75rem;
+      color: #aaa;
+      text-align: center;
+    }
+
+    .info-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .info-label {
+      font-family: var(--font-en);
+      font-size: 0.75rem;
+      color: #aaa;
+    }
+    .info-value {
+      font-family: var(--font-zh);
+      color: var(--teal);
+      font-size: 1.05rem;
+      font-weight: bold;
+    }
+    .info-value.book {
+      font-family: var(--font-zh);
+    }
+
+    #status-msg {
+      margin-top: 150px;
+      color: #888;
+      text-align: center;
+      font-family: var(--font-zh);
+    }
+  </style>
+</head>
+<body>
+
+
+  <div id="status-msg">正在开启陈列馆...</div>
+
+  <div id="work-gallery"></div>
+
+  <!-- ── Viewer ── -->
+  <div id="work-viewer-section">
+    <div class="viewer-toolbar">
+      <button class="back-btn" onclick="showGallery()">❮ 返回列表 / Back</button>
+      <div class="page-counter-wrap">
+        <span class="page-label">PAGE</span>
+        <span id="current-page">1</span>
+        /
+        <span id="total-pages">--</span>
+      </div>
+    </div>
+
+    <div class="viewer-body">
+      <div class="viewer-left">
+        <div class="pdf-frame">
+          <button class="nav-btn prev-btn" onclick="changePage(-1)">❮</button>
+          <canvas id="pdf-canvas" onclick="changePage(1)"></canvas>
+          <button class="nav-btn next-btn" onclick="changePage(1)">❯</button>
+        </div>
+      </div>
+
+      <div class="viewer-right">
+        <div class="detail-author-box" id="author-box" style="display:none;">
+          <img src="" class="detail-avatar" id="detail-img" alt="avatar">
+          <div class="detail-author-name" id="detail-name">---</div>
+          <div class="author-label" id="author-role-label">Featured Author</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">话题 / Topic</div>
+          <div class="info-value" id="view-topic">---</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">所属单元 / Unit</div>
+          <div class="info-value" id="view-unit">---</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">对应书本 / Book</div>
+          <div class="info-value book" id="view-book">---</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+
+    const LANG = MECC_CONFIG.getLang();
+    const isTeacher = LANG === 'zh';
+
+    const pageTitle = isTeacher ? '学生优秀习作展示' : 'Excellent Work Showcase';
+    const authorLabel = isTeacher ? '习作作者' : 'Author';
+
+    const QUERY = encodeURIComponent(`*[_type == "studentWork"] | order(_createdAt desc){
+      unit, topic, book, "pdfUrl": pdfFile.asset->url,
+      "author": author->{ name, "avatarUrl": avatar.asset->url }
+    }`);
+    const API_URL = `https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=${QUERY}`;
+
+    let pdfDoc = null,
+      pageNum = 1,
+      isRendering = false;
+    // ── 缓存稳定的容器尺寸，翻页时不变 ──
+    let cachedAvailWidth = null;
+    let cachedAvailHeight = null;
+
+    async function init() {
+      try {
+        const res = await fetch(API_URL);
+        const { result } = await res.json();
+        if (result && result.length > 0) {
+          document.getElementById('status-msg').style.display = 'none';
+          const gallery = document.getElementById('work-gallery');
+          result.forEach(work => {
+            const card = document.createElement('div');
+            card.className = 'work-item-card';
+            const thumbId = `thumb-${Math.random().toString(36).substr(2, 9)}`;
+
+            const authorHTML = work.author ?
+              `<div class="card-author-row">
+                   <img class="card-avatar"
+                        src="${work.author.avatarUrl || ''}"
+                        alt="${work.author.name}"
+                        onerror="this.style.display='none'">
+                   <span class="card-author-name">${work.author.name}</span>
+                 </div>` :
+              '';
+
+            card.innerHTML = `
+              <div class="card-thumb"><canvas id="${thumbId}"></canvas></div>
+              <div class="card-meta">
+                <h3>${work.unit || 'Unit'}</h3>
+                ${authorHTML}
+              </div>
+            `;
+            card.onclick = () => openWork(work);
+            gallery.appendChild(card);
+            generateThumb(work.pdfUrl, thumbId);
+          });
+        }
+      } catch (e) {
+        document.getElementById('status-msg').innerText = "Error Loading Data";
+      }
+    }
+
+    async function generateThumb(url, canvasId) {
+      try {
+        const pdf = await pdfjsLib.getDocument({
+          url,
+          cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
+          cMapPacked: true
+        }).promise;
+        const page = await pdf.getPage(1);
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const viewport = page.getViewport({ scale: 0.5 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        page.render({ canvasContext: canvas.getContext('2d'), viewport });
+      } catch (e) {}
+    }
+
+    function openWork(work) {
+      document.querySelector('.mecc-global-nav').style.display = 'none';
+      document.getElementById('work-gallery').style.display = 'none';
+      document.getElementById('work-viewer-section').style.display = 'flex';
+      document.getElementById('work-viewer-section').style.flexDirection = 'column';
+
+      document.getElementById('view-unit').innerText = work.unit || '---';
+      document.getElementById('view-topic').innerText = work.topic || '---';
+      document.getElementById('view-book').innerText = work.book ? `《${work.book}》` : '---';
+
+      const authorBox = document.getElementById('author-box');
+      if (work.author) {
+        authorBox.style.display = 'flex';
+        document.getElementById('detail-name').innerText = work.author.name;
+        document.getElementById('detail-img').src = work.author.avatarUrl || '';
+      } else {
+        authorBox.style.display = 'none';
+      }
+
+      pageNum = 1;
+      // 重置缓存，让 renderPage 重新测量容器
+      cachedAvailWidth = null;
+      cachedAvailHeight = null;
+      loadPDF(work.pdfUrl);
+    }
+
+    function showGallery() {
+      document.querySelector('.mecc-global-nav').style.display = '';
+      document.getElementById('work-gallery').style.display = 'grid';
+      document.getElementById('work-viewer-section').style.display = 'none';
+    }
+
+    function loadPDF(url) {
+      pdfjsLib.getDocument({
+        url,
+        cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
+        cMapPacked: true
+      }).promise.then(pdf => {
+        pdfDoc = pdf;
+        document.getElementById('total-pages').innerText = pdf.numPages;
+        renderPage(pageNum);
+      });
+    }
+
+    /** 计算稳定的可用空间（基于 .viewer-left，不会随 canvas 尺寸波动） */
+    function getAvailableSpace() {
+      if (cachedAvailWidth !== null && cachedAvailHeight !== null) {
+        return { availWidth: cachedAvailWidth, availHeight: cachedAvailHeight };
+      }
+      const viewerLeft = document.querySelector('.viewer-left');
+      if (!viewerLeft) return { availWidth: 800, availHeight: 600 };
+      // clientWidth/Height 包含 padding，需减去
+      const style = getComputedStyle(viewerLeft);
+      const padH = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const padV = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      cachedAvailWidth = viewerLeft.clientWidth - padH;
+      cachedAvailHeight = viewerLeft.clientHeight - padV;
+      return { availWidth: cachedAvailWidth, availHeight: cachedAvailHeight };
+    }
+
+    function renderPage(num) {
+      if (isRendering || !pdfDoc) return;
+      isRendering = true;
+
+      pdfDoc.getPage(num).then(page => {
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 使用稳定的容器尺寸计算 scale
+        const { availWidth, availHeight } = getAvailableSpace();
+        const vpBase = page.getViewport({ scale: 1 });
+        const scale = Math.min(
+          availWidth / vpBase.width,
+          availHeight / vpBase.height,
+          1.8 // 上限
+        );
+        const viewport = page.getViewport({ scale });
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        page.render({ canvasContext: ctx, viewport }).promise.then(() => {
+          isRendering = false;
+          document.getElementById('current-page').innerText = num;
+        });
+      }).catch(() => {
+        isRendering = false;
+      });
+    }
+
+    function changePage(delta) {
+      if (!pdfDoc || isRendering) return;
+      const next = pageNum + delta;
+      if (next >= 1 && next <= pdfDoc.numPages) {
+        pageNum = next;
+        renderPage(pageNum);
+      }
+    }
+
+    // 窗口大小变化时清除缓存，下次渲染重新测量
+    window.addEventListener('resize', () => {
+      cachedAvailWidth = null;
+      cachedAvailHeight = null;
+      // 如果当前有 PDF 在显示且不在渲染中，重新渲染当前页
+      if (pdfDoc && !isRendering && document.getElementById('work-viewer-section').style.display !== 'none') {
+        renderPage(pageNum);
+      }
+    });
+
+    window.onload = () => {
+      MECC_CONFIG.renderGlobalNav(pageTitle);
+      document.getElementById('author-role-label').innerText = authorLabel;
+      document.getElementById('status-msg').innerText = isTeacher ? "正在载入..." : "Loading...";
+      init();
+    };
+  </script>
+</body>
+</html>
