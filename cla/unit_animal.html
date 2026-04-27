@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>动物 — 第二十周</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
+<style>
+/* ── Variables ── */
+:root {
+  --zh: "STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif;
+  --en: "LXGW WenKai Lite",sans-serif;
+  --bg:       #fdf6ec;
+  --nav:      #598586;
+  --gold:     #f3b236;
+  --red:      #e05050;
+  --green:    #4caf6e;
+  --blue:     #4a90d9;
+  --purple:   #9b6ecf;
+  --orange:   #f08040;
+  --teal:     #3aafa9;
+  --text:     #2a2a2a;
+  --card-r:   18px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  font-family: var(--zh);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Nav ── */
+.mecc-global-nav {
+  position: fixed; top:0; left:0; width:100%; height:60px;
+  background: var(--nav); border-bottom:5px solid var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999; padding:0 14px;
+}
+.mecc-nav-back {
+  position:absolute; left:20px;
+  display:flex; align-items:center; gap:6px;
+  color:#fff; text-decoration:none;
+  font-family:var(--zh); font-size:1.05rem; font-weight:bold;
+  cursor:pointer; white-space:nowrap;
+}
+.mecc-nav-back:hover{opacity:.7}
+.mecc-nav-back svg{width:24px;height:24px;flex-shrink:0}
+.mecc-nav-title {
+  color:#fff; font-family:var(--zh);
+  font-size:1.3rem; font-weight:bold;
+  letter-spacing:1px; text-align:center;
+}
+
+/* ── Main layout ── */
+main {
+  padding-top: 70px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 40px;
+}
+
+/* ── Section headers ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 32px 0 16px;
+  font-family: var(--zh);
+}
+.section-header .bubble {
+  background: var(--nav);
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: bold;
+  padding: 6px 20px;
+  border-radius: 30px;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+.section-header .line {
+  flex: 1;
+  height: 3px;
+  background: linear-gradient(90deg, var(--nav) 0%, transparent 100%);
+  border-radius: 2px;
+}
+
+/* ── Intro card ── */
+.intro-card {
+  background: linear-gradient(135deg, #fff9ee 0%, #ffecd0 100%);
+  border: 3px solid var(--gold);
+  border-radius: 24px;
+  padding: 28px 32px;
+  text-align: center;
+  margin: 12px 0 8px;
+  box-shadow: 0 6px 20px rgba(243,178,54,.18);
+  cursor: pointer;
+  user-select: none;
+  transition: transform .15s, box-shadow .15s;
+}
+.intro-card:hover { transform: scale(1.01); }
+.intro-card:active { transform: scale(.98); }
+.intro-card .question {
+  font-family: var(--zh);
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-weight: bold;
+  color: #2a2a2a;
+  line-height: 1.2;
+}
+.intro-card .emoji-row {
+  font-size: 2.2rem;
+  margin-top: 14px;
+  letter-spacing: 4px;
+}
+.intro-card .hint {
+  font-family: var(--en);
+  font-size: .85rem;
+  color: #999;
+  margin-top: 10px;
+}
+
+/* ── Animal cards grid ── */
+.animals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.animal-card {
+  background: #fff;
+  border-radius: var(--card-r);
+  padding: 18px 14px 14px;
+  text-align: center;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+  cursor: pointer;
+  user-select: none;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  position: relative;
+  overflow: hidden;
+}
+.animal-card::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:6px;
+  border-radius: var(--card-r) var(--card-r) 0 0;
+}
+.animal-card:nth-child(1)::before { background: var(--orange); }
+.animal-card:nth-child(2)::before { background: var(--red); }
+.animal-card:nth-child(3)::before { background: var(--gold); }
+.animal-card:nth-child(4)::before { background: var(--blue); }
+.animal-card:nth-child(5)::before { background: var(--green); }
+
+.animal-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,.13); }
+.animal-card:active { transform: scale(.96); }
+.animal-card.active { border-color: var(--nav); }
+
+.animal-card .emo {
+  font-size: 3.2rem;
+  display: block;
+  margin-bottom: 6px;
+  transition: transform .3s;
+}
+.animal-card.active .emo { transform: scale(1.2) rotate(-5deg); }
+.animal-card.bounce .emo { animation: aniBounce .5s ease; }
+
+@keyframes aniBounce {
+  0%  { transform: scale(1); }
+  40% { transform: scale(1.35) rotate(-8deg); }
+  70% { transform: scale(1.1) rotate(4deg); }
+  100%{ transform: scale(1); }
+}
+
+.animal-card .name {
+  font-family: var(--zh);
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: #1a2740;
+  line-height: 1.1;
+}
+.animal-card .sentence {
+  font-family: var(--zh);
+  font-size: 1.05rem;
+  color: #555;
+  margin-top: 8px;
+  line-height: 1.5;
+  display: none;
+}
+.animal-card.active .sentence { display: block; }
+.animal-card .sound-btn {
+  margin-top: 10px;
+  background: none;
+  border: 2px solid var(--nav);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-family: var(--zh);
+  font-size: .95rem;
+  color: var(--nav);
+  cursor: pointer;
+  display: none;
+  transition: background .15s;
+}
+.animal-card .sound-btn:hover { background: var(--nav); color: #fff; }
+.animal-card.active .sound-btn { display: inline-block; }
+
+/* ── Needs section ── */
+.needs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.need-card {
+  background: #fff;
+  border-radius: var(--card-r);
+  padding: 20px 16px;
+  border: 3px solid #eee;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+  box-shadow: 0 4px 14px rgba(0,0,0,.07);
+  text-align: center;
+}
+.need-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.12); }
+.need-card:active { transform: scale(.97); }
+.need-card.active { border-color: var(--teal); background: #f0fafa; }
+
+.need-card .emo {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: 8px;
+  transition: transform .25s;
+}
+.need-card.active .emo { transform: scale(1.15); }
+.need-card .label {
+  font-family: var(--zh);
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #1a2740;
+}
+.need-card .expand-text {
+  font-family: var(--zh);
+  font-size: 1.05rem;
+  color: #555;
+  margin-top: 10px;
+  line-height: 1.7;
+  display: none;
+}
+.need-card.active .expand-text { display: block; }
+
+/* highlighted words */
+.hw { color: var(--red); font-weight: bold; }
+.hw2 { color: var(--blue); font-weight: bold; }
+
+/* ── Habitats ── */
+.habitats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.habitat-card {
+  border-radius: var(--card-r);
+  padding: 24px 14px 18px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  border: 3px solid transparent;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  box-shadow: 0 4px 14px rgba(0,0,0,.09);
+  position: relative;
+  overflow: hidden;
+}
+.habitat-card.ocean  { background: linear-gradient(160deg,#e0f4ff 0%,#b8e0ff 100%); }
+.habitat-card.desert { background: linear-gradient(160deg,#fff8e0 0%,#fde8a0 100%); }
+.habitat-card.forest { background: linear-gradient(160deg,#e6fce6 0%,#b8eab8 100%); }
+
+.habitat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 26px rgba(0,0,0,.14); }
+.habitat-card:active { transform: scale(.97); }
+.habitat-card.active.ocean  { border-color: #4a90d9; }
+.habitat-card.active.desert { border-color: #d4922a; }
+.habitat-card.active.forest { border-color: #4caf6e; }
+
+.habitat-card .scene { font-size: 3rem; display: block; margin-bottom: 8px; }
+.habitat-card .name {
+  font-family: var(--zh);
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #1a2740;
+}
+.habitat-card .animals-list {
+  font-family: var(--zh);
+  font-size: 1rem;
+  color: #444;
+  margin-top: 8px;
+  line-height: 1.6;
+  display: none;
+}
+.habitat-card.active .animals-list { display: block; }
+.habitat-card .sentence {
+  font-family: var(--zh);
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #2a2a2a;
+  margin-top: 10px;
+  display: none;
+}
+.habitat-card.active .sentence { display: block; }
+
+/* ── Read-together banner ── */
+.read-banner {
+  background: linear-gradient(135deg, #598586 0%, #3a6b6c 100%);
+  color: #fff;
+  border-radius: var(--card-r);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity .15s;
+  box-shadow: 0 4px 16px rgba(89,133,134,.3);
+}
+.read-banner:hover { opacity: .9; }
+.read-banner:active { opacity: .8; }
+.read-banner .rb-emo { font-size: 2rem; flex-shrink: 0; }
+.read-banner .rb-text { font-family: var(--zh); font-size: 1.2rem; line-height: 1.5; }
+.read-banner .rb-hint { font-family: var(--en); font-size: .8rem; opacity: .7; }
+
+/* ── Game section ── */
+.game-box {
+  background: #fff;
+  border-radius: 20px;
+  border: 3px solid var(--gold);
+  padding: 24px 20px;
+  box-shadow: 0 4px 18px rgba(243,178,54,.15);
+  margin-top: 8px;
+}
+.game-box h3 {
+  font-family: var(--zh);
+  font-size: 1.4rem;
+  color: #1a2740;
+  margin-bottom: 18px;
+  text-align: center;
+}
+.match-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.match-chip {
+  background: #f3f3f3;
+  border: 2px solid #ddd;
+  border-radius: 30px;
+  padding: 8px 18px;
+  font-family: var(--zh);
+  font-size: 1.2rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all .2s;
+}
+.match-chip:hover { border-color: var(--nav); background: #edf4f4; }
+.match-chip.selected { background: var(--nav); color: #fff; border-color: var(--nav); }
+.match-chip.correct  { background: var(--green); color: #fff; border-color: var(--green); pointer-events:none; }
+.match-chip.wrong    { background: var(--red); color: #fff; border-color: var(--red); }
+
+.match-targets {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+.match-target {
+  background: #f9f9f9;
+  border: 2px dashed #ccc;
+  border-radius: 16px;
+  padding: 14px 20px;
+  min-width: 110px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.match-target:hover { border-color: var(--nav); background: #edf4f4; }
+.match-target .tgt-emo { font-size: 2rem; display: block; margin-bottom: 4px; }
+.match-target .tgt-label { font-family: var(--zh); font-size: 1rem; color: #888; }
+.match-target.filled { border-style: solid; border-color: var(--nav); background: #edf4f4; }
+.match-target.filled .tgt-label { font-size: 1.2rem; color: #1a2740; font-weight:bold; }
+.match-target.correct-fill { border-color: var(--green); background: #e6fce6; }
+.match-target.wrong-fill   { border-color: var(--red);   background: #ffe6e6; }
+
+#game-feedback {
+  text-align: center;
+  font-family: var(--zh);
+  font-size: 1.5rem;
+  margin-top: 14px;
+  min-height: 36px;
+  transition: all .3s;
+}
+.game-reset-btn {
+  display: block;
+  margin: 12px auto 0;
+  background: var(--nav);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 28px;
+  font-family: var(--zh);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.game-reset-btn:hover { opacity: .85; }
+
+/* ── Firework / star burst ── */
+@keyframes starPop {
+  0%   { transform: scale(0) rotate(0deg); opacity:1; }
+  60%  { transform: scale(1.4) rotate(20deg); opacity:1; }
+  100% { transform: scale(0) rotate(40deg); opacity:0; }
+}
+.star-burst {
+  position: fixed; pointer-events:none;
+  font-size: 2rem;
+  animation: starPop .7s ease-out forwards;
+  z-index: 9998;
+}
+
+/* ── Tap flash ── */
+@keyframes tapFlash {
+  0%  { opacity:0; transform:scale(.5); }
+  40% { opacity:1; transform:scale(1.1); }
+  100%{ opacity:0; transform:scale(1); }
+}
+.tap-flash {
+  position:fixed; pointer-events:none;
+  width:60px; height:60px;
+  border-radius:50%;
+  background: radial-gradient(circle, rgba(243,178,54,.6) 0%, transparent 70%);
+  animation: tapFlash .5s ease-out forwards;
+  z-index: 9997;
+  transform-origin: center;
+}
+
+/* ── Audio ripple ── */
+.audio-ripple {
+  display:inline-block;
+  animation: rippleAnim .6s ease-out;
+}
+@keyframes rippleAnim {
+  0%  { transform:scale(1); }
+  50% { transform:scale(1.3); }
+  100%{ transform:scale(1); }
+}
+
+/* ── Song card ── */
+.song-card {
+  background: linear-gradient(135deg, #fff4e6 0%, #ffe8c8 100%);
+  border: 3px solid var(--orange);
+  border-radius: 22px;
+  padding: 24px 20px 18px;
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(240,128,64,.15);
+  margin-top: 8px;
+}
+.song-title {
+  font-family: var(--zh);
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #c05a10;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+.song-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.song-line {
+  font-family: var(--zh);
+  font-size: 1.55rem;
+  background: #fff;
+  border: 2px solid #f5c890;
+  border-radius: 14px;
+  padding: 10px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .18s, transform .15s, border-color .18s;
+  color: #2a2a2a;
+}
+.song-line:hover { background: #fff0db; border-color: var(--orange); }
+.song-line:active { transform: scale(.97); }
+.song-line.singing {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+  transform: scale(1.03);
+}
+.sing-all-btn {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 26px;
+  font-family: var(--zh);
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: opacity .15s;
+}
+.sing-all-btn:hover { opacity: .85; }
+.song-hint {
+  font-family: var(--zh);
+  font-size: .9rem;
+  color: #b06a30;
+}
+
+/* ── Responsive ── */
+@media(max-width:600px) {
+  .habitats-grid { grid-template-columns: 1fr; }
+  .needs-grid    { grid-template-columns: 1fr; }
+  .animals-grid  { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="mecc-global-nav">
+  <a class="mecc-nav-back" href="../teachers.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    <span>课程首页</span>
+  </a>
+  <span class="mecc-nav-title">动物 · 第二十周</span>
+</nav>
+
+<main>
+
+  <!-- ── Intro ── -->
+  <div class="intro-card" id="introCard" onclick="speakAndBounce(this,'你是动物吗？')">
+    <div class="question">你是动物吗？</div>
+    <div class="emoji-row">🐆 🦎 🦜 🐸 🐭</div>
+    <div class="hint">tap to hear · 点击朗读</div>
+  </div>
+
+  <!-- ── Section 1: Animals ── -->
+  <div class="section-header">
+    <span class="bubble">认识动物</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="read-banner" onclick="speakText('小猫是动物。小猪是动物。小鸡是动物。小鸭是动物。小狗是动物。')">
+    <span class="rb-emo">🔊</span>
+    <div>
+      <div class="rb-text">点击认识五种动物 — 每张卡片都可以点！</div>
+      <div class="rb-hint">tap each card · hear the sentences</div>
+    </div>
+  </div>
+
+  <div class="animals-grid">
+    <div class="animal-card" onclick="toggleAnimal(this,'小猫是动物。\n会跑会跳喵喵叫。')">
+      <span class="emo">🐱</span>
+      <div class="name">小猫</div>
+      <div class="sentence">小猫是动物。<br>会跑会跳喵喵叫。</div>
+      <button class="sound-btn" onclick="event.stopPropagation();speakText('小猫是动物。会跑会跳喵喵叫。')">🔊 朗读</button>
+    </div>
+    <div class="animal-card" onclick="toggleAnimal(this,'小猪是动物。\n会吃会喝爱睡觉。')">
+      <span class="emo">🐷</span>
+      <div class="name">小猪</div>
+      <div class="sentence">小猪是动物。<br>会吃会喝爱睡觉。</div>
+      <button class="sound-btn" onclick="event.stopPropagation();speakText('小猪是动物。会吃会喝爱睡觉。')">🔊 朗读</button>
+    </div>
+    <div class="animal-card" onclick="toggleAnimal(this,'小鸡是动物。\n会捉虫，会下蛋。')">
+      <span class="emo">🐤</span>
+      <div class="name">小鸡</div>
+      <div class="sentence">小鸡是动物。<br>会捉虫，会下蛋。</div>
+      <button class="sound-btn" onclick="event.stopPropagation();speakText('小鸡是动物。会捉虫，会下蛋。')">🔊 朗读</button>
+    </div>
+    <div class="animal-card" onclick="toggleAnimal(this,'小鸭是动物。\n会走路，会游泳。')">
+      <span class="emo">🦆</span>
+      <div class="name">小鸭</div>
+      <div class="sentence">小鸭是动物。<br>会走路，会游泳。</div>
+      <button class="sound-btn" onclick="event.stopPropagation();speakText('小鸭是动物。会走路，会游泳。')">🔊 朗读</button>
+    </div>
+    <div class="animal-card" onclick="toggleAnimal(this,'小狗是动物。\n会摇尾巴汪汪叫。')">
+      <span class="emo">🐶</span>
+      <div class="name">小狗</div>
+      <div class="sentence">小狗是动物。<br>会摇尾巴汪汪叫。</div>
+      <button class="sound-btn" onclick="event.stopPropagation();speakText('小狗是动物。会摇尾巴汪汪叫。')">🔊 朗读</button>
+    </div>
+  </div>
+
+  <!-- ── Section 2: Needs ── -->
+  <div class="section-header">
+    <span class="bubble">动物要什么</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="needs-grid">
+    <div class="need-card" onclick="toggleNeed(this,'动物和我一样。我要喝水。动物也要喝水。')">
+      <span class="emo">💧</span>
+      <div class="label">喝水</div>
+      <div class="expand-text">
+        动物<span class="hw2">和我一样</span>。<br>
+        我<span class="hw">要</span>喝水。<br>
+        动物<span class="hw">也要</span>喝水。
+      </div>
+    </div>
+    <div class="need-card" onclick="toggleNeed(this,'动物和我一样。我要吃饭。动物也要吃饭。')">
+      <span class="emo">🍚</span>
+      <div class="label">吃饭</div>
+      <div class="expand-text">
+        动物<span class="hw2">和我一样</span>。<br>
+        我<span class="hw">要</span>吃饭。<br>
+        动物<span class="hw">也要</span>吃饭。
+      </div>
+    </div>
+    <div class="need-card" onclick="toggleNeed(this,'动物和我一样。我要空气。动物也要空气。')">
+      <span class="emo">🌬️</span>
+      <div class="label">空气</div>
+      <div class="expand-text">
+        动物<span class="hw2">和我一样</span>。<br>
+        我<span class="hw">要</span>空气。<br>
+        动物<span class="hw">也要</span>空气。
+      </div>
+    </div>
+    <div class="need-card" onclick="toggleNeed(this,'动物和我一样。我要一个家。动物也要一个家。')">
+      <span class="emo">🏠</span>
+      <div class="label">一个家</div>
+      <div class="expand-text">
+        动物<span class="hw2">和我一样</span>。<br>
+        我<span class="hw">要</span>一个家。<br>
+        动物<span class="hw">也要</span>一个家。
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Habitats ── -->
+  <div class="section-header">
+    <span class="bubble">动物的家在哪里</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="habitats-grid">
+    <div class="habitat-card ocean" onclick="toggleHabitat(this,'动物的家在大海。')">
+      <span class="scene">🌊🐢🐠</span>
+      <div class="name">大海</div>
+      <div class="sentence">动物的家在<br><strong>大海</strong>。</div>
+      <div class="animals-list">🐠 🐡 🐢 🦈 🐙</div>
+    </div>
+    <div class="habitat-card desert" onclick="toggleHabitat(this,'动物的家在沙漠。')">
+      <span class="scene">🏜️🦎🐫</span>
+      <div class="name">沙漠</div>
+      <div class="sentence">动物的家在<br><strong>沙漠</strong>。</div>
+      <div class="animals-list">🦎 🐫 🦂 🐍</div>
+    </div>
+    <div class="habitat-card forest" onclick="toggleHabitat(this,'动物的家在森林。')">
+      <span class="scene">🌲🦊🐻</span>
+      <div class="name">森林</div>
+      <div class="sentence">动物的家在<br><strong>森林</strong>。</div>
+      <div class="animals-list">🦊 🐻 🦌 🐿️ 🦉</div>
+    </div>
+  </div>
+
+  <!-- ── Song / Rhyme (slide 2) ── -->
+  <div class="section-header">
+    <span class="bubble">一起唱</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="song-card" id="songCard">
+    <div class="song-title">🐭 老鼠老鼠 🐸</div>
+    <div class="song-lines" id="songLines">
+      <div class="song-line" data-text="老鼠老鼠，吱吱吱" onclick="singLine(this)">老鼠老鼠，吱吱吱</div>
+      <div class="song-line" data-text="青蛙青蛙，呱呱呱" onclick="singLine(this)">青蛙青蛙，呱呱呱</div>
+      <div class="song-line" data-text="小猫小猫，喵喵喵" onclick="singLine(this)">小猫小猫，喵喵喵</div>
+      <div class="song-line" data-text="小狗小狗，汪汪汪" onclick="singLine(this)">小狗小狗，汪汪汪</div>
+    </div>
+    <button class="sing-all-btn" onclick="singAll()">🔊 全部朗读</button>
+    <div class="song-hint">点每一句，跟着读！</div>
+  </div>
+
+  <!-- ── Game ── -->
+  <div class="section-header">
+    <span class="bubble">小游戏</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="game-box">
+    <h3>把动物送回家！🏡</h3>
+    <p style="text-align:center;font-family:var(--zh);color:#666;margin-bottom:16px;font-size:1rem">
+      先点动物，再点它的家
+    </p>
+
+    <!-- animal chips -->
+    <div class="match-row" id="gameChips">
+      <div class="match-chip" data-animal="🐠" data-home="ocean" onclick="selectChip(this)">🐠 鱼</div>
+      <div class="match-chip" data-animal="🦎" data-home="desert" onclick="selectChip(this)">🦎 蜥蜴</div>
+      <div class="match-chip" data-animal="🐻" data-home="forest" onclick="selectChip(this)">🐻 熊</div>
+      <div class="match-chip" data-animal="🐙" data-home="ocean" onclick="selectChip(this)">🐙 章鱼</div>
+      <div class="match-chip" data-animal="🐫" data-home="desert" onclick="selectChip(this)">🐫 骆驼</div>
+      <div class="match-chip" data-animal="🦊" data-home="forest" onclick="selectChip(this)">🦊 狐狸</div>
+    </div>
+
+    <!-- targets -->
+    <div class="match-targets">
+      <div class="match-target" data-home="ocean" onclick="dropOnTarget(this)">
+        <span class="tgt-emo">🌊</span>
+        <div class="tgt-label">大海</div>
+      </div>
+      <div class="match-target" data-home="desert" onclick="dropOnTarget(this)">
+        <span class="tgt-emo">🏜️</span>
+        <div class="tgt-label">沙漠</div>
+      </div>
+      <div class="match-target" data-home="forest" onclick="dropOnTarget(this)">
+        <span class="tgt-emo">🌲</span>
+        <div class="tgt-label">森林</div>
+      </div>
+    </div>
+
+    <div id="game-feedback"></div>
+    <button class="game-reset-btn" onclick="resetGame()">重新开始 🔄</button>
+  </div>
+
+</main>
+
+<script>
+/* ── TTS ── */
+let _ttsReady = false;
+function _synthSpeak(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'zh-CN'; utter.rate = 0.85;
+  const voices = speechSynthesis.getVoices();
+  const xiao = voices.find(v => /Xiaoxiao|xiaoxiao/i.test(v.name))
+             || voices.find(v => /zh[-_]CN/i.test(v.lang));
+  if (xiao) utter.voice = xiao;
+  speechSynthesis.cancel();
+  setTimeout(() => speechSynthesis.speak(utter), 80);
+}
+
+function speakText(text) {
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.addEventListener('voiceschanged', () => _synthSpeak(text), { once: true });
+  } else {
+    _synthSpeak(text);
+  }
+}
+
+/* ── Tap flash ── */
+function tapFlash(x, y) {
+  const el = document.createElement('div');
+  el.className = 'tap-flash';
+  el.style.left = (x - 30) + 'px';
+  el.style.top  = (y - 30) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 600);
+}
+
+/* ── Stars ── */
+function shootStars(x, y) {
+  const stars = ['⭐','🌟','✨','💫','🎉'];
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement('div');
+    el.className = 'star-burst';
+    el.textContent = stars[i % stars.length];
+    el.style.left = (x + (Math.random()-0.5)*80) + 'px';
+    el.style.top  = (y + (Math.random()-0.5)*80) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+}
+
+/* ── Intro bounce ── */
+function speakAndBounce(el, text) {
+  speakText(text);
+  el.style.transform = 'scale(1.03) rotate(-1deg)';
+  setTimeout(() => el.style.transform = '', 300);
+}
+
+/* ── Animal cards ── */
+function toggleAnimal(card, text) {
+  const wasActive = card.classList.contains('active');
+  // close all
+  document.querySelectorAll('.animal-card.active').forEach(c => c.classList.remove('active'));
+  if (!wasActive) {
+    card.classList.add('active');
+    card.classList.remove('bounce');
+    void card.offsetWidth;
+    card.classList.add('bounce');
+    speakText(text.replace(/\n/g, ''));
+  }
+}
+
+/* ── Need cards ── */
+function toggleNeed(card, text) {
+  const wasActive = card.classList.contains('active');
+  document.querySelectorAll('.need-card.active').forEach(c => c.classList.remove('active'));
+  if (!wasActive) {
+    card.classList.add('active');
+    speakText(text);
+  }
+}
+
+/* ── Habitat cards ── */
+function toggleHabitat(card, text) {
+  const wasActive = card.classList.contains('active');
+  document.querySelectorAll('.habitat-card.active').forEach(c => c.classList.remove('active'));
+  if (!wasActive) {
+    card.classList.add('active');
+    speakText(text);
+  }
+}
+
+/* ── Song ── */
+let singTimer = null;
+function singLine(el) {
+  document.querySelectorAll('.song-line.singing').forEach(l => l.classList.remove('singing'));
+  el.classList.add('singing');
+  speakText(el.dataset.text);
+  clearTimeout(singTimer);
+  singTimer = setTimeout(() => el.classList.remove('singing'), 2200);
+}
+
+async function singAll() {
+  const lines = Array.from(document.querySelectorAll('.song-line'));
+  for (let i = 0; i < lines.length; i++) {
+    await new Promise(res => {
+      document.querySelectorAll('.song-line.singing').forEach(l => l.classList.remove('singing'));
+      lines[i].classList.add('singing');
+      speakText(lines[i].dataset.text);
+      setTimeout(res, 1400);
+    });
+  }
+  setTimeout(() => document.querySelectorAll('.song-line.singing').forEach(l => l.classList.remove('singing')), 1400);
+}
+
+/* ── Game state ── */
+let selectedChip = null;
+let score = 0;
+let total = 0;
+
+function selectChip(chip) {
+  if (chip.classList.contains('correct')) return;
+  document.querySelectorAll('.match-chip.selected').forEach(c => c.classList.remove('selected'));
+  selectedChip = chip;
+  chip.classList.add('selected');
+}
+
+function dropOnTarget(target) {
+  if (!selectedChip) return;
+  const chipHome = selectedChip.dataset.home;
+  const targetHome = target.dataset.home;
+  total++;
+
+  if (chipHome === targetHome) {
+    // correct
+    score++;
+    selectedChip.classList.remove('selected');
+    selectedChip.classList.add('correct');
+    target.classList.add('correct-fill');
+    target.querySelector('.tgt-label').textContent = selectedChip.textContent;
+    target.classList.add('filled');
+    selectedChip = null;
+    // star burst
+    const rect = target.getBoundingClientRect();
+    shootStars(rect.left + rect.width/2, rect.top + rect.height/2);
+    speakText('对了！');
+
+    // check win
+    const remaining = document.querySelectorAll('.match-chip:not(.correct)').length;
+    if (remaining === 0) {
+      setTimeout(() => {
+        document.getElementById('game-feedback').textContent = '🎉 全对了！真棒！';
+        speakText('全对了！真棒！');
+        for (let i=0;i<3;i++) {
+          setTimeout(() => shootStars(window.innerWidth/2, window.innerHeight/2), i*300);
+        }
+      }, 400);
+    }
+  } else {
+    // wrong
+    selectedChip.classList.add('wrong');
+    target.classList.add('wrong-fill');
+    speakText('再试一次！');
+    setTimeout(() => {
+      selectedChip.classList.remove('wrong','selected');
+      target.classList.remove('wrong-fill');
+      selectedChip = null;
+    }, 700);
+    document.getElementById('game-feedback').textContent = '再试一次！💪';
+    setTimeout(() => { document.getElementById('game-feedback').textContent=''; }, 1500);
+  }
+}
+
+function resetGame() {
+  selectedChip = null; score = 0; total = 0;
+  document.querySelectorAll('.match-chip').forEach(c => {
+    c.classList.remove('correct','wrong','selected');
+  });
+  const labels = { ocean:'大海', desert:'沙漠', forest:'森林' };
+  const emos   = { ocean:'🌊', desert:'🏜️', forest:'🌲' };
+  document.querySelectorAll('.match-target').forEach(t => {
+    t.classList.remove('correct-fill','wrong-fill','filled');
+    const h = t.dataset.home;
+    t.querySelector('.tgt-emo').textContent = emos[h];
+    t.querySelector('.tgt-label').textContent = labels[h];
+  });
+  document.getElementById('game-feedback').textContent = '';
+}
+
+/* ── Tap flash on body ── */
+document.addEventListener('click', e => tapFlash(e.clientX, e.clientY));
+
+/* ── Pre-load voices ── */
+window.addEventListener('load', () => {
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.addEventListener('voiceschanged', () => {}, { once: true });
+  }
+});
+</script>
+</body>
+</html>

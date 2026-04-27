@@ -8,6 +8,12 @@ export const focusWall = defineType({
 
     // ── 基本信息 ──────────────────────────────
     defineField({
+      name: 'unitNumber',
+      title: '单元编号',
+      type: 'number',
+      description: '如：12，用于 Hero 区显示 UNIT 12',
+    }),
+    defineField({
       name: 'slug',
       title: '页面标识 (URL用)',
       type: 'slug',
