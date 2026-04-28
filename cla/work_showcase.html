@@ -47,50 +47,6 @@
     }
 
     /* ══════════════════════════════════════════
-       页面头部 Hero — 紧凑版
-    ══════════════════════════════════════════ */
-    #gallery-hero {
-      text-align: center;
-      padding: 18px 20px 14px;   /* ← 从 48/32 大幅压缩 */
-      position: relative;
-    }
-    #gallery-hero .hero-deco {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      margin-bottom: 6px;        /* ← 从 10px 减小 */
-    }
-    #gallery-hero .hero-deco span {
-      display: block;
-      height: 2px;
-      width: 48px;               /* ← 横线稍短，更紧凑 */
-      background: linear-gradient(90deg, transparent, var(--teal-mid));
-      border-radius: 2px;
-    }
-    #gallery-hero .hero-deco span:last-child {
-      background: linear-gradient(90deg, var(--teal-mid), transparent);
-    }
-    #gallery-hero .hero-deco .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--gold); flex-shrink: 0;
-    }
-    #hero-title {
-      margin: 0 0 4px;           /* ← 从 8px 减小 */
-      font-size: clamp(1.3rem, 3vw, 1.9rem);  /* ← 字号略小 */
-      font-family: var(--font-en);
-      color: var(--teal);
-      letter-spacing: .08em;
-    }
-    #hero-sub {
-      margin: 0;
-      font-family: var(--font-en);
-      font-size: .82rem;         /* ← 副标题更小 */
-      color: #98b4b5;
-      letter-spacing: .12em;
-    }
-
-    /* ══════════════════════════════════════════
        加载状态
     ══════════════════════════════════════════ */
     #status-msg {
@@ -498,17 +454,6 @@
 </head>
 <body>
 
-  <!-- 列表页头部 -->
-  <div id="gallery-hero">
-    <div class="hero-deco">
-      <span></span>
-      <div class="dot"></div>
-      <span></span>
-    </div>
-    <h1 id="hero-title">学生优秀习作展示</h1>
-    <p id="hero-sub">EXCELLENT WORK SHOWCASE</p>
-  </div>
-
   <!-- 加载提示 -->
   <div id="status-msg"></div>
 
@@ -590,10 +535,6 @@
     const isTeacher  = LANG === 'zh';
     const pageTitle  = isTeacher ? '学生优秀习作展示' : 'Excellent Work Showcase';
     const authorLabel = isTeacher ? '习作作者' : 'Featured Author';
-
-    document.getElementById('hero-title').innerText = pageTitle;
-    document.getElementById('hero-sub').innerText   =
-      isTeacher ? 'EXCELLENT WORK SHOWCASE' : '学生优秀习作展示';
 
     const QUERY = encodeURIComponent(`*[_type == "studentWork"] | order(_createdAt desc){
       unit, topic, book, "pdfUrl": pdfFile.asset->url,
@@ -681,7 +622,6 @@
     /* ─── 打开作品 ─── */
     function openWork(work) {
       document.querySelector('.mecc-global-nav').style.display = 'none';
-      document.getElementById('gallery-hero').style.display    = 'none';
       document.getElementById('work-gallery').style.display    = 'none';
       document.getElementById('empty-state').style.display     = 'none';
       const viewer = document.getElementById('work-viewer-section');
@@ -713,7 +653,6 @@
     /* ─── 返回列表 ─── */
     function showGallery() {
       document.querySelector('.mecc-global-nav').style.display = '';
-      document.getElementById('gallery-hero').style.display    = '';
       document.getElementById('work-gallery').style.display    = 'grid';
       document.getElementById('work-viewer-section').style.display = 'none';
       pdfDoc = null;
