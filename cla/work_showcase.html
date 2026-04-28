@@ -78,6 +78,7 @@
     #hero-title {
       margin: 0 0 4px;           /* ← 从 8px 减小 */
       font-size: clamp(1.3rem, 3vw, 1.9rem);  /* ← 字号略小 */
+      font-family: var(--font-en);
       color: var(--teal);
       letter-spacing: .08em;
     }
@@ -93,8 +94,9 @@
        加载状态
     ══════════════════════════════════════════ */
     #status-msg {
+      display: none;
       text-align: center;
-      padding: 60px 20px;
+      padding: 40px 20px;
       color: #aabfbf;
       font-size: 1.05rem;
     }
@@ -654,7 +656,9 @@
 
       } catch (e) {
         document.getElementById('skeleton-grid').style.display = 'none';
-        document.getElementById('status-msg').innerText = '数据加载失败，请稍后重试。';
+        const msg = document.getElementById('status-msg');
+        msg.innerText = '数据加载失败，请稍后重试。';
+        msg.style.display = 'block';
       }
     }
 
