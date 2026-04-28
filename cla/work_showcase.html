@@ -272,6 +272,10 @@
     /* ══════════════════════════════════════════
        Viewer — 全屏浮层
     ══════════════════════════════════════════ */
+    @keyframes viewerFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
     #work-viewer-section {
       display: none;
       position: fixed;
@@ -281,36 +285,50 @@
       overflow: hidden;
       flex-direction: column;
     }
+    #work-viewer-section.viewer-opening {
+      animation: viewerFadeIn .35s ease both;
+    }
 
     /* 顶栏 */
     .viewer-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
-      background: white;
-      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      padding: 0 28px;
+      background: linear-gradient(90deg, #fff 0%, #f8fafa 100%);
+      box-shadow: 0 2px 16px rgba(89,133,134,.10);
       height: 56px;
       flex-shrink: 0;
+      border-bottom: 2px solid var(--teal-light);
     }
+
+    /* 纯文字返回按钮 */
     .back-btn {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 5px;
       background: none;
-      border: 2px solid var(--teal);
+      border: none;
       color: var(--teal);
-      padding: 5px 16px;
-      border-radius: 50px;
+      padding: 0;
       cursor: pointer;
       font-family: var(--font-zh);
-      font-size: .88rem;
-      transition: background .2s, color .2s;
+      font-size: .92rem;
+      font-weight: bold;
+      letter-spacing: .04em;
+      transition: color .2s, opacity .2s;
+    }
+    .back-btn .btn-arrow {
+      font-size: 1rem;
+      transition: transform .2s;
     }
     .back-btn:hover {
-      background: var(--teal);
-      color: white;
+      color: var(--gold);
     }
+    .back-btn:hover .btn-arrow {
+      transform: translateX(-3px);
+    }
+
     .page-counter-wrap {
       display: flex;
       align-items: center;
@@ -335,6 +353,21 @@
       transform: scale(1.3);
     }
 
+    /* 底部翻页进度条 */
+    .viewer-progress {
+      height: 3px;
+      background: var(--teal-light);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .viewer-progress-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: linear-gradient(90deg, var(--teal), var(--teal-mid));
+      border-radius: 0 2px 2px 0;
+      transition: width .35s ease;
+    }
+
     /* body */
     .viewer-body {
       display: flex;
@@ -354,9 +387,29 @@
       position: relative;
       overflow: hidden;
       background:
-        radial-gradient(ellipse at 20% 80%, rgba(89,133,134,.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 20%, rgba(201,168,76,.05) 0%, transparent 60%);
+        radial-gradient(ellipse at 15% 85%, rgba(89,133,134,.08) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(201,168,76,.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(89,133,134,.03) 0%, transparent 70%);
     }
+    /* 角落装饰圆 */
+    .viewer-left::before,
+    .viewer-left::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .viewer-left::before {
+      width: 220px; height: 220px;
+      bottom: -70px; left: -70px;
+      background: radial-gradient(circle, rgba(89,133,134,.08) 0%, transparent 70%);
+    }
+    .viewer-left::after {
+      width: 160px; height: 160px;
+      top: -50px; right: -50px;
+      background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
+    }
+
     .pdf-frame {
       position: relative;
       max-width: 100%;
@@ -369,19 +422,34 @@
     #pdf-canvas {
       display: block;
       border-radius: 10px;
-      box-shadow: 0 16px 56px rgba(0,0,0,.16);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,.06),
+        0 8px 24px rgba(0,0,0,.12),
+        0 20px 60px rgba(0,0,0,.14),
+        6px 6px 0 rgba(89,133,134,.06);
       cursor: pointer;
       width: auto;
       height: auto;
       max-width: none;
       max-height: none;
+      transition: opacity .22s ease;
+    }
+    #pdf-canvas.pdf-fading {
+      opacity: 0;
+    }
+    @keyframes pdfAppear {
+      from { opacity: 0; transform: scale(.985) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    #pdf-canvas.pdf-appeared {
+      animation: pdfAppear .3s ease both;
     }
 
     .nav-btn {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(89,133,134,.80);
+      background: rgba(89,133,134,.75);
       color: white;
       border: none;
       width: 40px;
@@ -390,7 +458,7 @@
       font-size: 18px;
       transition: background .2s, width .2s;
       z-index: 5;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
     }
     .nav-btn:hover { background: var(--teal); width: 46px; }
     .prev-btn { left: 0; border-radius: 0 10px 10px 0; }
@@ -398,12 +466,13 @@
 
     /* 右：信息栏 */
     .viewer-right {
-      width: 260px;
+      width: 270px;
       flex-shrink: 0;
       background: white;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(89,133,134,.08);
     }
 
     /* 作者头部（带渐变背景） */
@@ -415,14 +484,36 @@
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    /* 作者区背景装饰 */
+    .detail-author-box::before {
+      content: '';
+      position: absolute;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      bottom: -60px; right: -40px;
+      pointer-events: none;
+    }
+    .detail-author-box::after {
+      content: '';
+      position: absolute;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      top: -20px; left: -20px;
+      pointer-events: none;
     }
     .detail-avatar {
       width: 80px; height: 80px;
       border-radius: 50%;
-      border: 3px solid rgba(255,255,255,.7);
+      border: 3px solid rgba(255,255,255,.8);
       object-fit: cover;
       background: var(--teal-light);
-      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+      box-shadow: 0 6px 24px rgba(0,0,0,.18);
+      position: relative;
     }
     .detail-author-name {
       font-family: var(--font-zh);
@@ -430,12 +521,14 @@
       font-weight: bold;
       color: white;
       text-align: center;
+      position: relative;
     }
     .author-label {
       font-family: var(--font-en);
       font-size: .72rem;
       color: rgba(255,255,255,.70);
       letter-spacing: .1em;
+      position: relative;
     }
 
     /* 无作者时的占位头 */
@@ -450,34 +543,51 @@
       padding: 22px 20px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       flex: 1;
     }
     .info-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
+      background: var(--teal-pale);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--teal-light);
+      transition: border-color .2s;
+    }
+    .info-group:hover {
+      border-left-color: var(--teal-mid);
     }
     .info-label {
       font-family: var(--font-en);
-      font-size: .70rem;
-      color: #b0c4c4;
-      letter-spacing: .1em;
+      font-size: .68rem;
+      color: var(--teal-mid);
+      letter-spacing: .12em;
       text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .info-label::before {
+      content: '';
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--teal-mid);
+      flex-shrink: 0;
     }
     .info-value {
       font-family: var(--font-zh);
       color: #3a6a6b;
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: bold;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    /* 分隔线 */
+    /* 分隔线（保留但淡化，由 info-group 间距代替） */
     .info-divider {
-      height: 1px;
-      background: #eef4f4;
-      margin: 0;
+      display: none;
     }
 
     /* ══════════════════════════════════════════
@@ -532,7 +642,7 @@
   <!-- ══ Viewer ══ -->
   <div id="work-viewer-section">
     <div class="viewer-toolbar">
-      <button class="back-btn" onclick="showGallery()">❮ 返回列表</button>
+      <button class="back-btn" onclick="showGallery()"><span class="btn-arrow">←</span> 返回列表</button>
       <div class="page-counter-wrap">
         <span class="page-label">PAGE</span>
         <span id="current-page">1</span>
@@ -541,6 +651,7 @@
         <div class="page-dots" id="page-dots"></div>
       </div>
     </div>
+    <div class="viewer-progress"><div class="viewer-progress-bar" id="viewer-progress-bar"></div></div>
 
     <div class="viewer-body">
       <div class="viewer-left">
@@ -604,6 +715,7 @@
     let pdfDoc = null, pageNum = 1, isRendering = false;
     let cachedAvailWidth = null, cachedAvailHeight = null;
     let totalPages = 0;
+    let savedScrollY = 0;   /* ← 保存列表滚动位置 */
 
     /* ─── 初始化 ─── */
     async function init() {
@@ -680,6 +792,7 @@
 
     /* ─── 打开作品 ─── */
     function openWork(work) {
+      savedScrollY = window.scrollY;   /* ← 保存当前滚动位置 */
       document.querySelector('.mecc-global-nav').style.display = 'none';
       document.getElementById('gallery-hero').style.display    = 'none';
       document.getElementById('work-gallery').style.display    = 'none';
@@ -687,6 +800,9 @@
       const viewer = document.getElementById('work-viewer-section');
       viewer.style.display          = 'flex';
       viewer.style.flexDirection    = 'column';
+      viewer.classList.remove('viewer-opening');
+      void viewer.offsetWidth;   /* 触发重排，确保动画重新播放 */
+      viewer.classList.add('viewer-opening');
 
       document.getElementById('view-unit').innerText  = work.unit  || '---';
       document.getElementById('view-topic').innerText = work.topic || '---';
@@ -718,6 +834,9 @@
       document.getElementById('work-viewer-section').style.display = 'none';
       pdfDoc = null;
       updateDots(0, 0);
+      updateProgressBar(0, 0);
+      /* ← 恢复之前的滚动位置 */
+      requestAnimationFrame(() => window.scrollTo(0, savedScrollY));
     }
 
     /* ─── 加载 PDF ─── */
@@ -729,6 +848,7 @@
         totalPages  = pdf.numPages;
         document.getElementById('total-pages').innerText = totalPages;
         updateDots(pageNum, totalPages);
+        updateProgressBar(pageNum, totalPages);
         renderPage(pageNum);
       });
     }
@@ -743,6 +863,13 @@
         d.className = 'page-dot' + (i === current ? ' active' : '');
         container.appendChild(d);
       }
+    }
+
+    /* ─── 底部进度条 ─── */
+    function updateProgressBar(current, total) {
+      const bar = document.getElementById('viewer-progress-bar');
+      if (!bar) return;
+      bar.style.width = total > 0 ? `${(current / total) * 100}%` : '0%';
     }
 
     /* ─── 计算可用空间（缓存稳定尺寸） ─── */
@@ -760,8 +887,9 @@
     function renderPage(num) {
       if (isRendering || !pdfDoc) return;
       isRendering = true;
+      const canvas = document.getElementById('pdf-canvas');
+      canvas.classList.add('pdf-fading');
       pdfDoc.getPage(num).then(page => {
-        const canvas = document.getElementById('pdf-canvas');
         const { availWidth, availHeight } = getAvailableSpace();
         const vpBase = page.getViewport({ scale: 1 });
         const scale  = Math.min(availWidth / vpBase.width, availHeight / vpBase.height, 1.8);
@@ -772,8 +900,12 @@
           isRendering = false;
           document.getElementById('current-page').innerText = num;
           updateDots(num, totalPages);
+          updateProgressBar(num, totalPages);
+          canvas.classList.remove('pdf-fading');
+          canvas.classList.add('pdf-appeared');
+          setTimeout(() => canvas.classList.remove('pdf-appeared'), 400);
         });
-      }).catch(() => { isRendering = false; });
+      }).catch(() => { isRendering = false; canvas.classList.remove('pdf-fading'); });
     }
 
     /* ─── 翻页 ─── */
