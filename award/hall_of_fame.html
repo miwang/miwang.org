@@ -271,14 +271,15 @@
     }
 
     // ── State ─────────────────────────────────────────────────────────────────
-    const now = new Date();
-    let viewYear  = now.getFullYear();
-    let viewMonth = now.getMonth() + 1;   // 1-based
+    const _init   = new Date();
+    let viewYear  = _init.getFullYear();
+    let viewMonth = _init.getMonth() + 1;   // 1-based
 
     function updateNavBtn() {
+        const today = new Date();
         document.getElementById('nextBtn').disabled =
-            viewYear > now.getFullYear() ||
-            (viewYear === now.getFullYear() && viewMonth >= now.getMonth() + 1);
+            viewYear > today.getFullYear() ||
+            (viewYear === today.getFullYear() && viewMonth >= today.getMonth() + 1);
     }
 
     function changeMonth(delta) {
@@ -289,14 +290,27 @@
         loadData();
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // ── Render a single badge ─────────────────────────────────────────────────
     function renderBadge(s, yr) {
-        const cfg  = AWARD[s.awardType] || AWARD[DEFAULT_AWARD];
-        const y    = String(yr);
-        const photo = s.photoUrl
-            ? `<img src="${s.photoUrl}" class="med-photo" alt="${s.studentName}" loading="lazy">`
+        const cfg     = AWARD[s.awardType] || AWARD[DEFAULT_AWARD];
+        const y       = String(yr);
+        const name    = escapeHtml(s.studentName) || '—';
+        const photoSrc= escapeHtml(s.photoUrl);
+        const awardZh = escapeHtml(s.awardTitle) || cfg.zh;
+        const photo   = photoSrc
+            ? `<img src="${photoSrc}" class="med-photo" alt="${name}" loading="lazy">`
             : `<div class="med-photo-ph">👤</div>`;
-        const awardZh = s.awardTitle || cfg.zh;
 
         return `
         <div class="badge-item">
@@ -308,7 +322,7 @@
               <span class="med-year-side font-en" style="color:${cfg.color}">${y.slice(0,2)}<br>${y.slice(2,4)}</span>
             </div>
             ${photo}
-            <div class="med-ribbon font-zh">${s.studentName || '—'}</div>
+            <div class="med-ribbon font-zh">${name}</div>
             <div class="med-award-zh font-zh" style="color:${cfg.color}">${awardZh}</div>
             <div class="med-award-en font-en" style="color:${cfg.color}">${cfg.en}</div>
             <div class="med-wl font-en" style="color:${cfg.color}">WANG<br>LAOSHI</div>
@@ -323,7 +337,11 @@
         document.getElementById('monthLabel').textContent = `${viewYear}年 ${mm}月`;
         grid.innerHTML = `<div class="state-box"><div class="spinner"></div><p>正在加载…</p></div>`;
 
-        const ym    = `${viewYear}-${mm}`;
+        const ym = `${viewYear}-${mm}`;
+        if (!/^\d{4}-\d{2}$/.test(ym)) {
+            grid.innerHTML = `<div class="state-box"><div class="state-icon">❌</div><h3>参数错误</h3></div>`;
+            return;
+        }
         const query = `*[_type == "hallOfFame" && string::startsWith(awardMonth, "${ym}")] | order(_createdAt desc){
             "studentName": studentRef->name,
             awardTitle,
