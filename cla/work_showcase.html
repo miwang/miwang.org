@@ -13,7 +13,7 @@
   <style>
     /* ══════════════════════════════════════════
        字体 & 全局变量
-    ══════════════════════════════════════════ */
+    ═════════════════���════════════════════════ */
     :root {
       --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
       --font-en: "LXGW WenKai Lite", sans-serif;
@@ -47,11 +47,11 @@
     }
 
     /* ══════════════════════════════════════════
-       页面头部 Hero
+       页面头部 Hero — 紧凑版
     ══════════════════════════════════════════ */
     #gallery-hero {
       text-align: center;
-      padding: 48px 20px 32px;
+      padding: 18px 20px 14px;   /* ← 从 48/32 大幅压缩 */
       position: relative;
     }
     #gallery-hero .hero-deco {
@@ -59,12 +59,12 @@
       align-items: center;
       justify-content: center;
       gap: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 6px;        /* ← 从 10px 减小 */
     }
     #gallery-hero .hero-deco span {
       display: block;
       height: 2px;
-      width: 60px;
+      width: 48px;               /* ← 横线稍短，更紧凑 */
       background: linear-gradient(90deg, transparent, var(--teal-mid));
       border-radius: 2px;
     }
@@ -72,19 +72,19 @@
       background: linear-gradient(90deg, var(--teal-mid), transparent);
     }
     #gallery-hero .hero-deco .dot {
-      width: 8px; height: 8px; border-radius: 50%;
+      width: 7px; height: 7px; border-radius: 50%;
       background: var(--gold); flex-shrink: 0;
     }
     #hero-title {
-      margin: 0 0 8px;
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      margin: 0 0 4px;           /* ← 从 8px 减小 */
+      font-size: clamp(1.3rem, 3vw, 1.9rem);  /* ← 字号略小 */
       color: var(--teal);
       letter-spacing: .08em;
     }
     #hero-sub {
       margin: 0;
       font-family: var(--font-en);
-      font-size: .95rem;
+      font-size: .82rem;         /* ← 副标题更小 */
       color: #98b4b5;
       letter-spacing: .12em;
     }
