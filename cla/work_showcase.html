@@ -857,11 +857,11 @@
       }
     }
 
-    /* ─── 键盘翻页 ─── */
+    /* ─── 键盘翻页（含激光遥控笔 PageDown / PageUp） ─── */
     document.addEventListener('keydown', e => {
       if (document.getElementById('work-viewer-section').style.display === 'none') return;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
-      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changePage(-1);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') changePage(1);
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   || e.key === 'PageUp')   changePage(-1);
       if (e.key === 'Escape') showGallery();
     });
 
