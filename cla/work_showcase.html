@@ -8,221 +8,367 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/common_nav.css">
   <script src="../js/config.js"></script>
-  <script src="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js">
-  </script>
+  <script src="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
 
   <style>
     /* ══════════════════════════════════════════
-       铁律字体逻辑
-       中文：楷体优先
-       英文 / 数字 / 符号：永远 LXGW WenKai Lite
+       字体 & 全局变量
     ══════════════════════════════════════════ */
     :root {
       --font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
       --font-en: "LXGW WenKai Lite", sans-serif;
-      --teal: #598586;
-      --teal-light: #f0f7f7;
-      --bg: #faf6ed;
+      --teal:        #598586;
+      --teal-mid:    #6fa3a4;
+      --teal-light:  #e8f4f4;
+      --teal-pale:   #f3fafa;
+      --gold:        #c9a84c;
+      --bg:          #faf6ed;
+      --card-radius: 18px;
+      --shadow-sm:   0 4px 16px rgba(89,133,134,.10);
+      --shadow-md:   0 12px 36px rgba(89,133,134,.18);
     }
 
-    body,
-    h1,
-    h2,
-    h3,
-    p,
-    span,
-    div,
-    button {
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body, h1, h2, h3, p, span, div, button {
       font-family: var(--font-zh);
     }
-    .font-en,
-    #current-page,
-    #total-pages,
-    .page-label,
-    .author-label,
-    #view-book,
-    .card-author-tag,
-    .info-label {
-      font-family: var(--font-en) !important;
-    }
-    .bilingual-label {
+    .en, #current-page, #total-pages, .page-label,
+    .author-label, #view-book, .card-author-name,
+    .info-label, .badge-unit {
       font-family: var(--font-en) !important;
     }
 
     body {
       padding-top: 80px;
-      background-color: var(--bg);
+      background: var(--bg);
       overflow-x: hidden;
+      margin: 0;
     }
 
     /* ══════════════════════════════════════════
-       列表页 Gallery
+       页面头部 Hero
     ══════════════════════════════════════════ */
-    #work-gallery {
-      max-width: 900px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 25px;
-      padding: 20px;
+    #gallery-hero {
+      text-align: center;
+      padding: 48px 20px 32px;
+      position: relative;
     }
-    .work-item-card {
-      background: white;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-      cursor: pointer;
-      transition: transform 0.3s;
-      border-bottom: 4px solid var(--teal);
+    #gallery-hero .hero-deco {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 10px;
     }
-    .work-item-card:hover {
-      transform: translateY(-8px);
+    #gallery-hero .hero-deco span {
+      display: block;
+      height: 2px;
+      width: 60px;
+      background: linear-gradient(90deg, transparent, var(--teal-mid));
+      border-radius: 2px;
+    }
+    #gallery-hero .hero-deco span:last-child {
+      background: linear-gradient(90deg, var(--teal-mid), transparent);
+    }
+    #gallery-hero .hero-deco .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gold); flex-shrink: 0;
+    }
+    #hero-title {
+      margin: 0 0 8px;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--teal);
+      letter-spacing: .08em;
+    }
+    #hero-sub {
+      margin: 0;
+      font-family: var(--font-en);
+      font-size: .95rem;
+      color: #98b4b5;
+      letter-spacing: .12em;
     }
 
+    /* ══════════════════════════════════════════
+       加载状态
+    ══════════════════════════════════════════ */
+    #status-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aabfbf;
+      font-size: 1.05rem;
+    }
+
+    /* 骨架屏 */
+    .skeleton-grid {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 28px;
+      padding: 0 24px 60px;
+    }
+    .skeleton-card {
+      background: white;
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .skeleton-thumb {
+      height: 260px;
+      background: linear-gradient(90deg, #eef5f5 25%, #ddeeed 50%, #eef5f5 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    .skeleton-meta {
+      padding: 14px 16px 18px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .skeleton-line {
+      height: 12px; border-radius: 6px;
+      background: linear-gradient(90deg, #eef5f5 25%, #ddeeed 50%, #eef5f5 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    .skeleton-line.short { width: 55%; }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ══════════════════════════════════════════
+       Gallery 网格
+    ══════════════════════════════════════════ */
+    #work-gallery {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 28px;
+      padding: 0 24px 80px;
+    }
+
+    /* 卡片入场动画 */
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .work-item-card {
+      background: white;
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform .3s ease, box-shadow .3s ease;
+      animation: cardIn .45s both;
+      display: flex;
+      flex-direction: column;
+    }
+    .work-item-card:hover {
+      transform: translateY(-10px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 缩略图区 */
     .card-thumb {
-      height: 220px;
-      background: #f0f0f0;
+      height: 260px;
+      background: var(--teal-pale);
       position: relative;
       overflow: hidden;
+      flex-shrink: 0;
     }
     .card-thumb canvas {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
-
-    /* ── 修改：卡片底部元信息 → 一行 flex 布局 ── */
-    .card-meta {
-      padding: 10px 12px 12px;
+    /* 悬停时蒙层 + 阅读提示 */
+    .card-thumb::after {
+      content: "点击阅读 ▶";
+      font-family: var(--font-zh);
+      font-size: .85rem;
+      position: absolute;
+      inset: 0;
+      background: rgba(89,133,134,.72);
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      flex-wrap: nowrap;
+      letter-spacing: .1em;
+      opacity: 0;
+      transition: opacity .25s ease;
     }
-    .card-meta h3 {
-      margin: 0;
+    .work-item-card:hover .card-thumb::after {
+      opacity: 1;
+    }
+
+    /* 单元角标 */
+    .badge-unit {
+      position: absolute;
+      top: 12px; left: 12px;
+      background: rgba(255,255,255,.92);
       color: var(--teal);
-      font-size: 0.95rem;
-      font-family: var(--font-zh);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex-shrink: 1;
-      min-width: 0;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: 3px 9px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      letter-spacing: .06em;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
-    /* 仅当没有作者时让标题居中占满 */
-    .card-meta h3:only-child {
-      text-align: center;
+
+    /* 卡片信息区 */
+    .card-meta {
+      padding: 14px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       flex: 1;
+    }
+    .card-topic {
+      margin: 0;
+      color: #3a6a6b;
+      font-size: 1rem;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .card-author-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
+      gap: 8px;
+      margin-top: auto;
     }
     .card-avatar {
-      width: 28px;
-      height: 28px;
+      width: 30px; height: 30px;
       border-radius: 50%;
-      border: 2px solid var(--teal);
+      border: 2px solid var(--teal-light);
       object-fit: cover;
       flex-shrink: 0;
       background: var(--teal-light);
     }
     .card-author-name {
-      display: inline-block;
-      padding: 2px 7px;
-      background: var(--teal-light);
-      color: var(--teal);
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-family: var(--font-zh);
+      font-size: .80rem;
+      color: var(--teal-mid);
       white-space: nowrap;
-      max-width: 80px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
+    /* 底部色条 */
+    .card-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--teal), var(--teal-mid));
+      flex-shrink: 0;
+    }
+
     /* ══════════════════════════════════════════
-       详情页 Viewer — 全屏单页，无顶部 nav
+       Viewer — 全屏浮层
     ══════════════════════════════════════════ */
     #work-viewer-section {
       display: none;
       position: fixed;
       inset: 0;
-      background: var(--bg);
-      padding: 0;
+      background: #f0ebe1;
       z-index: 50;
       overflow: hidden;
+      flex-direction: column;
     }
 
+    /* 顶栏 */
     .viewer-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 20px;
+      padding: 0 24px;
       background: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      height: 52px;
-      box-sizing: border-box;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      height: 56px;
+      flex-shrink: 0;
     }
     .back-btn {
-      background: var(--teal);
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: none;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      padding: 5px 16px;
+      border-radius: 50px;
       cursor: pointer;
       font-family: var(--font-zh);
-      font-size: 0.9rem;
+      font-size: .88rem;
+      transition: background .2s, color .2s;
+    }
+    .back-btn:hover {
+      background: var(--teal);
+      color: white;
     }
     .page-counter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       color: var(--teal);
-      font-weight: bold;
       font-family: var(--font-en);
-      font-size: 0.9rem;
+      font-size: .88rem;
+    }
+    .page-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .page-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--teal-light);
+      transition: background .2s, transform .2s;
+    }
+    .page-dot.active {
+      background: var(--teal);
+      transform: scale(1.3);
     }
 
+    /* body */
     .viewer-body {
       display: flex;
-      height: calc(100dvh - 52px);
+      flex: 1;
       overflow: hidden;
+      min-height: 0;
     }
 
-    /* 左侧 PDF 区 */
+    /* 左：PDF 区 */
     .viewer-left {
       flex: 1 1 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 20px;
       position: relative;
       overflow: hidden;
+      background:
+        radial-gradient(ellipse at 20% 80%, rgba(89,133,134,.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(201,168,76,.05) 0%, transparent 60%);
     }
-
-    /* ── 修改：pdf-frame 加上尺寸约束，overflow 兜底 ── */
     .pdf-frame {
       position: relative;
       max-width: 100%;
       max-height: 100%;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
-
-    /* ── 修改：canvas 移除 max-width/max-height，由 JS 精确控制 ── */
     #pdf-canvas {
       display: block;
-      border-radius: 8px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
+      box-shadow: 0 16px 56px rgba(0,0,0,.16);
       cursor: pointer;
-      /* 宽高由 JS 设置像素值，CSS 不做二次缩放 */
       width: auto;
       height: auto;
       max-width: none;
@@ -233,115 +379,164 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(89, 133, 134, 0.85);
+      background: rgba(89,133,134,.80);
       color: white;
       border: none;
-      width: 38px;
-      height: 64px;
+      width: 40px;
+      height: 72px;
       cursor: pointer;
       font-size: 18px;
-      transition: background 0.2s;
+      transition: background .2s, width .2s;
       z-index: 5;
+      backdrop-filter: blur(4px);
     }
-    .nav-btn:hover {
-      background: var(--teal);
-    }
-    .prev-btn {
-      left: 0;
-      border-radius: 0 8px 8px 0;
-    }
-    .next-btn {
-      right: 0;
-      border-radius: 8px 0 0 8px;
-    }
+    .nav-btn:hover { background: var(--teal); width: 46px; }
+    .prev-btn { left: 0; border-radius: 0 10px 10px 0; }
+    .next-btn { right: 0; border-radius: 10px 0 0 10px; }
 
-    /* 右侧信息栏 */
+    /* 右：信息栏 */
     .viewer-right {
-      width: 240px;
+      width: 260px;
       flex-shrink: 0;
       background: white;
-      border-left: 5px solid var(--teal);
-      padding: 24px 18px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
       overflow-y: auto;
     }
 
+    /* 作者头部（带渐变背景） */
     .detail-author-box {
+      padding: 28px 20px 24px;
+      background: linear-gradient(160deg, var(--teal) 0%, var(--teal-mid) 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
     }
     .detail-avatar {
-      width: 72px;
-      height: 72px;
+      width: 80px; height: 80px;
       border-radius: 50%;
-      border: 3px solid var(--teal);
+      border: 3px solid rgba(255,255,255,.7);
       object-fit: cover;
       background: var(--teal-light);
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
     }
     .detail-author-name {
       font-family: var(--font-zh);
       font-size: 1.15rem;
       font-weight: bold;
-      color: var(--teal);
+      color: white;
       text-align: center;
     }
     .author-label {
       font-family: var(--font-en);
-      font-size: 0.75rem;
-      color: #aaa;
-      text-align: center;
+      font-size: .72rem;
+      color: rgba(255,255,255,.70);
+      letter-spacing: .1em;
     }
 
+    /* 无作者时的占位头 */
+    .no-author-header {
+      padding: 20px;
+      background: linear-gradient(160deg, var(--teal) 0%, var(--teal-mid) 100%);
+      flex-shrink: 0;
+    }
+
+    /* 信息区 */
+    .info-panel {
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
     .info-group {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
     .info-label {
       font-family: var(--font-en);
-      font-size: 0.75rem;
-      color: #aaa;
+      font-size: .70rem;
+      color: #b0c4c4;
+      letter-spacing: .1em;
+      text-transform: uppercase;
     }
     .info-value {
       font-family: var(--font-zh);
-      color: var(--teal);
+      color: #3a6a6b;
       font-size: 1.05rem;
       font-weight: bold;
-    }
-    .info-value.book {
-      font-family: var(--font-zh);
+      line-height: 1.4;
     }
 
-    #status-msg {
-      margin-top: 150px;
-      color: #888;
-      text-align: center;
-      font-family: var(--font-zh);
+    /* 分隔线 */
+    .info-divider {
+      height: 1px;
+      background: #eef4f4;
+      margin: 0;
     }
+
+    /* ══════════════════════════════════════════
+       空状态
+    ══════════════════════════════════════════ */
+    #empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      gap: 14px;
+      color: #b0c4c4;
+    }
+    #empty-state .empty-icon { font-size: 3rem; }
+    #empty-state p { margin: 0; font-size: 1rem; }
   </style>
 </head>
 <body>
 
+  <!-- 列表页头部 -->
+  <div id="gallery-hero">
+    <div class="hero-deco">
+      <span></span>
+      <div class="dot"></div>
+      <span></span>
+    </div>
+    <h1 id="hero-title">学生优秀习作展示</h1>
+    <p id="hero-sub">EXCELLENT WORK SHOWCASE</p>
+  </div>
 
-  <div id="status-msg">正在开启陈列馆...</div>
+  <!-- 加载提示 -->
+  <div id="status-msg"></div>
 
+  <!-- 骨架屏 -->
+  <div id="skeleton-grid" class="skeleton-grid">
+    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div></div>
+  </div>
+
+  <!-- 空状态 -->
+  <div id="empty-state">
+    <div class="empty-icon">📂</div>
+    <p>暂时还没有作品，敬请期待！</p>
+  </div>
+
+  <!-- 画廊 -->
   <div id="work-gallery"></div>
 
-  <!-- ── Viewer ── -->
+  <!-- ══ Viewer ══ -->
   <div id="work-viewer-section">
     <div class="viewer-toolbar">
-      <button class="back-btn" onclick="showGallery()">❮ 返回列表 / Back</button>
+      <button class="back-btn" onclick="showGallery()">❮ 返回列表</button>
       <div class="page-counter-wrap">
         <span class="page-label">PAGE</span>
         <span id="current-page">1</span>
-        /
+        <span style="color:#ccc;">/</span>
         <span id="total-pages">--</span>
+        <div class="page-dots" id="page-dots"></div>
       </div>
     </div>
 
@@ -355,22 +550,30 @@
       </div>
 
       <div class="viewer-right">
+        <!-- 作者头部 -->
         <div class="detail-author-box" id="author-box" style="display:none;">
           <img src="" class="detail-avatar" id="detail-img" alt="avatar">
           <div class="detail-author-name" id="detail-name">---</div>
           <div class="author-label" id="author-role-label">Featured Author</div>
         </div>
-        <div class="info-group">
-          <div class="info-label">话题 / Topic</div>
-          <div class="info-value" id="view-topic">---</div>
-        </div>
-        <div class="info-group">
-          <div class="info-label">所属单元 / Unit</div>
-          <div class="info-value" id="view-unit">---</div>
-        </div>
-        <div class="info-group">
-          <div class="info-label">对应书本 / Book</div>
-          <div class="info-value book" id="view-book">---</div>
+        <div class="no-author-header" id="no-author-header" style="display:none;"></div>
+
+        <!-- 信息区 -->
+        <div class="info-panel">
+          <div class="info-group">
+            <div class="info-label">话题 / Topic</div>
+            <div class="info-value" id="view-topic">---</div>
+          </div>
+          <div class="info-divider"></div>
+          <div class="info-group">
+            <div class="info-label">所属单元 / Unit</div>
+            <div class="info-value" id="view-unit">---</div>
+          </div>
+          <div class="info-divider"></div>
+          <div class="info-group">
+            <div class="info-label">对应书本 / Book</div>
+            <div class="info-value en" id="view-book">---</div>
+          </div>
         </div>
       </div>
     </div>
@@ -381,11 +584,14 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       'https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
-    const LANG = MECC_CONFIG.getLang();
-    const isTeacher = LANG === 'zh';
+    const LANG       = MECC_CONFIG.getLang();
+    const isTeacher  = LANG === 'zh';
+    const pageTitle  = isTeacher ? '学生优秀习作展示' : 'Excellent Work Showcase';
+    const authorLabel = isTeacher ? '习作作者' : 'Featured Author';
 
-    const pageTitle = isTeacher ? '学生优秀习作展示' : 'Excellent Work Showcase';
-    const authorLabel = isTeacher ? '习作作者' : 'Author';
+    document.getElementById('hero-title').innerText = pageTitle;
+    document.getElementById('hero-sub').innerText   =
+      isTeacher ? 'EXCELLENT WORK SHOWCASE' : '学生优秀习作展示';
 
     const QUERY = encodeURIComponent(`*[_type == "studentWork"] | order(_createdAt desc){
       unit, topic, book, "pdfUrl": pdfFile.asset->url,
@@ -393,159 +599,180 @@
     }`);
     const API_URL = `https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=${QUERY}`;
 
-    let pdfDoc = null,
-      pageNum = 1,
-      isRendering = false;
-    // ── 缓存稳定的容器尺寸，翻页时不变 ──
-    let cachedAvailWidth = null;
-    let cachedAvailHeight = null;
+    let pdfDoc = null, pageNum = 1, isRendering = false;
+    let cachedAvailWidth = null, cachedAvailHeight = null;
+    let totalPages = 0;
 
+    /* ─── 初始化 ─── */
     async function init() {
       try {
         const res = await fetch(API_URL);
         const { result } = await res.json();
-        if (result && result.length > 0) {
-          document.getElementById('status-msg').style.display = 'none';
-          const gallery = document.getElementById('work-gallery');
-          result.forEach(work => {
-            const card = document.createElement('div');
-            card.className = 'work-item-card';
-            const thumbId = `thumb-${Math.random().toString(36).substr(2, 9)}`;
 
-            const authorHTML = work.author ?
-              `<div class="card-author-row">
-                   <img class="card-avatar"
-                        src="${work.author.avatarUrl || ''}"
-                        alt="${work.author.name}"
-                        onerror="this.style.display='none'">
-                   <span class="card-author-name">${work.author.name}</span>
-                 </div>` :
-              '';
+        document.getElementById('skeleton-grid').style.display = 'none';
 
-            card.innerHTML = `
-              <div class="card-thumb"><canvas id="${thumbId}"></canvas></div>
-              <div class="card-meta">
-                <h3>${work.unit || 'Unit'}</h3>
-                ${authorHTML}
-              </div>
-            `;
-            card.onclick = () => openWork(work);
-            gallery.appendChild(card);
-            generateThumb(work.pdfUrl, thumbId);
-          });
+        if (!result || result.length === 0) {
+          document.getElementById('empty-state').style.display = 'flex';
+          return;
         }
+
+        const gallery = document.getElementById('work-gallery');
+        result.forEach((work, idx) => {
+          const card    = document.createElement('div');
+          card.className = 'work-item-card';
+          card.style.animationDelay = `${idx * 60}ms`;
+
+          const thumbId = `thumb-${Math.random().toString(36).substr(2, 9)}`;
+
+          const authorHTML = work.author
+            ? `<div class="card-author-row">
+                 <img class="card-avatar"
+                      src="${work.author.avatarUrl || ''}"
+                      alt="${work.author.name}"
+                      onerror="this.style.display='none'">
+                 <span class="card-author-name">${work.author.name}</span>
+               </div>`
+            : '';
+
+          const unitLabel = work.unit ? work.unit : '';
+
+          card.innerHTML = `
+            <div class="card-thumb">
+              <canvas id="${thumbId}"></canvas>
+              ${unitLabel ? `<div class="badge-unit">${unitLabel}</div>` : ''}
+            </div>
+            <div class="card-meta">
+              <h3 class="card-topic">${work.topic || work.unit || '---'}</h3>
+              ${authorHTML}
+            </div>
+            <div class="card-stripe"></div>
+          `;
+          card.onclick = () => openWork(work);
+          gallery.appendChild(card);
+          generateThumb(work.pdfUrl, thumbId);
+        });
+
       } catch (e) {
-        document.getElementById('status-msg').innerText = "Error Loading Data";
+        document.getElementById('skeleton-grid').style.display = 'none';
+        document.getElementById('status-msg').innerText = '数据加载失败，请稍后重试。';
       }
     }
 
+    /* ─── 缩略图 ─── */
     async function generateThumb(url, canvasId) {
       try {
-        const pdf = await pdfjsLib.getDocument({
-          url,
-          cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
-          cMapPacked: true
+        const pdf  = await pdfjsLib.getDocument({
+          url, cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/', cMapPacked: true
         }).promise;
         const page = await pdf.getPage(1);
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
-        const viewport = page.getViewport({ scale: 0.5 });
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        page.render({ canvasContext: canvas.getContext('2d'), viewport });
+        const vp = page.getViewport({ scale: 0.55 });
+        canvas.width  = vp.width;
+        canvas.height = vp.height;
+        page.render({ canvasContext: canvas.getContext('2d'), viewport: vp });
       } catch (e) {}
     }
 
+    /* ─── 打开作品 ─── */
     function openWork(work) {
       document.querySelector('.mecc-global-nav').style.display = 'none';
-      document.getElementById('work-gallery').style.display = 'none';
-      document.getElementById('work-viewer-section').style.display = 'flex';
-      document.getElementById('work-viewer-section').style.flexDirection = 'column';
+      document.getElementById('gallery-hero').style.display    = 'none';
+      document.getElementById('work-gallery').style.display    = 'none';
+      document.getElementById('empty-state').style.display     = 'none';
+      const viewer = document.getElementById('work-viewer-section');
+      viewer.style.display          = 'flex';
+      viewer.style.flexDirection    = 'column';
 
-      document.getElementById('view-unit').innerText = work.unit || '---';
+      document.getElementById('view-unit').innerText  = work.unit  || '---';
       document.getElementById('view-topic').innerText = work.topic || '---';
-      document.getElementById('view-book').innerText = work.book ? `《${work.book}》` : '---';
+      document.getElementById('view-book').innerText  = work.book  ? `《${work.book}》` : '---';
 
-      const authorBox = document.getElementById('author-box');
+      const authorBox      = document.getElementById('author-box');
+      const noAuthorHeader = document.getElementById('no-author-header');
       if (work.author) {
-        authorBox.style.display = 'flex';
+        authorBox.style.display      = 'flex';
+        noAuthorHeader.style.display = 'none';
         document.getElementById('detail-name').innerText = work.author.name;
-        document.getElementById('detail-img').src = work.author.avatarUrl || '';
+        document.getElementById('detail-img').src        = work.author.avatarUrl || '';
       } else {
-        authorBox.style.display = 'none';
+        authorBox.style.display      = 'none';
+        noAuthorHeader.style.display = 'block';
       }
 
-      pageNum = 1;
-      // 重置缓存，让 renderPage 重新测量容器
+      pageNum          = 1;
       cachedAvailWidth = null;
       cachedAvailHeight = null;
       loadPDF(work.pdfUrl);
     }
 
+    /* ─── 返回列表 ─── */
     function showGallery() {
       document.querySelector('.mecc-global-nav').style.display = '';
-      document.getElementById('work-gallery').style.display = 'grid';
+      document.getElementById('gallery-hero').style.display    = '';
+      document.getElementById('work-gallery').style.display    = 'grid';
       document.getElementById('work-viewer-section').style.display = 'none';
+      pdfDoc = null;
+      updateDots(0, 0);
     }
 
+    /* ─── 加载 PDF ─── */
     function loadPDF(url) {
       pdfjsLib.getDocument({
-        url,
-        cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
-        cMapPacked: true
+        url, cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/', cMapPacked: true
       }).promise.then(pdf => {
-        pdfDoc = pdf;
-        document.getElementById('total-pages').innerText = pdf.numPages;
+        pdfDoc      = pdf;
+        totalPages  = pdf.numPages;
+        document.getElementById('total-pages').innerText = totalPages;
+        updateDots(pageNum, totalPages);
         renderPage(pageNum);
       });
     }
 
-    /** 计算稳定的可用空间（基于 .viewer-left，不会随 canvas 尺寸波动） */
-    function getAvailableSpace() {
-      if (cachedAvailWidth !== null && cachedAvailHeight !== null) {
-        return { availWidth: cachedAvailWidth, availHeight: cachedAvailHeight };
+    /* ─── 页码点指示器（最多 8 个点） ─── */
+    function updateDots(current, total) {
+      const container = document.getElementById('page-dots');
+      container.innerHTML = '';
+      const show = Math.min(total, 8);
+      for (let i = 1; i <= show; i++) {
+        const d = document.createElement('div');
+        d.className = 'page-dot' + (i === current ? ' active' : '');
+        container.appendChild(d);
       }
-      const viewerLeft = document.querySelector('.viewer-left');
-      if (!viewerLeft) return { availWidth: 800, availHeight: 600 };
-      // clientWidth/Height 包含 padding，需减去
-      const style = getComputedStyle(viewerLeft);
-      const padH = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-      const padV = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-      cachedAvailWidth = viewerLeft.clientWidth - padH;
-      cachedAvailHeight = viewerLeft.clientHeight - padV;
+    }
+
+    /* ─── 计算可用空间（缓存稳定尺寸） ─── */
+    function getAvailableSpace() {
+      if (cachedAvailWidth !== null) return { availWidth: cachedAvailWidth, availHeight: cachedAvailHeight };
+      const el = document.querySelector('.viewer-left');
+      if (!el) return { availWidth: 800, availHeight: 600 };
+      const s = getComputedStyle(el);
+      cachedAvailWidth  = el.clientWidth  - parseFloat(s.paddingLeft)  - parseFloat(s.paddingRight);
+      cachedAvailHeight = el.clientHeight - parseFloat(s.paddingTop)   - parseFloat(s.paddingBottom);
       return { availWidth: cachedAvailWidth, availHeight: cachedAvailHeight };
     }
 
+    /* ─── 渲染页 ─── */
     function renderPage(num) {
       if (isRendering || !pdfDoc) return;
       isRendering = true;
-
       pdfDoc.getPage(num).then(page => {
         const canvas = document.getElementById('pdf-canvas');
-        const ctx = canvas.getContext('2d');
-
-        // 使用稳定的容器尺寸计算 scale
         const { availWidth, availHeight } = getAvailableSpace();
         const vpBase = page.getViewport({ scale: 1 });
-        const scale = Math.min(
-          availWidth / vpBase.width,
-          availHeight / vpBase.height,
-          1.8 // 上限
-        );
-        const viewport = page.getViewport({ scale });
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        page.render({ canvasContext: ctx, viewport }).promise.then(() => {
+        const scale  = Math.min(availWidth / vpBase.width, availHeight / vpBase.height, 1.8);
+        const vp     = page.getViewport({ scale });
+        canvas.width  = vp.width;
+        canvas.height = vp.height;
+        page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(() => {
           isRendering = false;
           document.getElementById('current-page').innerText = num;
+          updateDots(num, totalPages);
         });
-      }).catch(() => {
-        isRendering = false;
-      });
+      }).catch(() => { isRendering = false; });
     }
 
+    /* ─── 翻页 ─── */
     function changePage(delta) {
       if (!pdfDoc || isRendering) return;
       const next = pageNum + delta;
@@ -555,20 +782,27 @@
       }
     }
 
-    // 窗口大小变化时清除缓存，下次渲染重新测量
+    /* ─── 键盘翻页 ─── */
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('work-viewer-section').style.display === 'none') return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(1);
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changePage(-1);
+      if (e.key === 'Escape') showGallery();
+    });
+
+    /* ─── Resize ─── */
     window.addEventListener('resize', () => {
-      cachedAvailWidth = null;
-      cachedAvailHeight = null;
-      // 如果当前有 PDF 在显示且不在渲染中，重新渲染当前页
-      if (pdfDoc && !isRendering && document.getElementById('work-viewer-section').style.display !== 'none') {
+      cachedAvailWidth = null; cachedAvailHeight = null;
+      if (pdfDoc && !isRendering &&
+          document.getElementById('work-viewer-section').style.display !== 'none') {
         renderPage(pageNum);
       }
     });
 
+    /* ─── 入口 ─── */
     window.onload = () => {
       MECC_CONFIG.renderGlobalNav(pageTitle);
       document.getElementById('author-role-label').innerText = authorLabel;
-      document.getElementById('status-msg').innerText = isTeacher ? "正在载入..." : "Loading...";
       init();
     };
   </script>
