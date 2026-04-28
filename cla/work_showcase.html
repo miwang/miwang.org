@@ -642,7 +642,7 @@
   <!-- ══ Viewer ══ -->
   <div id="work-viewer-section">
     <div class="viewer-toolbar">
-      <button class="back-btn" onclick="showGallery()"><span class="btn-arrow">←</span> 返回列表</button>
+      <button class="back-btn" onclick="showGallery()" aria-label="返回作品列表"><span class="btn-arrow" aria-hidden="true">←</span> 返回列表</button>
       <div class="page-counter-wrap">
         <span class="page-label">PAGE</span>
         <span id="current-page">1</span>
@@ -801,7 +801,7 @@
       viewer.style.display          = 'flex';
       viewer.style.flexDirection    = 'column';
       viewer.classList.remove('viewer-opening');
-      void viewer.offsetWidth;   /* 触发重排，确保动画重新播放 */
+      viewer.offsetWidth;   /* 触发重排，确保动画重新播放（intentional reflow） */
       viewer.classList.add('viewer-opening');
 
       document.getElementById('view-unit').innerText  = work.unit  || '---';
