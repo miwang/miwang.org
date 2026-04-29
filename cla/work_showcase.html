@@ -560,6 +560,69 @@
     }
     #empty-state .empty-icon { font-size: 3rem; }
     #empty-state p { margin: 0; font-size: 1rem; }
+
+    /* ══════════════════════════════════════════
+       手机端适配
+    ══════════════════════════════════════════ */
+    @media (max-width: 640px) {
+      body { padding-top: 60px; }
+
+      /* 画廊：两列，间距收紧 */
+      #work-gallery,
+      .skeleton-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 0 12px 60px;
+      }
+      .card-thumb { height: 160px; }
+      .card-meta  { padding: 10px 12px 14px; gap: 6px; }
+      .card-topic { font-size: .88rem; }
+
+      /* Viewer：改为纵向布局，PDF 在上，信息栏在下 */
+      #work-viewer-section { overflow: hidden; }
+
+      .viewer-toolbar {
+        padding: 0 14px;
+        height: 46px;
+      }
+      .page-dots { display: none; }
+
+      .viewer-body {
+        flex-direction: column;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* PDF 区占满宽度，给足高度（纵向滚动方案中 PDF 撑满视口 60%） */
+      .viewer-left {
+        flex: 0 0 auto;
+        height: 60vh;
+        min-height: 300px;
+        padding: 10px;
+        overflow: hidden;
+      }
+
+      /* 翻页按钮适当缩小 */
+      .nav-btn {
+        width: 30px;
+        height: 52px;
+        font-size: 14px;
+      }
+
+      /* 信息栏改为全宽、高度自适应 */
+      .viewer-right {
+        width: 100%;
+        flex-shrink: 0;
+        overflow-y: visible;
+        box-shadow: none;
+        border-top: 2px solid var(--teal-light);
+      }
+
+      .detail-author-box { padding: 18px 16px 16px; }
+      .detail-avatar { width: 60px; height: 60px; }
+      .detail-author-name { font-size: 1rem; }
+      .info-panel { padding: 16px 14px; gap: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -856,6 +919,24 @@
         renderPage(pageNum);
       }
     }
+
+    /* ─── 触摸滑动翻页（手机端） ─── */
+    (function () {
+      let touchStartX = 0, touchStartY = 0;
+      const SWIPE_THRESHOLD = 40;
+      document.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      document.addEventListener('touchend', e => {
+        if (document.getElementById('work-viewer-section').style.display === 'none') return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_THRESHOLD) {
+          changePage(dx < 0 ? 1 : -1);
+        }
+      }, { passive: true });
+    }());
 
     /* ─── 键盘翻页（含激光遥控笔 PageDown / PageUp） ─── */
     document.addEventListener('keydown', e => {
