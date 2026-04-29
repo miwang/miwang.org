@@ -267,21 +267,32 @@
 
     // ── Wings SVG factory ─────────────────────────────────────────────────────
     // Six feather-shaped ellipses fan outward from the medal top.
-    // Each ellipse is mathematically placed so its "base" end touches the
-    // attachment point on the medal (left: 155,78 / right: 165,78 in viewBox).
-    // Rotation angles are calculated from atan2 of (tip − base) direction.
+    // Math guarantee: for each ellipse with centre (cx, cy), half-length rx, and
+    // rotation angle θ, the "base" endpoint = (cx + rx·cos(θ+180°), cy + rx·sin(θ+180°))
+    // which evaluates to the attachment point (155, 78) for the left wing
+    // and is mirrored to (165, 78) for the right wing via the SVG group transform.
+    // viewBox "0 0 320 90": height 90 gives enough vertical room for the six
+    // feather tips (highest tip at y ≈ 20) while keeping the attachment row (y = 78)
+    // close to the bottom so the wings emerge naturally from behind the medal top.
     function wingSVG(color) {
         const f = `fill="${color}"`;
         // Left wing: 6 feathers, tips go upper-left. Attachment base at (155, 78).
-        // ellipse(cx, cy, rx, ry, rotate-deg)  — cx/cy = midpoint of feather
+        // Columns: [cx, cy, rx, ry, rotate-deg]
+        // cx = (155 + tipX) / 2,  cy = (78 + tipY) / 2
+        // rotate = atan2(tipY − 78, tipX − 155)  (in degrees, SVG clockwise convention)
         const leftFeathers = [
-            // [cx,    cy,  rx,  ry, rotate]
-            [152.5,  49,  30,   5, -95],   // feather 1: nearly straight up
-            [143.5,  51,  30, 5.5, -113],  // feather 2: upper-left
-            [131.5,  56,  33,   6, -137],  // feather 3: 45° upper-left
-            [119.5,  63,  39, 6.5, -157],  // feather 4: more left than up
-            [109.5,  69,  47,   7, -169],  // feather 5: mostly left
-            [102.5,  74,  53,   7, -176],  // feather 6: nearly horizontal
+            // tip ≈ (150, 20)  →  nearly straight up
+            [152.5,  49,  30,   5, -95],
+            // tip ≈ (132, 24)  →  upper-left
+            [143.5,  51,  30, 5.5, -113],
+            // tip ≈ (108, 34)  →  45° upper-left
+            [131.5,  56,  33,   6, -137],
+            // tip ≈ ( 84, 48)  →  more left than up
+            [119.5,  63,  39, 6.5, -157],
+            // tip ≈ ( 64, 60)  →  mostly left
+            [109.5,  69,  47,   7, -169],
+            // tip ≈ ( 50, 70)  →  nearly horizontal
+            [102.5,  74,  53,   7, -176],
         ];
         const opacities = [0.70, 0.76, 0.82, 0.87, 0.92, 0.95];
 
