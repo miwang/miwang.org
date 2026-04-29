@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>荣誉殿堂 - Hall of Fame</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
     <link rel="stylesheet" href="../css/style.css">
 
     <style>
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
         /* ════════════════════════════════════════
            Hall of Fame — Redesign
            ════════════════════════════════════════ */
@@ -111,7 +114,7 @@
         /* ── Medallion ── */
         .medallion {
             width: 260px; height: 260px; border-radius: 50%;
-            position: relative;
+            position: relative; z-index: 1; overflow: hidden;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: default;
@@ -140,11 +143,19 @@
             box-shadow: 0 0 0 3px #F59E0B, 0 0 0 5px #92400E, 0 18px 36px rgba(0,0,0,0.22);
         }
 
-        /* Wings SVG */
+        /* Wrapper that holds wings + medallion */
+        .med-wrap {
+            position: relative;
+            padding-top: 30px;   /* space for wing tips above the circle */
+            width: 260px;
+            isolation: isolate;  /* own stacking context */
+        }
+
+        /* Wings SVG — lives in .med-wrap, BEHIND the medallion */
         .med-wings-svg {
-            position: absolute; top: -16px; left: 50%;
+            position: absolute; top: 0; left: 50%;
             transform: translateX(-50%);
-            width: 134%; pointer-events: none; z-index: 1;
+            width: 118%; pointer-events: none; z-index: 0;
         }
 
         /* Top row: ME/CC | trophy | year */
@@ -181,10 +192,12 @@
             position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
             font-size: 0.7rem; font-weight: 800; white-space: nowrap; z-index: 4; letter-spacing: 0.5px;
         }
+        /* Award English text — displayed below the medallion circle */
         .med-award-en {
-            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-            font-size: 0.46rem; font-weight: 600; white-space: nowrap; z-index: 4;
-            letter-spacing: 1px; text-transform: uppercase; opacity: 0.7;
+            font-size: 0.52rem; font-weight: 600;
+            letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.65;
+            text-align: center; margin-top: 5px;
+            white-space: nowrap;
         }
 
         /* Wang Laoshi label */
@@ -253,20 +266,47 @@
     const DEFAULT_AWARD = 'chinese_words';
 
     // ── Wings SVG factory ─────────────────────────────────────────────────────
+    // Six feather-shaped ellipses fan outward from the medal top.
+    // Math guarantee: for each ellipse with centre (cx, cy), half-length rx, and
+    // rotation angle θ, the "base" endpoint = (cx + rx·cos(θ+180°), cy + rx·sin(θ+180°))
+    // which evaluates to the attachment point (155, 78) for the left wing
+    // and is mirrored to (165, 78) for the right wing via the SVG group transform.
+    // viewBox "0 0 320 90": height 90 gives enough vertical room for the six
+    // feather tips (highest tip at y ≈ 20) while keeping the attachment row (y = 78)
+    // close to the bottom so the wings emerge naturally from behind the medal top.
     function wingSVG(color) {
-        return `<svg class="med-wings-svg" viewBox="0 0 320 100" xmlns="http://www.w3.org/2000/svg">
-          <path d="M160,72 L142,60 C128,52 110,45 86,42 C100,50 112,62 110,74
-                   C94,58 70,54 46,60 L60,68 C42,64 26,70 12,80 L30,76
-                   C18,84 14,94 20,100 L36,90 C32,100 40,106 50,102 L62,90
-                   C62,100 70,106 80,102 L84,88 C86,98 96,104 106,98 L104,84
-                   C112,92 124,92 130,84 L126,70 C134,78 146,78 150,70 Z"
-                fill="${color}" opacity="0.88"/>
-          <path d="M160,72 L178,60 C192,52 210,45 234,42 C220,50 208,62 210,74
-                   C226,58 250,54 274,60 L260,68 C278,64 294,70 308,80 L290,76
-                   C302,84 306,94 300,100 L284,90 C288,100 280,106 270,102 L258,90
-                   C258,100 250,106 240,102 L236,88 C234,98 224,104 214,98 L216,84
-                   C208,92 196,92 190,84 L194,70 C186,78 174,78 170,70 Z"
-                fill="${color}" opacity="0.88"/>
+        const f = `fill="${color}"`;
+        // Left wing: 6 feathers, tips go upper-left. Attachment base at (155, 78).
+        // Columns: [cx, cy, rx, ry, rotate-deg]
+        // cx = (155 + tipX) / 2,  cy = (78 + tipY) / 2
+        // rotate = atan2(tipY − 78, tipX − 155)  (in degrees, SVG clockwise convention)
+        const leftFeathers = [
+            // tip ≈ (150, 20)  →  nearly straight up
+            [152.5,  49,  30,   5, -95],
+            // tip ≈ (132, 24)  →  upper-left
+            [143.5,  51,  30, 5.5, -113],
+            // tip ≈ (108, 34)  →  45° upper-left
+            [131.5,  56,  33,   6, -137],
+            // tip ≈ ( 84, 48)  →  more left than up
+            [119.5,  63,  39, 6.5, -157],
+            // tip ≈ ( 64, 60)  →  mostly left
+            [109.5,  69,  47,   7, -169],
+            // tip ≈ ( 50, 70)  →  nearly horizontal
+            [102.5,  74,  53,   7, -176],
+        ];
+        const opacities = [0.70, 0.76, 0.82, 0.87, 0.92, 0.95];
+
+        const makeFeathers = (feathers, opacities, f) =>
+            feathers.map(([cx,cy,rx,ry,rot], i) =>
+                `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" ${f} opacity="${opacities[i]}" transform="rotate(${rot},${cx},${cy})"/>`
+            ).join('');
+
+        const left  = makeFeathers(leftFeathers, opacities, f);
+        // Right wing: mirror of left around x = 160 → translate(320,0) scale(-1,1)
+        const right = `<g transform="translate(320,0) scale(-1,1)">${left}</g>`;
+
+        return `<svg class="med-wings-svg" viewBox="0 0 320 90" xmlns="http://www.w3.org/2000/svg">
+          ${left}${right}
         </svg>`;
     }
 
@@ -314,19 +354,21 @@
 
         return `
         <div class="badge-item">
-          <div class="medallion ${cfg.cls}">
+          <div class="med-wrap">
             ${wingSVG(cfg.color)}
-            <div class="med-top">
-              <span class="med-year-side font-en" style="color:${cfg.color}">ME<br>CC</span>
-              <span class="med-trophy">${cfg.trophy}</span>
-              <span class="med-year-side font-en" style="color:${cfg.color}">${y.slice(0,2)}<br>${y.slice(2,4)}</span>
+            <div class="medallion ${cfg.cls}">
+              <div class="med-top">
+                <span class="med-year-side font-en" style="color:${cfg.color}">ME<br>CC</span>
+                <span class="med-trophy">${cfg.trophy}</span>
+                <span class="med-year-side font-en" style="color:${cfg.color}">${y.slice(0,2)}<br>${y.slice(2,4)}</span>
+              </div>
+              ${photo}
+              <div class="med-ribbon font-zh">${name}</div>
+              <div class="med-award-zh font-zh" style="color:${cfg.color}">${awardZh}</div>
+              <div class="med-wl font-en" style="color:${cfg.color}">WANG<br>LAOSHI</div>
             </div>
-            ${photo}
-            <div class="med-ribbon font-zh">${name}</div>
-            <div class="med-award-zh font-zh" style="color:${cfg.color}">${awardZh}</div>
-            <div class="med-award-en font-en" style="color:${cfg.color}">${cfg.en}</div>
-            <div class="med-wl font-en" style="color:${cfg.color}">WANG<br>LAOSHI</div>
           </div>
+          <div class="med-award-en font-en" style="color:${cfg.color}">${cfg.en}</div>
         </div>`;
     }
 
