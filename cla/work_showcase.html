@@ -471,6 +471,11 @@
       box-shadow: 0 6px 24px rgba(0,0,0,.18);
       position: relative;
     }
+    .detail-author-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
     .detail-author-name {
       font-family: var(--font-zh);
       font-size: 1.15rem;
@@ -618,10 +623,18 @@
         border-top: 2px solid var(--teal-light);
       }
 
-      .detail-author-box { padding: 18px 16px 16px; }
-      .detail-avatar { width: 60px; height: 60px; }
-      .detail-author-name { font-size: 1rem; }
-      .info-panel { padding: 16px 14px; gap: 12px; }
+      .detail-author-box {
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 16px;
+        gap: 14px;
+      }
+      .detail-author-box::before { display: none; }
+      .detail-author-box::after  { display: none; }
+      .detail-avatar { width: 48px; height: 48px; flex-shrink: 0; }
+      .detail-author-name { font-size: .95rem; text-align: left; }
+      .author-label { font-size: .65rem; }
+      .info-panel { padding: 14px 14px; gap: 10px; }
     }
   </style>
 </head>
@@ -674,8 +687,10 @@
         <!-- 作者头部 -->
         <div class="detail-author-box" id="author-box" style="display:none;">
           <img src="" class="detail-avatar" id="detail-img" alt="avatar">
-          <div class="detail-author-name" id="detail-name">---</div>
-          <div class="author-label" id="author-role-label">Featured Author</div>
+          <div class="detail-author-text">
+            <div class="detail-author-name" id="detail-name">---</div>
+            <div class="author-label" id="author-role-label">Featured Author</div>
+          </div>
         </div>
         <div class="no-author-header" id="no-author-header" style="display:none;"></div>
 
