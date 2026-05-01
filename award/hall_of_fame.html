@@ -158,7 +158,6 @@
       left:59%; top:17.0%;
       font-size:17px; font-weight:900; line-height:1.05;
       color:var(--mecc-color); text-align:left;
-      font-family:"Arial Black","Arial Bold",Arial,sans-serif;
       letter-spacing:0; white-space:normal;
     }
     .ov-year .y-top,
@@ -207,10 +206,10 @@
       var backText = document.getElementById('nav-back-text');
       if (role === 'parents') {
         backLink.href = '../parents.html';
-        backText.textContent = 'Back';
+        backText.textContent = 'Back to Parents Portal';
       } else if (role === 'teachers') {
         backLink.href = '../teachers.html';
-        backText.textContent = '返回';
+        backText.textContent = '返回工具台';
       }
     })();
   </script>
@@ -336,7 +335,7 @@
       h += '<div class="ov-award font-zh">' + awardZh     + '</div>';
       h += '<div class="ov-en font-en">'    + awardEnHtml + '</div>';
       if(showYear){
-        h += '<div class="ov-year">' + yearHtml + '</div>';
+        h += '<div class="ov-year font-en">' + yearHtml + '</div>';
       }
       h += '</div>';  /* medal-card */
       h += '</div>';  /* badge-item */
