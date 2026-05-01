@@ -25,6 +25,10 @@
     .mecc-nav-title .font-en{
       font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
+    /* 返回按钮：非 .en 时（中文）走楷体 */
+    .mecc-nav-back:not(.en) span{
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
+    }
 
     /* ── 月份导航 ── */
     .month-nav{
@@ -241,9 +245,12 @@
       if (role === 'parents') {
         backLink.href = '../parents.html';
         backText.textContent = 'Back to Parents Portal';
+        /* 英文文字，保留 en class → LXGW */
       } else if (role === 'teachers') {
         backLink.href = '../teachers.html';
         backText.textContent = '返回工具台';
+        /* 中文文字，去掉 en class → 楷体 */
+        backLink.classList.remove('en');
       }
     })();
   </script>
