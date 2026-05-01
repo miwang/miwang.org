@@ -18,34 +18,12 @@
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--hof-bg); min-height:100vh; color:#1a2740; padding-top:60px; }
 
-    /* ── 全局字体：中文楷体优先，其余 LXGW ── */
-    body,
-    body *{
-      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",system-ui,sans-serif;
-    }
-    /* 英文/数字叠层走 LXGW */
-    body .font-en,
-    body .font-en *,
-    .ov-year,
-    .ov-year *,
-    .ov-mecc,
-    .ov-mecc *,
-    .ov-en,
-    .ov-en *,
-    .mecc-nav-back,
-    .mecc-nav-back *{
-      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
-    }
-    /* 中文叠层、导航标题、图例走楷体 */
-    body .font-zh,
-    body .font-zh *,
-    .ov-name,
-    .ov-award,
-    .mecc-nav-title,
-    .mecc-nav-title *,
-    .month-label,
-    .legend-pill{
+    /* ── 导航标题内的 span 字体，覆盖 common_nav.css 的统一设定 ── */
+    .mecc-nav-title .font-zh{
       font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
+    }
+    .mecc-nav-title .font-en{
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
 
     /* ── 月份导航 ── */
@@ -61,14 +39,22 @@
     }
     .nav-btn:hover:not(:disabled){ transform:scale(1.1); background:var(--hof-gold); color:#153026; }
     .nav-btn:disabled{ background:#ccc; cursor:default; }
-    .month-label{ min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green); }
+    /* 月份标签：楷体 */
+    .month-label{
+      min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green);
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
+    }
 
     /* ── 图例条 ── */
     .legend-bar{
       display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
       padding:10px 20px; background:#fff; border-bottom:1px solid #E8E0D0;
     }
-    .legend-pill{ padding:4px 12px; border-radius:20px; color:#fff; font-size:.74rem; font-weight:600; line-height:1; }
+    /* 图例标签：楷体 */
+    .legend-pill{
+      padding:4px 12px; border-radius:20px; color:#fff; font-size:.74rem; font-weight:600; line-height:1;
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
+    }
 
     /* ── 主体 ── */
     .hof-main{ max-width:1480px; margin:0 auto; padding:26px 20px 60px; }
@@ -156,44 +142,50 @@
       border-radius:50%; object-fit:cover;
     }
 
+    /* 学生姓名：楷体 */
     .ov-name{
       left:50%; top:60.5%; transform:translateX(-50%);
       font-size:17px; font-weight:700; letter-spacing:1px;
       color:#A8761F; white-space:nowrap;
       text-shadow:0 1px 0 rgba(255,255,255,.35); line-height:1;
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
     }
 
+    /* 奖项中文名：楷体 */
     .ov-award{
       left:50%; top:72.5%; transform:translateX(-50%);
       font-size:12px; font-weight:800; color:#fff; white-space:nowrap;
       text-shadow:0 1px 1px rgba(0,0,0,.35); line-height:1; text-align:center;
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
     }
 
+    /* 奖项英文名：LXGW */
     .ov-en{
       left:50%; top:77.5%; transform:translateX(-50%);
       font-size:8.4px; font-weight:800; color:#FFE8AA;
       text-transform:uppercase; line-height:1.1; letter-spacing:.1px;
       text-align:center; width:60%; white-space:normal;
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
 
-    /* ── 年份：右侧，两行（20 / 26），left:59% ── */
+    /* 年份（右）：LXGW */
     .ov-year{
       left:59%; top:17.0%;
       font-size:17px; font-weight:900; line-height:1.05;
       color:var(--mecc-color); text-align:left;
       letter-spacing:0; white-space:normal;
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
     .ov-year .y-top,
     .ov-year .y-bottom{ display:block; }
 
-    /* ── MECC：左侧，两行（ME / CC），与年份完美镜像 ──
-         right:59% 让 MECC 右边缘距父容器右侧 59%（= 距左侧 41%），
-         与年份左边缘距左侧 59% 完全对称。                          */
+    /* MECC（左）：LXGW，right:59% 与年份完美镜像 */
     .ov-mecc{
       right:59%; top:17.0%;
       font-size:17px; font-weight:900; line-height:1.05;
       color:var(--mecc-color); text-align:right;
       letter-spacing:.5px; white-space:normal;
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
     .ov-mecc .m-top,
     .ov-mecc .m-bottom{ display:block; }
@@ -206,6 +198,11 @@
       border-radius:50%; animation:spin .75s linear infinite; margin:0 auto 16px;
     }
     @keyframes spin{ to{ transform:rotate(360deg);} }
+
+    /* 状态文字：楷体 */
+    .state-box h3, .state-box p{
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif;
+    }
 
     /* ── 响应式 ── */
     @media (max-width:768px){
@@ -231,7 +228,8 @@
       </svg>
       <span id="nav-back-text">Home</span>
     </a>
-    <h1 class="mecc-nav-title">🏛️ 荣誉殿堂 Hall of Fame</h1>
+    <!-- 导航标题：中文 span.font-zh，英文 span.font-en，各自独立字体 -->
+    <h1 class="mecc-nav-title">🏛️ <span class="font-zh">荣誉殿堂</span> <span class="font-en">Hall of Fame</span></h1>
   </nav>
 
   <script>
@@ -252,21 +250,21 @@
 
   <nav class="month-nav">
     <button class="nav-btn" id="prevBtn" aria-label="上一月" onclick="changeMonth(-1)">◀</button>
-    <div class="month-label font-zh" id="monthLabel">加载中…</div>
+    <div class="month-label" id="monthLabel">加载中…</div>
     <button class="nav-btn" id="nextBtn" aria-label="下一月" onclick="changeMonth(1)">▶</button>
   </nav>
 
   <div class="legend-bar">
-    <span class="legend-pill font-zh" style="background:#1B4332">🏆 四会字大师奖</span>
-    <span class="legend-pill font-zh" style="background:#1E3A8A">📐 数学大师奖</span>
-    <span class="legend-pill font-zh" style="background:#5B21B6">🌟 最佳进步奖</span>
+    <span class="legend-pill" style="background:#1B4332">🏆 四会字大师奖</span>
+    <span class="legend-pill" style="background:#1E3A8A">📐 数学大师奖</span>
+    <span class="legend-pill" style="background:#5B21B6">🌟 最佳进步奖</span>
   </div>
 
   <main class="hof-main">
     <div class="badge-grid" id="badgeGrid">
       <div class="state-box">
         <div class="spinner"></div>
-        <p class="font-zh">正在加载荣誉榜…</p>
+        <p>正在加载荣誉榜…</p>
       </div>
     </div>
   </main>
@@ -299,10 +297,10 @@
     }
 
     var UI = {
-      loading  : LANG==='en' ? 'Loading…'             : '正在加载荣誉榜…',
-      empty    : LANG==='en' ? 'Coming Soon 🌟'       : '敬请期待 🌟',
-      emptySub : LANG==='en' ? 'Check back next month!': '本月榜单即将揭晓，敬请期待！',
-      fail     : LANG==='en' ? 'Failed to load.'      : '数据加载失败'
+      loading  : LANG==='en' ? 'Loading…'              : '正在加载荣誉榜…',
+      empty    : LANG==='en' ? 'Coming Soon 🌟'        : '敬请期待 🌟',
+      emptySub : LANG==='en' ? 'Check back next month!' : '本月榜单即将揭晓，敬请期待！',
+      fail     : LANG==='en' ? 'Failed to load.'       : '数据加载失败'
     };
 
     /* 手绘星星 SVG */
@@ -371,11 +369,11 @@
       }
       /* MECC 两行左侧（right:59%），年份两行右侧（left:59%），完美镜像 */
       h += '<div class="ov-mecc"><span class="m-top">ME</span><span class="m-bottom">CC</span></div>';
-      h += '<div class="ov-name font-zh">'  + name        + '</div>';
-      h += '<div class="ov-award font-zh">' + awardZh     + '</div>';
-      h += '<div class="ov-en font-en">'    + awardEnHtml + '</div>';
+      h += '<div class="ov-name">'  + name        + '</div>';
+      h += '<div class="ov-award">' + awardZh     + '</div>';
+      h += '<div class="ov-en">'    + awardEnHtml + '</div>';
       if(showYear){
-        h += '<div class="ov-year font-en">' + yearHtml + '</div>';
+        h += '<div class="ov-year">' + yearHtml + '</div>';
       }
       h += '</div>';  /* medal-card */
       h += '</div>';  /* badge-item */
@@ -388,7 +386,7 @@
       document.getElementById('monthLabel').textContent = fmtMonth(viewYear, mm);
       grid.innerHTML =
         '<div class="state-box"><div class="spinner"></div>' +
-        '<p class="font-zh">' + UI.loading + '</p></div>';
+        '<p>' + UI.loading + '</p></div>';
 
       var ym    = viewYear + '-' + mm;
       var query = '*[_type=="hallOfFame" && string::startsWith(awardMonth,"' + ym + '")] | order(_createdAt desc){ "studentName":studentRef->name, awardType, badgeBaseUrl, showYear, "photoUrl":studentRef->avatar.asset->url }';
@@ -402,8 +400,8 @@
             grid.innerHTML =
               '<div class="state-box">' +
                 '<div class="state-icon">🌟</div>' +
-                '<h3 class="font-zh">' + UI.empty    + '</h3>' +
-                '<p  class="font-zh">' + UI.emptySub + '</p>'  +
+                '<h3>' + UI.empty    + '</h3>' +
+                '<p>'  + UI.emptySub + '</p>'  +
               '</div>';
             return;
           }
@@ -414,7 +412,7 @@
           grid.innerHTML =
             '<div class="state-box">' +
               '<div class="state-icon">❌</div>' +
-              '<h3 class="font-zh">' + UI.fail + '</h3>' +
+              '<h3>' + UI.fail + '</h3>' +
               '<p>' + escapeHtml(e && e.message ? e.message : '未知错误') + '</p>' +
             '</div>';
         });
