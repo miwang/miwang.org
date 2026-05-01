@@ -189,46 +189,29 @@
   </style>
 </head>
 <body>
+  <nav class="mecc-global-nav">
+    <a href="../index.html" class="mecc-nav-back en" id="nav-back-link" aria-label="Back Home">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <span id="nav-back-text">Home</span>
+    </a>
+    <h1 class="mecc-nav-title">🏛️ 荣誉殿堂 Hall of Fame</h1>
+  </nav>
 
-  <!-- ── 导航栏：语言自动判断 ── -->
   <script>
-    (function(){
-      var lang     = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
-      var backHref = lang === 'en' ? '../parents.html' : '../teachers.html';
-      var backText = lang === 'en' ? 'Home' : '返回';
-
-      /* 标题：中英文各自用对应 span，字体由 CSS 覆盖 */
-      var titleInner = lang === 'en'
-        ? '<span class="font-en">Hall of Fame</span>'
-        : '<span class="font-zh">荣誉殿堂</span>&nbsp;<span class="font-en">Hall of Fame</span>';
-
-      /* 手绘风格奖杯 SVG */
-      var iconSvg =
-        '<svg width="26" height="26" viewBox="0 0 48 48" fill="none" ' +
-            'stroke="#FFE8AA" stroke-linecap="round" stroke-linejoin="round" ' +
-            'aria-hidden="true" style="flex-shrink:0;margin-right:4px;vertical-align:middle;">' +
-          '<path d="M16 6 C14 8 13 14 14 20 C15 26 19 30 24 31 C29 30 33 26 34 20 C35 14 34 8 32 6 Z" stroke-width="2.2"/>' +
-          '<line x1="24" y1="31" x2="24" y2="38" stroke-width="2.2"/>' +
-          '<path d="M17 38 Q24 40 31 38" stroke-width="2.4"/>' +
-          '<path d="M16 10 C10 10 8 14 8 18 C8 22 11 24 15 23" stroke-width="2"/>' +
-          '<path d="M32 10 C38 10 40 14 40 18 C40 22 37 24 33 23" stroke-width="2"/>' +
-          '<path d="M24 12 L25 15 L28 15 L26 17 L27 20 L24 18 L21 20 L22 17 L20 15 L23 15 Z" stroke-width="1.4"/>' +
-          '<path d="M19 27 Q21 28 24 27.5 Q27 27 29 27" stroke-width="1.6"/>' +
-        '</svg>';
-
-      document.write(
-        '<nav class="mecc-global-nav">' +
-          '<a href="' + backHref + '" class="mecc-nav-back' + (lang==='en' ? ' en' : '') + '" aria-label="' + backText + '">' +
-            '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:24px;height:24px;flex-shrink:0;">' +
-              '<path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
-            '</svg>' +
-            '<span>' + backText + '</span>' +
-          '</a>' +
-          '<h1 class="mecc-nav-title" style="display:flex;align-items:center;gap:2px;">' +
-            iconSvg + titleInner +
-          '</h1>' +
-        '</nav>'
-      );
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var role = params.get('role');
+      var backLink = document.getElementById('nav-back-link');
+      var backText = document.getElementById('nav-back-text');
+      if (role === 'parents') {
+        backLink.href = '../parents.html';
+        backText.textContent = 'Back';
+      } else if (role === 'teachers') {
+        backLink.href = '../teachers.html';
+        backText.textContent = '返回';
+      }
     })();
   </script>
 
