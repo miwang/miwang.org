@@ -1,428 +1,284 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>荣誉殿堂 - Hall of Fame</title>
-    <link rel="icon" type="image/png" href="../favicon.png">
-    <link rel="stylesheet" href="../css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>荣誉殿堂 - Hall of Fame</title>
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/common_nav.css" />
+  <style>
+    :root{
+      --hof-green:#1B4332;
+      --hof-bg:#F7F3EC;
+      --hof-gold:#C9A227;
+      --mecc-color:#174A49;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--hof-bg); min-height:100vh; color:#1a2740; padding-top:60px; }
 
-    <style>
-        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+    .month-nav{
+      display:flex; align-items:center; justify-content:center;
+      gap:16px; padding:14px 20px; background:#fff;
+      border-bottom:1px solid #E8E0D0; box-shadow:0 2px 6px rgba(0,0,0,.05);
+      position:sticky; top:60px; z-index:20;
+    }
+    .nav-btn{
+      background:var(--hof-green); color:#fff; border:none; width:36px; height:36px; border-radius:50%;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s;
+    }
+    .nav-btn:hover:not(:disabled){ transform:scale(1.1); background:var(--hof-gold); color:#153026; }
+    .nav-btn:disabled{ background:#ccc; cursor:default; }
+    .month-label{ min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green); }
 
-        /* ════════════════════════════════════════
-           Hall of Fame — Redesign
-           ════════════════════════════════════════ */
-        :root {
-            --hof-green:  #1B4332;
-            --hof-mid:    #2D6A4F;
-            --hof-gold:   #C9A227;
-            --hof-gold-l: #F2D675;
-            --hof-bg:     #F7F3EC;
-        }
+    .legend-bar{
+      display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
+      padding:10px 20px; background:#fff; border-bottom:1px solid #E8E0D0;
+    }
+    .legend-pill{ padding:4px 12px; border-radius:20px; color:#fff; font-size:.74rem; font-weight:600; line-height:1; }
 
-        body {
-            background: var(--hof-bg);
-            min-height: 100vh;
-            color: #1a2740;
-            display: flex;
-            flex-direction: column;
-        }
+    .hof-main{ max-width:1480px; margin:0 auto; padding:26px 20px 60px; }
 
-        /* ── Header ── */
-        .hof-header {
-            background: linear-gradient(160deg, var(--hof-green) 0%, var(--hof-mid) 100%);
-            color: #fff;
-            padding: 28px 20px 22px;
-            text-align: center;
-            position: relative;
-        }
-        .hof-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, var(--hof-gold), var(--hof-gold-l), var(--hof-gold), transparent);
-        }
-        .hof-title   { font-size: 2rem; font-weight: 900; letter-spacing: 3px; margin-bottom: 4px; }
-        .hof-subtitle{ font-size: 0.78rem; letter-spacing: 5px; opacity: 0.7; text-transform: uppercase; }
-        .back-link {
-            position: absolute; top: 18px; left: 20px;
-            color: rgba(255,255,255,0.7); text-decoration: none;
-            font-size: 0.85rem; font-weight: 600;
-            padding: 6px 12px; border-radius: 8px;
-            transition: background 0.2s, color 0.2s;
-        }
-        .back-link:hover { background: rgba(255,255,255,0.12); color: var(--hof-gold-l); }
+    .badge-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
+      gap:30px 22px; justify-items:center; align-items:start;
+    }
+    .badge-item{
+      width:100%; max-width:320px; display:flex; flex-direction:column; align-items:center;
+      animation:fadeUp .35s ease both;
+    }
+    @keyframes fadeUp{ from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
 
-        /* ── Month Navigation ── */
-        .month-nav {
-            display: flex; align-items: center; justify-content: center;
-            gap: 16px; padding: 16px 20px;
-            background: #fff;
-            border-bottom: 1px solid #E8E0D0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .nav-btn {
-            background: var(--hof-green); color: #fff; border: none;
-            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-            font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; flex-shrink: 0;
-        }
-        .nav-btn:hover:not(:disabled) { background: var(--hof-gold); color: var(--hof-green); transform: scale(1.1); }
-        .nav-btn:disabled { background: #ccc; cursor: default; }
-        .month-label { font-size: 1.25rem; font-weight: 700; color: var(--hof-green); min-width: 160px; text-align: center; }
+    .medal-card{
+      position:relative; width:300px; aspect-ratio:1/1;
+      line-height:0; overflow:visible; isolation:isolate;
+      filter:drop-shadow(0 8px 10px rgba(0,0,0,.12)); transition:transform .25s ease;
+    }
+    .medal-card:hover{ transform:translateY(-4px) scale(1.02); }
 
-        /* ── Award Legend ── */
-        .legend-bar {
-            display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 8px; padding: 12px 20px;
-            border-bottom: 1px solid #E8E0D0;
-            background: #fff;
-        }
-        .legend-pill {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 4px 12px; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600; color: #fff;
-        }
+    .medal-base{
+      position:absolute; inset:0; width:100%; height:100%;
+      display:block; object-fit:contain; user-select:none; pointer-events:none; z-index:1;
+    }
 
-        /* ── Main ── */
-        .hof-main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 40px 20px 60px; }
+    .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year{
+      position:absolute; z-index:4; pointer-events:none;
+    }
 
-        /* ── Badge Grid ── */
-        .badge-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 56px 32px;
-            justify-items: center;
-        }
+    .ov-photo{
+      left:50%; top:42.5%;
+      width:78px; height:78px;
+      transform:translate(-50%,-50%);
+      border-radius:50%; object-fit:cover;
+    }
 
-        /* ── Badge Item ── */
-        .badge-item {
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
-            animation: hof-appear 0.55s ease-out both;
-        }
-        .badge-item:nth-child(2) { animation-delay: 0.08s; }
-        .badge-item:nth-child(3) { animation-delay: 0.16s; }
-        .badge-item:nth-child(4) { animation-delay: 0.24s; }
-        .badge-item:nth-child(5) { animation-delay: 0.32s; }
-        @keyframes hof-appear {
-            from { opacity: 0; transform: translateY(24px) scale(0.95); }
-            to   { opacity: 1; transform: translateY(0)   scale(1);    }
-        }
+    .ov-name{
+      left:50%; top:60.5%; transform:translateX(-50%);
+      font-size:17px; font-weight:700; letter-spacing:1px; color:#A8761F; white-space:nowrap;
+      text-shadow:0 1px 0 rgba(255,255,255,0.35);
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif; line-height:1;
+    }
 
-        /* ── Medallion ── */
-        .medallion {
-            width: 260px; height: 260px; border-radius: 50%;
-            position: relative; z-index: 1; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: default;
-        }
-        .medallion:hover { transform: translateY(-10px) scale(1.04); }
+    .ov-award{
+      left:50%; top:72.5%; transform:translateX(-50%);
+      font-size:12px; font-weight:800; color:#fff; white-space:nowrap;
+      text-shadow:0 1px 1px rgba(0,0,0,.35);
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif; line-height:1;
+      text-align:center;
+    }
 
-        /* Award-type colour schemes */
-        .med-chinese {
-            background: radial-gradient(circle at 40% 35%, #fdfaf0, #e8dcb5);
-            border: 8px solid var(--hof-green);
-            box-shadow: 0 0 0 3px var(--hof-gold), 0 0 0 5px var(--hof-green), 0 18px 36px rgba(0,0,0,0.22);
-        }
-        .med-math {
-            background: radial-gradient(circle at 40% 35%, #EEF4FF, #CDDEFF);
-            border: 8px solid #1E3A8A;
-            box-shadow: 0 0 0 3px #7EB3F7, 0 0 0 5px #1E3A8A, 0 18px 36px rgba(0,0,0,0.22);
-        }
-        .med-progress {
-            background: radial-gradient(circle at 40% 35%, #F6F0FF, #DDD0FF);
-            border: 8px solid #5B21B6;
-            box-shadow: 0 0 0 3px #B89CF5, 0 0 0 5px #5B21B6, 0 18px 36px rgba(0,0,0,0.22);
-        }
-        .med-helper {
-            background: radial-gradient(circle at 40% 35%, #FFFDF5, #FDEFD0);
-            border: 8px solid #92400E;
-            box-shadow: 0 0 0 3px #F59E0B, 0 0 0 5px #92400E, 0 18px 36px rgba(0,0,0,0.22);
-        }
+    .ov-en{
+      left:50%; top:77.5%; transform:translateX(-50%);
+      font-size:8.4px; font-weight:800; color:#FFE8AA;
+      text-transform:uppercase; line-height:1.1; letter-spacing:.1px;
+      text-align:center; width:60%; white-space:normal;
+    }
 
-        /* Wrapper that holds wings + medallion */
-        .med-wrap {
-            position: relative;
-            padding-top: 30px;   /* space for wing tips above the circle */
-            width: 260px;
-            isolation: isolate;  /* own stacking context */
-        }
+    /*
+      MECC 在底板左侧，left 约 22% 处，占宽约 16%
+      奖杯在中间 left≈38%~62%
+      2026 应在奖杯右侧，与 MECC 对称 → left 约 62%
+      用 left 定位更直观
+    */
+    .ov-year{
+      left: 59%;
+      top:17.0%;
+      font-size:18px;
+      font-weight:900;
+      line-height:1.05;
+      color:var(--mecc-color);
+      text-align:left;
+      font-family:"Arial Black","Arial Bold",Arial,sans-serif;
+      letter-spacing:0;
+      white-space:normal;
+    }
+    .ov-year .y-top,
+    .ov-year .y-bottom{ display:block; }
 
-        /* Wings SVG — lives in .med-wrap, BEHIND the medallion */
-        .med-wings-svg {
-            position: absolute; top: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 118%; pointer-events: none; z-index: 0;
-        }
+    .state-box{ grid-column:1/-1; text-align:center; padding:60px 20px; color:#888; }
+    .state-icon{ font-size:3rem; margin-bottom:8px; }
+    .spinner{
+      width:44px; height:44px; border:4px solid #E8E0D0; border-top-color:var(--hof-green);
+      border-radius:50%; animation:spin .75s linear infinite; margin:0 auto 16px;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg);} }
 
-        /* Top row: ME/CC | trophy | year */
-        .med-top {
-            position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
-            display: flex; align-items: center; gap: 6px; z-index: 4;
-        }
-        .med-year-side { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.5px; line-height: 1.4; text-align: center; }
-        .med-trophy    { font-size: 1.3rem; line-height: 1; }
+    @media (max-width:768px){
+      body{ padding-top:54px; }
+      .month-nav{ top:54px; }
+      .badge-grid{ grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:20px 10px; }
+      .medal-card{ width:210px; }
 
-        /* Photo */
-        .med-photo, .med-photo-ph {
-            width: 108px; height: 108px; border-radius: 50%;
-            border: 4px solid #fff;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.22);
-            z-index: 2; position: relative; margin-top: 8px;
-        }
-        .med-photo    { object-fit: cover; }
-        .med-photo-ph { background: linear-gradient(135deg, #ddd, #bbb); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
-
-        /* Name ribbon */
-        .med-ribbon {
-            position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(90deg, #8B6914, var(--hof-gold), #F5DA72, var(--hof-gold), #8B6914);
-            color: #1B2800; padding: 4px 20px;
-            font-size: 0.82rem; font-weight: 900; white-space: nowrap;
-            border-radius: 2px; z-index: 4;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.28);
-            letter-spacing: 0.5px;
-        }
-
-        /* Award text */
-        .med-award-zh {
-            position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
-            font-size: 0.7rem; font-weight: 800; white-space: nowrap; z-index: 4; letter-spacing: 0.5px;
-        }
-        /* Award English text — displayed below the medallion circle */
-        .med-award-en {
-            font-size: 0.52rem; font-weight: 600;
-            letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.65;
-            text-align: center; margin-top: 5px;
-            white-space: nowrap;
-        }
-
-        /* Wang Laoshi label */
-        .med-wl {
-            position: absolute; right: 24px; top: 52%;
-            transform: translateY(-50%) rotate(12deg);
-            font-size: 0.42rem; font-weight: 700; letter-spacing: 1.5px;
-            line-height: 1.5; text-align: center; opacity: 0.5; z-index: 3;
-        }
-
-        /* ── States ── */
-        .state-box { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #888; }
-        .state-icon { font-size: 3.5rem; margin-bottom: 16px; }
-        .state-box h3 { font-size: 1.25rem; color: var(--hof-green); margin-bottom: 8px; }
-        .spinner {
-            width: 44px; height: 44px;
-            border: 4px solid #E8E0D0; border-top-color: var(--hof-green);
-            border-radius: 50%; animation: spin 0.75s linear infinite;
-            margin: 0 auto 16px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+      .ov-photo{ width:54px; height:54px; top:42.5%; }
+      .ov-name{ font-size:13px; top:60.5%; }
+      .ov-award{ font-size:10px; top:72.5%; }
+      .ov-en{ font-size:7px; top:77.4%; width:64%; }
+      .ov-year{ font-size:9px; top:17.0%; left:61.5%; }
+    }
+  </style>
 </head>
 <body>
+  <nav class="mecc-global-nav">
+    <a href="../index.html" class="mecc-nav-back en" aria-label="Back Home">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <span>Home</span>
+    </a>
+    <h1 class="mecc-nav-title">🏛️ 荣誉殿堂 Hall of Fame</h1>
+  </nav>
 
-<!-- ── Header ── -->
-<header class="hof-header">
-    <a href="../index.html" class="back-link font-en">← Home</a>
-    <div class="hof-title font-zh">🏛️ 荣誉殿堂</div>
-    <div class="hof-subtitle font-en">Hall of Fame · MECC</div>
-</header>
-
-<!-- ── Month Navigation ── -->
-<nav class="month-nav">
+  <nav class="month-nav">
     <button class="nav-btn" id="prevBtn" aria-label="上一月" onclick="changeMonth(-1)">◀</button>
     <div class="month-label font-zh" id="monthLabel">加载中…</div>
     <button class="nav-btn" id="nextBtn" aria-label="下一月" onclick="changeMonth(1)">▶</button>
-</nav>
+  </nav>
 
-<!-- ── Award Legend ── -->
-<div class="legend-bar">
+  <div class="legend-bar">
     <span class="legend-pill font-zh" style="background:#1B4332">🏆 四会字大师奖</span>
-    <span class="legend-pill font-zh" style="background:#1E3A8A">⭐ 数学之星</span>
-    <span class="legend-pill font-zh" style="background:#5B21B6">🌟 进步奖</span>
-    <span class="legend-pill font-zh" style="background:#92400E">❤️ 小帮手</span>
-</div>
+    <span class="legend-pill font-zh" style="background:#1E3A8A">📐 数学大师奖</span>
+    <span class="legend-pill font-zh" style="background:#5B21B6">🌟 最佳进步奖</span>
+  </div>
 
-<!-- ── Badge Grid ── -->
-<main class="hof-main">
+  <main class="hof-main">
     <div class="badge-grid" id="badgeGrid">
-        <div class="state-box">
-            <div class="spinner"></div>
-            <p>正在加载本月荣誉榜…</p>
-        </div>
+      <div class="state-box">
+        <div class="spinner"></div>
+        <p>正在加载本月荣誉榜…</p>
+      </div>
     </div>
-</main>
+  </main>
 
-<script>
-    // ── Award type config ─────────────────────────────────────────────────────
-    const AWARD = {
-        chinese_words: { cls: 'med-chinese', color: '#1B4332', trophy: '🏆', zh: '四会字大师奖', en: '◆ BEST AWARD OF CHINESE SIGHT WORDS ◆' },
-        math:          { cls: 'med-math',    color: '#1E3A8A', trophy: '⭐', zh: '数学之星',     en: '◆ MATH STAR AWARD ◆'                   },
-        progress:      { cls: 'med-progress',color: '#5B21B6', trophy: '🌟', zh: '进步奖',       en: '◆ MOST IMPROVED AWARD ◆'               },
-        helper:        { cls: 'med-helper',  color: '#92400E', trophy: '❤️', zh: '小帮手',       en: '◆ HELPER OF THE MONTH ◆'               },
+  <script>
+    var DEFAULT_BADGE_BASE = './assets/medal_base.svg';
+
+    var awardTextMap = {
+      chinese_words: { zh: '四会字大师奖', enTop: 'BEST AWARD OF', enBottom: 'CHINESE SIGHT WORDS' },
+      mathematics:   { zh: '数学大师奖',   enTop: 'BEST AWARD OF', enBottom: 'MATHEMATICS' },
+      progression:   { zh: '最佳进步奖',   enTop: 'BEST AWARD OF', enBottom: 'PROGRESSION' }
     };
-    const DEFAULT_AWARD = 'chinese_words';
 
-    // ── Wings SVG factory ─────────────────────────────────────────────────────
-    // Six feather-shaped ellipses fan outward from the medal top.
-    // Math guarantee: for each ellipse with centre (cx, cy), half-length rx, and
-    // rotation angle θ, the "base" endpoint = (cx + rx·cos(θ+180°), cy + rx·sin(θ+180°))
-    // which evaluates to the attachment point (155, 78) for the left wing
-    // and is mirrored to (165, 78) for the right wing via the SVG group transform.
-    // viewBox "0 0 320 90": height 90 gives enough vertical room for the six
-    // feather tips (highest tip at y ≈ 20) while keeping the attachment row (y = 78)
-    // close to the bottom so the wings emerge naturally from behind the medal top.
-    function wingSVG(color) {
-        const f = `fill="${color}"`;
-        // Left wing: 6 feathers, tips go upper-left. Attachment base at (155, 78).
-        // Columns: [cx, cy, rx, ry, rotate-deg]
-        // cx = (155 + tipX) / 2,  cy = (78 + tipY) / 2
-        // rotate = atan2(tipY − 78, tipX − 155)  (in degrees, SVG clockwise convention)
-        const leftFeathers = [
-            // tip ≈ (150, 20)  →  nearly straight up
-            [152.5,  49,  30,   5, -95],
-            // tip ≈ (132, 24)  →  upper-left
-            [143.5,  51,  30, 5.5, -113],
-            // tip ≈ (108, 34)  →  45° upper-left
-            [131.5,  56,  33,   6, -137],
-            // tip ≈ ( 84, 48)  →  more left than up
-            [119.5,  63,  39, 6.5, -157],
-            // tip ≈ ( 64, 60)  →  mostly left
-            [109.5,  69,  47,   7, -169],
-            // tip ≈ ( 50, 70)  →  nearly horizontal
-            [102.5,  74,  53,   7, -176],
-        ];
-        const opacities = [0.70, 0.76, 0.82, 0.87, 0.92, 0.95];
+    var _init = new Date();
+    var viewYear = _init.getFullYear();
+    var viewMonth = _init.getMonth() + 1;
 
-        const makeFeathers = (feathers, opacities, f) =>
-            feathers.map(([cx,cy,rx,ry,rot], i) =>
-                `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" ${f} opacity="${opacities[i]}" transform="rotate(${rot},${cx},${cy})"/>`
-            ).join('');
-
-        const left  = makeFeathers(leftFeathers, opacities, f);
-        // Right wing: mirror of left around x = 160 → translate(320,0) scale(-1,1)
-        const right = `<g transform="translate(320,0) scale(-1,1)">${left}</g>`;
-
-        return `<svg class="med-wings-svg" viewBox="0 0 320 90" xmlns="http://www.w3.org/2000/svg">
-          ${left}${right}
-        </svg>`;
+    function escapeHtml(str){
+      if(str == null) return '';
+      return String(str)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
     }
 
-    // ── State ─────────────────────────────────────────────────────────────────
-    const _init   = new Date();
-    let viewYear  = _init.getFullYear();
-    let viewMonth = _init.getMonth() + 1;   // 1-based
-
-    function updateNavBtn() {
-        const today = new Date();
-        document.getElementById('nextBtn').disabled =
-            viewYear > today.getFullYear() ||
-            (viewYear === today.getFullYear() && viewMonth >= today.getMonth() + 1);
+    function updateNavBtn(){
+      var today = new Date();
+      var nextBtn = document.getElementById('nextBtn');
+      nextBtn.disabled =
+        viewYear > today.getFullYear() ||
+        (viewYear === today.getFullYear() && viewMonth >= today.getMonth() + 1);
     }
 
-    function changeMonth(delta) {
-        viewMonth += delta;
-        if (viewMonth < 1)  { viewMonth = 12; viewYear--; }
-        if (viewMonth > 12) { viewMonth = 1;  viewYear++; }
-        updateNavBtn();
-        loadData();
+    function changeMonth(delta){
+      viewMonth += delta;
+      if(viewMonth < 1){ viewMonth = 12; viewYear--; }
+      if(viewMonth > 12){ viewMonth = 1; viewYear++; }
+      updateNavBtn();
+      loadData();
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+    function yearTwoLinesHtml(yearNum){
+      var y = String(yearNum);
+      if(y.length < 4) return '<span class="y-top">' + escapeHtml(y) + '</span>';
+      return '<span class="y-top">' + escapeHtml(y.slice(0,2)) + '</span>'
+           + '<span class="y-bottom">' + escapeHtml(y.slice(2)) + '</span>';
     }
 
-    // ── Render a single badge ─────────────────────────────────────────────────
-    function renderBadge(s, yr) {
-        const cfg     = AWARD[s.awardType] || AWARD[DEFAULT_AWARD];
-        const y       = String(yr);
-        const name    = escapeHtml(s.studentName) || '—';
-        const photoSrc= escapeHtml(s.photoUrl);
-        const awardZh = escapeHtml(s.awardTitle) || cfg.zh;
-        const photo   = photoSrc
-            ? `<img src="${photoSrc}" class="med-photo" alt="${name}" loading="lazy">`
-            : `<div class="med-photo-ph">👤</div>`;
+    function renderBadge(s, yr){
+      var name     = escapeHtml(s.studentName || '—');
+      var awardCfg = awardTextMap[s.awardType] || awardTextMap.chinese_words;
+      var awardZh  = escapeHtml(awardCfg.zh);
+      var awardEnHtml = escapeHtml(awardCfg.enTop) + '<br>' + escapeHtml(awardCfg.enBottom);
+      var photoUrl = escapeHtml(s.photoUrl || '');
+      var baseUrl  = escapeHtml(s.badgeBaseUrl || DEFAULT_BADGE_BASE);
+      var showYear = s.showYear !== false;
+      var yearHtml = yearTwoLinesHtml(yr);
 
-        return `
-        <div class="badge-item">
-          <div class="med-wrap">
-            ${wingSVG(cfg.color)}
-            <div class="medallion ${cfg.cls}">
-              <div class="med-top">
-                <span class="med-year-side font-en" style="color:${cfg.color}">ME<br>CC</span>
-                <span class="med-trophy">${cfg.trophy}</span>
-                <span class="med-year-side font-en" style="color:${cfg.color}">${y.slice(0,2)}<br>${y.slice(2,4)}</span>
-              </div>
-              ${photo}
-              <div class="med-ribbon font-zh">${name}</div>
-              <div class="med-award-zh font-zh" style="color:${cfg.color}">${awardZh}</div>
-              <div class="med-wl font-en" style="color:${cfg.color}">WANG<br>LAOSHI</div>
-            </div>
-          </div>
-          <div class="med-award-en font-en" style="color:${cfg.color}">${cfg.en}</div>
-        </div>`;
+      var html = '';
+      html += '<div class="badge-item"><div class="medal-card">';
+      html += '<img class="medal-base" src="' + baseUrl + '" alt="medal base" loading="lazy" />';
+      if(photoUrl){
+        html += '<img class="ov-photo" src="' + photoUrl + '" alt="' + name + '" loading="lazy" />';
+      }
+      html += '<div class="ov-name">'          + name        + '</div>';
+      html += '<div class="ov-award font-zh">' + awardZh     + '</div>';
+      html += '<div class="ov-en">'            + awardEnHtml + '</div>';
+      if(showYear){
+        html += '<div class="ov-year">' + yearHtml + '</div>';
+      }
+      html += '</div></div>';
+      return html;
     }
 
-    // ── Fetch & render ────────────────────────────────────────────────────────
-    async function loadData() {
-        const grid = document.getElementById('badgeGrid');
-        const mm   = String(viewMonth).padStart(2, '0');
-        document.getElementById('monthLabel').textContent = `${viewYear}年 ${mm}月`;
-        grid.innerHTML = `<div class="state-box"><div class="spinner"></div><p>正在加载…</p></div>`;
+    function loadData(){
+      var grid = document.getElementById('badgeGrid');
+      var mm = String(viewMonth).padStart(2, '0');
+      document.getElementById('monthLabel').textContent = viewYear + '年 ' + mm + '月';
+      grid.innerHTML = '<div class="state-box"><div class="spinner"></div><p>正在加载…</p></div>';
 
-        const ym = `${viewYear}-${mm}`;
-        if (!/^\d{4}-\d{2}$/.test(ym)) {
-            grid.innerHTML = `<div class="state-box"><div class="state-icon">❌</div><h3>参数错误</h3></div>`;
+      var ym    = viewYear + '-' + mm;
+      var query = '*[_type == "hallOfFame" && string::startsWith(awardMonth, "' + ym + '")] | order(_createdAt desc){ "studentName": studentRef->name, awardType, badgeBaseUrl, showYear, "photoUrl": studentRef->avatar.asset->url }';
+      var url   = 'https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=' + encodeURIComponent(query);
+
+      fetch(url)
+        .then(function(r){
+          if(!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function(data){
+          var list = Array.isArray(data.result) ? data.result : [];
+          if(!list.length){
+            grid.innerHTML =
+              '<div class="state-box"><div class="state-icon">📅</div>' +
+              '<h3 class="font-zh">' + viewYear + '年' + mm + '月暂无上榜学生</h3>' +
+              '<p>去 Sanity 后台添加本月荣誉记录吧！</p></div>';
             return;
-        }
-        const query = `*[_type == "hallOfFame" && string::startsWith(awardMonth, "${ym}")] | order(_createdAt desc){
-            "studentName": studentRef->name,
-            awardTitle,
-            awardType,
-            "photoUrl": studentRef->avatar.asset->url
-        }`;
-        const url = `https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=${encodeURIComponent(query)}`;
-
-        try {
-            const r = await fetch(url);
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            const { result: list } = await r.json();
-
-            if (!list || !list.length) {
-                grid.innerHTML = `
-                    <div class="state-box">
-                        <div class="state-icon">📅</div>
-                        <h3 class="font-zh">${viewYear}年${mm}月暂无上榜学生</h3>
-                        <p>去 Sanity 后台添加本月荣誉记录吧！</p>
-                    </div>`;
-                return;
-            }
-
-            grid.innerHTML = list.map(s => renderBadge(s, viewYear)).join('');
-
-        } catch (e) {
-            console.error(e);
-            grid.innerHTML = `
-                <div class="state-box">
-                    <div class="state-icon">❌</div>
-                    <h3>数据加载失败</h3>
-                    <p>${e.message}</p>
-                </div>`;
-        }
+          }
+          grid.innerHTML = list.map(function(item){ return renderBadge(item, viewYear); }).join('');
+        })
+        .catch(function(e){
+          console.error(e);
+          grid.innerHTML =
+            '<div class="state-box"><div class="state-icon">❌</div>' +
+            '<h3>数据加载失败</h3>' +
+            '<p>' + escapeHtml(e && e.message ? e.message : '未知错误') + '</p></div>';
+        });
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
     updateNavBtn();
     loadData();
-</script>
+  </script>
 </body>
 </html>
