@@ -140,14 +140,30 @@
 </head>
 <body>
   <nav class="mecc-global-nav">
-    <a href="../index.html" class="mecc-nav-back en" aria-label="Back Home">
+    <a href="../index.html" class="mecc-nav-back en" id="nav-back-link" aria-label="Back Home">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
-      <span>Home</span>
+      <span id="nav-back-text">Home</span>
     </a>
     <h1 class="mecc-nav-title">🏛️ 荣誉殿堂 Hall of Fame</h1>
   </nav>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var role = params.get('role');
+      var backLink = document.getElementById('nav-back-link');
+      var backText = document.getElementById('nav-back-text');
+      if (role === 'parents') {
+        backLink.href = '../parents.html';
+        backText.textContent = 'Back';
+      } else if (role === 'teachers') {
+        backLink.href = '../teachers.html';
+        backText.textContent = '返回';
+      }
+    })();
+  </script>
 
   <nav class="month-nav">
     <button class="nav-btn" id="prevBtn" aria-label="上一月" onclick="changeMonth(-1)">◀</button>
