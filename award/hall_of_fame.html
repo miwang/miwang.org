@@ -18,11 +18,13 @@
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--hof-bg); min-height:100vh; color:#1a2740; padding-top:60px; }
 
-    /* ── 全局字体规则（覆盖 style.css）── */
-    .font-zh{
+    /* ── 全局字体规则，用 body 提升优先级以覆盖 style.css ── */
+    body .font-zh,
+    body .font-zh *{
       font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
     }
-    .font-en{
+    body .font-en,
+    body .font-en *{
       font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
 
@@ -123,8 +125,8 @@
       display:block; object-fit:contain; user-select:none; pointer-events:none; z-index:1;
     }
 
-    /* ── 叠层文字，全部不内联 font-family，由 font-zh/font-en class 控制 ── */
-    .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year{
+    /* ── 叠层文字 ── */
+    .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year,.ov-mecc{
       position:absolute; z-index:4; pointer-events:none;
     }
 
@@ -154,15 +156,24 @@
       text-align:center; width:60%; white-space:normal;
     }
 
-    /* ── 年份：左侧 ── */
+    /* ── 年份：右侧（原始位置） ── */
     .ov-year{
-      left:8%; top:17.0%;
+      left:59%; top:17.0%;
       font-size:17px; font-weight:900; line-height:1.05;
       color:var(--mecc-color); text-align:left;
       letter-spacing:0; white-space:normal;
     }
     .ov-year .y-top,
     .ov-year .y-bottom{ display:block; }
+
+    /* ── MECC 文字：左侧（与年份对称） ── */
+    .ov-mecc{
+      left:8%; top:17.0%;
+      font-size:17px; font-weight:900; line-height:1.05;
+      color:var(--mecc-color); text-align:left;
+      letter-spacing:.5px; white-space:nowrap;
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
+    }
 
     /* ── 状态框 ── */
     .state-box{ grid-column:1/-1; text-align:center; padding:60px 20px; color:#888; }
@@ -183,7 +194,8 @@
       .ov-name{ font-size:13px; top:60.5%; }
       .ov-award{ font-size:10px; top:72.5%; }
       .ov-en{ font-size:7px; top:77.4%; width:64%; }
-      .ov-year{ font-size:14px; top:17.0%; left:8%; }
+      .ov-year{ font-size:14px; top:17.0%; left:59%; }
+      .ov-mecc{ font-size:14px; top:17.0%; left:8%; }
       .sparkle svg{ width:14px; height:14px; }
     }
   </style>
@@ -331,6 +343,7 @@
       if(photoUrl){
         h += '<img class="ov-photo" src="' + photoUrl + '" alt="' + name + '" loading="lazy" />';
       }
+      h += '<div class="ov-mecc">MECC</div>';
       h += '<div class="ov-name font-zh">'  + name        + '</div>';
       h += '<div class="ov-award font-zh">' + awardZh     + '</div>';
       h += '<div class="ov-en font-en">'    + awardEnHtml + '</div>';
