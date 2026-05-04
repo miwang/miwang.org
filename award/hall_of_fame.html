@@ -18,7 +18,7 @@
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--hof-bg); min-height:100vh; color:#1a2740; padding-top:60px; }
 
-    /* ── 强制导航标题内 span 字体不被 common_nav.css 覆盖 ── */
+    /* ── 强制导航标题内 span 字体 ── */
     .mecc-nav-title .font-en{
       font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
     }
@@ -39,7 +39,13 @@
     }
     .nav-btn:hover:not(:disabled){ transform:scale(1.1); background:var(--hof-gold); color:#153026; }
     .nav-btn:disabled{ background:#ccc; cursor:default; }
-    .month-label{ min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green); }
+    /* 月份标签：不设字体，由内部 span 各自控制 */
+    .month-label{
+      min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green);
+    }
+    /* 月份数字用无衬线，汉字用楷体 */
+    .month-label .mn{ font-family:"Arial","Helvetica Neue",Arial,sans-serif !important; }
+    .month-label .mc{ font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important; }
 
     /* ── 图例条 ── */
     .legend-bar{
@@ -55,7 +61,7 @@
     .badge-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
-      gap:40px 22px; justify-items:center; align-items:start;
+      gap:48px 22px; justify-items:center; align-items:start;
     }
 
     /* ── 单个徽章容器 ── */
@@ -87,7 +93,6 @@
     .sparkle-2{ top:2%;    right:4%;  animation-delay:.6s;   }
     .sparkle-3{ bottom:18%; left:2%;  animation-delay:1.2s;  }
     .sparkle-4{ bottom:18%; right:2%; animation-delay:1.8s;  }
-
     @keyframes sparkleAnim{
       0%,100%{ opacity:0;  transform:scale(.4) rotate(0deg);   }
       40%    { opacity:1;  transform:scale(1)  rotate(20deg);  }
@@ -98,24 +103,81 @@
     .medal-card{
       position:relative; width:300px; aspect-ratio:1/1;
       line-height:0; overflow:visible; isolation:isolate;
-      filter:drop-shadow(0 8px 16px rgba(0,0,0,.15));
+      filter:drop-shadow(0 6px 14px rgba(0,0,0,.14));
       animation: float 3.6s ease-in-out infinite;
-      transition: filter .25s ease;
+      transition: filter .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
       cursor:pointer;
+      transform-origin:center bottom;
     }
     .badge-item:nth-child(odd)  .medal-card{ animation-duration:3.2s; }
     .badge-item:nth-child(3n)   .medal-card{ animation-duration:4.1s; }
 
     @keyframes float{
-      0%,100%{ transform:translateY(0);    }
-      50%     { transform:translateY(-8px); }
+      0%,100%{ transform:translateY(0) rotate(0deg);    }
+      30%     { transform:translateY(-7px) rotate(.6deg); }
+      70%     { transform:translateY(-5px) rotate(-.5deg); }
     }
 
+    /* 悬停特效：放大 + 强金光 drop-shadow + 轻微倾斜 */
     .medal-card:hover{
-      filter:drop-shadow(0 14px 28px rgba(201,162,39,.45));
       animation-play-state:paused;
-      transform:scale(1.06) rotate(-1deg);
-      transition:transform .2s cubic-bezier(.34,1.56,.64,1), filter .2s;
+      transform:scale(1.09) translateY(-6px) rotate(-1.5deg);
+      filter:
+        drop-shadow(0 0  12px rgba(255,215,0,.90))
+        drop-shadow(0 0  28px rgba(255,165,0,.65))
+        drop-shadow(0 20px 30px rgba(201,162,39,.50));
+    }
+
+    /* 悬停时：彩虹光晕叠层 */
+    .medal-card::before{
+      content:'';
+      position:absolute; inset:-6px; border-radius:50%;
+      background:conic-gradient(
+        rgba(255,80,80,.0) 0%,
+        rgba(255,200,0,.55) 15%,
+        rgba(100,255,150,.55) 35%,
+        rgba(80,180,255,.55) 55%,
+        rgba(200,80,255,.55) 75%,
+        rgba(255,80,80,.0) 100%
+      );
+      opacity:0;
+      transition:opacity .35s ease;
+      z-index:-1;
+      animation:spinRainbow 3s linear infinite;
+      animation-play-state:paused;
+    }
+    .medal-card:hover::before{
+      opacity:1;
+      animation-play-state:running;
+    }
+    @keyframes spinRainbow{ to{ transform:rotate(360deg); } }
+
+    /* 悬停时：金光扫光 overlay */
+    .medal-card::after{
+      content:'';
+      position:absolute; inset:0;
+      border-radius:50%;
+      background:linear-gradient(
+        120deg,
+        rgba(255,255,255,0) 20%,
+        rgba(255,240,150,.55) 50%,
+        rgba(255,255,255,0) 80%
+      );
+      background-size:200% 200%;
+      opacity:0;
+      transition:opacity .25s ease;
+      z-index:5;
+      pointer-events:none;
+      animation:shimmer 1.2s linear infinite;
+      animation-play-state:paused;
+    }
+    .medal-card:hover::after{
+      opacity:1;
+      animation-play-state:running;
+    }
+    @keyframes shimmer{
+      0%  { background-position:200% 0; }
+      100%{ background-position:-200% 0; }
     }
 
     .medal-base{
@@ -123,7 +185,7 @@
       display:block; object-fit:contain; user-select:none; pointer-events:none; z-index:1;
     }
 
-    /* ── 叠层文字，全部不内联 font-family，由 font-zh/font-en class 控制 ── */
+    /* ── 叠层文字 ── */
     .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year{
       position:absolute; z-index:4; pointer-events:none;
     }
@@ -134,31 +196,38 @@
       border-radius:50%; object-fit:cover;
     }
 
+    /* 学生姓名：楷体 */
     .ov-name{
       left:50%; top:60.5%; transform:translateX(-50%);
       font-size:17px; font-weight:700; letter-spacing:1px;
       color:#A8761F; white-space:nowrap;
       text-shadow:0 1px 0 rgba(255,255,255,.35); line-height:1;
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif;
     }
 
+    /* 中文奖项：楷体 */
     .ov-award{
       left:50%; top:72.5%; transform:translateX(-50%);
       font-size:12px; font-weight:800; color:#fff; white-space:nowrap;
       text-shadow:0 1px 1px rgba(0,0,0,.35); line-height:1; text-align:center;
+      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif;
     }
 
+    /* 英文奖项：LXGW */
     .ov-en{
       left:50%; top:77.5%; transform:translateX(-50%);
       font-size:8.4px; font-weight:800; color:#FFE8AA;
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif;
       text-transform:uppercase; line-height:1.1; letter-spacing:.1px;
       text-align:center; width:60%; white-space:normal;
     }
 
+    /* 年份：明确 Arial Black，绝不楷体 */
     .ov-year{
       left:59%; top:17.0%;
       font-size:17px; font-weight:900; line-height:1.05;
       color:var(--mecc-color); text-align:left;
-      font-family:"Arial Black","Arial Bold",Arial,sans-serif;
+      font-family:"Arial Black","Arial Bold",Arial,Helvetica,sans-serif !important;
       letter-spacing:0; white-space:normal;
     }
     .ov-year .y-top,
@@ -177,7 +246,7 @@
     @media (max-width:768px){
       body{ padding-top:54px; }
       .month-nav{ top:54px; }
-      .badge-grid{ grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:28px 10px; }
+      .badge-grid{ grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:32px 10px; }
       .medal-card{ width:210px; }
       .ov-photo{ width:54px; height:54px; top:42.5%; }
       .ov-name{ font-size:13px; top:60.5%; }
@@ -190,19 +259,19 @@
 </head>
 <body>
 
-  <!-- ── 导航栏：语言自动判断，手绘风格 SVG 图标 ── -->
+  <!-- 导航栏：语言自动判断 -->
   <script>
     (function(){
       var lang     = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
-      var backHref = lang === 'en' ? '../parents.html' : '../teachers.html';
-      var backText = lang === 'en' ? 'Home' : '返回';
+      /* zh → 教师工具台；en → 家长页 */
+      var backHref = lang === 'en' ? '../parents.html'  : '../teachers.html';
+      var backText = lang === 'en' ? 'Home'             : '返回工具台';
 
-      /* 标题：中英文各自用对应 span，字体由 CSS 覆盖 */
       var titleInner = lang === 'en'
         ? '<span class="font-en">Hall of Fame</span>'
         : '<span class="font-zh">荣誉殿堂</span>&nbsp;<span class="font-en">Hall of Fame</span>';
 
-      /* 手绘风格奖杯 SVG */
+      /* 手绘奖杯 SVG */
       var iconSvg =
         '<svg width="26" height="26" viewBox="0 0 48 48" fill="none" ' +
             'stroke="#FFE8AA" stroke-linecap="round" stroke-linejoin="round" ' +
@@ -234,7 +303,7 @@
 
   <nav class="month-nav">
     <button class="nav-btn" id="prevBtn" aria-label="上一月" onclick="changeMonth(-1)">◀</button>
-    <div class="month-label font-zh" id="monthLabel">加载中…</div>
+    <div class="month-label" id="monthLabel">…</div>
     <button class="nav-btn" id="nextBtn" aria-label="下一月" onclick="changeMonth(1)">▶</button>
   </nav>
 
@@ -267,24 +336,31 @@
     /* ── 默认显示上个月 ── */
     var _now = new Date();
     var viewYear  = _now.getFullYear();
-    var viewMonth = _now.getMonth();   /* 0-11 正好等于上月 1-12 */
+    var viewMonth = _now.getMonth();   /* getMonth() 0-11 → 上月序号 1-12 */
     if(viewMonth < 1){ viewMonth = 12; viewYear--; }
 
     var MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    function fmtMonth(yr, mm){
-      return LANG === 'en'
-        ? MONTHS_EN[parseInt(mm,10)-1] + ' ' + yr
-        : yr + '年 ' + mm + '月';
+
+    /* 月份标签 innerHTML：数字 .mn（Arial），汉字 .mc（楷体） */
+    function monthLabelHtml(yr, mm){
+      var mmInt = parseInt(mm, 10);
+      if(LANG === 'en'){
+        return '<span class="mn">' + MONTHS_EN[mmInt-1] + ' ' + yr + '</span>';
+      }
+      return '<span class="mn">' + yr + '</span>' +
+             '<span class="mc">年 </span>' +
+             '<span class="mn">' + mm + '</span>' +
+             '<span class="mc">月</span>';
     }
 
     var UI = {
-      loading  : LANG==='en' ? 'Loading…'             : '正在加载荣誉榜…',
-      empty    : LANG==='en' ? 'Coming Soon 🌟'       : '敬请期待 🌟',
-      emptySub : LANG==='en' ? 'Check back next month!': '本月榜单即将揭晓，敬请期待！',
-      fail     : LANG==='en' ? 'Failed to load.'      : '数据加载失败'
+      loading  : LANG==='en' ? 'Loading…'              : '正在加载荣誉榜…',
+      empty    : LANG==='en' ? 'Coming Soon 🌟'        : '敬请期待 🌟',
+      emptySub : LANG==='en' ? 'Check back next month!' : '本月榜单即将揭晓，敬请期待！',
+      fail     : LANG==='en' ? 'Failed to load.'       : '数据加载失败'
     };
 
-    /* 手绘星星 SVG */
+    /* ── 闪光星星 ── */
     function sparkleSvg(size){
       var s = size || 18;
       return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="#FFD700" ' +
@@ -307,10 +383,12 @@
         .replace(/'/g,'&#39;');
     }
 
+    /* ── "下一步"按钮：不能超过上个月 ── */
     function updateNavBtn(){
       var today = new Date();
       var cy = today.getFullYear(), cm = today.getMonth()+1;
-      var py = cm===1 ? cy-1 : cy,  pm = cm===1 ? 12 : cm-1;
+      /* 上月极限 */
+      var py = cm===1 ? cy-1 : cy, pm = cm===1 ? 12 : cm-1;
       document.getElementById('nextBtn').disabled =
         viewYear > py || (viewYear===py && viewMonth>=pm);
     }
@@ -323,6 +401,7 @@
       loadData();
     }
 
+    /* 年份分两行：前两位 / 后两位，字体由 CSS .ov-year 控制（Arial Black） */
     function yearTwoLinesHtml(yearNum){
       var y = String(yearNum);
       if(y.length < 4) return '<span class="y-top">' + escapeHtml(y) + '</span>';
@@ -348,11 +427,12 @@
       if(photoUrl){
         h += '<img class="ov-photo" src="' + photoUrl + '" alt="' + name + '" loading="lazy" />';
       }
-      /* font-zh / font-en class 由 style.css 的 !important 规则控制字体 */
-      h += '<div class="ov-name font-zh">'  + name        + '</div>';
-      h += '<div class="ov-award font-zh">' + awardZh     + '</div>';
-      h += '<div class="ov-en font-en">'    + awardEnHtml + '</div>';
+      /* 字体由 CSS 各自 class 控制，不在 renderBadge 内再加 font-zh/font-en */
+      h += '<div class="ov-name">'  + name        + '</div>';
+      h += '<div class="ov-award">' + awardZh     + '</div>';
+      h += '<div class="ov-en">'    + awardEnHtml + '</div>';
       if(showYear){
+        /* ov-year 已 !important 指定 Arial Black，不加 font-zh */
         h += '<div class="ov-year">' + yearHtml + '</div>';
       }
       h += '</div>';  /* medal-card */
@@ -363,7 +443,7 @@
     function loadData(){
       var grid = document.getElementById('badgeGrid');
       var mm   = String(viewMonth).padStart(2,'0');
-      document.getElementById('monthLabel').textContent = fmtMonth(viewYear, mm);
+      document.getElementById('monthLabel').innerHTML = monthLabelHtml(viewYear, mm);
       grid.innerHTML =
         '<div class="state-box"><div class="spinner"></div>' +
         '<p class="font-zh">' + UI.loading + '</p></div>';
