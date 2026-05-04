@@ -13,6 +13,7 @@ import { sentenceConfig } from './sentenceConfig'
 import { extraPhrase } from './extraPhrase' // 🌟 1. 引入新加的补充词汇模型
 import { studentWork } from './studentWork'
 import { hallOfFame } from './hallOfFame'
+import { pictureTalk } from './pictureTalk' // 🌟 引入看图说话模型
 
 
 
@@ -33,4 +34,5 @@ export const schemaTypes = [
   extraPhrase, // 🌟 2. 注册进系统
   studentWork,
   hallOfFame,
+  pictureTalk, // 🌟 注册看图说话
  ]
