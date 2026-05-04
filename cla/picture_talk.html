@@ -393,6 +393,7 @@
         // ── 状态 ──────────────────────────────────────────────────────
         let allPictures   = [];
         let currentIndex  = -1;
+        let remainingPool = [];   // 未出现过的图片索引池
         let sentences     = [];
         let readAllTimer  = null;
 
@@ -448,15 +449,12 @@
         function showRandom() {
             if (allPictures.length === 0) return;
 
-            // 避免连续两次同一张
-            let nextIndex;
-            if (allPictures.length === 1) {
-                nextIndex = 0;
-            } else {
-                do { nextIndex = Math.floor(Math.random() * allPictures.length); }
-                while (nextIndex === currentIndex);
+            // 剩余池空了则重新填充并打乱，确保每轮每张图片恰好出现一次
+            if (remainingPool.length === 0) {
+                remainingPool = allPictures.map((_, i) => i).sort(() => Math.random() - 0.5);
             }
-            currentIndex = nextIndex;
+
+            currentIndex = remainingPool.shift();
 
             const pic = allPictures[currentIndex];
             const img = document.getElementById('picture-img');
@@ -469,9 +467,9 @@
                 img.style.display = 'block';
                 img.onload = () => img.classList.remove('fade-out');
 
-                // 计数器
+                // 计数器：显示本轮已看张数 / 总数
                 const badge = document.getElementById('counter-badge');
-                badge.innerText = `${currentIndex + 1} / ${allPictures.length}`;
+                badge.innerText = `${allPictures.length - remainingPool.length} / ${allPictures.length}`;
                 badge.style.display = 'block';
 
                 // 提示语
