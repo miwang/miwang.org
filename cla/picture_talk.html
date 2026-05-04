@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="head-title">看图说话 - MECC</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        :root {
+            --kaiti: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
+        }
+
+        .font-zh { font-family: var(--kaiti) !important; font-weight: bold; }
+        .font-en { font-family: var(--wenkai) !important; }
+
+        body {
+            background-color: #fff9ea;
+            margin: 0; padding: 0;
+            padding-top: 60px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            font-family: var(--kaiti);
+        }
+
+        .page-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 20px 20px 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* ── 图片区域 ── */
+        .image-stage {
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            border: 3px solid #e2e8f0;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+            overflow: hidden;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #picture-img {
+            width: 100%;
+            max-height: 55vh;
+            object-fit: contain;
+            display: block;
+            transition: opacity 0.4s ease;
+        }
+
+        #picture-img.fade-out { opacity: 0; }
+
+        .counter-badge {
+            position: absolute;
+            top: 14px; right: 16px;
+            background: rgba(0,0,0,0.45);
+            color: white;
+            font-family: var(--wenkai);
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        .hint-bar {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.5));
+            color: white;
+            font-size: 1.1rem;
+            padding: 28px 20px 14px;
+            text-align: center;
+            font-family: var(--kaiti);
+        }
+
+        .loading-state, .error-state {
+            color: #8a9bb0;
+            font-size: 1rem;
+            text-align: center;
+            padding: 40px 20px;
+            font-family: var(--wenkai);
+        }
+        .error-state { color: #d94040; }
+
+        /* ── 换一张按钮 ── */
+        .next-btn {
+            background: var(--accent-yellow);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            font-family: var(--kaiti);
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(243,178,54,0.35);
+            transition: background 0.2s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .next-btn:hover { background: #e1a328; }
+        .next-btn:active { transform: scale(0.97); }
+
+        /* ── 输入区域 ── */
+        .input-section {
+            width: 100%;
+            background: white;
+            border-radius: 22px;
+            border: 3px solid #e2e8f0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            padding: 18px 20px 16px;
+            box-sizing: border-box;
+        }
+
+        .input-label {
+            font-size: 1.05rem;
+            color: var(--main-teal);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .sentence-input {
+            width: 100%;
+            border: 2px solid #dde3ec;
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 1.2rem;
+            font-family: var(--kaiti);
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            min-height: 80px;
+            background: #fafcff;
+        }
+        .sentence-input:focus { border-color: var(--main-teal); background: #fff; }
+
+        .input-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .char-count {
+            font-family: var(--wenkai);
+            font-size: 0.82rem;
+            color: #aab4c0;
+        }
+
+        .submit-btn {
+            background: var(--main-teal);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 10px 28px;
+            font-size: 1.05rem;
+            font-family: var(--kaiti);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            flex-shrink: 0;
+        }
+        .submit-btn:hover { background: #4f7879; }
+        .submit-btn:active { transform: scale(0.97); }
+        .submit-btn:disabled { background: #c0cdd4; cursor: not-allowed; }
+
+        /* ── 句子列表 ── */
+        .sentences-section {
+            width: 100%;
+        }
+
+        .sentences-title {
+            font-size: 1rem;
+            color: #8a9bb0;
+            margin: 0 0 12px 4px;
+            font-family: var(--wenkai);
+        }
+
+        .sentence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sentence-item {
+            background: white;
+            border-left: 5px solid var(--accent-yellow);
+            border-radius: 0 16px 16px 0;
+            padding: 12px 16px 12px 14px;
+            font-size: 1.15rem;
+            color: #1e2e46;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideIn 0.3s ease both;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-12px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .sentence-num {
+            font-family: var(--wenkai);
+            font-size: 0.85rem;
+            color: #b0bcc8;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .sentence-text { flex: 1; line-height: 1.6; }
+
+        .sentence-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-speak, .btn-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 4px;
+            border-radius: 8px;
+            transition: background 0.15s;
+        }
+        .btn-speak:hover { background: #fff0cc; }
+        .btn-delete:hover { background: #fdecea; }
+
+        .empty-hint {
+            text-align: center;
+            color: #bbc8d4;
+            font-family: var(--wenkai);
+            font-size: 0.92rem;
+            padding: 16px 0 4px;
+        }
+
+        /* ── 朗读全部按钮 ── */
+        .read-all-btn {
+            background: none;
+            border: 2px solid var(--main-teal);
+            color: var(--main-teal);
+            border-radius: 14px;
+            padding: 7px 20px;
+            font-size: 0.95rem;
+            font-family: var(--kaiti);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .read-all-btn:hover { background: var(--main-teal); color: white; }
+
+        @media (max-width: 768px) {
+            body { padding-top: 54px; }
+            .page-wrap { padding: 14px 12px 40px; gap: 14px; }
+            #picture-img { max-height: 42vh; }
+            .next-btn { font-size: 1.1rem; padding: 12px 30px; }
+            .sentence-input { font-size: 1.05rem; }
+            .sentence-item { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body class="fade-in">
+
+    <div class="page-wrap">
+
+        <!-- 图片展示区 -->
+        <div class="image-stage" id="image-stage">
+            <div class="loading-state font-en" id="loading-msg">加载中…</div>
+            <img id="picture-img" src="" alt="" style="display:none;">
+            <span class="counter-badge font-en" id="counter-badge" style="display:none;"></span>
+            <div class="hint-bar font-zh" id="hint-bar" style="display:none;"></div>
+        </div>
+
+        <!-- 换一张 -->
+        <button class="next-btn font-zh" id="next-btn" onclick="showRandom()" style="display:none;">
+            🎲 换一张
+        </button>
+
+        <!-- 输入区域 -->
+        <div class="input-section" id="input-section" style="display:none;">
+            <span class="input-label font-zh">✏️ 看图写句子，你看到了什么？</span>
+            <textarea
+                class="sentence-input font-zh"
+                id="sentence-input"
+                maxlength="150"
+                placeholder="例如：这只猫穿着西装，看起来很神气！"
+                oninput="updateCount()"
+                onkeydown="handleKey(event)"
+            ></textarea>
+            <div class="input-footer">
+                <span class="char-count font-en" id="char-count">0 / 150</span>
+                <button class="submit-btn font-zh" id="submit-btn" onclick="submitSentence()" disabled>提交句子</button>
+            </div>
+        </div>
+
+        <!-- 句子列表 -->
+        <div class="sentences-section" id="sentences-section" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span class="sentences-title" id="sentences-title">大家写的句子</span>
+                <button class="read-all-btn font-zh" onclick="readAllSentences()">🔊 朗读全部</button>
+            </div>
+            <div class="sentence-list" id="sentence-list"></div>
+            <div class="empty-hint font-en" id="empty-hint">还没有句子，来写第一句吧！</div>
+        </div>
+
+    </div>
+
+    <script>
+        // ── Sanity 配置 ──────────────────────────────────────────────
+        const PROJECT_ID = 'sow12t1i';
+        const DATASET    = 'production';
+        const QUERY      = encodeURIComponent('*[_type == "pictureTalk" && isActive == true]{ _id, title, hint, "imageUrl": image.asset->url }');
+        const API_URL    = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: {
+                pageTitle: '🖼️ 看图说话',
+                loading: '加载中…',
+                error: '无法加载图片，请刷新重试。',
+                empty: '暂时没有图片，请稍后再来。',
+                inputLabel: '✏️ 看图写句子，你看到了什么？',
+                placeholder: '例如：这只猫穿着西装，看起来很神气！',
+                submit: '提交句子',
+                next: '🎲 换一张',
+                readAll: '🔊 朗读全部',
+                sentencesTitle: '大家写的句子',
+                emptyHint: '还没有句子，来写第一句吧！',
+            },
+            en: {
+                pageTitle: '🖼️ Picture Talk',
+                loading: 'Loading…',
+                error: 'Failed to load images. Please refresh.',
+                empty: 'No pictures available yet.',
+                inputLabel: '✏️ What do you see? Write a sentence!',
+                placeholder: 'e.g. The cat is wearing a suit and looks very fancy!',
+                submit: 'Submit',
+                next: '🎲 Next Picture',
+                readAll: '🔊 Read All',
+                sentencesTitle: "Everyone's sentences",
+                emptyHint: 'No sentences yet — be the first!',
+            }
+        }[LANG];
+
+        // ── 状态 ──────────────────────────────────────────────────────
+        let allPictures   = [];
+        let currentIndex  = -1;
+        let sentences     = [];
+        let readAllTimer  = null;
+
+        // ── 初始化 ────────────────────────────────────────────────────
+        window.onload = () => {
+            MECC_CONFIG.renderGlobalNav(t.pageTitle);
+            document.getElementById('head-title').innerText = `${t.pageTitle} - MECC`;
+            document.getElementById('loading-msg').innerText = t.loading;
+            document.querySelector('.input-label').innerText = t.inputLabel;
+            document.getElementById('sentence-input').placeholder = t.placeholder;
+            document.getElementById('submit-btn').innerText = t.submit;
+            document.getElementById('next-btn').innerHTML = t.next;
+            document.querySelector('.read-all-btn').innerHTML = t.readAll;
+            document.getElementById('sentences-title').innerText = t.sentencesTitle;
+            document.getElementById('empty-hint').innerText = t.emptyHint;
+            loadPictures();
+        };
+
+        // ── 从 Sanity 加载图片 ────────────────────────────────────────
+        async function loadPictures() {
+            try {
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error();
+                const { result } = await res.json();
+                allPictures = (result || []).filter(p => p.imageUrl);
+
+                if (allPictures.length === 0) {
+                    document.getElementById('loading-msg').innerText = t.empty;
+                    return;
+                }
+
+                // 随机打乱顺序
+                allPictures = allPictures.sort(() => Math.random() - 0.5);
+
+                document.getElementById('loading-msg').style.display = 'none';
+                document.getElementById('next-btn').style.display = 'flex';
+                document.getElementById('input-section').style.display = 'block';
+                document.getElementById('sentences-section').style.display = 'block';
+                showRandom();
+            } catch (e) {
+                document.getElementById('loading-msg').className = 'error-state';
+                document.getElementById('loading-msg').innerText = t.error;
+            }
+        }
+
+        // ── 显示随机图片 ──────────────────────────────────────────────
+        function showRandom() {
+            if (allPictures.length === 0) return;
+
+            // 避免连续两次同一张
+            let nextIndex;
+            if (allPictures.length === 1) {
+                nextIndex = 0;
+            } else {
+                do { nextIndex = Math.floor(Math.random() * allPictures.length); }
+                while (nextIndex === currentIndex);
+            }
+            currentIndex = nextIndex;
+
+            const pic = allPictures[currentIndex];
+            const img = document.getElementById('picture-img');
+
+            // 淡出 → 换图 → 淡入
+            img.classList.add('fade-out');
+            setTimeout(() => {
+                img.src = pic.imageUrl;
+                img.alt = pic.title || '';
+                img.style.display = 'block';
+                img.onload = () => img.classList.remove('fade-out');
+
+                // 计数器
+                const badge = document.getElementById('counter-badge');
+                badge.innerText = `${currentIndex + 1} / ${allPictures.length}`;
+                badge.style.display = 'block';
+
+                // 提示语
+                const hintBar = document.getElementById('hint-bar');
+                if (pic.hint) {
+                    hintBar.innerText = pic.hint;
+                    hintBar.style.display = 'block';
+                } else {
+                    hintBar.style.display = 'none';
+                }
+
+                // 清空输入框（保留已提交句子）
+                document.getElementById('sentence-input').value = '';
+                updateCount();
+            }, 300);
+        }
+
+        // ── 输入框字数统计 ────────────────────────────────────────────
+        function updateCount() {
+            const input = document.getElementById('sentence-input');
+            const len = input.value.trim().length;
+            document.getElementById('char-count').innerText = `${input.value.length} / 150`;
+            document.getElementById('submit-btn').disabled = len === 0;
+        }
+
+        // ── Enter 提交（Shift+Enter 换行）────────────────────────────
+        function handleKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitSentence();
+            }
+        }
+
+        // ── 提交句子 ──────────────────────────────────────────────────
+        function submitSentence() {
+            const input = document.getElementById('sentence-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            sentences.push(text);
+            renderSentences();
+
+            input.value = '';
+            updateCount();
+            input.focus();
+        }
+
+        // ── 渲染句子列表 ──────────────────────────────────────────────
+        function renderSentences() {
+            const list = document.getElementById('sentence-list');
+            const emptyHint = document.getElementById('empty-hint');
+            list.innerHTML = '';
+
+            if (sentences.length === 0) {
+                emptyHint.style.display = 'block';
+                return;
+            }
+            emptyHint.style.display = 'none';
+
+            sentences.forEach((text, i) => {
+                const item = document.createElement('div');
+                item.className = 'sentence-item font-zh';
+                item.innerHTML = `
+                    <span class="sentence-num font-en">${i + 1}.</span>
+                    <span class="sentence-text">${escapeHtml(text)}</span>
+                    <div class="sentence-actions">
+                        <button class="btn-speak" onclick="speakOne(${i})" title="朗读">🔊</button>
+                        <button class="btn-delete" onclick="deleteSentence(${i})" title="删除">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // ── 朗读单句 ──────────────────────────────────────────────────
+        function speakOne(index) {
+            if (sentences[index]) MECC_AUDIO.readText(sentences[index]);
+        }
+
+        // ── 朗读全部 ──────────────────────────────────────────────────
+        async function readAllSentences() {
+            if (sentences.length === 0) return;
+            MECC_AUDIO.stopAll();
+            for (let i = 0; i < sentences.length; i++) {
+                await speakWithDelay(sentences[i]);
+            }
+        }
+
+        function speakWithDelay(text) {
+            return new Promise(resolve => {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'zh-CN';
+                msg.rate = MECC_CONFIG.VOICE.RATE;
+                msg.pitch = MECC_CONFIG.VOICE.PITCH;
+                msg.onend = resolve;
+                msg.onerror = resolve;
+                window.speechSynthesis.speak(msg);
+            });
+        }
+
+        // ── 删除句子 ──────────────────────────────────────────────────
+        function deleteSentence(index) {
+            sentences.splice(index, 1);
+            renderSentences();
+        }
+
+        // ── 工具函数 ──────────────────────────────────────────────────
+        function escapeHtml(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+    </script>
+</body>
+</html>
