@@ -20,34 +20,55 @@
         .font-en { font-family: var(--wenkai) !important; }
 
         body {
-            background-color: #fff9ea;
+            height: 100vh;
+            overflow: hidden;
             margin: 0; padding: 0;
             padding-top: 60px;
             box-sizing: border-box;
-            min-height: 100vh;
+            background-color: #fff9ea;
             font-family: var(--kaiti);
         }
 
-        .page-wrap {
-            max-width: 860px;
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+            height: calc(100vh - 60px);
+            padding: 14px 20px;
+            box-sizing: border-box;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 20px 20px 50px;
+        }
+
+        /* 左列：图片 + 换一张按钮 */
+        .left-col {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            gap: 12px;
+            width: 55%;
+            min-width: 0;
+        }
+
+        /* 右列：输入 + 句子列表（zh模式）或留空（en模式） */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 45%;
+            min-width: 0;
+            overflow: hidden;
         }
 
         /* ── 图片区域 ── */
         .image-stage {
-            width: 100%;
+            flex: 1;
             background: white;
             border-radius: 28px;
             border: 3px solid #e2e8f0;
             box-shadow: 0 8px 24px rgba(0,0,0,0.07);
             overflow: hidden;
             position: relative;
-            min-height: 300px;
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -55,7 +76,7 @@
 
         #picture-img {
             width: 100%;
-            max-height: 55vh;
+            max-height: 100%;
             object-fit: contain;
             display: block;
             transition: opacity 0.4s ease;
@@ -110,14 +131,16 @@
             transition: background 0.2s, transform 0.15s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
+            flex-shrink: 0;
         }
         .next-btn:hover { background: #e1a328; }
         .next-btn:active { transform: scale(0.97); }
 
         /* ── 输入区域 ── */
         .input-section {
-            width: 100%;
+            flex-shrink: 0;
             background: white;
             border-radius: 22px;
             border: 3px solid #e2e8f0;
@@ -181,7 +204,9 @@
 
         /* ── 句子列表 ── */
         .sentences-section {
-            width: 100%;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
         }
 
         .sentences-title {
@@ -267,19 +292,22 @@
         .read-all-btn:hover { background: var(--main-teal); color: white; }
 
         @media (max-width: 768px) {
-            body { padding-top: 54px; }
-            .page-wrap { padding: 14px 12px 40px; gap: 14px; }
-            #picture-img { max-height: 42vh; }
+            body { padding-top: 54px; overflow: auto; height: auto; }
+            .main-layout { flex-direction: column; height: auto; overflow: visible; padding: 12px; }
+            .left-col, .right-col { width: 100%; }
+            #picture-img { max-height: 45vh; }
             .next-btn { font-size: 1.1rem; padding: 12px 30px; }
             .sentence-input { font-size: 1.05rem; }
             .sentence-item { font-size: 1rem; }
+            .sentences-section { flex: none; overflow-y: visible; }
         }
     </style>
 </head>
 <body class="fade-in">
 
-    <div class="page-wrap">
+    <div class="main-layout">
 
+      <div class="left-col">
         <!-- 图片展示区 -->
         <div class="image-stage" id="image-stage">
             <div class="loading-state font-en" id="loading-msg">加载中…</div>
@@ -292,7 +320,9 @@
         <button class="next-btn font-zh" id="next-btn" onclick="showRandom()" style="display:none;">
             🎲 换一张
         </button>
+      </div>
 
+      <div class="right-col" id="right-col">
         <!-- 输入区域 -->
         <div class="input-section" id="input-section" style="display:none;">
             <span class="input-label font-zh">✏️ 看图写句子，你看到了什么？</span>
@@ -319,6 +349,7 @@
             <div class="sentence-list" id="sentence-list"></div>
             <div class="empty-hint font-en" id="empty-hint">还没有句子，来写第一句吧！</div>
         </div>
+      </div>
 
     </div>
 
@@ -332,7 +363,7 @@
         const LANG = MECC_CONFIG.getLang();
         const t = {
             zh: {
-                pageTitle: '🖼️ 看图说话',
+                pageTitle: '看图说话',
                 loading: '加载中…',
                 error: '无法加载图片，请刷新重试。',
                 empty: '暂时没有图片，请稍后再来。',
@@ -345,7 +376,7 @@
                 emptyHint: '还没有句子，来写第一句吧！',
             },
             en: {
-                pageTitle: '🖼️ Picture Talk',
+                pageTitle: 'Picture Talk',
                 loading: 'Loading…',
                 error: 'Failed to load images. Please refresh.',
                 empty: 'No pictures available yet.',
@@ -368,6 +399,10 @@
         // ── 初始化 ────────────────────────────────────────────────────
         window.onload = () => {
             MECC_CONFIG.renderGlobalNav(t.pageTitle);
+            const navTitle = document.querySelector('.mecc-nav-title');
+            if (navTitle) {
+                navTitle.innerHTML = `<svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:26px;vertical-align:middle;margin-right:7px;flex-shrink:0;" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="15" rx="2.5" stroke-width="2"/><circle cx="7.5" cy="8" r="1.8" stroke-width="1.8"/><polyline points="2,16 7,10.5 12,14 16,11 22,16" stroke-width="1.8"/><path d="M21 13 Q31 13 31 20 Q31 27 21 27 L18 29.5 L18 27 Q11 27 11 20 Q11 13 21 13Z" stroke-width="1.8" fill="none"/><circle cx="19" cy="20" r="1.2" fill="currentColor" stroke="none"/><circle cx="23" cy="20" r="1.2" fill="currentColor" stroke="none"/><circle cx="27" cy="20" r="1.2" fill="currentColor" stroke="none"/></svg>${t.pageTitle}`;
+            }
             document.getElementById('head-title').innerText = `${t.pageTitle} - MECC`;
             document.getElementById('loading-msg').innerText = t.loading;
             document.querySelector('.input-label').innerText = t.inputLabel;
@@ -398,8 +433,10 @@
 
                 document.getElementById('loading-msg').style.display = 'none';
                 document.getElementById('next-btn').style.display = 'flex';
-                document.getElementById('input-section').style.display = 'block';
-                document.getElementById('sentences-section').style.display = 'block';
+                if (LANG === 'zh') {
+                    document.getElementById('input-section').style.display = 'block';
+                    document.getElementById('sentences-section').style.display = 'block';
+                }
                 showRandom();
             } catch (e) {
                 document.getElementById('loading-msg').className = 'error-state';
