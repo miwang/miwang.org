@@ -39,10 +39,7 @@
     }
     .nav-btn:hover:not(:disabled){ transform:scale(1.1); background:var(--hof-gold); color:#153026; }
     .nav-btn:disabled{ background:#ccc; cursor:default; }
-    .month-label{
-      min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green);
-      /* 不加 font-zh，让内部 span 各自控制字体 */
-    }
+    .month-label{ min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green); }
 
     /* ── 图例条 ── */
     .legend-bar{
@@ -58,76 +55,116 @@
     .badge-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
-      gap:30px 22px; justify-items:center; align-items:start;
+      gap:40px 22px; justify-items:center; align-items:start;
     }
+
+    /* ── 单个徽章容器 ── */
     .badge-item{
-      width:100%; max-width:320px; display:flex; flex-direction:column; align-items:center;
-      animation:fadeUp .35s ease both;
+      position:relative;
+      width:100%; max-width:320px;
+      display:flex; flex-direction:column; align-items:center;
+      animation: dropIn .55s cubic-bezier(.34,1.56,.64,1) both;
     }
-    @keyframes fadeUp{ from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+    .badge-item:nth-child(1){ animation-delay:.05s; }
+    .badge-item:nth-child(2){ animation-delay:.12s; }
+    .badge-item:nth-child(3){ animation-delay:.19s; }
+    .badge-item:nth-child(4){ animation-delay:.26s; }
+    .badge-item:nth-child(5){ animation-delay:.33s; }
+    .badge-item:nth-child(6){ animation-delay:.40s; }
+    .badge-item:nth-child(n+7){ animation-delay:.47s; }
+
+    @keyframes dropIn{
+      from{ opacity:0; transform:translateY(-40px) scale(.8); }
+      to{   opacity:1; transform:translateY(0)     scale(1);  }
+    }
+
+    /* ── 闪光星星 ── */
+    .sparkle{
+      position:absolute; pointer-events:none; z-index:10;
+      opacity:0; animation: sparkleAnim 2.4s ease-in-out infinite;
+    }
+    .sparkle-1{ top:2%;    left:4%;   animation-delay:0s;    }
+    .sparkle-2{ top:2%;    right:4%;  animation-delay:.6s;   }
+    .sparkle-3{ bottom:18%; left:2%;  animation-delay:1.2s;  }
+    .sparkle-4{ bottom:18%; right:2%; animation-delay:1.8s;  }
+
+    @keyframes sparkleAnim{
+      0%,100%{ opacity:0;  transform:scale(.4) rotate(0deg);   }
+      40%    { opacity:1;  transform:scale(1)  rotate(20deg);  }
+      60%    { opacity:.8; transform:scale(.8) rotate(-10deg); }
+    }
 
     /* ── 勋章卡片 ── */
     .medal-card{
       position:relative; width:300px; aspect-ratio:1/1;
       line-height:0; overflow:visible; isolation:isolate;
-      filter:drop-shadow(0 8px 10px rgba(0,0,0,.12)); transition:transform .25s ease;
+      filter:drop-shadow(0 8px 16px rgba(0,0,0,.15));
+      animation: float 3.6s ease-in-out infinite;
+      transition: filter .25s ease;
+      cursor:pointer;
     }
-    .medal-card:hover{ transform:translateY(-4px) scale(1.02); }
+    .badge-item:nth-child(odd)  .medal-card{ animation-duration:3.2s; }
+    .badge-item:nth-child(3n)   .medal-card{ animation-duration:4.1s; }
+
+    @keyframes float{
+      0%,100%{ transform:translateY(0);    }
+      50%     { transform:translateY(-8px); }
+    }
+
+    .medal-card:hover{
+      filter:drop-shadow(0 14px 28px rgba(201,162,39,.45));
+      animation-play-state:paused;
+      transform:scale(1.06) rotate(-1deg);
+      transition:transform .2s cubic-bezier(.34,1.56,.64,1), filter .2s;
+    }
 
     .medal-base{
       position:absolute; inset:0; width:100%; height:100%;
       display:block; object-fit:contain; user-select:none; pointer-events:none; z-index:1;
     }
 
+    /* ── 叠层文字，全部不内联 font-family，由 font-zh/font-en class 控制 ── */
     .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year{
       position:absolute; z-index:4; pointer-events:none;
     }
 
     .ov-photo{
-      left:50%; top:42.5%;
-      width:78px; height:78px;
+      left:50%; top:42.5%; width:78px; height:78px;
       transform:translate(-50%,-50%);
       border-radius:50%; object-fit:cover;
     }
 
     .ov-name{
       left:50%; top:60.5%; transform:translateX(-50%);
-      font-size:17px; font-weight:700; letter-spacing:1px; color:#A8761F; white-space:nowrap;
-      text-shadow:0 1px 0 rgba(255,255,255,0.35);
-      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif; line-height:1;
+      font-size:17px; font-weight:700; letter-spacing:1px;
+      color:#A8761F; white-space:nowrap;
+      text-shadow:0 1px 0 rgba(255,255,255,.35); line-height:1;
     }
 
     .ov-award{
       left:50%; top:72.5%; transform:translateX(-50%);
       font-size:12px; font-weight:800; color:#fff; white-space:nowrap;
-      text-shadow:0 1px 1px rgba(0,0,0,.35);
-      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif; line-height:1;
-      text-align:center;
+      text-shadow:0 1px 1px rgba(0,0,0,.35); line-height:1; text-align:center;
     }
 
     .ov-en{
       left:50%; top:77.5%; transform:translateX(-50%);
       font-size:8.4px; font-weight:800; color:#FFE8AA;
-      font-family:"LXGW WenKai Lite",system-ui,sans-serif;
       text-transform:uppercase; line-height:1.1; letter-spacing:.1px;
       text-align:center; width:60%; white-space:normal;
     }
 
     .ov-year{
-      left: 59%;
-      top:17.0%;
-      font-size:18px;
-      font-weight:900;
-      line-height:1.05;
-      color:var(--mecc-color);
-      text-align:left;
-      font-family:"LXGW WenKai Lite","Arial Black","Arial Bold",Arial,sans-serif;
-      letter-spacing:0;
-      white-space:normal;
+      left:59%; top:17.0%;
+      font-size:17px; font-weight:900; line-height:1.05;
+      color:var(--mecc-color); text-align:left;
+      font-family:"Arial Black","Arial Bold",Arial,sans-serif;
+      letter-spacing:0; white-space:normal;
     }
     .ov-year .y-top,
     .ov-year .y-bottom{ display:block; }
 
+    /* ── 状态框 ── */
     .state-box{ grid-column:1/-1; text-align:center; padding:60px 20px; color:#888; }
     .state-icon{ font-size:3rem; margin-bottom:8px; }
     .spinner{
@@ -136,47 +173,68 @@
     }
     @keyframes spin{ to{ transform:rotate(360deg);} }
 
+    /* ── 响应式 ── */
     @media (max-width:768px){
       body{ padding-top:54px; }
       .month-nav{ top:54px; }
-      .badge-grid{ grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:20px 10px; }
+      .badge-grid{ grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:28px 10px; }
       .medal-card{ width:210px; }
-
       .ov-photo{ width:54px; height:54px; top:42.5%; }
       .ov-name{ font-size:13px; top:60.5%; }
       .ov-award{ font-size:10px; top:72.5%; }
       .ov-en{ font-size:7px; top:77.4%; width:64%; }
-      .ov-year{ font-size:15px; top:17.0%; left:59%; }
+      .ov-year{ font-size:14px; top:17.0%; left:59%; }
+      .sparkle svg{ width:14px; height:14px; }
     }
   </style>
 </head>
 <body>
-  <nav class="mecc-global-nav">
-    <a href="../index.html" class="mecc-nav-back en" aria-label="Back Home">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
-      </svg>
-      <span>Home</span>
-    </a>
-    <h1 class="mecc-nav-title">
-      <svg width="26" height="26" viewBox="0 0 28 28" fill="none"
-           stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-           style="vertical-align:middle;margin-right:6px;flex-shrink:0;display:inline-block">
-        <polyline points="2,10 14,3 26,10"/>
-        <line x1="2"  y1="10" x2="26" y2="10"/>
-        <line x1="5"  y1="11" x2="5"  y2="23"/>
-        <line x1="11" y1="11" x2="11" y2="23"/>
-        <line x1="17" y1="11" x2="17" y2="23"/>
-        <line x1="23" y1="11" x2="23" y2="23"/>
-        <line x1="2"  y1="23" x2="26" y2="23"/>
-        <line x1="1"  y1="26" x2="27" y2="26"/>
-      </svg><span class="font-zh">荣誉殿堂</span>&nbsp;<span class="font-en">Hall of Fame</span>
-    </h1>
-  </nav>
+
+  <!-- ── 导航栏：语言自动判断，手绘风格 SVG 图标 ── -->
+  <script>
+    (function(){
+      var lang     = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
+      var backHref = lang === 'en' ? '../parents.html' : '../teachers.html';
+      var backText = lang === 'en' ? 'Home' : '返回';
+
+      /* 标题：中英文各自用对应 span，字体由 CSS 覆盖 */
+      var titleInner = lang === 'en'
+        ? '<span class="font-en">Hall of Fame</span>'
+        : '<span class="font-zh">荣誉殿堂</span>&nbsp;<span class="font-en">Hall of Fame</span>';
+
+      /* 手绘风格奖杯 SVG */
+      var iconSvg =
+        '<svg width="26" height="26" viewBox="0 0 48 48" fill="none" ' +
+            'stroke="#FFE8AA" stroke-linecap="round" stroke-linejoin="round" ' +
+            'aria-hidden="true" style="flex-shrink:0;margin-right:4px;vertical-align:middle;">' +
+          '<path d="M16 6 C14 8 13 14 14 20 C15 26 19 30 24 31 C29 30 33 26 34 20 C35 14 34 8 32 6 Z" stroke-width="2.2"/>' +
+          '<line x1="24" y1="31" x2="24" y2="38" stroke-width="2.2"/>' +
+          '<path d="M17 38 Q24 40 31 38" stroke-width="2.4"/>' +
+          '<path d="M16 10 C10 10 8 14 8 18 C8 22 11 24 15 23" stroke-width="2"/>' +
+          '<path d="M32 10 C38 10 40 14 40 18 C40 22 37 24 33 23" stroke-width="2"/>' +
+          '<path d="M24 12 L25 15 L28 15 L26 17 L27 20 L24 18 L21 20 L22 17 L20 15 L23 15 Z" stroke-width="1.4"/>' +
+          '<path d="M19 27 Q21 28 24 27.5 Q27 27 29 27" stroke-width="1.6"/>' +
+        '</svg>';
+
+      document.write(
+        '<nav class="mecc-global-nav">' +
+          '<a href="' + backHref + '" class="mecc-nav-back' + (lang==='en' ? ' en' : '') + '" aria-label="' + backText + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:24px;height:24px;flex-shrink:0;">' +
+              '<path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+            '<span>' + backText + '</span>' +
+          '</a>' +
+          '<h1 class="mecc-nav-title" style="display:flex;align-items:center;gap:2px;">' +
+            iconSvg + titleInner +
+          '</h1>' +
+        '</nav>'
+      );
+    })();
+  </script>
 
   <nav class="month-nav">
     <button class="nav-btn" id="prevBtn" aria-label="上一月" onclick="changeMonth(-1)">◀</button>
-    <div class="month-label" id="monthLabel"><span class="font-zh">加载中…</span></div>
+    <div class="month-label font-zh" id="monthLabel">加载中…</div>
     <button class="nav-btn" id="nextBtn" aria-label="下一月" onclick="changeMonth(1)">▶</button>
   </nav>
 
@@ -190,7 +248,7 @@
     <div class="badge-grid" id="badgeGrid">
       <div class="state-box">
         <div class="spinner"></div>
-        <p><span class="font-zh">正在加载本月荣誉榜…</span></p>
+        <p class="font-zh">正在加载荣誉榜…</p>
       </div>
     </div>
   </main>
@@ -199,37 +257,68 @@
     var DEFAULT_BADGE_BASE = './assets/medal_base.svg';
 
     var awardTextMap = {
-      chinese_words: { zh: '四会字大师奖', enTop: 'BEST AWARD OF', enBottom: 'CHINESE SIGHT WORDS' },
-      mathematics:   { zh: '数学大师奖',   enTop: 'BEST AWARD OF', enBottom: 'MATHEMATICS' },
-      progression:   { zh: '最佳进步奖',   enTop: 'BEST AWARD OF', enBottom: 'PROGRESSION' }
+      chinese_words: { zh:'四会字大师奖', enTop:'BEST AWARD OF', enBottom:'CHINESE SIGHT WORDS' },
+      mathematics:   { zh:'数学大师奖',   enTop:'BEST AWARD OF', enBottom:'MATHEMATICS' },
+      progression:   { zh:'最佳进步奖',   enTop:'BEST AWARD OF', enBottom:'PROGRESSION' }
     };
 
-    var _init = new Date();
-    var viewYear = _init.getFullYear();
-    var viewMonth = _init.getMonth() + 1;
+    var LANG = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
+
+    /* ── 默认显示上个月 ── */
+    var _now = new Date();
+    var viewYear  = _now.getFullYear();
+    var viewMonth = _now.getMonth();   /* 0-11 正好等于上月 1-12 */
+    if(viewMonth < 1){ viewMonth = 12; viewYear--; }
+
+    var MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function fmtMonth(yr, mm){
+      return LANG === 'en'
+        ? MONTHS_EN[parseInt(mm,10)-1] + ' ' + yr
+        : yr + '年 ' + mm + '月';
+    }
+
+    var UI = {
+      loading  : LANG==='en' ? 'Loading…'             : '正在加载荣誉榜…',
+      empty    : LANG==='en' ? 'Coming Soon 🌟'       : '敬请期待 🌟',
+      emptySub : LANG==='en' ? 'Check back next month!': '本月榜单即将揭晓，敬请期待！',
+      fail     : LANG==='en' ? 'Failed to load.'      : '数据加载失败'
+    };
+
+    /* 手绘星星 SVG */
+    function sparkleSvg(size){
+      var s = size || 18;
+      return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="#FFD700" ' +
+             'stroke="#FFA500" stroke-width="1" stroke-linecap="round">' +
+             '<path d="M12 2 L13.5 9 L20 8 L15 13 L17 20 L12 16 L7 20 L9 13 L4 8 L10.5 9 Z"/>' +
+             '</svg>';
+    }
+    function sparkleHtml(){
+      return '<span class="sparkle sparkle-1">' + sparkleSvg(16) + '</span>' +
+             '<span class="sparkle sparkle-2">' + sparkleSvg(12) + '</span>' +
+             '<span class="sparkle sparkle-3">' + sparkleSvg(14) + '</span>' +
+             '<span class="sparkle sparkle-4">' + sparkleSvg(10) + '</span>';
+    }
 
     function escapeHtml(str){
-      if(str == null) return '';
+      if(str==null) return '';
       return String(str)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
         .replace(/'/g,'&#39;');
     }
 
     function updateNavBtn(){
       var today = new Date();
-      var nextBtn = document.getElementById('nextBtn');
-      nextBtn.disabled =
-        viewYear > today.getFullYear() ||
-        (viewYear === today.getFullYear() && viewMonth >= today.getMonth() + 1);
+      var cy = today.getFullYear(), cm = today.getMonth()+1;
+      var py = cm===1 ? cy-1 : cy,  pm = cm===1 ? 12 : cm-1;
+      document.getElementById('nextBtn').disabled =
+        viewYear > py || (viewYear===py && viewMonth>=pm);
     }
 
     function changeMonth(delta){
       viewMonth += delta;
-      if(viewMonth < 1){ viewMonth = 12; viewYear--; }
-      if(viewMonth > 12){ viewMonth = 1; viewYear++; }
+      if(viewMonth < 1){ viewMonth=12; viewYear--; }
+      if(viewMonth > 12){ viewMonth=1; viewYear++; }
       updateNavBtn();
       loadData();
     }
@@ -237,68 +326,63 @@
     function yearTwoLinesHtml(yearNum){
       var y = String(yearNum);
       if(y.length < 4) return '<span class="y-top">' + escapeHtml(y) + '</span>';
-      return '<span class="y-top">' + escapeHtml(y.slice(0,2)) + '</span>'
-           + '<span class="y-bottom">' + escapeHtml(y.slice(2)) + '</span>';
+      return '<span class="y-top">'    + escapeHtml(y.slice(0,2)) + '</span>' +
+             '<span class="y-bottom">' + escapeHtml(y.slice(2))   + '</span>';
     }
 
     function renderBadge(s, yr){
-      var name     = escapeHtml(s.studentName || '—');
-      var awardCfg = awardTextMap[s.awardType] || awardTextMap.chinese_words;
-      var awardZh  = escapeHtml(awardCfg.zh);
+      var name        = escapeHtml(s.studentName || '—');
+      var awardCfg    = awardTextMap[s.awardType] || awardTextMap.chinese_words;
+      var awardZh     = escapeHtml(awardCfg.zh);
       var awardEnHtml = escapeHtml(awardCfg.enTop) + '<br>' + escapeHtml(awardCfg.enBottom);
-      var photoUrl = escapeHtml(s.photoUrl || '');
-      var baseUrl  = escapeHtml(s.badgeBaseUrl || DEFAULT_BADGE_BASE);
-      var showYear = s.showYear !== false;
-      var yearHtml = yearTwoLinesHtml(yr);
+      var photoUrl    = escapeHtml(s.photoUrl || '');
+      var baseUrl     = escapeHtml(s.badgeBaseUrl || DEFAULT_BADGE_BASE);
+      var showYear    = s.showYear !== false;
+      var yearHtml    = yearTwoLinesHtml(yr);
 
-      var html = '';
-      html += '<div class="badge-item"><div class="medal-card">';
-      html += '<img class="medal-base" src="' + baseUrl + '" alt="medal base" loading="lazy" />';
+      var h = '';
+      h += '<div class="badge-item">';
+      h += sparkleHtml();
+      h += '<div class="medal-card">';
+      h += '<img class="medal-base" src="' + baseUrl + '" alt="medal" loading="lazy" />';
       if(photoUrl){
-        html += '<img class="ov-photo" src="' + photoUrl + '" alt="' + name + '" loading="lazy" />';
+        h += '<img class="ov-photo" src="' + photoUrl + '" alt="' + name + '" loading="lazy" />';
       }
-      html += '<div class="ov-name">'          + name        + '</div>';
-      html += '<div class="ov-award font-zh">' + awardZh     + '</div>';
-      html += '<div class="ov-en">'            + awardEnHtml + '</div>';
+      /* font-zh / font-en class 由 style.css 的 !important 规则控制字体 */
+      h += '<div class="ov-name font-zh">'  + name        + '</div>';
+      h += '<div class="ov-award font-zh">' + awardZh     + '</div>';
+      h += '<div class="ov-en font-en">'    + awardEnHtml + '</div>';
       if(showYear){
-        html += '<div class="ov-year">' + yearHtml + '</div>';
+        h += '<div class="ov-year">' + yearHtml + '</div>';
       }
-      html += '</div></div>';
-      return html;
-    }
-
-    function setMonthLabel(yr, mm){
-      var mmStr = String(mm).padStart(2, '0');
-      // 数字年份用 font-en（LXGW），中文字符用 font-zh（楷体）
-      document.getElementById('monthLabel').innerHTML =
-        '<span class="font-en">' + yr + '</span>'
-        + '<span class="font-zh">年&nbsp;</span>'
-        + '<span class="font-en">' + mmStr + '</span>'
-        + '<span class="font-zh">月</span>';
+      h += '</div>';  /* medal-card */
+      h += '</div>';  /* badge-item */
+      return h;
     }
 
     function loadData(){
       var grid = document.getElementById('badgeGrid');
-      var mm = String(viewMonth).padStart(2, '0');
-      setMonthLabel(viewYear, viewMonth);
-      grid.innerHTML = '<div class="state-box"><div class="spinner"></div><p><span class="font-zh">正在加载…</span></p></div>';
+      var mm   = String(viewMonth).padStart(2,'0');
+      document.getElementById('monthLabel').textContent = fmtMonth(viewYear, mm);
+      grid.innerHTML =
+        '<div class="state-box"><div class="spinner"></div>' +
+        '<p class="font-zh">' + UI.loading + '</p></div>';
 
       var ym    = viewYear + '-' + mm;
-      var query = '*[_type == "hallOfFame" && string::startsWith(awardMonth, "' + ym + '")] | order(_createdAt desc){ "studentName": studentRef->name, awardType, badgeBaseUrl, showYear, "photoUrl": studentRef->avatar.asset->url }';
+      var query = '*[_type=="hallOfFame" && string::startsWith(awardMonth,"' + ym + '")] | order(_createdAt desc){ "studentName":studentRef->name, awardType, badgeBaseUrl, showYear, "photoUrl":studentRef->avatar.asset->url }';
       var url   = 'https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=' + encodeURIComponent(query);
 
       fetch(url)
-        .then(function(r){
-          if(!r.ok) throw new Error('HTTP ' + r.status);
-          return r.json();
-        })
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
         .then(function(data){
           var list = Array.isArray(data.result) ? data.result : [];
           if(!list.length){
             grid.innerHTML =
-              '<div class="state-box"><div class="state-icon">📅</div>' +
-              '<h3 class="font-zh">' + escapeHtml(String(viewYear)) + '年' + mm + '月暂无上榜学生</h3>' +
-              '<p class="font-zh">去 Sanity 后台添加本月荣誉记录吧！</p></div>';
+              '<div class="state-box">' +
+                '<div class="state-icon">🌟</div>' +
+                '<h3 class="font-zh">' + UI.empty    + '</h3>' +
+                '<p  class="font-zh">' + UI.emptySub + '</p>'  +
+              '</div>';
             return;
           }
           grid.innerHTML = list.map(function(item){ return renderBadge(item, viewYear); }).join('');
@@ -306,9 +390,11 @@
         .catch(function(e){
           console.error(e);
           grid.innerHTML =
-            '<div class="state-box"><div class="state-icon">❌</div>' +
-            '<h3 class="font-zh">数据加载失败</h3>' +
-            '<p>' + escapeHtml(e && e.message ? e.message : '未知错误') + '</p></div>';
+            '<div class="state-box">' +
+              '<div class="state-icon">❌</div>' +
+              '<h3 class="font-zh">' + UI.fail + '</h3>' +
+              '<p>' + escapeHtml(e && e.message ? e.message : '未知错误') + '</p>' +
+            '</div>';
         });
     }
 
