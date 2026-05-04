@@ -18,13 +18,9 @@
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--hof-bg); min-height:100vh; color:#1a2740; padding-top:60px; }
 
-    /* ── 强制导航标题内 span 字体 ── */
-    .mecc-nav-title .font-en{
-      font-family:"LXGW WenKai Lite",system-ui,sans-serif !important;
-    }
-    .mecc-nav-title .font-zh{
-      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important;
-    }
+    /* 强制导航标题内 span 字体 */
+    .mecc-nav-title .font-en{ font-family:"LXGW WenKai Lite",system-ui,sans-serif !important; }
+    .mecc-nav-title .font-zh{ font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important; }
 
     /* ── 月份导航 ── */
     .month-nav{
@@ -39,11 +35,7 @@
     }
     .nav-btn:hover:not(:disabled){ transform:scale(1.1); background:var(--hof-gold); color:#153026; }
     .nav-btn:disabled{ background:#ccc; cursor:default; }
-    /* 月份容器不设字体，由 JS inline style 精确控制每段 */
-    .month-label{
-      min-width:170px; text-align:center; font-size:1.2rem;
-      font-weight:700; color:var(--hof-green);
-    }
+    .month-label{ min-width:170px; text-align:center; font-size:1.2rem; font-weight:700; color:var(--hof-green); }
 
     /* ── 图例条 ── */
     .legend-bar{
@@ -96,11 +88,10 @@
       60%    { opacity:.8; transform:scale(.8) rotate(-10deg); }
     }
 
-    /* ── 勋章卡片：无 ::before/::after，保证 SVG 内容（含 MECC）完整可见 ── */
+    /* ── 勋章卡片 ── */
     .medal-card{
       position:relative; width:300px; aspect-ratio:1/1;
       line-height:0; overflow:visible;
-      /* 不用 isolation:isolate，避免合成层干扰 SVG 内嵌文字 */
       filter:drop-shadow(0 6px 14px rgba(0,0,0,.14));
       animation: float 3.6s ease-in-out infinite;
       transition: filter .28s ease, transform .28s cubic-bezier(.34,1.56,.64,1);
@@ -108,15 +99,12 @@
       transform-origin:center bottom;
     }
     .badge-item:nth-child(odd) .medal-card{ animation-duration:3.2s; }
-    .badge-item:nth-child(3n) .medal-card{ animation-duration:4.1s; }
-
+    .badge-item:nth-child(3n)  .medal-card{ animation-duration:4.1s; }
     @keyframes float{
-      0%,100%{ transform:translateY(0)     rotate(0deg);   }
-      30%    { transform:translateY(-7px)  rotate(.6deg);  }
-      70%    { transform:translateY(-5px)  rotate(-.5deg); }
+      0%,100%{ transform:translateY(0)    rotate(0deg);   }
+      30%    { transform:translateY(-7px) rotate(.6deg);  }
+      70%    { transform:translateY(-5px) rotate(-.5deg); }
     }
-
-    /* 悬停：金光 drop-shadow + 放大上浮 + 倾斜，浮动暂停 */
     .medal-card:hover{
       animation-play-state:paused;
       transform:scale(1.08) translateY(-6px) rotate(-1deg);
@@ -131,8 +119,8 @@
       display:block; object-fit:contain; user-select:none; pointer-events:none; z-index:1;
     }
 
-    /* ── 叠层文字 ── */
-    .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year{
+    /* ── 叠层文字（公共） ── */
+    .ov-photo,.ov-name,.ov-award,.ov-en,.ov-year,.ov-mecc{
       position:absolute; z-index:4; pointer-events:none;
     }
 
@@ -168,18 +156,32 @@
       text-align:center; width:60%; white-space:normal;
     }
 
-    /* 年份：明确 Arial Black，绝不楷体 */
-    .ov-year{
-      left:59%; top:17.0%;
+    /*
+     * 年份 & MECC：两者字体、字重、颜色完全一致，左右镜像。
+     * SVG 通过 <img> 加载时浏览器沙箱阻止外部字体，
+     * 所以 MECC 必须用 HTML overlay 渲染，不能依赖 SVG 内部 <text>。
+     */
+    .ov-year,
+    .ov-mecc{
       font-size:17px; font-weight:900; line-height:1.05;
-      color:var(--mecc-color); text-align:left;
+      color:var(--mecc-color);
+      /* inline style 优先级最高，这里仍保留作为默认 */
       font-family:"Arial Black","Arial Bold",Arial,Helvetica,sans-serif !important;
       letter-spacing:0; white-space:normal;
     }
-    .ov-year .y-top,
-    .ov-year .y-bottom{
+    .ov-year .y-top, .ov-year .y-bottom,
+    .ov-mecc .m-top, .ov-mecc .m-bottom{
       display:block;
       font-family:"Arial Black","Arial Bold",Arial,Helvetica,sans-serif !important;
+    }
+
+    /* 年份：托杯右侧 */
+    .ov-year{
+      left:59%; top:16.5%; text-align:left;
+    }
+    /* MECC：托杯左侧，与年份对称 */
+    .ov-mecc{
+      right:60%; top:16.5%; text-align:right;
     }
 
     /* ── 状态框 ── */
@@ -201,7 +203,8 @@
       .ov-name{ font-size:13px; top:60.5%; }
       .ov-award{ font-size:10px; top:72.5%; }
       .ov-en{ font-size:7px; top:77.4%; width:64%; }
-      .ov-year{ font-size:14px; top:17.0%; left:59%; }
+      .ov-year{ font-size:14px; top:16.5%; left:59%; }
+      .ov-mecc{ font-size:14px; top:16.5%; right:60%; }
       .sparkle svg{ width:14px; height:14px; }
     }
   </style>
@@ -214,7 +217,7 @@
       var lang     = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
       /* zh → 教师工具台；en → 家长页 */
       var backHref = lang === 'en' ? '../parents.html'  : '../teachers.html';
-      var backText = lang === 'en' ? 'Home'             : '返回工具台';
+      var backText = lang === 'en' ? 'Back to Parents Portal' : '返回工具台';
 
       var titleInner = lang === 'en'
         ? '<span class="font-en">Hall of Fame</span>'
@@ -266,30 +269,27 @@
 
     var LANG = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
 
-    /* ── 默认显示上个月 ── */
+    /* 默认显示上个月 */
     var _now = new Date();
     var viewYear  = _now.getFullYear();
-    var viewMonth = _now.getMonth();   /* 0-11 → 上月（1-12） */
+    var viewMonth = _now.getMonth();   /* getMonth() 返回 0-11，刚好等于上月的 1-12 */
     if(viewMonth < 1){ viewMonth = 12; viewYear--; }
 
     var MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    /* ──────────────────────────────────────────────────────────────
-       月份标签：数字用 inline style 强制 Arial，汉字用 STKaiti
-       这样完全绕开 CSS 级联，无论外部 !important 怎么设都不影响。
-    ────────────────────────────────────────────────────────────── */
-    var NUM_STYLE  = 'font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;font-weight:700;';
-    var KAITI_STYLE = 'font-family:"STKaiti","Kaiti SC","KaiTi",楷体,"LXGW WenKai Lite",serif;font-weight:700;';
+    /* 月份标签：数字用 inline Arial，汉字用 inline STKaiti，绕过所有 CSS 级联 */
+    var NUM_S   = 'font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;font-weight:700;';
+    var KAITI_S = 'font-family:"STKaiti","Kaiti SC","KaiTi",楷体,"LXGW WenKai Lite",serif;font-weight:700;';
 
     function monthLabelHtml(yr, mm){
       var mmInt = parseInt(mm, 10);
       if(LANG === 'en'){
-        return '<span style="' + NUM_STYLE + '">' + MONTHS_EN[mmInt-1] + '\u00a0' + yr + '</span>';
+        return '<span style="' + NUM_S + '">' + MONTHS_EN[mmInt-1] + '\u00a0' + yr + '</span>';
       }
-      return '<span style="' + NUM_STYLE  + '">' + yr   + '</span>' +
-             '<span style="' + KAITI_STYLE + '">年\u2002</span>' +
-             '<span style="' + NUM_STYLE  + '">' + mm   + '</span>' +
-             '<span style="' + KAITI_STYLE + '">月</span>';
+      return '<span style="' + NUM_S   + '">' + yr + '</span>' +
+             '<span style="' + KAITI_S + '">年\u2002</span>' +
+             '<span style="' + NUM_S   + '">' + mm + '</span>' +
+             '<span style="' + KAITI_S + '">月</span>';
     }
 
     var UI = {
@@ -299,29 +299,7 @@
       fail     : LANG==='en' ? 'Failed to load.'        : '数据加载失败'
     };
 
-    /* ── 闪光星星 ── */
-    function sparkleSvg(size){
-      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" ' +
-             'fill="#FFD700" stroke="#FFA500" stroke-width="1" stroke-linecap="round">' +
-             '<path d="M12 2 L13.5 9 L20 8 L15 13 L17 20 L12 16 L7 20 L9 13 L4 8 L10.5 9 Z"/>' +
-             '</svg>';
-    }
-    function sparkleHtml(){
-      return '<span class="sparkle sparkle-1">' + sparkleSvg(16) + '</span>' +
-             '<span class="sparkle sparkle-2">' + sparkleSvg(12) + '</span>' +
-             '<span class="sparkle sparkle-3">' + sparkleSvg(14) + '</span>' +
-             '<span class="sparkle sparkle-4">' + sparkleSvg(10) + '</span>';
-    }
-
-    function escapeHtml(str){
-      if(str==null) return '';
-      return String(str)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-        .replace(/'/g,'&#39;');
-    }
-
-    /* ── "下一步"按钮：不能超过上个月 ── */
+    /* 不能超过上个月 */
     function updateNavBtn(){
       var today = new Date();
       var cy = today.getFullYear(), cm = today.getMonth()+1;
@@ -338,12 +316,34 @@
       loadData();
     }
 
-    /* 年份分两行，字体由 CSS .ov-year !important 控制（Arial Black） */
+    function escapeHtml(str){
+      if(str==null) return '';
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    /* 年份：两行 span，字体靠 CSS .ov-year !important 保证 */
     function yearTwoLinesHtml(yearNum){
       var y = String(yearNum);
       if(y.length < 4) return '<span class="y-top">' + escapeHtml(y) + '</span>';
       return '<span class="y-top">'    + escapeHtml(y.slice(0,2)) + '</span>' +
              '<span class="y-bottom">' + escapeHtml(y.slice(2))   + '</span>';
+    }
+
+    /* 闪光星星 */
+    function sparkleSvg(size){
+      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" ' +
+             'fill="#FFD700" stroke="#FFA500" stroke-width="1" stroke-linecap="round">' +
+             '<path d="M12 2 L13.5 9 L20 8 L15 13 L17 20 L12 16 L7 20 L9 13 L4 8 L10.5 9 Z"/>' +
+             '</svg>';
+    }
+    function sparkleHtml(){
+      return '<span class="sparkle sparkle-1">' + sparkleSvg(16) + '</span>' +
+             '<span class="sparkle sparkle-2">' + sparkleSvg(12) + '</span>' +
+             '<span class="sparkle sparkle-3">' + sparkleSvg(14) + '</span>' +
+             '<span class="sparkle sparkle-4">' + sparkleSvg(10) + '</span>';
     }
 
     function renderBadge(s, yr){
@@ -356,11 +356,21 @@
       var showYear    = s.showYear !== false;
       var yearHtml    = yearTwoLinesHtml(yr);
 
+      /* Arial Black inline style，绝对绕开所有 CSS 级联 */
+      var arialStyle = 'style="font-family:\'Arial Black\',\'Arial Bold\',Arial,Helvetica,sans-serif !important;"';
+
       var h = '';
       h += '<div class="badge-item">';
       h += sparkleHtml();
       h += '<div class="medal-card">';
       h += '<img class="medal-base" src="' + baseUrl + '" alt="medal" loading="lazy" />';
+
+      /* ── MECC 叠层：HTML overlay 替代 SVG 内部字体（<img> 沙箱不加载外部字体） ── */
+      h += '<div class="ov-mecc">' +
+             '<span class="m-top">ME</span>' +
+             '<span class="m-bottom">CC</span>' +
+           '</div>';
+
       if(photoUrl){
         h += '<img class="ov-photo" src="' + photoUrl + '" alt="' + name + '" loading="lazy" />';
       }
