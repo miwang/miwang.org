@@ -84,6 +84,7 @@
         }
 
         .shadow-text { font-size: clamp(2rem,5vw,3rem); color: rgba(255,255,255,0.3); }
+        .car-img { width: clamp(55px,9vw,78px); height: clamp(55px,9vw,78px); border-radius: 8px; object-fit: contain; }
         .train-car.filled { background: #4caf50; transform: scale(1.04); border-color: #fff !important; }
         .bubble { position: absolute; top: -115px; background: white; padding: 6px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 6px 15px rgba(0,0,0,0.15); opacity: 0; transform: translateY(15px); transition: 0.4s ease-out; pointer-events: none; min-width: 80px; }
         .bubble img { width: 75px; height: 75px; border-radius: 8px; object-fit: contain; margin-bottom: 4px; }
@@ -238,7 +239,7 @@
             const car = document.createElement('div');
             car.className = 'train-car'; car.dataset.char = word.char;
             const imgPath = word.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.phrase}.webp`;
-            car.innerHTML = `<div class="bubble"><img src="${imgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><div class="shadow-text">${word.char}</div>`;
+            car.innerHTML = `<div class="bubble"><img src="${imgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${imgPath}" onerror="this.style.opacity='0';">`;
             car.addEventListener('click', onCarClick);
             car.ondragover = e => e.preventDefault();
             car.ondrop = handleDrop;
