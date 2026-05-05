@@ -1,6 +1,6 @@
 /* css/common_nav.css */
 :root {
-    --nav-font-zh: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+    --nav-font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
     --nav-font-en: "LXGW WenKai Lite", sans-serif;
 }
 

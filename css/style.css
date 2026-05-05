@@ -5,6 +5,27 @@
 /* 1. Web Font */
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
 
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+    font-family: "KaiTi-CJK";
+    src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+         local("BiauKai"), local("KaiTi"), local("楷体");
+    unicode-range:
+        U+2E80-2EFF,   /* CJK Radicals Supplement */
+        U+2F00-2FDF,   /* Kangxi Radicals */
+        U+3000-303F,   /* CJK Symbols and Punctuation (。，！？、《》…) */
+        U+3040-30FF,   /* Hiragana + Katakana */
+        U+31F0-31FF,   /* Katakana Phonetic Extensions */
+        U+3200-32FF,   /* Enclosed CJK Letters */
+        U+3400-4DBF,   /* CJK Extension A */
+        U+4E00-9FFF,   /* CJK Unified Ideographs (main block) */
+        U+F900-FAFF,   /* CJK Compatibility Ideographs */
+        U+FE30-FE4F,   /* CJK Compatibility Forms */
+        U+FF00-FFEF,   /* Halfwidth and Fullwidth Forms */
+        U+20000-2A6DF; /* CJK Extension B */
+}
+
 /* 2. Global Reset & Base */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -29,20 +50,12 @@ body {
 
 /* Chinese: KaiTi priority, LXGW fallback */
 .font-zh {
-    font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important;
+    font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif !important;
 }
 
 /* Chinese phrases — Safari-optimized KaiTi stack */
 .phrase-text {
-    font-family:
-        "STKaiti-SC-Regular",
-        "STKaiti",
-        "Kaiti SC",
-        "BiauKai",
-        "楷体",
-        "KaiTi",
-        "LXGW WenKai Lite",
-        serif !important;
+    font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif !important;
 }
 
 /* 3. Legacy Header (used by sub-pages not yet migrated) */
