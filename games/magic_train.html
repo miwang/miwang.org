@@ -240,7 +240,7 @@
             car.className = 'train-car'; car.dataset.char = word.char;
             const charImgPath = `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.char}.webp`;
             const phraseImgPath = word.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.phrase}.webp`;
-            car.innerHTML = `<div class="bubble"><img src="${phraseImgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${charImgPath}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="shadow-text" style="display:none">${word.char}</div>`;
+            car.innerHTML = `<div class="bubble"><img src="${phraseImgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${charImgPath}" onerror="this.style.display='none'; this.parentNode.querySelector('.shadow-text').style.display='flex';"><div class="shadow-text" style="display:none">${word.char}</div>`;
             car.addEventListener('click', onCarClick);
             car.ondragover = e => e.preventDefault();
             car.ondrop = handleDrop;
