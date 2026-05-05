@@ -241,8 +241,9 @@
             const car = document.createElement('div');
             car.className = 'train-car'; car.dataset.char = word.char;
             const charImgPath = `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.char}.webp`;
+            const charImgSrc = word.charImageUrl || charImgPath;
             const phraseImgPath = word.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.phrase}.webp`;
-            car.innerHTML = `<div class="bubble"><img src="${phraseImgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${charImgPath}" onerror="this.style.display='none'; this.parentNode.querySelector('.shadow-text').style.display='flex';"><div class="shadow-text" style="display:none">${word.char}</div>`;
+            car.innerHTML = `<div class="bubble"><img src="${phraseImgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${charImgSrc}" onerror="this.onerror=null;this.src='${charImgPath}';this.onerror=function(){this.style.display='none';this.parentNode.querySelector('.shadow-text').style.display='flex'};"><div class="shadow-text" style="display:none">${word.char}</div>`;
             car.addEventListener('click', onCarClick);
             car.ondragover = e => e.preventDefault();
             car.ondrop = handleDrop;
@@ -256,14 +257,7 @@
                 const b = document.createElement('div');
                 b.className = 'block'; b.dataset.char = word.char; b.dataset.phrase = word.phrase; b.dataset.charImageUrl = word.charImageUrl || '';
                 b.draggable = true;
-                if (word.charImageUrl) {
-                    const img = document.createElement('img');
-                    img.src = word.charImageUrl;
-                    img.alt = word.char;
-                    b.appendChild(img);
-                } else {
-                    b.innerText = word.char;
-                }
+                b.innerText = word.char;
                 b.ondragstart = e => e.dataTransfer.setData('text', word.char);
                 b.addEventListener('click', onBlockClick);
                 b.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -335,15 +329,8 @@
             const dx = me.touches[0].clientX - startX, dy = me.touches[0].clientY - startY;
             if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
                 isDragging = true;
-                if (charImageUrl) {
-                    const img = document.createElement('img');
-                    img.src = charImageUrl;
-                    img.alt = char;
-                    ghost.innerHTML = '';
-                    ghost.appendChild(img);
-                } else {
-                    ghost.innerText = char;
-                }
+                ghost.innerHTML = '';
+                ghost.innerText = char;
                 ghost.style.display = 'flex';
             }
             if (isDragging) {
