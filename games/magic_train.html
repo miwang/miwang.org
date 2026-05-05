@@ -104,6 +104,8 @@
             font-family: var(--kaiti) !important; font-weight: bold;
         }
 
+        .block img, #drag-ghost img { width: 80%; height: 80%; object-fit: contain; border-radius: 8px; }
+
         @media (max-width: 768px) {
             body { padding-top: 56px; }
             .mecc-nav-back span { display: none; }
@@ -255,7 +257,10 @@
                 b.className = 'block'; b.dataset.char = word.char; b.dataset.phrase = word.phrase; b.dataset.charImageUrl = word.charImageUrl || '';
                 b.draggable = true;
                 if (word.charImageUrl) {
-                    b.innerHTML = `<img src="${word.charImageUrl}" alt="${word.char}" style="width:80%;height:80%;object-fit:contain;border-radius:8px;">`;
+                    const img = document.createElement('img');
+                    img.src = word.charImageUrl;
+                    img.alt = word.char;
+                    b.appendChild(img);
                 } else {
                     b.innerText = word.char;
                 }
@@ -331,7 +336,11 @@
             if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
                 isDragging = true;
                 if (charImageUrl) {
-                    ghost.innerHTML = `<img src="${charImageUrl}" alt="${char}" style="width:80%;height:80%;object-fit:contain;border-radius:8px;">`;
+                    const img = document.createElement('img');
+                    img.src = charImageUrl;
+                    img.alt = char;
+                    ghost.innerHTML = '';
+                    ghost.appendChild(img);
                 } else {
                     ghost.innerText = char;
                 }
