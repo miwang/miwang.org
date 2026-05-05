@@ -62,7 +62,7 @@
             width: 100%; transform: translateX(-120vw);
         }
         #train-container { display: flex; justify-content: center; align-items: flex-end; gap: clamp(8px,2vw,12px); padding: 0 8px; flex-wrap: nowrap; }
-        .locomotive { font-size: clamp(4rem,8vw,6rem); position: relative; z-index: 5; order: 99; flex-shrink: 0; }
+        .locomotive { font-size: clamp(4rem,8vw,6rem); position: relative; z-index: 5; order: 99; flex-shrink: 0; transform: scaleX(-1); }
         .steam { position: absolute; top: -10px; right: 20px; width: 20px; height: 20px; background: rgba(255,255,255,0.8); border-radius: 50%; opacity: 0; animation: smoke 2s infinite; }
         @keyframes smoke { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(-50px) scale(1.5); opacity: 0; } }
 
@@ -238,8 +238,9 @@
         selected.forEach(word => {
             const car = document.createElement('div');
             car.className = 'train-car'; car.dataset.char = word.char;
-            const imgPath = word.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.phrase}.webp`;
-            car.innerHTML = `<div class="bubble"><img src="${imgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${imgPath}" onerror="this.style.opacity='0';">`;
+            const charImgPath = `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.char}.webp`;
+            const phraseImgPath = word.phraseImg || `${MECC_CONFIG.PATH.SIGHT_WORDS_IMAGES}${word.phrase}.webp`;
+            car.innerHTML = `<div class="bubble"><img src="${phraseImgPath}" onerror="this.style.display='none';"><span class="bubble-text">${word.phrase}</span></div><img class="car-img" src="${charImgPath}" onerror="this.style.opacity='0';">`;
             car.addEventListener('click', onCarClick);
             car.ondragover = e => e.preventDefault();
             car.ondrop = handleDrop;
