@@ -20,7 +20,7 @@
 
     /* 强制导航标题内 span 字体 */
     .mecc-nav-title .font-en{ font-family:"LXGW WenKai Lite",system-ui,sans-serif !important; }
-    .mecc-nav-title .font-zh{ font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif !important; }
+    .mecc-nav-title .font-zh{ font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif !important; }
 
     /* ── 月份导航 ── */
     .month-nav{
@@ -136,7 +136,7 @@
       font-size:17px; font-weight:700; letter-spacing:1px;
       color:#A8761F; white-space:nowrap;
       text-shadow:0 1px 0 rgba(255,255,255,.35); line-height:1;
-      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif;
+      font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
     }
 
     /* 中文奖项：楷体 */
@@ -144,7 +144,7 @@
       left:50%; top:72.5%; transform:translateX(-50%);
       font-size:12px; font-weight:800; color:#fff; white-space:nowrap;
       text-shadow:0 1px 1px rgba(0,0,0,.35); line-height:1; text-align:center;
-      font-family:"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif;
+      font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
     }
 
     /* 英文奖项：LXGW */
@@ -279,7 +279,7 @@
 
     /* 月份标签：数字用 inline Arial，汉字用 inline STKaiti，绕过所有 CSS 级联 */
     var NUM_S   = 'font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;font-weight:700;';
-    var KAITI_S = 'font-family:"STKaiti","Kaiti SC","KaiTi",楷体,"LXGW WenKai Lite",serif;font-weight:700;';
+    var KAITI_S = 'font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;font-weight:700;';
 
     function monthLabelHtml(yr, mm){
       var mmInt = parseInt(mm, 10);

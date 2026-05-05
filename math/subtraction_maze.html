@@ -27,7 +27,7 @@
             width: 100vw; height: 100vh; height: 100dvh;
             overflow: hidden; 
             background-color: #ECEFF1;
-            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", sans-serif;
             user-select: none;
             padding-top: 60px;
         }
@@ -62,7 +62,7 @@
 
         /* 中文文字标签用楷体，英文模式通过 JS 动态切换 */
         #ui-title, #ui-desc, .target-label, .modal-content p {
-            font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", sans-serif;
         }
         .num-btn:hover { transform: scale(1.05); background-color: var(--selected); }
 
@@ -126,7 +126,7 @@
 
         #celebration-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-content { background: white; padding: 40px 60px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 8px solid var(--correct); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .modal-content h1 { font-size: 3.5rem; margin: 0 0 10px 0; color: var(--primary); font-family: "STKaiti", "Kaiti SC", "KaiTi", "楷体", "LXGW WenKai Lite", serif !important; }
+        .modal-content h1 { font-size: 3.5rem; margin: 0 0 10px 0; color: var(--primary); font-family: "KaiTi-CJK", "LXGW WenKai Lite", sans-serif !important; }
         .modal-content p { font-size: 1.8rem; margin-bottom: 30px; }
         .modal-btn { background: var(--primary); color: white; font-size: 1.5rem; padding: 15px 40px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 6px 0 #E65100; font-weight: bold; font-family: inherit; }
         .modal-btn:active { transform: translateY(6px); box-shadow: 0 0 0 #E65100; }
@@ -236,7 +236,7 @@
             document.getElementById('ui-desc').innerText = t.desc;
             document.getElementById('ui-target-label').innerText = t.target;
             // 中文用楷体，英文用 LXGW
-            const zhFont = '"STKaiti","Kaiti SC","KaiTi","楷体","LXGW WenKai Lite",serif';
+            const zhFont = '"KaiTi-CJK","LXGW WenKai Lite",sans-serif';
             const enFont = '"LXGW WenKai Lite",sans-serif';
             const labelFont = LANG === 'zh' ? zhFont : enFont;
             ['ui-title','ui-desc','ui-target-label','btn-check','btn-reselect'].forEach(id => {
