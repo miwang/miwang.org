@@ -104,6 +104,8 @@
             font-family: var(--kaiti) !important; font-weight: bold;
         }
 
+        .block img, #drag-ghost img { width: 80%; height: 80%; object-fit: contain; border-radius: 8px; }
+
         @media (max-width: 768px) {
             body { padding-top: 56px; }
             .mecc-nav-back span { display: none; }
@@ -140,7 +142,7 @@
     // 🌟 获取字词数据的同时，获取全局游戏音效中的 wrong 音效
     const QUERY = encodeURIComponent(`{
       "words": *[_type == "word"] | order(_createdAt asc) {
-        char, phrases, "audioUrl": audio.asset->url, phrase_list[]{text, "imageUrl": image.asset->url}
+        char, phrases, "audioUrl": audio.asset->url, "charImageUrl": image.asset->url, phrase_list[]{text, "imageUrl": image.asset->url}
       },
       "audio": *[_type == "gameAudio"][0] {"wrong": wrong.asset->url}
     }`);
@@ -210,7 +212,7 @@
                     phraseText = item.phrases.split(/[,，、]/)[0].trim();
                 }
                 
-                fullWordList.push({ char: item.char, phrase: phraseText, phraseImg: phraseImg });
+                fullWordList.push({ char: item.char, phrase: phraseText, phraseImg: phraseImg, charImageUrl: item.charImageUrl || '' });
             });
 
             document.getElementById('ui-instruction').innerText = t.instruction;
@@ -252,8 +254,16 @@
             wrapper.style.transform = 'translateX(0)';
             selected.sort(() => 0.5 - Math.random()).forEach(word => {
                 const b = document.createElement('div');
-                b.className = 'block'; b.innerText = word.char; b.dataset.phrase = word.phrase;
+                b.className = 'block'; b.dataset.char = word.char; b.dataset.phrase = word.phrase; b.dataset.charImageUrl = word.charImageUrl || '';
                 b.draggable = true;
+                if (word.charImageUrl) {
+                    const img = document.createElement('img');
+                    img.src = word.charImageUrl;
+                    img.alt = word.char;
+                    b.appendChild(img);
+                } else {
+                    b.innerText = word.char;
+                }
                 b.ondragstart = e => e.dataTransfer.setData('text', word.char);
                 b.addEventListener('click', onBlockClick);
                 b.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -296,7 +306,7 @@
         document.querySelectorAll('.block').forEach(b => {
             if (b.style.visibility !== 'hidden') b.style.boxShadow = '0 6px 0 #fbc02d, 0 10px 15px rgba(0,0,0,0.1)';
         });
-        selectedChar = block.innerText;
+        selectedChar = block.dataset.char;
         selectedBlock = block;
         block.style.boxShadow = '0 0 0 5px #ff5722, 0 0 20px rgba(255,87,34,0.5)';
         playUnifiedAudio(selectedChar, sanityAudioMap[selectedChar]);
@@ -314,7 +324,8 @@
     function onTouchStart(e) {
         const block = e.currentTarget;
         if (block.style.visibility === 'hidden') return;
-        const char = block.innerText;
+        const char = block.dataset.char;
+        const charImageUrl = block.dataset.charImageUrl || '';
         playUnifiedAudio(char, sanityAudioMap[char]);
 
         const startX = e.touches[0].clientX, startY = e.touches[0].clientY;
@@ -324,7 +335,16 @@
             const dx = me.touches[0].clientX - startX, dy = me.touches[0].clientY - startY;
             if (!isDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
                 isDragging = true;
-                ghost.innerText = char; ghost.style.display = 'flex';
+                if (charImageUrl) {
+                    const img = document.createElement('img');
+                    img.src = charImageUrl;
+                    img.alt = char;
+                    ghost.innerHTML = '';
+                    ghost.appendChild(img);
+                } else {
+                    ghost.innerText = char;
+                }
+                ghost.style.display = 'flex';
             }
             if (isDragging) {
                 me.preventDefault();
@@ -350,7 +370,7 @@
     function handleDrop(e) {
         e.preventDefault();
         const char = e.dataTransfer.getData('text');
-        const block = [...document.querySelectorAll('.block')].find(b => b.innerText === char && b.style.visibility !== 'hidden');
+        const block = [...document.querySelectorAll('.block')].find(b => b.dataset.char === char && b.style.visibility !== 'hidden');
         if (block) tryFillCar(this, char, block);
     }
 
