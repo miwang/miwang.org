@@ -154,6 +154,76 @@
             font-size: 1rem;
         }
 
+        .found-section {
+            margin-top: 28px;
+            text-align: center;
+        }
+
+        .found-label {
+            font-size: 1rem;
+            color: #4d617f;
+            margin-bottom: 12px;
+        }
+
+        .found-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .found-chip {
+            background: #e8f0ff;
+            border: 2px solid #79adff;
+            border-radius: 999px;
+            padding: 6px 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a2740;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 36px 32px;
+            text-align: center;
+            max-width: 340px;
+            width: calc(100% - 40px);
+            box-shadow: 0 8px 32px rgba(26, 39, 64, 0.18);
+        }
+
+        .modal-msg {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            color: #1a2740;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .modal-continue-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            background: #f4789d;
+            cursor: pointer;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+            transition: transform 0.15s ease;
+        }
+
+        .modal-continue-btn:hover { transform: translateY(-2px); }
+
         @media (max-width: 760px) {
             .page { padding: 78px 12px 20px; }
             .ten-frame {
@@ -178,9 +248,20 @@
         <div class="ten-frame" id="ten-frame" aria-label="一行十条裙子"></div>
 
         <div class="result">
-            <div id="breakdown-text">粉色 0 + 蓝色 0 + 空白 10 = 10</div>
-            <div class="equation font-en" id="equation-text">0 + 0 = 0</div>
-            <div class="tip" id="tip-text">再涂 10 个格子就到 10。</div>
+            <div class="equation font-en" id="equation-text" style="display:none"></div>
+            <div class="tip" id="tip-text"></div>
+        </div>
+
+        <div class="found-section" id="found-section" style="display:none">
+            <div class="found-label" id="found-label"></div>
+            <div class="found-list" id="found-list"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="congrats-modal" style="display:none">
+        <div class="modal-box">
+            <div class="modal-msg" id="modal-msg"></div>
+            <button class="modal-continue-btn" id="modal-continue-btn" type="button"></button>
         </div>
     </div>
 
@@ -188,18 +269,26 @@
         const frame = document.getElementById('ten-frame');
         const titleEl = document.getElementById('page-title');
         const questionText = document.getElementById('question-text');
-        const breakdownText = document.getElementById('breakdown-text');
         const equationText = document.getElementById('equation-text');
         const tipText = document.getElementById('tip-text');
         const clearBtn = document.getElementById('clear-all');
         const pinkBtn = document.getElementById('pink-btn');
         const blueBtn = document.getElementById('blue-btn');
         const colorButtons = document.querySelectorAll('.color-btn');
+        const congratsModal = document.getElementById('congrats-modal');
+        const modalMsg = document.getElementById('modal-msg');
+        const modalContinueBtn = document.getElementById('modal-continue-btn');
+        const foundSection = document.getElementById('found-section');
+        const foundLabel = document.getElementById('found-label');
+        const foundList = document.getElementById('found-list');
 
         const state = Array(10).fill(null);
         const cellElements = [];
         let activeColor = 'pink';
         let t;
+        let isComplete = false;
+        let foundEquations = [];
+        let currentEquation = '';
 
         const i18n = {
             zh: {
@@ -212,8 +301,9 @@
                 blank: '空白',
                 frameLabel: '一行十条裙子',
                 clear: '清空重来',
-                breakdown: (pinkCount, blueCount, blankCount) => `粉色 ${pinkCount} + 蓝色 ${blueCount} + 空白 ${blankCount} = 10`,
-                tipDone: (pinkCount, blueCount) => `太棒了！你找到了粉色 ${pinkCount} 和蓝色 ${blueCount} 的组合。`,
+                congratsMsg: '你真棒！再看看还有没有别的组合方法？',
+                continueBtn: '继续',
+                foundLabel: '已找到的组合：',
                 tipTodo: (blankCount) => `再涂 ${blankCount} 条裙子就到 10。`,
                 dressAria: (index, colorName) => `第${index + 1}条裙子，${colorName}`
             },
@@ -227,8 +317,9 @@
                 blank: 'Blank',
                 frameLabel: 'A row of ten dresses',
                 clear: 'Clear all',
-                breakdown: (pinkCount, blueCount, blankCount) => `Pink ${pinkCount} + Blue ${blueCount} + Blank ${blankCount} = 10`,
-                tipDone: (pinkCount, blueCount) => `Great! Pink ${pinkCount} and Blue ${blueCount} make 10.`,
+                congratsMsg: 'Great job! Can you find another way to make 10?',
+                continueBtn: 'Continue',
+                foundLabel: 'Combinations found:',
                 tipTodo: (blankCount) => `Color ${blankCount} more dresses to make 10.`,
                 dressAria: (index, colorName) => `Dress ${index + 1}, ${colorName}`
             }
@@ -256,14 +347,29 @@
             const isEn = lang === 'en';
             titleEl.className = `title ${isEn ? 'font-en' : 'font-zh'}`;
             questionText.className = `subtitle ${isEn ? 'font-en' : 'font-zh'}`;
-            breakdownText.className = isEn ? 'font-en' : 'font-zh';
             tipText.className = `tip ${isEn ? 'font-en' : 'font-zh'}`;
+            foundLabel.className = `found-label ${isEn ? 'font-en' : 'font-zh'}`;
         }
 
-        function setActiveColor(color) {
-            activeColor = color;
-            colorButtons.forEach((btn) => {
-                btn.classList.toggle('active', btn.dataset.color === color);
+        function showCongrats() {
+            modalMsg.textContent = t.congratsMsg;
+            modalContinueBtn.textContent = t.continueBtn;
+            congratsModal.style.display = 'flex';
+        }
+
+        function renderFoundEquations() {
+            if (foundEquations.length === 0) {
+                foundSection.style.display = 'none';
+                return;
+            }
+            foundSection.style.display = '';
+            foundLabel.textContent = t.foundLabel;
+            foundList.innerHTML = '';
+            foundEquations.forEach((eq) => {
+                const chip = document.createElement('span');
+                chip.className = 'found-chip font-en';
+                chip.textContent = eq;
+                foundList.appendChild(chip);
             });
         }
 
@@ -273,14 +379,29 @@
             const blankCount = 10 - pinkCount - blueCount;
             const filledCount = pinkCount + blueCount;
 
-            breakdownText.textContent = t.breakdown(pinkCount, blueCount, blankCount);
             equationText.textContent = `${pinkCount} + ${blueCount} = ${filledCount}`;
 
             if (blankCount === 0) {
-                tipText.textContent = t.tipDone(pinkCount, blueCount);
+                equationText.style.display = '';
+                tipText.style.display = 'none';
+                if (!isComplete) {
+                    isComplete = true;
+                    currentEquation = `${pinkCount} + ${blueCount} = 10`;
+                    showCongrats();
+                }
             } else {
+                equationText.style.display = 'none';
+                tipText.style.display = '';
                 tipText.textContent = t.tipTodo(blankCount);
+                isComplete = false;
             }
+        }
+
+        function setActiveColor(color) {
+            activeColor = color;
+            colorButtons.forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.color === color);
+            });
         }
 
         function updateFrameUI() {
@@ -325,6 +446,21 @@
 
         clearBtn.addEventListener('click', () => {
             state.fill(null);
+            isComplete = false;
+            currentEquation = '';
+            updateFrameUI();
+            updateText();
+        });
+
+        modalContinueBtn.addEventListener('click', () => {
+            congratsModal.style.display = 'none';
+            if (currentEquation && !foundEquations.includes(currentEquation)) {
+                foundEquations.push(currentEquation);
+            }
+            renderFoundEquations();
+            state.fill(null);
+            isComplete = false;
+            currentEquation = '';
             updateFrameUI();
             updateText();
         });
