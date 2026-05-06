@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,7 +142,7 @@
             <button class="clear-btn" id="clear-all" type="button">清空重来</button>
         </div>
 
-        <div class="ten-frame" id="ten-frame" aria-label="one row ten frame"></div>
+        <div class="ten-frame" id="ten-frame" aria-label="一行十格框"></div>
 
         <div class="result">
             <div class="font-zh" id="breakdown-text">粉色 0 + 蓝色 0 + 空白 10 = 10</div>
@@ -191,7 +191,9 @@
                 const cell = document.createElement('button');
                 cell.type = 'button';
                 cell.className = `cell${color ? ` ${color}` : ''}`;
-                cell.setAttribute('aria-label', `第${index + 1}格`);
+                const colorName = color === 'pink' ? '粉色' : color === 'blue' ? '蓝色' : '空白';
+                cell.setAttribute('aria-label', `第${index + 1}格，${colorName}`);
+                cell.setAttribute('aria-pressed', color ? 'true' : 'false');
                 cell.addEventListener('click', () => {
                     state[index] = state[index] === activeColor ? null : activeColor;
                     renderFrame();
