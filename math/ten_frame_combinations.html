@@ -164,7 +164,7 @@
             <button class="clear-btn" id="clear-all" type="button">清空重来</button>
         </div>
 
-        <div class="ten-frame" id="ten-frame" aria-label="一行十格框"></div>
+        <div class="ten-frame" id="ten-frame" aria-label="一行十条裙子"></div>
 
         <div class="result">
             <div id="breakdown-text">粉色 0 + 蓝色 0 + 空白 10 = 10</div>
@@ -188,7 +188,7 @@
         const state = Array(10).fill(null);
         const cellElements = [];
         let activeColor = 'pink';
-        let t = null;
+        let t;
 
         const i18n = {
             zh: {
@@ -210,7 +210,7 @@
                 htmlLang: 'en',
                 pageTitle: 'Ten Dress Combinations',
                 navTitle: 'Ten Frame Dresses',
-                question: 'A princess has 10 dresses. Some are pink and the rest are blue. How many pink dresses does the princess have?',
+                question: 'A princess has 10 dresses. Some are pink and the rest are blue. How many pink dresses and how many blue dresses does the princess have?',
                 pink: 'Pink',
                 blue: 'Blue',
                 blank: 'Blank',
@@ -222,6 +222,7 @@
                 dressAria: (index, colorName) => `Dress ${index + 1}, ${colorName}`
             }
         };
+        t = i18n.zh;
 
         function getTextByColor(color) {
             if (color === 'pink') return t.pink;
