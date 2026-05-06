@@ -7,6 +7,17 @@
 <title>早作业</title>
 <style>
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF, U+20000-2A6DF;
+}
 :root {
   --teal:#598586;--gold:#f3b236;--dark:#1a2740;--bg:#f0f3f7;
   --red:#e8613a;--blue:#2b96d4;--green:#4aaa6a;--purple:#9b6bbf;
@@ -331,7 +342,7 @@ function togMath(id,btn){
 }
 
 function generateMath(){const p=document.getElementById('mathPrev');if(!selMath.length){p.innerHTML='<span style="color:#ccc;font-size:.82rem">选择题型后预览</span>';curEqs=[];return;}curEqs=selMath.slice(0,4).map(genEq);p.innerHTML=curEqs.map(e=>`<span class="math-eq-pre">${fmtPreview(e)}</span>`).join('');}
-function genEq(t){const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;let eq={type:t};switch(t){case 'add10':{const a=r(1,9),b=r(1,9-a);eq={...eq,op:'+',a,b,sum:a+b};break;}case 'sub10':{const a=r(2,10),b=r(1,a-1);eq={...eq,op:'-',a,b,sum:a-b};break;}case 'add20':{const a=r(5,19),b=r(1,20-a);eq={...eq,op:'+',a,b,sum:a+b};break;}case 'sub20':{const a=r(5,20),b=r(1,a-1);eq={...eq,op:'-',a,b,sum:a-b};break;}case 'missing':{const sum=r(6,10),a=r(1,sum-1),b=sum-a;eq={...eq,op:'+',a,b,sum,forceMissing:true};break;}case 'compose':{const n=r(11,19);eq={...eq,op:'+',a:10,b:n-10,sum:n};break;}}if(eq.forceMissing){eq.hide='b';}else{const opts=['answer','a','b'];eq.hide=opts[r(0,opts.length-1)];}return eq;}
+function genEq(t){const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;let eq={type:t};switch(t){case 'add10':{const a=r(1,9),b=r(1,9-a);eq={...eq,op:'+',a,b,sum:a+b};break;}case 'sub10':{const a=r(2,10),b=r(1,a-1);eq={...eq,op:'-',a,b,sum:a-b};break;}case 'add20':{const a=r(5,19),b=r(1,20-a);eq={...eq,op:'+',a,b,sum:a+b};break;}case 'sub20':{const a=r(5,20),b=r(1,a-1);eq={...eq,op:'-',a,b,sum:a-b};break;}case 'missing':{const sum=r(6,10),a=r(1,sum-1),b=sum-a;eq={...eq,op:'+',a,b,sum,forceMissing:true};break;}case 'compose':{const n=r(11,19);eq={...eq,op:'+',a:10,b:n-10,sum:n};break;}}if(eq.forceMissing){eq.hide='b';}else if(eq.op==='-'){eq.hide='answer';}else{const opts=['answer','a','b'];eq.hide=opts[r(0,opts.length-1)];}return eq;}
 function fmtEqStr(eq){const op=eq.op==='+'?'＋':'－';return`${eq.a}${op}${eq.b}＝${eq.sum}`;}
 function fmtPreview(eq){return fmtEqStr(eq);}
 function renderEqHTML(eq){const op=eq.op==='+'?'＋':'－';const blank=`<span class="m-blank">&nbsp;&nbsp;&nbsp;</span>`;const a=eq.hide==='a'?blank:eq.a,b=eq.hide==='b'?blank:eq.b,s=eq.hide==='answer'?blank:eq.sum;return`${a}${op}${b}＝${s}`;}
