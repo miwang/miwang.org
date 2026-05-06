@@ -725,10 +725,10 @@
             : candidates;
 
         // Target roughly n distractor cells (≈50% of grid).
-        // Sort by: (1) closest to target extra count, (2) closer to square, (3) smaller total.
-        const targetExtra = n;
+        // Sort by: (1) closest to target distractor count, (2) closer to square, (3) smaller total.
+        const targetDistractors = n;
         preferred.sort((a, b) =>
-            Math.abs(a.extra - targetExtra) - Math.abs(b.extra - targetExtra) ||
+            Math.abs(a.extra - targetDistractors) - Math.abs(b.extra - targetDistractors) ||
             Math.abs(a.rows - a.cols) - Math.abs(b.rows - b.cols) ||
             a.total - b.total
         );
