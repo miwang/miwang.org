@@ -160,7 +160,12 @@
         const colorButtons = document.querySelectorAll('.color-btn');
 
         const state = Array(10).fill(null);
+        const cellElements = [];
         let activeColor = 'pink';
+        const colorNameMap = {
+            pink: '粉色',
+            blue: '蓝色'
+        };
 
         function setActiveColor(color) {
             activeColor = color;
@@ -185,22 +190,30 @@
             }
         }
 
-        function renderFrame() {
-            frame.innerHTML = '';
+        function updateFrameUI() {
             state.forEach((color, index) => {
-                const cell = document.createElement('button');
-                cell.type = 'button';
+                const cell = cellElements[index];
+                const colorName = colorNameMap[color] || '空白';
                 cell.className = `cell${color ? ` ${color}` : ''}`;
-                const colorName = color === 'pink' ? '粉色' : color === 'blue' ? '蓝色' : '空白';
                 cell.setAttribute('aria-label', `第${index + 1}格，${colorName}`);
                 cell.setAttribute('aria-pressed', color ? 'true' : 'false');
+            });
+        }
+
+        function initFrame() {
+            state.forEach((_, index) => {
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = 'cell';
                 cell.addEventListener('click', () => {
                     state[index] = state[index] === activeColor ? null : activeColor;
-                    renderFrame();
+                    updateFrameUI();
                     updateText();
                 });
+                cellElements.push(cell);
                 frame.appendChild(cell);
             });
+            updateFrameUI();
         }
 
         colorButtons.forEach((btn) => {
@@ -209,7 +222,7 @@
 
         clearBtn.addEventListener('click', () => {
             state.fill(null);
-            renderFrame();
+            updateFrameUI();
             updateText();
         });
 
@@ -217,7 +230,7 @@
             if (window.MECC_CONFIG?.renderGlobalNav) {
                 window.MECC_CONFIG.renderGlobalNav('10的分解练习');
             }
-            renderFrame();
+            initFrame();
             updateText();
         });
     </script>
