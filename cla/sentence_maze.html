@@ -119,6 +119,7 @@
             flex: 1;
             min-width: 0;
             overflow: hidden;
+            position: relative;
         }
 
         #maze-wrapper {
@@ -231,8 +232,14 @@
             background: linear-gradient(135deg, #e6f9f0, #d4f1e3);
             border-radius: 14px;
             border: 2px solid var(--correct-green);
-            flex-shrink: 0;
             overflow: hidden;
+            /* Absolute overlay so it never pushes the maze grid up */
+            position: absolute;
+            bottom: 56px; /* sit above the bottom-bar */
+            left: 0;
+            right: 0;
+            z-index: 20;
+            box-shadow: 0 4px 18px rgba(46,204,113,0.2);
         }
 
         #success-panel .success-sentence {
@@ -460,20 +467,20 @@
             <div id="bottom-bar">
                 <span id="tag-indicator"></span>
                 <button class="action-btn btn-next" id="btn-next"
-                        onclick="loadNextSentence()" aria-label="换一题">
-                    <!-- Hand-drawn dice SVG -->
+                        onclick="loadNextSentence()" aria-label="下一个句子">
+                    <!-- Next-sentence icon: document + forward arrow -->
                     <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 8 C4.5 7 5.5 5.5 7 5 L29 5 C30.5 5.5 31 6.5 31 8 L31 28 C31 30 29.5 31.5 28 31 L8 31 C6 31 5 29.5 5 28 Z" stroke="#1a2740" stroke-width="2.2" stroke-linejoin="round" fill="none"/>
-                        <circle cx="12" cy="12" r="2.2" fill="#1a2740"/>
-                        <circle cx="24" cy="24" r="2.2" fill="#1a2740"/>
-                        <circle cx="24" cy="12" r="2.2" fill="#1a2740"/>
-                        <circle cx="12" cy="24" r="2.2" fill="#1a2740"/>
-                        <circle cx="18" cy="18" r="2.2" fill="#1a2740"/>
+                        <rect x="3" y="3" width="18" height="24" rx="3" stroke="#1a2740" stroke-width="2.2" fill="none"/>
+                        <line x1="7" y1="10" x2="17" y2="10" stroke="#1a2740" stroke-width="1.8" stroke-linecap="round"/>
+                        <line x1="7" y1="15" x2="17" y2="15" stroke="#1a2740" stroke-width="1.8" stroke-linecap="round"/>
+                        <line x1="7" y1="20" x2="13" y2="20" stroke="#1a2740" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M24 18 L33 18" stroke="#1a2740" stroke-width="2.4" stroke-linecap="round"/>
+                        <path d="M28 13 L34 18 L28 23" stroke="#1a2740" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    换一题
+                    下一个句子
                 </button>
                 <button class="action-btn btn-shuffle" id="btn-shuffle"
-                        onclick="reshuffleMaze()" aria-label="重新生成迷宫">
+                        onclick="reshuffleMaze()" aria-label="交换一下">
                     <!-- Hand-drawn shuffle arrows SVG -->
                     <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M4 10 C8 10 11 10 14 14 C17 18 20 22 24 22 L29 22" stroke="#444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
@@ -481,7 +488,7 @@
                         <path d="M4 26 C8 26 11 26 14 22 C17 18 20 14 24 14 L29 14" stroke="#444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
                         <path d="M25 10 L30 14 L25 18" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                     </svg>
-                    重新洗牌
+                    交换一下
                 </button>
             </div>
         </div>
@@ -969,6 +976,32 @@
     }
 
     // ═══════════════════════════════════════════════════════════
+    //  FIREWORKS (every 10 sentences)
+    // ═══════════════════════════════════════════════════════════
+    function launchFireworks() {
+        if (typeof confetti === 'undefined') return;
+        const bursts = [
+            { x: 0.25, y: 0.35 },
+            { x: 0.75, y: 0.25 },
+            { x: 0.5,  y: 0.45 },
+            { x: 0.15, y: 0.6  },
+            { x: 0.85, y: 0.55 },
+        ];
+        bursts.forEach(({ x, y }, i) => {
+            setTimeout(() => {
+                confetti({
+                    particleCount: 180,
+                    spread: 120,
+                    startVelocity: 45,
+                    origin: { x, y },
+                    colors: ['#f3b236', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#ff6b6b', '#fff'],
+                    ticks: 200,
+                });
+            }, i * 280);
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════
     //  COMPLETION
     // ═══════════════════════════════════════════════════════════
     function onComplete() {
@@ -990,6 +1023,11 @@
         // Increment score
         scoreCount++;
         document.getElementById('score-count').textContent = scoreCount;
+
+        // Fireworks every 10 sentences
+        if (scoreCount % 10 === 0) {
+            launchFireworks();
+        }
 
         // Mark all remaining path cells as done (should be all done already, but safety)
         document.querySelectorAll('.maze-cell.current-target').forEach(el => {
