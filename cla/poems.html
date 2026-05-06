@@ -263,7 +263,7 @@
                 if(imgPath && imgPath.startsWith('/')) imgPath = '..' + imgPath; 
                 else if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('../')) imgPath = '../' + imgPath;
 
-                const fallbackSVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><rect width='400' height='300' fill='%23e0eded'/><text x='200' y='160' font-family='sans-serif' font-size='32' text-anchor='middle' fill='%23598586' font-weight='bold'>${item.title.split(' ')[0]}</text></svg>`;
+                const fallbackSVG = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><rect width='400' height='300' fill='%23e0eded'/><text x='200' y='160' font-family='LXGW WenKai Lite, sans-serif' font-size='32' text-anchor='middle' fill='%23598586' font-weight='bold'>${item.title.split(' ')[0]}</text></svg>`;
                 return `<div class="song-card" onclick="startLevel(${index})"><div class="card-img-wrapper"><img src="${imgPath || fallbackSVG}" onerror="this.src='${fallbackSVG}';"></div><div class="song-info"><h3>${formatText(item.title)}</h3></div></div>`;
             }).join('');
         }

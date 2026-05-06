@@ -166,13 +166,13 @@
       font-size:17px; font-weight:900; line-height:1.05;
       color:var(--mecc-color);
       /* inline style 优先级最高，这里仍保留作为默认 */
-      font-family:"Arial Black","Arial Bold",Arial,Helvetica,sans-serif !important;
+      font-family:"LXGW WenKai Lite", sans-serif !important;
       letter-spacing:0; white-space:normal;
     }
     .ov-year .y-top, .ov-year .y-bottom,
     .ov-mecc .m-top, .ov-mecc .m-bottom{
       display:block;
-      font-family:"Arial Black","Arial Bold",Arial,Helvetica,sans-serif !important;
+      font-family:"LXGW WenKai Lite", sans-serif !important;
     }
 
     /* 年份：托杯右侧 */
@@ -277,8 +277,8 @@
 
     var MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    /* 月份标签：数字用 inline Arial，汉字用 inline STKaiti，绕过所有 CSS 级联 */
-    var NUM_S   = 'font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;font-weight:700;';
+    /* 月份标签：数字用 inline LXGW，汉字用 inline STKaiti，绕过所有 CSS 级联 */
+    var NUM_S   = 'font-family:"LXGW WenKai Lite",sans-serif;font-weight:700;';
     var KAITI_S = 'font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;font-weight:700;';
 
     function monthLabelHtml(yr, mm){
@@ -355,9 +355,6 @@
       var baseUrl     = escapeHtml(s.badgeBaseUrl || DEFAULT_BADGE_BASE);
       var showYear    = s.showYear !== false;
       var yearHtml    = yearTwoLinesHtml(yr);
-
-      /* Arial Black inline style，绝对绕开所有 CSS 级联 */
-      var arialStyle = 'style="font-family:\'Arial Black\',\'Arial Bold\',Arial,Helvetica,sans-serif !important;"';
 
       var h = '';
       h += '<div class="badge-item">';
