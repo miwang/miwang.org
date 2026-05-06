@@ -1032,6 +1032,7 @@
 
         // Accept any click — select the cell
         cell.classList.add('selected');
+        cell.classList.remove('start-cell');
 
         // Draw line from previous selected cell to this one
         if (clickedFlatIndices.length > 0) {
