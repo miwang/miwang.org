@@ -58,12 +58,23 @@
         }
 
         .color-btn.active {
-            border-color: #1a2740;
-            transform: translateY(-1px);
+            transform: scale(1.12);
         }
 
         .color-btn[data-color="pink"] { background: #ffd9e8; }
         .color-btn[data-color="blue"] { background: #d7e8ff; }
+
+        .color-btn[data-color="pink"].active {
+            background: #ffb3d5;
+            border-color: #d0367c;
+            box-shadow: 0 4px 16px rgba(208, 54, 124, 0.45);
+        }
+
+        .color-btn[data-color="blue"].active {
+            background: #9fc5ff;
+            border-color: #1f5fbf;
+            box-shadow: 0 4px 16px rgba(31, 95, 191, 0.45);
+        }
 
         .clear-btn {
             border: none;
@@ -122,17 +133,6 @@
 
         .cell.pink .dress-shape { fill: #ff7fb2; }
         .cell.blue .dress-shape { fill: #79adff; }
-
-        .dress-accent {
-            fill: none;
-            stroke: rgba(255,255,255,0.7);
-            stroke-width: 2.5;
-            stroke-linejoin: round;
-            opacity: 0;
-            transition: opacity 0.15s ease;
-        }
-        .cell.pink .dress-accent,
-        .cell.blue .dress-accent { opacity: 1; }
 
         .result {
             margin-top: 24px;
@@ -224,6 +224,23 @@
 
         .modal-continue-btn:hover { transform: translateY(-2px); }
 
+        .confirm-btn {
+            display: block;
+            margin: 16px auto 0;
+            border: none;
+            border-radius: 999px;
+            padding: 12px 36px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            background: #598586;
+            cursor: pointer;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+            transition: transform 0.15s ease;
+        }
+
+        .confirm-btn:hover { transform: translateY(-2px); }
+
         @media (max-width: 760px) {
             .page { padding: 78px 12px 20px; }
             .ten-frame {
@@ -250,6 +267,7 @@
         <div class="result">
             <div class="equation font-en" id="equation-text" style="display:none"></div>
             <div class="tip" id="tip-text"></div>
+            <button class="confirm-btn" id="confirm-btn" type="button" style="display:none"></button>
         </div>
 
         <div class="found-section" id="found-section" style="display:none">
@@ -271,6 +289,7 @@
         const questionText = document.getElementById('question-text');
         const equationText = document.getElementById('equation-text');
         const tipText = document.getElementById('tip-text');
+        const confirmBtn = document.getElementById('confirm-btn');
         const clearBtn = document.getElementById('clear-all');
         const pinkBtn = document.getElementById('pink-btn');
         const blueBtn = document.getElementById('blue-btn');
@@ -303,6 +322,7 @@
                 clear: '清空重来',
                 congratsMsg: '你真棒！再看看还有没有别的组合方法？',
                 continueBtn: '继续',
+                confirmBtn: '确定',
                 foundLabel: '已找到的组合：',
                 tipTodo: (blankCount) => `再涂 ${blankCount} 条裙子就到 10。`,
                 dressAria: (index, colorName) => `第${index + 1}条裙子，${colorName}`
@@ -319,6 +339,7 @@
                 clear: 'Clear all',
                 congratsMsg: 'Great job! Can you find another way to make 10?',
                 continueBtn: 'Continue',
+                confirmBtn: 'Check',
                 foundLabel: 'Combinations found:',
                 tipTodo: (blankCount) => `Color ${blankCount} more dresses to make 10.`,
                 dressAria: (index, colorName) => `Dress ${index + 1}, ${colorName}`
@@ -342,6 +363,7 @@
             pinkBtn.textContent = t.pink;
             blueBtn.textContent = t.blue;
             clearBtn.textContent = t.clear;
+            confirmBtn.textContent = t.confirmBtn;
             frame.setAttribute('aria-label', t.frameLabel);
 
             const isEn = lang === 'en';
@@ -387,10 +409,11 @@
                 if (!isComplete) {
                     isComplete = true;
                     currentEquation = `${pinkCount} + ${blueCount} = 10`;
-                    showCongrats();
+                    confirmBtn.style.display = '';
                 }
             } else {
                 equationText.style.display = 'none';
+                confirmBtn.style.display = 'none';
                 tipText.style.display = '';
                 tipText.textContent = t.tipTodo(blankCount);
                 isComplete = false;
@@ -425,8 +448,6 @@
                         <path class="dress-shape" d="M 37 12 Q 50 17 63 12 L 70 20 L 66 44 L 84 88 L 16 88 L 34 44 L 30 20 Z"/>
                         <!-- Waist bow -->
                         <path class="dress-shape" d="M 50 44 Q 39 40 43 35 Q 48 42 50 44 Q 52 42 57 35 Q 61 40 50 44 Z"/>
-                        <!-- Star accent (visible when colored) -->
-                        <path class="dress-accent" d="M 50 62 L 52.9 70.5 L 62 70.5 L 54.6 75.8 L 57.6 84.2 L 50 79 L 42.4 84.2 L 45.4 75.8 L 38 70.5 L 47.1 70.5 Z"/>
                     </svg>
                 `;
                 cell.addEventListener('click', () => {
@@ -448,8 +469,14 @@
             state.fill(null);
             isComplete = false;
             currentEquation = '';
+            confirmBtn.style.display = 'none';
             updateFrameUI();
             updateText();
+        });
+
+        confirmBtn.addEventListener('click', () => {
+            confirmBtn.style.display = 'none';
+            showCongrats();
         });
 
         modalContinueBtn.addEventListener('click', () => {
@@ -461,6 +488,8 @@
             state.fill(null);
             isComplete = false;
             currentEquation = '';
+            confirmBtn.style.display = 'none';
+            setActiveColor('pink');
             updateFrameUI();
             updateText();
         });
