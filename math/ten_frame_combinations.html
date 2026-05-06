@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10的分解练习</title>
+    <script src="../js/config.js"></script>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f5f8fb;
+            color: #1a2740;
+            font-family: "LXGW WenKai Lite", sans-serif;
+        }
+
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 90px 20px 30px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin: 0 0 24px;
+            color: #4d617f;
+            font-size: clamp(1rem, 2.1vw, 1.2rem);
+        }
+
+        .palette {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .color-btn {
+            border: 3px solid transparent;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2740;
+            background: #ffffff;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+        }
+
+        .color-btn.active {
+            border-color: #1a2740;
+            transform: translateY(-1px);
+        }
+
+        .color-btn[data-color="pink"] { background: #ffd9e8; }
+        .color-btn[data-color="blue"] { background: #d7e8ff; }
+
+        .clear-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            background: #598586;
+            cursor: pointer;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+        }
+
+        .ten-frame {
+            display: grid;
+            grid-template-columns: repeat(10, minmax(45px, 1fr));
+            gap: 0;
+            width: min(100%, 900px);
+            margin: 0 auto;
+            border: 4px solid #1a2740;
+            background: #fff;
+        }
+
+        .cell {
+            aspect-ratio: 1 / 1;
+            border-right: 2px solid #1a2740;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .cell:last-child {
+            border-right: none;
+        }
+
+        .cell.pink { background: #ff7fb2; }
+        .cell.blue { background: #79adff; }
+
+        .result {
+            margin-top: 24px;
+            text-align: center;
+            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+            line-height: 1.5;
+        }
+
+        .equation {
+            font-size: clamp(1.4rem, 3vw, 2.1rem);
+            font-weight: 700;
+            color: #1a2740;
+            margin-top: 8px;
+        }
+
+        .tip {
+            margin-top: 8px;
+            color: #4d617f;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 760px) {
+            .page { padding: 78px 12px 20px; }
+            .ten-frame {
+                grid-template-columns: repeat(10, minmax(28px, 1fr));
+                border-width: 3px;
+            }
+            .cell { border-right-width: 1.5px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1 class="title font-zh">10的分解（Ten Frame）</h1>
+        <p class="subtitle font-zh">先选颜色，再点击格子涂色，看看可以组成哪些“10”的组合。</p>
+
+        <div class="palette">
+            <button class="color-btn active" data-color="pink" type="button">粉色</button>
+            <button class="color-btn" data-color="blue" type="button">蓝色</button>
+            <button class="clear-btn" id="clear-all" type="button">清空重来</button>
+        </div>
+
+        <div class="ten-frame" id="ten-frame" aria-label="one row ten frame"></div>
+
+        <div class="result">
+            <div class="font-zh" id="breakdown-text">粉色 0 + 蓝色 0 + 空白 10 = 10</div>
+            <div class="equation font-en" id="equation-text">0 + 0 = 0</div>
+            <div class="tip font-zh" id="tip-text">再涂 10 个格子就到 10。</div>
+        </div>
+    </div>
+
+    <script>
+        const frame = document.getElementById('ten-frame');
+        const breakdownText = document.getElementById('breakdown-text');
+        const equationText = document.getElementById('equation-text');
+        const tipText = document.getElementById('tip-text');
+        const clearBtn = document.getElementById('clear-all');
+        const colorButtons = document.querySelectorAll('.color-btn');
+
+        const state = Array(10).fill(null);
+        let activeColor = 'pink';
+
+        function setActiveColor(color) {
+            activeColor = color;
+            colorButtons.forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.color === color);
+            });
+        }
+
+        function updateText() {
+            const pinkCount = state.filter((v) => v === 'pink').length;
+            const blueCount = state.filter((v) => v === 'blue').length;
+            const blankCount = 10 - pinkCount - blueCount;
+            const filledCount = pinkCount + blueCount;
+
+            breakdownText.textContent = `粉色 ${pinkCount} + 蓝色 ${blueCount} + 空白 ${blankCount} = 10`;
+            equationText.textContent = `${pinkCount} + ${blueCount} = ${filledCount}`;
+
+            if (blankCount === 0) {
+                tipText.textContent = `太棒了！你找到了 ${pinkCount} 和 ${blueCount} 的组合。`;
+            } else {
+                tipText.textContent = `再涂 ${blankCount} 个格子就到 10。`;
+            }
+        }
+
+        function renderFrame() {
+            frame.innerHTML = '';
+            state.forEach((color, index) => {
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = `cell${color ? ` ${color}` : ''}`;
+                cell.setAttribute('aria-label', `第${index + 1}格`);
+                cell.addEventListener('click', () => {
+                    state[index] = state[index] === activeColor ? null : activeColor;
+                    renderFrame();
+                    updateText();
+                });
+                frame.appendChild(cell);
+            });
+        }
+
+        colorButtons.forEach((btn) => {
+            btn.addEventListener('click', () => setActiveColor(btn.dataset.color));
+        });
+
+        clearBtn.addEventListener('click', () => {
+            state.fill(null);
+            renderFrame();
+            updateText();
+        });
+
+        window.addEventListener('load', () => {
+            if (window.MECC_CONFIG?.renderGlobalNav) {
+                window.MECC_CONFIG.renderGlobalNav('10的分解练习');
+            }
+            renderFrame();
+            updateText();
+        });
+    </script>
+</body>
+</html>
