@@ -420,6 +420,63 @@
             border-radius: 20px;
             flex-shrink: 0;
         }
+
+        /* ── Peek button & panel ─────────────────────────── */
+        #top-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-peek {
+            background: #e8eaf6;
+            color: #3949ab;
+            box-shadow: 0 3px 0 #9fa8da;
+        }
+        .btn-peek:hover { background: #d5d8f0; }
+
+        #peek-panel {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 25;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #fff9e6, #fef3c7);
+            border-radius: 14px;
+            border: 2px solid var(--accent-yellow);
+            box-shadow: 0 4px 18px rgba(243,178,54,0.25);
+            font-family: var(--kaiti);
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: bold;
+            color: #7c4a00;
+            text-align: center;
+        }
+
+        /* ── SVG path overlay ────────────────────────────── */
+        #maze-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        #path-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        #path-svg line {
+            stroke: var(--accent-yellow);
+            stroke-width: 4;
+            stroke-linecap: round;
+            opacity: 0.75;
+        }
     </style>
 </head>
 <body>
@@ -454,8 +511,26 @@
 
         <!-- RIGHT: maze + controls -->
         <div id="right-col">
+            <!-- Peek button above maze -->
+            <div id="top-bar">
+                <button class="action-btn btn-peek" id="btn-peek"
+                        onclick="peekSentence()" aria-label="看一看句子">
+                    <svg width="20" height="20" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <ellipse cx="18" cy="18" rx="14" ry="9" stroke="#3949ab" stroke-width="2.4"/>
+                        <circle cx="18" cy="18" r="4.5" fill="#3949ab"/>
+                    </svg>
+                    看一看句子
+                </button>
+            </div>
+
+            <!-- Peek panel (sentence overlay, auto-hides after 5s) -->
+            <div id="peek-panel" role="status" aria-live="polite"></div>
+
             <div id="maze-wrapper" role="grid" aria-label="字词迷宫">
-                <div id="maze-grid"></div>
+                <div id="maze-container">
+                    <div id="maze-grid"></div>
+                    <svg id="path-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+                </div>
             </div>
 
             <!-- Success panel -->
@@ -540,6 +615,9 @@
     let pathCells      = [];     // [{row,col}] of correct path
     let cellMeta       = [];     // flat array of {word, isPath, pathIdx, row, col}
     let scoreCount     = 0;      // number of sentences completed
+    let wrongClickCount = 0;     // wrong clicks this round
+    let clickedFlatIndices = []; // flat cell indices clicked in correct order (for SVG line)
+    let peekTimer      = null;   // auto-hide timer for peek panel
 
     // ═══════════════════════════════════════════════════════════
     //  INIT
@@ -645,6 +723,9 @@
 
         // Reset state
         currentStep = 0;
+        wrongClickCount = 0;
+        clickedFlatIndices = [];
+        hidePeek();
         hideSuccessPanel();
 
         // Build maze
@@ -659,6 +740,9 @@
     function reshuffleMaze() {
         if (!currentSentence) return;
         currentStep = 0;
+        wrongClickCount = 0;
+        clickedFlatIndices = [];
+        hidePeek();
         hideSuccessPanel();
         buildMaze();
         updateProgress();
@@ -889,6 +973,7 @@
         const grid = document.getElementById('maze-grid');
         grid.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
         grid.innerHTML = '';
+        clearPathSVG();
 
         for (let i = 0; i < total; i++) {
             const meta = cellMeta[i];
@@ -925,12 +1010,16 @@
             cell.classList.remove('current-target', 'start-cell');
             cell.classList.add('done');
             cell.setAttribute('aria-pressed', 'true');
-            currentStep++;
 
-            // Highlight next target
-            if (currentStep < wordList.length) {
-                markCurrentTarget();
+            // Draw line from previous correct cell to this cell
+            if (clickedFlatIndices.length > 0) {
+                const prevIndex = clickedFlatIndices[clickedFlatIndices.length - 1];
+                drawPathLine(prevIndex, flatIndex);
             }
+            clickedFlatIndices.push(flatIndex);
+
+            currentStep++;
+            // ← No markCurrentTarget: don't hint the next character
 
             updateProgress();
 
@@ -938,29 +1027,11 @@
                 onComplete();
             }
         } else if (meta.isPath && meta.pathIdx < currentStep) {
-            // Already clicked — do nothing (silently ignore)
+            // Already clicked — silently ignore
             return;
         } else {
-            // ❌ Wrong
-            cell.classList.add('shake');
-            MECC_UI.showToast('再找找看！', 'error');
-            try { MECC_AUDIO.playSfx('wrong'); } catch(e) {}
-            cell.addEventListener('animationend', () => cell.classList.remove('shake'), { once: true });
-        }
-    }
-
-    function markCurrentTarget() {
-        // Remove current-target from all
-        document.querySelectorAll('.maze-cell.current-target').forEach(el => {
-            el.classList.remove('current-target');
-        });
-        // Find cell for currentStep
-        const targetMeta = cellMeta.findIndex(m => m.isPath && m.pathIdx === currentStep);
-        if (targetMeta !== -1) {
-            const el = document.querySelector(`.maze-cell[data-index="${targetMeta}"]`);
-            if (el && !el.classList.contains('done')) {
-                el.classList.add('current-target');
-            }
+            // ❌ Wrong — record but give no real-time feedback
+            wrongClickCount++;
         }
     }
 
@@ -1014,10 +1085,13 @@
         // Confetti
         try { MECC_UI.fireConfetti('normal'); } catch(e) {}
 
-        // Show success panel (single row: firework + sentence)
+        // Show success panel with sentence and wrong-click summary
         const panel = document.getElementById('success-panel');
         const sentEl = document.getElementById('success-sentence');
-        sentEl.textContent = '🎊 ' + fullSentence;
+        const wrongMsg = wrongClickCount > 0
+            ? `（点错了 ${wrongClickCount} 次）`
+            : '（全对！🎯）';
+        sentEl.textContent = '🎊 ' + fullSentence + wrongMsg;
         panel.style.display = 'flex';
 
         // Increment score
@@ -1029,7 +1103,7 @@
             launchFireworks();
         }
 
-        // Mark all remaining path cells as done (should be all done already, but safety)
+        // Remove any remaining current-target highlight
         document.querySelectorAll('.maze-cell.current-target').forEach(el => {
             el.classList.remove('current-target');
         });
@@ -1039,6 +1113,61 @@
 
     function hideSuccessPanel() {
         document.getElementById('success-panel').style.display = 'none';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SVG PATH LINE
+    // ═══════════════════════════════════════════════════════════
+    function clearPathSVG() {
+        const svg = document.getElementById('path-svg');
+        if (svg) svg.innerHTML = '';
+    }
+
+    function drawPathLine(fromFlatIndex, toFlatIndex) {
+        const svg = document.getElementById('path-svg');
+        if (!svg) return;
+
+        const fromCell = document.querySelector(`.maze-cell[data-index="${fromFlatIndex}"]`);
+        const toCell   = document.querySelector(`.maze-cell[data-index="${toFlatIndex}"]`);
+        if (!fromCell || !toCell) return;
+
+        const svgRect  = svg.getBoundingClientRect();
+        const fromRect = fromCell.getBoundingClientRect();
+        const toRect   = toCell.getBoundingClientRect();
+
+        const x1 = fromRect.left - svgRect.left + fromRect.width  / 2;
+        const y1 = fromRect.top  - svgRect.top  + fromRect.height / 2;
+        const x2 = toRect.left   - svgRect.left + toRect.width    / 2;
+        const y2 = toRect.top    - svgRect.top  + toRect.height   / 2;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        svg.appendChild(line);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PEEK SENTENCE
+    // ═══════════════════════════════════════════════════════════
+    function peekSentence() {
+        if (!currentSentence) return;
+
+        const panel = document.getElementById('peek-panel');
+        const fullSentence = wordList.join('') + (currentSentence.punctuation || '');
+        panel.textContent = fullSentence;
+        panel.style.display = 'block';
+
+        // Reset auto-hide timer
+        if (peekTimer) clearTimeout(peekTimer);
+        peekTimer = setTimeout(hidePeek, 5000);
+    }
+
+    function hidePeek() {
+        if (peekTimer) { clearTimeout(peekTimer); peekTimer = null; }
+        const panel = document.getElementById('peek-panel');
+        if (panel) panel.style.display = 'none';
     }
 
     // ═══════════════════════════════════════════════════════════
