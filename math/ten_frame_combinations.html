@@ -93,14 +93,35 @@
             border-right: 2px solid #1a2740;
             cursor: pointer;
             transition: background-color 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-top: none;
+            border-bottom: none;
+            border-left: none;
         }
 
         .cell:last-child {
             border-right: none;
         }
 
-        .cell.pink { background: #ff7fb2; }
-        .cell.blue { background: #79adff; }
+        .dress-icon {
+            width: 82%;
+            height: 82%;
+            pointer-events: none;
+        }
+
+        .dress-shape {
+            fill: transparent;
+            stroke: #1a2740;
+            stroke-width: 5;
+            stroke-linejoin: round;
+            transition: fill 0.15s ease;
+        }
+
+        .cell.pink .dress-shape { fill: #ff7fb2; }
+        .cell.blue .dress-shape { fill: #79adff; }
 
         .result {
             margin-top: 24px;
@@ -134,39 +155,99 @@
 </head>
 <body>
     <div class="page">
-        <h1 class="title font-zh">10的分解（Ten Frame）</h1>
-        <p class="subtitle font-zh">先选颜色，再点击格子涂色，看看可以组成哪些“10”的组合。</p>
+        <h1 class="title" id="page-title">10的分解（裙子）</h1>
+        <p class="subtitle" id="question-text">一个公主有十个裙子。有的裙子是粉色的，有的裙子是蓝色的。公主有几个粉色的裙子，有几个蓝色的裙子？</p>
 
         <div class="palette">
-            <button class="color-btn active" data-color="pink" type="button">粉色</button>
-            <button class="color-btn" data-color="blue" type="button">蓝色</button>
+            <button class="color-btn active" data-color="pink" type="button" id="pink-btn">粉色</button>
+            <button class="color-btn" data-color="blue" type="button" id="blue-btn">蓝色</button>
             <button class="clear-btn" id="clear-all" type="button">清空重来</button>
         </div>
 
         <div class="ten-frame" id="ten-frame" aria-label="一行十格框"></div>
 
         <div class="result">
-            <div class="font-zh" id="breakdown-text">粉色 0 + 蓝色 0 + 空白 10 = 10</div>
+            <div id="breakdown-text">粉色 0 + 蓝色 0 + 空白 10 = 10</div>
             <div class="equation font-en" id="equation-text">0 + 0 = 0</div>
-            <div class="tip font-zh" id="tip-text">再涂 10 个格子就到 10。</div>
+            <div class="tip" id="tip-text">再涂 10 个格子就到 10。</div>
         </div>
     </div>
 
     <script>
         const frame = document.getElementById('ten-frame');
+        const titleEl = document.getElementById('page-title');
+        const questionText = document.getElementById('question-text');
         const breakdownText = document.getElementById('breakdown-text');
         const equationText = document.getElementById('equation-text');
         const tipText = document.getElementById('tip-text');
         const clearBtn = document.getElementById('clear-all');
+        const pinkBtn = document.getElementById('pink-btn');
+        const blueBtn = document.getElementById('blue-btn');
         const colorButtons = document.querySelectorAll('.color-btn');
 
         const state = Array(10).fill(null);
         const cellElements = [];
         let activeColor = 'pink';
-        const colorNameMap = {
-            pink: '粉色',
-            blue: '蓝色'
+        let t = null;
+
+        const i18n = {
+            zh: {
+                htmlLang: 'zh-CN',
+                pageTitle: '10的分解（裙子）',
+                navTitle: '10的分解练习',
+                question: '一个公主有十个裙子。有的裙子是粉色的，有的裙子是蓝色的。公主有几个粉色的裙子，有几个蓝色的裙子？',
+                pink: '粉色',
+                blue: '蓝色',
+                blank: '空白',
+                frameLabel: '一行十条裙子',
+                clear: '清空重来',
+                breakdown: (pinkCount, blueCount, blankCount) => `粉色 ${pinkCount} + 蓝色 ${blueCount} + 空白 ${blankCount} = 10`,
+                tipDone: (pinkCount, blueCount) => `太棒了！你找到了粉色 ${pinkCount} 和蓝色 ${blueCount} 的组合。`,
+                tipTodo: (blankCount) => `再涂 ${blankCount} 条裙子就到 10。`,
+                dressAria: (index, colorName) => `第${index + 1}条裙子，${colorName}`
+            },
+            en: {
+                htmlLang: 'en',
+                pageTitle: 'Ten Dress Combinations',
+                navTitle: 'Ten Frame Dresses',
+                question: 'A princess has 10 dresses. Some are pink and the rest are blue. How many pink dresses does the princess have?',
+                pink: 'Pink',
+                blue: 'Blue',
+                blank: 'Blank',
+                frameLabel: 'A row of ten dresses',
+                clear: 'Clear all',
+                breakdown: (pinkCount, blueCount, blankCount) => `Pink ${pinkCount} + Blue ${blueCount} + Blank ${blankCount} = 10`,
+                tipDone: (pinkCount, blueCount) => `Great! Pink ${pinkCount} and Blue ${blueCount} make 10.`,
+                tipTodo: (blankCount) => `Color ${blankCount} more dresses to make 10.`,
+                dressAria: (index, colorName) => `Dress ${index + 1}, ${colorName}`
+            }
         };
+
+        function getTextByColor(color) {
+            if (color === 'pink') return t.pink;
+            if (color === 'blue') return t.blue;
+            return t.blank;
+        }
+
+        function applyLanguage() {
+            const lang = window.MECC_CONFIG?.getLang?.() === 'en' ? 'en' : 'zh';
+            t = i18n[lang];
+
+            document.documentElement.lang = t.htmlLang;
+            document.title = t.pageTitle;
+            titleEl.textContent = t.pageTitle;
+            questionText.textContent = t.question;
+            pinkBtn.textContent = t.pink;
+            blueBtn.textContent = t.blue;
+            clearBtn.textContent = t.clear;
+            frame.setAttribute('aria-label', t.frameLabel);
+
+            const isEn = lang === 'en';
+            titleEl.className = `title ${isEn ? 'font-en' : 'font-zh'}`;
+            questionText.className = `subtitle ${isEn ? 'font-en' : 'font-zh'}`;
+            breakdownText.className = isEn ? 'font-en' : 'font-zh';
+            tipText.className = `tip ${isEn ? 'font-en' : 'font-zh'}`;
+        }
 
         function setActiveColor(color) {
             activeColor = color;
@@ -181,22 +262,22 @@
             const blankCount = 10 - pinkCount - blueCount;
             const filledCount = pinkCount + blueCount;
 
-            breakdownText.textContent = `粉色 ${pinkCount} + 蓝色 ${blueCount} + 空白 ${blankCount} = 10`;
+            breakdownText.textContent = t.breakdown(pinkCount, blueCount, blankCount);
             equationText.textContent = `${pinkCount} + ${blueCount} = ${filledCount}`;
 
             if (blankCount === 0) {
-                tipText.textContent = `太棒了！你找到了 ${pinkCount} 和 ${blueCount} 的组合。`;
+                tipText.textContent = t.tipDone(pinkCount, blueCount);
             } else {
-                tipText.textContent = `再涂 ${blankCount} 个格子就到 10。`;
+                tipText.textContent = t.tipTodo(blankCount);
             }
         }
 
         function updateFrameUI() {
             state.forEach((color, index) => {
                 const cell = cellElements[index];
-                const colorName = colorNameMap[color] || '空白';
+                const colorName = getTextByColor(color);
                 cell.className = `cell${color ? ` ${color}` : ''}`;
-                cell.setAttribute('aria-label', `第${index + 1}格，${colorName}`);
+                cell.setAttribute('aria-label', t.dressAria(index, colorName));
                 cell.setAttribute('aria-pressed', color ? 'true' : 'false');
             });
         }
@@ -206,6 +287,11 @@
                 const cell = document.createElement('button');
                 cell.type = 'button';
                 cell.className = 'cell';
+                cell.innerHTML = `
+                    <svg class="dress-icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                        <path class="dress-shape" d="M33 10 H67 L72 32 L63 38 L74 88 H26 L37 38 L28 32 Z" />
+                    </svg>
+                `;
                 cell.addEventListener('click', () => {
                     state[index] = state[index] === activeColor ? null : activeColor;
                     updateFrameUI();
@@ -228,8 +314,9 @@
         });
 
         window.addEventListener('load', () => {
+            applyLanguage();
             if (window.MECC_CONFIG?.renderGlobalNav) {
-                window.MECC_CONFIG.renderGlobalNav('10的分解练习');
+                window.MECC_CONFIG.renderGlobalNav(t.navTitle);
             }
             initFrame();
             updateText();
