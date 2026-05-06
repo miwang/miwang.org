@@ -155,8 +155,8 @@
 </head>
 <body>
     <div class="page">
-        <h1 class="title" id="page-title">10的分解（裙子）</h1>
-        <p class="subtitle" id="question-text">一个公主有十个裙子。有的裙子是粉色的，有的裙子是蓝色的。公主有几个粉色的裙子，有几个蓝色的裙子？</p>
+        <h1 class="title" id="page-title"></h1>
+        <p class="subtitle" id="question-text"></p>
 
         <div class="palette">
             <button class="color-btn active" data-color="pink" type="button" id="pink-btn">粉色</button>
@@ -222,8 +222,6 @@
                 dressAria: (index, colorName) => `Dress ${index + 1}, ${colorName}`
             }
         };
-        t = i18n.zh;
-
         function getTextByColor(color) {
             if (color === 'pink') return t.pink;
             if (color === 'blue') return t.blue;
@@ -231,7 +229,8 @@
         }
 
         function applyLanguage() {
-            const lang = window.MECC_CONFIG?.getLang?.() === 'en' ? 'en' : 'zh';
+            const detectedLang = window.MECC_CONFIG?.getLang?.();
+            const lang = detectedLang === 'en' || detectedLang === 'zh' ? detectedLang : 'zh';
             t = i18n[lang];
 
             document.documentElement.lang = t.htmlLang;
