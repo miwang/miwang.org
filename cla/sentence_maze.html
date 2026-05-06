@@ -224,29 +224,22 @@
         /* ── Success overlay ───────────────────────────── */
         #success-panel {
             display: none;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px;
+            gap: 8px;
+            padding: 8px 14px;
             background: linear-gradient(135deg, #e6f9f0, #d4f1e3);
-            border-radius: 20px;
-            border: 2.5px solid var(--correct-green);
-            text-align: center;
+            border-radius: 14px;
+            border: 2px solid var(--correct-green);
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         #success-panel .success-sentence {
             font-family: var(--kaiti);
-            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
             font-weight: bold;
             color: #1a5c3a;
-            line-height: 1.5;
-        }
-
-        #success-panel .success-icon {
-            font-size: 2.5rem;
-            animation: tada 0.8s;
         }
 
         /* ── Bottom controls ────────────────────────────── */
@@ -262,12 +255,19 @@
             font-family: var(--kaiti);
             font-size: clamp(0.85rem, 2.5vw, 1rem);
             font-weight: bold;
-            padding: 9px 20px;
+            padding: 8px 16px;
             border-radius: 30px;
             border: none;
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
             touch-action: manipulation;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn svg {
+            flex-shrink: 0;
         }
 
         .action-btn:active { transform: scale(0.95); }
@@ -286,34 +286,51 @@
         }
         .btn-shuffle:hover { background: #d0d8e0; }
 
-        /* ── Writing practice ───────────────────────────── */
-        #write-section {
-            display: none;
+        /* ── Scoreboard column ──────────────────────────── */
+        #score-col {
+            display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             gap: 6px;
+            width: 80px;
             flex-shrink: 0;
         }
 
-        #write-label {
-            font-family: var(--kaiti);
-            font-size: 0.95rem;
-            color: #555;
-            font-weight: bold;
-        }
-
-        #write-input {
-            font-family: var(--kaiti);
-            font-size: 1.1rem;
-            padding: 10px 14px;
-            border-radius: 14px;
-            border: 2.5px solid #d4e0e0;
+        #score-card {
             background: white;
-            outline: none;
+            border-radius: 18px;
+            border: 2.5px solid #dde6e6;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
             width: 100%;
             box-sizing: border-box;
-            transition: border-color 0.2s;
         }
-        #write-input:focus { border-color: var(--main-teal); }
+
+        #score-title {
+            font-family: var(--kaiti);
+            font-size: 0.78rem;
+            color: #777;
+            white-space: nowrap;
+        }
+
+        #score-count {
+            font-family: var(--kaiti);
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--main-teal);
+            line-height: 1;
+        }
+
+        #score-unit {
+            font-family: var(--kaiti);
+            font-size: 0.78rem;
+            color: #999;
+        }
 
         /* ── Loading / error ─────────────────────────────── */
         #loading-overlay {
@@ -371,6 +388,18 @@
             .maze-cell {
                 --cell-size: clamp(50px, 15vw, 65px);
             }
+
+            #score-col {
+                flex-direction: row;
+                width: 100%;
+            }
+
+            #score-card {
+                flex-direction: row;
+                gap: 8px;
+                padding: 8px 14px;
+                width: auto;
+            }
         }
 
         /* ── Tag pills (shown when tag filter active) ─────── */
@@ -424,15 +453,7 @@
 
             <!-- Success panel -->
             <div id="success-panel" role="alert" aria-live="polite">
-                <div class="success-icon">🎉</div>
-                <div class="success-sentence" id="success-sentence"></div>
-            </div>
-
-            <!-- Writing practice -->
-            <div id="write-section">
-                <label id="write-label" for="write-input">✏️ 写一写：把这个句子写下来吧！</label>
-                <input type="text" id="write-input" placeholder="在这里写出完整句子…"
-                       aria-label="手写句子练习输入框">
+                <span class="success-sentence" id="success-sentence"></span>
             </div>
 
             <!-- Bottom controls -->
@@ -440,12 +461,37 @@
                 <span id="tag-indicator"></span>
                 <button class="action-btn btn-next" id="btn-next"
                         onclick="loadNextSentence()" aria-label="换一题">
-                    🎲 换一题
+                    <!-- Hand-drawn dice SVG -->
+                    <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 8 C4.5 7 5.5 5.5 7 5 L29 5 C30.5 5.5 31 6.5 31 8 L31 28 C31 30 29.5 31.5 28 31 L8 31 C6 31 5 29.5 5 28 Z" stroke="#1a2740" stroke-width="2.2" stroke-linejoin="round" fill="none"/>
+                        <circle cx="12" cy="12" r="2.2" fill="#1a2740"/>
+                        <circle cx="24" cy="24" r="2.2" fill="#1a2740"/>
+                        <circle cx="24" cy="12" r="2.2" fill="#1a2740"/>
+                        <circle cx="12" cy="24" r="2.2" fill="#1a2740"/>
+                        <circle cx="18" cy="18" r="2.2" fill="#1a2740"/>
+                    </svg>
+                    换一题
                 </button>
                 <button class="action-btn btn-shuffle" id="btn-shuffle"
                         onclick="reshuffleMaze()" aria-label="重新生成迷宫">
-                    🔀 重新洗牌
+                    <!-- Hand-drawn shuffle arrows SVG -->
+                    <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 10 C8 10 11 10 14 14 C17 18 20 22 24 22 L29 22" stroke="#444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                        <path d="M25 18 L30 22 L25 26" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <path d="M4 26 C8 26 11 26 14 22 C17 18 20 14 24 14 L29 14" stroke="#444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                        <path d="M25 10 L30 14 L25 18" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                    重新洗牌
                 </button>
+            </div>
+        </div>
+
+        <!-- SCORE: scoreboard -->
+        <div id="score-col">
+            <div id="score-card">
+                <div id="score-title">记分牌</div>
+                <div id="score-count">0</div>
+                <div id="score-unit">句 ✓</div>
             </div>
         </div>
 
@@ -486,6 +532,7 @@
     let currentStep    = 0;      // index of next word to click
     let pathCells      = [];     // [{row,col}] of correct path
     let cellMeta       = [];     // flat array of {word, isPath, pathIdx, row, col}
+    let scoreCount     = 0;      // number of sentences completed
 
     // ═══════════════════════════════════════════════════════════
     //  INIT
@@ -600,8 +647,6 @@
         updateProgress();
         document.getElementById('progress-bar-wrap').style.display = 'block';
         document.getElementById('progress-text').style.display = 'block';
-        document.getElementById('write-section').style.display = 'none';
-        document.getElementById('write-input').value = '';
     }
 
     function reshuffleMaze() {
@@ -610,8 +655,6 @@
         hideSuccessPanel();
         buildMaze();
         updateProgress();
-        document.getElementById('write-section').style.display = 'none';
-        document.getElementById('write-input').value = '';
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -938,15 +981,15 @@
         // Confetti
         try { MECC_UI.fireConfetti('normal'); } catch(e) {}
 
-        // Show success panel
+        // Show success panel (single row: firework + sentence)
         const panel = document.getElementById('success-panel');
         const sentEl = document.getElementById('success-sentence');
         sentEl.textContent = '🎊 ' + fullSentence;
         panel.style.display = 'flex';
 
-        // Show writing practice
-        const writeSection = document.getElementById('write-section');
-        writeSection.style.display = 'flex';
+        // Increment score
+        scoreCount++;
+        document.getElementById('score-count').textContent = scoreCount;
 
         // Mark all remaining path cells as done (should be all done already, but safety)
         document.querySelectorAll('.maze-cell.current-target').forEach(el => {
