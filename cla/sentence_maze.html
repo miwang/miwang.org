@@ -460,35 +460,27 @@
     const QUERY      = encodeURIComponent('*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url}');
     const API_URL    = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
 
-    // Grid dimensions
-    const GRID_ROWS = 5;
-    const GRID_COLS = 6;
+    // Grid constraints (auto-sized by sentence length, up to 5×5)
+    const MAX_GRID_ROWS = 5;
+    const MAX_GRID_COLS = 5;
+    const MAX_GRID_CELLS = MAX_GRID_ROWS * MAX_GRID_COLS;
 
-    // Max attempts for the random-walk path generator before using the linear fallback.
-    // 200 is large enough to reliably find a path in a 5×6 grid while keeping startup fast.
+    // Max attempts for randomized path generation.
     const MAX_PATH_ATTEMPTS = 200;
 
-    // Max tries to pick a distractor that doesn't collide with a target word.
-    const MAX_DISTRACTOR_PICK_ATTEMPTS = 10;
+    const STRIP_PUNCTUATION_RE = /[，,、。！？；：\s]/g;
+    const FILTER_PUNCTUATION_RE = /[“”"'‘’（）()【】《》]/;
 
-    // Common Chinese characters used as distractors, grouped by theme for easy maintenance.
+    // Fallback characters (used only when sight-word/sentence sources are insufficient)
     const DISTRACTOR_POOL = [
-        // High-frequency function words
-        '的一了是在不这有个地以到说时要出会可也你生能而子那得于着下自之过发后作里用道行所然家种事成方多经么去法学如都同现当没动面起看定天还进好小部其些主样理心她本前开因只从想实日者意无力它与长把机民第公此已工路分',
-        // Numbers & measures
-        '一二三四五六七八九十百千万',
-        // Nature
-        '山水火木土金雨云风石日月星',
-        // Animals & plants
-        '人手口目耳鱼鸟马牛羊猪狗猫虫花草树',
-        // Common nouns
-        '文特先情形字相提里位来点白次',
+        '的一是在不有会你他她我们上下左右中大小日月山水火木土金风雨云星',
     ].join('').split('').filter((ch, i, arr) => arr.indexOf(ch) === i); // deduplicate
 
     // ═══════════════════════════════════════════════════════════
     //  STATE
     // ═══════════════════════════════════════════════════════════
     let allSentences   = [];
+    let sightWordChars = [];
     let currentSentence = null;
     let wordList       = [];     // parsed words array
     let currentStep    = 0;      // index of next word to click
@@ -510,12 +502,29 @@
             indicator.style.display = 'inline-block';
         }
 
+        await loadSightWordChars();
         await loadAllSentences();
     };
 
     // ═══════════════════════════════════════════════════════════
     //  FETCH
     // ═══════════════════════════════════════════════════════════
+    async function loadSightWordChars() {
+        try {
+            const sightWords = await MECC_DATA.getSightWords();
+            const chars = [];
+            for (const item of sightWords) {
+                if (!item) continue;
+                chars.push(...splitToChars(item.char || ''));
+                chars.push(...splitToChars(item.phrases || ''));
+            }
+            sightWordChars = Array.from(new Set(chars));
+        } catch (e) {
+            console.warn('四会字加载失败，将使用句子字符与备用干扰池生成干扰项。', e);
+            sightWordChars = [];
+        }
+    }
+
     async function loadAllSentences() {
         try {
             const res = await fetch(API_URL);
@@ -551,27 +560,31 @@
 
         // Iteratively pick a sentence with parseable words, avoiding repeat where possible.
         let candidate = null;
+        let parsedCandidate = [];
         const pool = allSentences.length > 1
             ? allSentences.filter(s => s !== currentSentence)
             : allSentences.slice();
 
         // Shuffle pool so we try sentences in random order
-        pool.sort(() => Math.random() - 0.5);
+        shuffleArrayInPlace(pool);
 
         for (const s of pool) {
-            if (parseWords(s.words || '').length > 0) {
+            const parsed = parseWords(s.words || '');
+            const gridSize = chooseGridSize(parsed.length);
+            if (parsed.length > 0 && gridSize) {
                 candidate = s;
+                parsedCandidate = parsed;
                 break;
             }
         }
 
         if (!candidate) {
-            showError('没有找到包含有效词语的句子。');
+            showError('没有找到适合迷宫尺寸限制（最大5×5=25字）的句子。');
             return;
         }
 
         currentSentence = candidate;
-        wordList = parseWords(candidate.words);
+        wordList = parsedCandidate.length > 0 ? parsedCandidate : parseWords(candidate.words);
 
         // Render image
         renderImage(candidate.image);
@@ -606,10 +619,23 @@
     // ═══════════════════════════════════════════════════════════
     function parseWords(raw) {
         if (!raw) return [];
-        // Split by Chinese comma, full-width comma, enumeration comma (顿号), space, or English comma
-        return raw.split(/[,，、\s]+/)
-                  .map(w => w.trim())
-                  .filter(w => w.length > 0);
+        return splitToChars(raw);
+    }
+
+    function splitToChars(raw) {
+        if (!raw) return [];
+        const stripped = raw.replace(STRIP_PUNCTUATION_RE, '');
+        return Array.from(stripped)
+            .map(ch => ch.trim())
+            .filter(ch => ch && !FILTER_PUNCTUATION_RE.test(ch));
+    }
+
+    function shuffleArrayInPlace(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -632,90 +658,155 @@
     //  MAZE GENERATION
     // ═══════════════════════════════════════════════════════════
     function buildMaze() {
-        const totalCells = GRID_ROWS * GRID_COLS;
         const n = wordList.length;
-
-        // If there are more words than cells, expand grid
-        const cols = Math.max(GRID_COLS, Math.ceil(Math.sqrt(n * 2)));
-        const rows = Math.max(GRID_ROWS, Math.ceil(n / cols) + 2);
+        const gridSize = chooseGridSize(n);
+        if (!gridSize) {
+            showError('当前句子字数超出迷宫尺寸限制（最大5×5=25字），请换一题。');
+            return;
+        }
+        const { rows, cols } = gridSize;
         const total = rows * cols;
 
-        // Generate snake path
-        pathCells = generateSnakePath(rows, cols, n);
+        // Generate path: fixed start at top-left, fixed end at bottom-right
+        pathCells = generatePathFromCorners(rows, cols, n);
+        if (!Array.isArray(pathCells) || pathCells.length !== n) {
+            showError('迷宫生成失败，正在换一题…');
+            setTimeout(loadNextSentence, 600);
+            return;
+        }
 
-        // Build path set for lookup
-        const pathSet = new Set(pathCells.map(([r,c]) => r * cols + c));
+        // Build path lookup for exact sequence mapping
+        const pathIndexByFlat = new Map();
+        pathCells.forEach(([r, c], idx) => pathIndexByFlat.set(r * cols + c, idx));
 
         // Collect distractor words from other sentences
         const otherWords = collectDistractors(wordList);
 
         // Assign words to cells
         cellMeta = [];
-        let pathIdx = 0;
 
         for (let i = 0; i < total; i++) {
             const row = Math.floor(i / cols);
             const col = i % cols;
-            if (pathSet.has(i)) {
-                cellMeta.push({ word: wordList[pathIdx], isPath: true, pathIdx: pathIdx++, row, col });
+            if (pathIndexByFlat.has(i)) {
+                const idx = pathIndexByFlat.get(i);
+                cellMeta.push({ word: wordList[idx], isPath: true, pathIdx: idx, row, col });
             } else {
-                cellMeta.push({ word: pickDistractor(otherWords, wordList), isPath: false, pathIdx: -1, row, col });
+                cellMeta.push({ word: pickDistractor(otherWords), isPath: false, pathIdx: -1, row, col });
             }
         }
 
         renderGrid(rows, cols, total);
     }
 
-    /**
-     * Random-walk snake path of length `n` on a rows×cols grid.
-     * Returns array of [row, col] pairs.
-     */
-    function generateSnakePath(rows, cols, n) {
-        const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+    function chooseGridSize(n) {
+        if (!Number.isInteger(n) || n < 1 || n > MAX_GRID_CELLS) return null;
 
-        for (let attempt = 0; attempt < MAX_PATH_ATTEMPTS; attempt++) {
-            const visited = new Set();
-            // Start somewhere in the top half
-            const startR = Math.floor(Math.random() * Math.ceil(rows / 2));
-            const startC = Math.floor(Math.random() * cols);
-            const path = [[startR, startC]];
-            visited.add(startR * cols + startC);
-
-            let stuck = false;
-            while (path.length < n) {
-                const [r, c] = path[path.length - 1];
-                const shuffledDirs = dirs.slice().sort(() => Math.random() - 0.5);
-                let moved = false;
-                for (const [dr, dc] of shuffledDirs) {
-                    const nr = r + dr, nc = c + dc;
-                    const key = nr * cols + nc;
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(key)) {
-                        visited.add(key);
-                        path.push([nr, nc]);
-                        moved = true;
-                        break;
-                    }
-                }
-                if (!moved) { stuck = true; break; }
+        const candidates = [];
+        for (let rows = 2; rows <= MAX_GRID_ROWS; rows++) {
+            for (let cols = 2; cols <= MAX_GRID_COLS; cols++) {
+                const total = rows * cols;
+                // Shortest possible corner-to-corner path length (Manhattan path including start/end cells)
+                const minPathLength = rows + cols - 1;
+                if (n < minPathLength || n > total) continue;
+                candidates.push({
+                    rows,
+                    cols,
+                    total,
+                    extra: total - n,
+                    isNearSquare: Math.abs(rows - cols) <= 1
+                });
             }
-
-            if (!stuck && path.length === n) return path;
         }
 
-        // Fallback: row-by-row linear path
-        const fallback = [];
-        for (let i = 0; i < n; i++) {
-            fallback.push([Math.floor(i / cols), i % cols]);
-        }
-        return fallback;
+        if (candidates.length === 0) return null;
+        const preferred = candidates.some(c => c.isNearSquare)
+            ? candidates.filter(c => c.isNearSquare)
+            : candidates;
+
+        // Priority: (1) fewer extra cells, (2) smaller total grid, (3) closer to square
+        preferred.sort((a, b) =>
+            a.extra - b.extra ||
+            a.total - b.total ||
+            Math.abs(a.rows - a.cols) - Math.abs(b.rows - b.cols)
+        );
+
+        return preferred[0];
     }
 
     /**
-     * Collect distractor characters/words from other sentences + built-in pool.
+     * Randomized DFS path of length `n` on a rows×cols grid.
+     * Start is fixed at (0,0), end is fixed at (rows-1, cols-1).
+     */
+    function generatePathFromCorners(rows, cols, n) {
+        const endR = rows - 1;
+        const endC = cols - 1;
+        const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+        const tryBuildPath = (shuffleDirs) => {
+            const visited = new Set([0]);
+            const path = [[0, 0]];
+
+            const dfs = (r, c) => {
+                if (path.length === n) return r === endR && c === endC;
+
+                const remainingSteps = n - path.length;
+                const distToEnd = Math.abs(r - endR) + Math.abs(c - endC);
+                if (distToEnd > remainingSteps) return false;
+
+                const orderedDirs = shuffleDirs
+                    ? shuffleArrayInPlace(dirs.slice())
+                    : dirs.slice().sort((a, b) => {
+                        const aDist = Math.abs((r + a[0]) - endR) + Math.abs((c + a[1]) - endC);
+                        const bDist = Math.abs((r + b[0]) - endR) + Math.abs((c + b[1]) - endC);
+                        return aDist - bDist;
+                    });
+                for (const [dr, dc] of orderedDirs) {
+                    const nr = r + dr;
+                    const nc = c + dc;
+                    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+
+                    const key = nr * cols + nc;
+                    if (visited.has(key)) continue;
+
+                    const nextRemaining = remainingSteps - 1;
+                    const nextDist = Math.abs(nr - endR) + Math.abs(nc - endC);
+                    if (nextDist > nextRemaining) continue;
+
+                    visited.add(key);
+                    path.push([nr, nc]);
+                    if (dfs(nr, nc)) return true;
+                    path.pop();
+                    visited.delete(key);
+                }
+
+                return false;
+            };
+
+            return dfs(0, 0) ? path : null;
+        };
+
+        for (let attempt = 0; attempt < MAX_PATH_ATTEMPTS; attempt++) {
+            const randomPath = tryBuildPath(true);
+            if (randomPath) return randomPath;
+        }
+
+        const deterministicPath = tryBuildPath(false);
+        if (deterministicPath) return deterministicPath;
+
+        return null;
+    }
+
+    /**
+     * Collect distractor single characters from sight words + other sentences + fallback pool.
      */
     function collectDistractors(targetWords) {
         const targetSet = new Set(targetWords);
         const words = [];
+
+        // From sight words
+        for (const ch of sightWordChars) {
+            if (!targetSet.has(ch)) words.push(ch);
+        }
 
         // From other Sanity sentences
         for (const s of allSentences) {
@@ -731,17 +822,11 @@
             if (!targetSet.has(ch)) words.push(ch);
         }
 
-        return words;
+        return Array.from(new Set(words.filter(ch => ch.length === 1)));
     }
 
-    function pickDistractor(pool, targetWords) {
+    function pickDistractor(pool) {
         if (pool.length === 0) return '字';
-        const targetSet = new Set(targetWords);
-        // Try up to MAX_DISTRACTOR_PICK_ATTEMPTS times to pick something not in targetWords
-        for (let i = 0; i < MAX_DISTRACTOR_PICK_ATTEMPTS; i++) {
-            const w = pool[Math.floor(Math.random() * pool.length)];
-            if (!targetSet.has(w)) return w;
-        }
         return pool[Math.floor(Math.random() * pool.length)];
     }
 
@@ -835,7 +920,7 @@
         const pct = n > 0 ? Math.round((currentStep / n) * 100) : 0;
         document.getElementById('progress-bar').style.width = pct + '%';
         document.getElementById('progress-text').textContent =
-            `已找到 ${currentStep} / ${n} 个词`;
+            `已找到 ${currentStep} / ${n} 个字`;
     }
 
     // ═══════════════════════════════════════════════════════════
