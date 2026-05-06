@@ -724,11 +724,13 @@
             ? candidates.filter(c => c.isNearSquare)
             : candidates;
 
-        // Priority: (1) fewer extra cells, (2) smaller total grid, (3) closer to square
+        // Target roughly n distractor cells (≈50% of grid).
+        // Sort by: (1) closest to target extra count, (2) closer to square, (3) smaller total.
+        const targetExtra = n;
         preferred.sort((a, b) =>
-            a.extra - b.extra ||
-            a.total - b.total ||
-            Math.abs(a.rows - a.cols) - Math.abs(b.rows - b.cols)
+            Math.abs(a.extra - targetExtra) - Math.abs(b.extra - targetExtra) ||
+            Math.abs(a.rows - a.cols) - Math.abs(b.rows - b.cols) ||
+            a.total - b.total
         );
 
         return preferred[0];
