@@ -123,6 +123,17 @@
         .cell.pink .dress-shape { fill: #ff7fb2; }
         .cell.blue .dress-shape { fill: #79adff; }
 
+        .dress-accent {
+            fill: none;
+            stroke: rgba(255,255,255,0.7);
+            stroke-width: 2.5;
+            stroke-linejoin: round;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        .cell.pink .dress-accent,
+        .cell.blue .dress-accent { opacity: 1; }
+
         .result {
             margin-top: 24px;
             text-align: center;
@@ -289,7 +300,12 @@
                 cell.className = 'cell';
                 cell.innerHTML = `
                     <svg class="dress-icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-                        <path class="dress-shape" d="M33 10 H67 L72 32 L63 38 L74 88 H26 L37 38 L28 32 Z" />
+                        <!-- Dress body: scoop neckline, puffy sleeves, scalloped hem -->
+                        <path class="dress-shape" d="M 38 10 Q 50 19 62 10 L 68 28 Q 78 24 80 34 Q 78 42 70 38 L 64 46 L 76 88 Q 69 82 63 88 Q 56 82 50 88 Q 44 82 37 88 Q 30 82 24 88 L 36 46 L 30 38 Q 22 42 20 34 Q 22 24 32 28 Z"/>
+                        <!-- Waist bow -->
+                        <path class="dress-shape" d="M 50 46 Q 40 42 43 37 Q 48 42 50 46 Q 52 42 57 37 Q 60 42 50 46 Z"/>
+                        <!-- Star accent (visible when colored) -->
+                        <path class="dress-accent" d="M 50 61 L 52.9 69.5 L 62 69.5 L 54.6 74.8 L 57.6 83.2 L 50 78 L 42.4 83.2 L 45.4 74.8 L 38 69.5 L 47.1 69.5 Z"/>
                     </svg>
                 `;
                 cell.addEventListener('click', () => {
