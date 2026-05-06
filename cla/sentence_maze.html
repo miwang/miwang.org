@@ -163,10 +163,18 @@
             word-break: break-all;
         }
 
-        .maze-cell:hover:not(.done):not(.distractor-block) {
+        .maze-cell:hover:not(.done):not(.selected) {
             background: #f0f7f7;
             border-color: var(--main-teal);
             transform: scale(1.06);
+        }
+
+        .maze-cell.selected {
+            background: linear-gradient(135deg, #a8d8ea, #74b9d0);
+            border-color: #5ba0c0;
+            color: white;
+            cursor: default;
+            transform: scale(1);
         }
 
         .maze-cell.start-cell {
@@ -181,12 +189,6 @@
             color: white;
             cursor: default;
             transform: scale(1);
-        }
-
-        .maze-cell.current-target {
-            border-color: var(--main-teal);
-            box-shadow: 0 0 0 3px rgba(89,133,134,0.3);
-            animation: pulse 1.6s ease-in-out infinite;
         }
 
         .maze-cell.shake {
@@ -207,11 +209,6 @@
             top: -6px; left: -6px;
             font-size: 0.75rem;
             line-height: 1;
-        }
-
-        @keyframes pulse {
-            0%,100% { box-shadow: 0 0 0 3px rgba(89,133,134,0.3); }
-            50%      { box-shadow: 0 0 0 7px rgba(89,133,134,0.15); }
         }
 
         @keyframes shake {
@@ -247,6 +244,29 @@
             font-size: clamp(1rem, 2.5vw, 1.3rem);
             font-weight: bold;
             color: #1a5c3a;
+        }
+
+        /* ── Wrong-sentence hint overlay ────────────────── */
+        #hint-panel {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #fff0f0, #ffe0e0);
+            border-radius: 14px;
+            border: 2px solid var(--wrong-red);
+            overflow: hidden;
+            position: absolute;
+            bottom: 56px;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            box-shadow: 0 4px 18px rgba(231,76,60,0.2);
+            font-family: var(--kaiti);
+            font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+            font-weight: bold;
+            color: #7a1a1a;
         }
 
         /* ── Bottom controls ────────────────────────────── */
@@ -538,6 +558,9 @@
                 <span class="success-sentence" id="success-sentence"></span>
             </div>
 
+            <!-- Wrong-sentence hint panel -->
+            <div id="hint-panel" role="alert" aria-live="polite"></div>
+
             <!-- Bottom controls -->
             <div id="bottom-bar">
                 <span id="tag-indicator"></span>
@@ -611,13 +634,13 @@
     let sightWordChars = [];
     let currentSentence = null;
     let wordList       = [];     // parsed words array
-    let currentStep    = 0;      // index of next word to click
+    let currentStep    = 0;      // number of cells selected so far
     let pathCells      = [];     // [{row,col}] of correct path
     let cellMeta       = [];     // flat array of {word, isPath, pathIdx, row, col}
     let scoreCount     = 0;      // number of sentences completed
-    let wrongClickCount = 0;     // wrong clicks this round
-    let clickedFlatIndices = []; // flat cell indices clicked in correct order (for SVG line)
+    let clickedFlatIndices = []; // flat cell indices clicked in order (for SVG line)
     let peekTimer      = null;   // auto-hide timer for peek panel
+    let hintResetTimer = null;   // timer to auto-reset after wrong sentence
 
     // ═══════════════════════════════════════════════════════════
     //  INIT
@@ -723,10 +746,10 @@
 
         // Reset state
         currentStep = 0;
-        wrongClickCount = 0;
         clickedFlatIndices = [];
         hidePeek();
         hideSuccessPanel();
+        hideHintPanel();
 
         // Build maze
         buildMaze();
@@ -740,10 +763,10 @@
     function reshuffleMaze() {
         if (!currentSentence) return;
         currentStep = 0;
-        wrongClickCount = 0;
         clickedFlatIndices = [];
         hidePeek();
         hideSuccessPanel();
+        hideHintPanel();
         buildMaze();
         updateProgress();
     }
@@ -985,7 +1008,7 @@
             cell.setAttribute('role', 'gridcell');
 
             if (meta.isPath && meta.pathIdx === 0) {
-                cell.classList.add('start-cell', 'current-target');
+                cell.classList.add('start-cell');
             }
             if (meta.isPath && meta.pathIdx === wordList.length - 1) {
                 cell.classList.add('end-cell');
@@ -1000,38 +1023,41 @@
     //  INTERACTION
     // ═══════════════════════════════════════════════════════════
     function onCellClick(flatIndex) {
-        if (currentStep >= wordList.length) return; // already done
+        if (currentStep >= wordList.length) return; // game complete
 
-        const meta = cellMeta[flatIndex];
         const cell = document.querySelector(`.maze-cell[data-index="${flatIndex}"]`);
 
-        if (meta.isPath && meta.pathIdx === currentStep) {
-            // ✅ Correct!
-            cell.classList.remove('current-target', 'start-cell');
-            cell.classList.add('done');
-            cell.setAttribute('aria-pressed', 'true');
+        // Ignore already-selected or done cells
+        if (cell.classList.contains('done') || cell.classList.contains('selected')) return;
 
-            // Draw line from previous correct cell to this cell
-            if (clickedFlatIndices.length > 0) {
-                const prevIndex = clickedFlatIndices[clickedFlatIndices.length - 1];
-                drawPathLine(prevIndex, flatIndex);
-            }
-            clickedFlatIndices.push(flatIndex);
+        // Accept any click — select the cell
+        cell.classList.add('selected');
 
-            currentStep++;
-            // ← No markCurrentTarget: don't hint the next character
+        // Draw line from previous selected cell to this one
+        if (clickedFlatIndices.length > 0) {
+            const prevIndex = clickedFlatIndices[clickedFlatIndices.length - 1];
+            drawPathLine(prevIndex, flatIndex);
+        }
+        clickedFlatIndices.push(flatIndex);
+        currentStep++;
 
-            updateProgress();
+        updateProgress();
 
-            if (currentStep === wordList.length) {
+        if (currentStep === wordList.length) {
+            // Assemble the sentence from selected cells in click order
+            const assembled = clickedFlatIndices.map(i => cellMeta[i].word).join('');
+            const correct   = wordList.join('');
+
+            if (assembled === correct) {
+                // Mark all as done
+                clickedFlatIndices.forEach(i => {
+                    const c = document.querySelector(`.maze-cell[data-index="${i}"]`);
+                    if (c) { c.classList.remove('selected'); c.classList.add('done'); }
+                });
                 onComplete();
+            } else {
+                showWrongHint(assembled);
             }
-        } else if (meta.isPath && meta.pathIdx < currentStep) {
-            // Already clicked — silently ignore
-            return;
-        } else {
-            // ❌ Wrong — record but give no real-time feedback
-            wrongClickCount++;
         }
     }
 
@@ -1085,13 +1111,10 @@
         // Confetti
         try { MECC_UI.fireConfetti('normal'); } catch(e) {}
 
-        // Show success panel with sentence and wrong-click summary
+        // Show success panel
         const panel = document.getElementById('success-panel');
         const sentEl = document.getElementById('success-sentence');
-        const wrongMsg = wrongClickCount > 0
-            ? `（点错了 ${wrongClickCount} 次）`
-            : '（全对！🎯）';
-        sentEl.textContent = '🎊 ' + fullSentence + wrongMsg;
+        sentEl.textContent = '🎊 ' + fullSentence;
         panel.style.display = 'flex';
 
         // Increment score
@@ -1103,16 +1126,40 @@
             launchFireworks();
         }
 
-        // Remove any remaining current-target highlight
-        document.querySelectorAll('.maze-cell.current-target').forEach(el => {
-            el.classList.remove('current-target');
-        });
-
         updateProgress();
     }
 
     function hideSuccessPanel() {
         document.getElementById('success-panel').style.display = 'none';
+    }
+
+    function hideHintPanel() {
+        if (hintResetTimer) { clearTimeout(hintResetTimer); hintResetTimer = null; }
+        const panel = document.getElementById('hint-panel');
+        if (panel) panel.style.display = 'none';
+    }
+
+    function showWrongHint(assembled) {
+        hideHintPanel();
+        const panel = document.getElementById('hint-panel');
+        panel.textContent = `句子不对哦，再试试！（${assembled}）`;
+        panel.style.display = 'flex';
+        hintResetTimer = setTimeout(() => {
+            hideHintPanel();
+            resetSelections();
+        }, 2000);
+    }
+
+    function resetSelections() {
+        // Un-highlight all selected cells
+        clickedFlatIndices.forEach(i => {
+            const cell = document.querySelector(`.maze-cell[data-index="${i}"]`);
+            if (cell) cell.classList.remove('selected');
+        });
+        clickedFlatIndices = [];
+        currentStep = 0;
+        clearPathSVG();
+        updateProgress();
     }
 
     // ═══════════════════════════════════════════════════════════
