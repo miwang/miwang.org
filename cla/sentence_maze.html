@@ -520,7 +520,7 @@
                         <circle cx="20" cy="26" r="6"/>
                         <polyline points="4,46 20,32 34,42 44,34 60,46"/>
                     </svg>
-                    <span>（暂无图片）</span>
+                    <span id="no-image-text">（暂无图片）</span>
                 </div>
             </div>
             <div id="progress-bar-wrap" style="display:none;">
@@ -539,7 +539,7 @@
                         <ellipse cx="18" cy="18" rx="14" ry="9" stroke="#3949ab" stroke-width="2.4"/>
                         <circle cx="18" cy="18" r="4.5" fill="#3949ab"/>
                     </svg>
-                    看一看句子
+                    <span id="btn-peek-text">看一看句子</span>
                 </button>
             </div>
 
@@ -575,7 +575,7 @@
                         <path d="M24 18 L33 18" stroke="#1a2740" stroke-width="2.4" stroke-linecap="round"/>
                         <path d="M28 13 L34 18 L28 23" stroke="#1a2740" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    下一个句子
+                    <span id="btn-next-text">下一个句子</span>
                 </button>
                 <button class="action-btn btn-shuffle" id="btn-shuffle"
                         onclick="reshuffleMaze()" aria-label="交换一下">
@@ -586,7 +586,7 @@
                         <path d="M4 26 C8 26 11 26 14 22 C17 18 20 14 24 14 L29 14" stroke="#444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
                         <path d="M25 10 L30 14 L25 18" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                     </svg>
-                    交换一下
+                    <span id="btn-shuffle-text">交换一下</span>
                 </button>
             </div>
         </div>
@@ -628,6 +628,51 @@
     ].join('').split('').filter((ch, i, arr) => arr.indexOf(ch) === i); // deduplicate
 
     // ═══════════════════════════════════════════════════════════
+    //  I18N
+    // ═══════════════════════════════════════════════════════════
+    const LANG = MECC_CONFIG.getLang();
+    const t = {
+        zh: {
+            navTitle:    '迷宫找字',
+            loading:     '加载句子中…',
+            noImage:     '（暂无图片）',
+            mazeLabel:   '字词迷宫',
+            peekBtn:     '看一看句子',
+            nextBtn:     '下一个句子',
+            shuffleBtn:  '交换一下',
+            scoreTitle:  '记分牌',
+            scoreUnit:   '句 ✓',
+            tagLabel:    '标签：',
+            errNoData:   '暂时没有句子数据，请检查 Sanity CMS。',
+            errLoadFail: '加载失败，请检查网络后刷新。',
+            errNoFit:    '没有找到适合迷宫尺寸限制（最大5×5=25字）的句子。',
+            errTooLong:  '当前句子字数超出迷宫尺寸限制（最大5×5=25字），请换一题。',
+            errMazeFail: '迷宫生成失败，正在换一题…',
+            progress:    (step, n) => `已找到 ${step} / ${n} 个字`,
+            wrongHint:   (assembled) => `句子不对哦，再试试！（${assembled}）`,
+        },
+        en: {
+            navTitle:    'Sentence Maze',
+            loading:     'Loading sentences…',
+            noImage:     '(No image)',
+            mazeLabel:   'Sentence maze',
+            peekBtn:     'Peek at Sentence',
+            nextBtn:     'Next Sentence',
+            shuffleBtn:  'Shuffle',
+            scoreTitle:  'Score',
+            scoreUnit:   '✓',
+            tagLabel:    'Tag: ',
+            errNoData:   'No sentence data. Please check Sanity CMS.',
+            errLoadFail: 'Failed to load. Please check network and refresh.',
+            errNoFit:    'No sentence fits the maze size limit (max 5×5=25 chars).',
+            errTooLong:  'Current sentence exceeds maze size limit (max 5×5=25 chars), please try another.',
+            errMazeFail: 'Maze generation failed, trying another…',
+            progress:    (step, n) => `Found ${step} / ${n} characters`,
+            wrongHint:   (assembled) => `Wrong sentence, try again! (${assembled})`,
+        },
+    }[LANG];
+
+    // ═══════════════════════════════════════════════════════════
     //  STATE
     // ═══════════════════════════════════════════════════════════
     let allSentences   = [];
@@ -646,14 +691,27 @@
     //  INIT
     // ═══════════════════════════════════════════════════════════
     window.onload = async () => {
-        MECC_CONFIG.renderGlobalNav('迷宫找字');
-        document.getElementById('head-title').innerText = '迷宫找字 - MECC';
+        MECC_CONFIG.renderGlobalNav(t.navTitle);
+        document.getElementById('head-title').innerText = t.navTitle + ' - MECC';
+
+        // Apply localized UI text
+        document.getElementById('loading-msg').textContent = t.loading;
+        document.getElementById('no-image-text').textContent = t.noImage;
+        document.getElementById('maze-wrapper').setAttribute('aria-label', t.mazeLabel);
+        document.getElementById('btn-peek').setAttribute('aria-label', t.peekBtn);
+        document.getElementById('btn-peek-text').textContent = t.peekBtn;
+        document.getElementById('btn-next').setAttribute('aria-label', t.nextBtn);
+        document.getElementById('btn-next-text').textContent = t.nextBtn;
+        document.getElementById('btn-shuffle').setAttribute('aria-label', t.shuffleBtn);
+        document.getElementById('btn-shuffle-text').textContent = t.shuffleBtn;
+        document.getElementById('score-title').textContent = t.scoreTitle;
+        document.getElementById('score-unit').textContent = t.scoreUnit;
 
         // Show tag filter indicator if ?tag= present
         const tag = new URLSearchParams(window.location.search).get('tag');
         if (tag) {
             const indicator = document.getElementById('tag-indicator');
-            indicator.textContent = '标签：' + tag;
+            indicator.textContent = t.tagLabel + tag;
             indicator.style.display = 'inline-block';
         }
 
@@ -695,7 +753,7 @@
             }
 
             if (allSentences.length === 0) {
-                showError('暂时没有句子数据，请检查 Sanity CMS。');
+                showError(t.errNoData);
                 return;
             }
 
@@ -703,7 +761,7 @@
             loadNextSentence();
         } catch (e) {
             console.error('Sanity fetch error:', e);
-            showError('加载失败，请检查网络后刷新。');
+            showError(t.errLoadFail);
         }
     }
 
@@ -734,7 +792,7 @@
         }
 
         if (!candidate) {
-            showError('没有找到适合迷宫尺寸限制（最大5×5=25字）的句子。');
+            showError(t.errNoFit);
             return;
         }
 
@@ -818,7 +876,7 @@
         const n = wordList.length;
         const gridSize = chooseGridSize(n);
         if (!gridSize) {
-            showError('当前句子字数超出迷宫尺寸限制（最大5×5=25字），请换一题。');
+            showError(t.errTooLong);
             return;
         }
         const { rows, cols } = gridSize;
@@ -827,7 +885,7 @@
         // Generate path: fixed start at top-left, fixed end at bottom-right
         pathCells = generatePathFromCorners(rows, cols, n);
         if (!Array.isArray(pathCells) || pathCells.length !== n) {
-            showError('迷宫生成失败，正在换一题…');
+            showError(t.errMazeFail);
             setTimeout(loadNextSentence, 600);
             return;
         }
@@ -1069,8 +1127,7 @@
         const n = wordList.length;
         const pct = n > 0 ? Math.round((currentStep / n) * 100) : 0;
         document.getElementById('progress-bar').style.width = pct + '%';
-        document.getElementById('progress-text').textContent =
-            `已找到 ${currentStep} / ${n} 个字`;
+        document.getElementById('progress-text').textContent = t.progress(currentStep, n);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -1143,7 +1200,7 @@
     function showWrongHint(assembled) {
         hideHintPanel();
         const panel = document.getElementById('hint-panel');
-        panel.textContent = `句子不对哦，再试试！（${assembled}）`;
+        panel.textContent = t.wrongHint(assembled);
         panel.style.display = 'flex';
         hintResetTimer = setTimeout(() => {
             hideHintPanel();
