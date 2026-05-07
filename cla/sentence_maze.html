@@ -631,7 +631,7 @@
     //  I18N
     // ═══════════════════════════════════════════════════════════
     const LANG = MECC_CONFIG.getLang();
-    const t = {
+    const ALL_STRINGS = {
         zh: {
             navTitle:    '迷宫找字',
             loading:     '加载句子中…',
@@ -670,7 +670,8 @@
             progress:    (step, n) => `Found ${step} / ${n} characters`,
             wrongHint:   (assembled) => `Wrong sentence, try again! (${assembled})`,
         },
-    }[LANG];
+    };
+    const t = ALL_STRINGS[LANG] || ALL_STRINGS.zh;
 
     // ═══════════════════════════════════════════════════════════
     //  STATE
