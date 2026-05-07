@@ -23,12 +23,6 @@
             padding: 90px 20px 30px;
         }
 
-        .title {
-            text-align: center;
-            font-size: clamp(1.5rem, 3vw, 2.2rem);
-            margin-bottom: 10px;
-        }
-
         .subtitle {
             text-align: center;
             margin: 0 0 24px;
@@ -319,7 +313,6 @@
 </head>
 <body>
     <div class="page">
-        <h1 class="title" id="page-title"></h1>
         <p class="subtitle" id="question-text"></p>
 
         <div class="palette">
@@ -358,7 +351,6 @@
 
     <script>
         const frame = document.getElementById('ten-frame');
-        const titleEl = document.getElementById('page-title');
         const questionText = document.getElementById('question-text');
         const tipText = document.getElementById('tip-text');
         const clearBtn = document.getElementById('clear-all');
@@ -442,7 +434,6 @@
 
             document.documentElement.lang = t.htmlLang;
             document.title = t.pageTitle;
-            titleEl.textContent = t.pageTitle;
             questionText.textContent = t.question;
             pinkBtn.textContent = t.pink;
             blueBtn.textContent = t.blue;
@@ -450,7 +441,6 @@
             frame.setAttribute('aria-label', t.frameLabel);
 
             const isEn = lang === 'en';
-            titleEl.className = `title ${isEn ? 'font-en' : 'font-zh'}`;
             questionText.className = `subtitle ${isEn ? 'font-en' : 'font-zh'}`;
             tipText.className = `tip ${isEn ? 'font-en' : 'font-zh'}`;
             foundLabel.className = `found-label ${isEn ? 'font-en' : 'font-zh'}`;
