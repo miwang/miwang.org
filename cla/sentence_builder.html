@@ -172,9 +172,9 @@
             .drop-zone-wrapper { order: 2; padding: 0; }
             .drop-zone { height: 9dvh !important; min-height: 66px !important; padding: 4px 8px !important; gap: 4px !important; border-radius: 16px !important; }
             #word-pool-left, #word-pool-right { display: none !important; }
-            #word-pool-mobile { order: 3; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; width: 100%; gap: 6px; padding: 4px 2px 8px; box-sizing: border-box; max-height: 34dvh; overflow-y: auto; }
+            #word-pool-mobile { order: 3; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; width: 100%; gap: 6px; padding: 4px 2px 8px; box-sizing: border-box; max-height: min(40dvh, 300px); overflow-y: auto; }
 
-            .word-brick { font-size: clamp(1rem, 3.7vw, 1.65rem) !important; padding: clamp(6px, 1.2vh, 8px) clamp(10px, 3vw, 14px) !important; border-radius: 12px !important; margin: 0 !important; box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important; }
+            .word-brick { font-size: clamp(1rem, 3.7vw, 1.65rem) !important; padding: clamp(0.35rem, 1vw, 0.5rem) clamp(10px, 3vw, 14px) !important; border-radius: 12px !important; margin: 0 !important; box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important; }
             #orientation-hint-text { font-size: 0.95rem; }
         }
 
@@ -228,12 +228,12 @@
             <div class="drop-zone-wrapper">
                 <div class="drop-zone" id="drop-zone"></div>
             </div>
-            <div id="word-pool-mobile"></div>
+            <div id="word-pool-mobile" tabindex="0"></div>
         </div>
         <div id="orientation-hint">
             <div class="orientation-hint-card">
-                <div id="orientation-hint-text">横屏体验更好，点击继续</div>
-                <button id="orientation-hint-btn" onclick="dismissOrientationHint()">继续</button>
+                <div id="orientation-hint-text"></div>
+                <button id="orientation-hint-btn" type="button"></button>
             </div>
         </div>
     </div>
@@ -263,6 +263,7 @@
         // GROQ 查询：提取 type 为 sentence 的文档，并把 image 引用转化为直链
         const QUERY = encodeURIComponent('*[_type == "sentence"]{words, punctuation, "image": image.asset->url, tags}');
         const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+        const MOBILE_BREAKPOINT = 768;
 
         const listView = document.getElementById('list-view');
         const playView = document.getElementById('play-view');
@@ -324,6 +325,7 @@
             document.getElementById('ui-hint').innerText = t.hint;
             document.getElementById('orientation-hint-text').innerText = t.rotateHint;
             document.getElementById('orientation-hint-btn').innerText = t.continueBtn;
+            document.getElementById('orientation-hint-btn').addEventListener('click', dismissOrientationHint);
 
             if (LANG === 'en') {
                 const enElements = ['close-text', 'btn-read-mode', 'ui-hint', 'orientation-hint-text', 'orientation-hint-btn'];
@@ -445,7 +447,7 @@
                 brick.className = 'word-brick'; brick.innerHTML = splitFonts(word);
                 const color = getColorForWord(word);
                 brick.style.backgroundColor = color; brick.dataset.word = word;
-                if (window.innerWidth <= 768) {
+                if (window.innerWidth <= MOBILE_BREAKPOINT) {
                     brick.dataset.pool = 'mobile';
                 } else {
                     brick.dataset.pool = idx % 2 === 0 ? 'left' : 'right';
@@ -592,7 +594,7 @@
         }
 
         function isPortraitMobile() {
-            if (window.innerWidth > 768) return false;
+            if (window.innerWidth > MOBILE_BREAKPOINT) return false;
             return window.matchMedia('(orientation: portrait)').matches || window.innerHeight > window.innerWidth;
         }
 
@@ -602,17 +604,43 @@
         }
 
         async function tryLockLandscapeBestEffort() {
+            if (!isPortraitMobile()) return;
+            const target = document.documentElement;
+            const status = { attempted: false, locked: false, viaFullscreen: false };
+            const canLock = typeof screen.orientation?.lock === 'function';
+            if (!canLock) {
+                window.orientationLockStatus = status;
+                return;
+            }
+            status.attempted = true;
             try {
-                if (!isPortraitMobile()) return;
-                const target = document.documentElement;
-                if (!document.fullscreenElement && target.requestFullscreen) await target.requestFullscreen();
-                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
-            } catch (e) {}
+                await screen.orientation.lock('landscape');
+                status.locked = true;
+                window.orientationLockStatus = status;
+                return;
+            } catch (err) { console.debug('Orientation lock failed without fullscreen:', err); }
+            if (!document.fullscreenElement && target.requestFullscreen) {
+                try {
+                    await target.requestFullscreen();
+                    status.viaFullscreen = true;
+                } catch (err) {
+                    console.debug('Fullscreen request failed for orientation lock:', err);
+                    window.orientationLockStatus = status;
+                    return;
+                }
+            }
+            try {
+                await screen.orientation.lock('landscape');
+                status.locked = true;
+            } catch (err) { console.debug('Orientation lock failed with fullscreen retry:', err); }
+            window.orientationLockStatus = status;
         }
 
         async function dismissOrientationHint() {
             document.getElementById('orientation-hint').style.display = 'none';
-            await tryLockLandscapeBestEffort();
+            try {
+                await tryLockLandscapeBestEffort();
+            } catch (err) { console.debug('Dismiss orientation hint lock attempt failed:', err); }
         }
     </script>
 </body>
