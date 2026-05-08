@@ -16,6 +16,13 @@
         .font-zh { font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif !important; }
         .font-en { font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif !important; }
 
+        :root {
+            --piece-size: 115px;
+            --board-gap: 18px;
+            --board-pad-y: 30px;
+            --board-pad-x: 40px;
+        }
+
         body {
             overflow: hidden; 
             touch-action: none;
@@ -98,11 +105,11 @@
             background-color: #faf8f5;
             border: 6px solid #8b2b2b; 
             border-radius: 12px;
-            padding: 30px 40px;
+            padding: var(--board-pad-y) var(--board-pad-x);
             box-shadow: 0 15px 35px rgba(139, 43, 43, 0.15), inset 0 0 20px rgba(0,0,0,0.05);
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
-            gap: 18px; 
+            gap: var(--board-gap); 
             z-index: 1;
             position: relative;
         }
@@ -117,8 +124,8 @@
         }
 
         .drop-slot {
-            width: 115px; 
-            height: 115px;
+            width: var(--piece-size); 
+            height: var(--piece-size);
             position: relative;
             display: flex;
             align-items: center;
@@ -152,8 +159,8 @@
         /* 3D 闪卡容器 */
         .wood-block {
             position: absolute;
-            width: 115px;  
-            height: 115px;
+            width: var(--piece-size);  
+            height: var(--piece-size);
             z-index: 10;
             perspective: 1000px;
         }
@@ -240,7 +247,7 @@
         }
 
         .ghost-img {
-            position: fixed; width: 115px; height: 115px; z-index: 1000;
+            position: fixed; width: var(--piece-size); height: var(--piece-size); z-index: 1000;
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3)); pointer-events: none;
         }
@@ -286,6 +293,38 @@
             40%, 80% { transform: rotateY(180deg) translateX(8px) rotate(5deg); }
         }
         .shake-anim { animation: shake 0.4s ease-in-out; }
+
+        @media (max-width: 900px) {
+            :root {
+                --piece-size: clamp(56px, 16vw, 82px);
+                --board-gap: 8px;
+                --board-pad-y: 12px;
+                --board-pad-x: 12px;
+            }
+
+            body {
+                overflow: auto;
+                touch-action: manipulation;
+            }
+
+            .game-container {
+                align-items: flex-start;
+                padding-top: 10px;
+            }
+
+            .puzzle-board {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .rule-banner {
+                bottom: 8px;
+                max-width: calc(100vw - 16px);
+                white-space: normal;
+                font-size: 0.95rem;
+                line-height: 1.35;
+                padding: 8px 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -533,9 +572,32 @@ if (isEnglish) {
         }
 
         function arrangeGrid(blocks) {
-            const w = 115; 
+            const w = blocks[0]?.offsetWidth || 115; 
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
+            const isMobile = screenW <= 900;
+
+            if (isMobile) {
+                const containerRect = gameContainer.getBoundingClientRect();
+                const boardRect = boardZone.getBoundingClientRect();
+                const gap = Math.max(8, Math.round(w * 0.1));
+                const cols = Math.max(3, Math.min(5, Math.floor((screenW - 16 + gap) / (w + gap))));
+                const totalW = cols * w + (cols - 1) * gap;
+                const startX = Math.max(8, (screenW - totalW) / 2);
+                const startY = Math.max(boardRect.bottom - containerRect.top + 12, 76);
+
+                blocks.forEach((block, i) => {
+                    const r = Math.floor(i / cols);
+                    const c = i % cols;
+                    const posX = startX + c * (w + gap);
+                    const posY = startY + r * (w + gap);
+                    block.style.left = `${posX}px`;
+                    block.style.top = `${posY}px`;
+                    block.style.setProperty('--rot', Math.floor(Math.random() * 12 - 6));
+                    block.style.transform = `rotate(${block.style.getPropertyValue('--rot')}deg)`;
+                });
+                return;
+            }
 
             const sidebarWidth = 250; 
             const cols = 2; 
