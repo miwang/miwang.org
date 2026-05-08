@@ -524,6 +524,13 @@ if (isEnglish) {
         const boardZone = document.getElementById('boardZone');
         const gameContainer = document.getElementById('gameContainer');
         const ruleBanner = document.getElementById('ruleText');
+        const MOBILE_BREAKPOINT = 900;
+        const MOBILE_SIDE_MARGIN = 8;
+        const MOBILE_MIN_COLS = 3;
+        const MOBILE_MAX_COLS = 5;
+        const MOBILE_MIN_GAP = 8;
+        const MOBILE_SPACING_BELOW_BOARD = 12;
+        const MOBILE_MIN_TOP_FALLBACK = 76;
 
         let allWords = [];
         const ITEMS_PER_PAGE = 15; 
@@ -582,21 +589,16 @@ if (isEnglish) {
             const w = blocks[0]?.offsetWidth || cssPieceSize; 
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
-            const isMobile = screenW <= 900;
+            const isMobile = screenW <= MOBILE_BREAKPOINT;
 
             if (isMobile) {
                 const containerRect = gameContainer.getBoundingClientRect();
                 const boardRect = boardZone.getBoundingClientRect();
-                const mobileSideMargin = 8;      // 左右各 8px 留白
-                const mobileMinCols = 3;         // 最少 3 列，避免行数过多
-                const mobileMaxCols = 5;         // 最多 5 列，对齐 15 个方块的 3 行布局
-                const gap = Math.max(8, Math.round(w * 0.1));
-                const cols = Math.max(mobileMinCols, Math.min(mobileMaxCols, Math.floor((screenW - mobileSideMargin * 2 + gap) / (w + gap))));
+                const gap = Math.max(MOBILE_MIN_GAP, Math.round(w * 0.1));
+                const cols = Math.max(MOBILE_MIN_COLS, Math.min(MOBILE_MAX_COLS, Math.floor((screenW - MOBILE_SIDE_MARGIN * 2 + gap) / (w + gap))));
                 const totalW = cols * w + (cols - 1) * gap;
-                const startX = Math.max(mobileSideMargin, (screenW - totalW) / 2);
-                const spacingBelowBoard = 12;    // 棋盘与拖拽卡片区间距
-                const minTopFallback = 76;       // 防止极端尺寸时卡片贴到顶部导航
-                const startY = Math.max(boardRect.bottom - containerRect.top + spacingBelowBoard, minTopFallback);
+                const startX = Math.max(MOBILE_SIDE_MARGIN, (screenW - totalW) / 2);
+                const startY = Math.max(boardRect.bottom - containerRect.top + MOBILE_SPACING_BELOW_BOARD, MOBILE_MIN_TOP_FALLBACK);
 
                 blocks.forEach((block, i) => {
                     const r = Math.floor(i / cols);
