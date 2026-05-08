@@ -66,12 +66,22 @@ export default defineConfig({
                     S.listItem().title('🐯 27-28 学年 - 老虎班').id('t-27-28').child(S.documentList().id('td-27-28').title('老虎班 (27-28)').filter('_type == "student" && academicYear == "27-28" && className == "tiger"')),
                   ])
               ),
+
+            S.listItem()
+              .title('🗓️ 当前学年设置')
+              .id('academic-year-config')
+              .child(
+                S.document()
+                  .schemaType('academicYearConfig')
+                  .documentId('academic-year-config')
+                  .title('当前学年设置')
+              ),
             
             S.divider(),
 
             // 自动加载其余所有类型（绘本、儿歌、配置等），但排除掉已经在上面定义过的 student
             ...S.documentTypeListItems().filter(
-              (listItem) => !['student'].includes(listItem.getId() || '')
+              (listItem) => !['student', 'academicYearConfig'].includes(listItem.getId() || '')
             ),
           ])
     }),

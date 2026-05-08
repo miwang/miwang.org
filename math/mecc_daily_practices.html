@@ -308,7 +308,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #eee;">
                 <button onclick="document.getElementById('bday-csv-input').click()" style="background:#f3b236; color:#1e2e46; border:none; padding:8px 16px; border-radius:10px; cursor:pointer; font-size:0.95rem; font-family:var(--kaiti); font-weight:bold; display:flex; align-items:center; gap:6px; transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">📂 批量导入 CSV</button>
                 <input id="bday-csv-input" type="file" accept=".csv" hidden onchange="importBirthdayCSV(this)">
-                <span style="font-size:0.85rem; color:#aaa; font-family:var(--kaiti);">格式：名字,月,日</span>
+                <span id="bday-source-tip" style="font-size:0.85rem; color:#aaa; font-family:var(--kaiti);">格式：名字,月,日</span>
             </div>
 
             <div id="birthday-list" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:4px;"></div>
@@ -323,6 +323,10 @@
         const wStats = JSON.parse(localStorage.getItem('mecc_weather_stats') || '{"sunny":0,"cloudy":0,"rainy":0,"snowy":0,"windy":0}');
         let selectedDateKey = "";
         const holidays = { "2026-1-1": "🎆", "2026-1-19": "✊🏾", "2026-2-14": "💝", "2026-2-16": "🎩", "2026-3-17": "☘️", "2026-4-5": "🐰", "2026-5-10": "💐", "2026-5-25": "🎖️", "2026-6-19": "✊🏿", "2026-7-4": "🎇", "2026-9-7": "👷", "2026-10-31":"🎃", "2026-11-11":"🎗️", "2026-11-26":"🦃", "2026-12-25":"🎄" };
+        const SANITY_DAILY_URL = MECC_CONFIG.SANITY;
+        const BDAY_STORAGE_KEY = 'mecc_birthdays_enc';
+        let sanityBirthdays = [];
+        let sanityBirthdayLoaded = false;
 
         let audioUnlocked = false;
         const unlockInteraction = () => {
@@ -413,6 +417,84 @@
 
         function toZhDate(y, m) { const map = ['零','一','二','三','四','五','六','七','八','九','十','十一','十二']; const yS = y.toString().split('').map(n => map[parseInt(n)]).join(''); return `${yS}年${map[m]}月`; }
 
+        function pickStudentNameForCalendar(stu) {
+            const lang = MECC_CONFIG.getLang();
+            if (lang === 'en') return stu.nameEn || stu.nameZh || stu.name || '';
+            return stu.nameZh || stu.nameEn || stu.name || '';
+        }
+
+        function encodeBirthdayPayload(arr) {
+            try { return btoa(encodeURIComponent(JSON.stringify(arr))); } catch (_) { return ''; }
+        }
+
+        function decodeBirthdayPayload(raw) {
+            try { return JSON.parse(decodeURIComponent(atob(raw))); } catch (_) { return []; }
+        }
+
+        function getBirthdays() {
+            const encoded = localStorage.getItem(BDAY_STORAGE_KEY);
+            if (encoded) return decodeBirthdayPayload(encoded);
+            const legacy = JSON.parse(localStorage.getItem('mecc_birthdays') || '[]');
+            if (legacy.length) saveBirthdays(normalizeBirthdayRows(legacy));
+            return legacy;
+        }
+
+        function saveBirthdays(arr) {
+            localStorage.setItem(BDAY_STORAGE_KEY, encodeBirthdayPayload(arr));
+            localStorage.removeItem('mecc_birthdays');
+        }
+
+        function normalizeBirthdayRows(rows) {
+            const seen = new Set();
+            return rows
+                .filter(r => r && r.name && r.month >= 1 && r.month <= 12 && r.day >= 1 && r.day <= 31)
+                .filter(r => {
+                    const key = `${r.name.toLowerCase()}|${r.month}|${r.day}`;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                })
+                .sort((a, b) => a.month - b.month || a.day - b.day || a.name.localeCompare(b.name));
+        }
+
+        async function loadSanityBirthdays() {
+            const query = '{"cfg":*[_type=="academicYearConfig" && _id=="academic-year-config"][0]{currentAcademicYear},"students":*[_type=="student" && defined(birthday)]{academicYear,birthday,name,nameZh,nameEn}}';
+            try {
+                const resp = await fetch(SANITY_DAILY_URL.buildQueryUrl(query));
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                const currentYear = data?.result?.cfg?.currentAcademicYear || '25-26';
+                const students = Array.isArray(data?.result?.students) ? data.result.students : [];
+                sanityBirthdays = normalizeBirthdayRows(students
+                    .filter(s => s.academicYear === currentYear && s.birthday)
+                    .map(s => {
+                        const parts = String(s.birthday).split('-');
+                        const month = parseInt(parts[1], 10);
+                        const day = parseInt(parts[2], 10);
+                        return { name: pickStudentNameForCalendar(s), month, day };
+                    }));
+                sanityBirthdayLoaded = true;
+            } catch (e) {
+                console.warn('Sanity birthday sync failed, fallback to local birthdays.', e);
+                sanityBirthdays = [];
+                sanityBirthdayLoaded = false;
+            }
+        }
+
+        function getDisplayedBirthdays() {
+            return sanityBirthdayLoaded && sanityBirthdays.length ? sanityBirthdays : getBirthdays();
+        }
+
+        function updateBirthdaySourceTip() {
+            const tip = document.getElementById('bday-source-tip');
+            if (!tip) return;
+            if (sanityBirthdayLoaded && sanityBirthdays.length) {
+                tip.textContent = MECC_CONFIG.getLang() === 'en' ? 'Using current-year birthdays from Sanity' : '当前使用 Sanity 当前学年生日';
+                return;
+            }
+            tip.textContent = MECC_CONFIG.getLang() === 'en' ? 'Format: name,month,day (local fallback)' : '格式：名字,月,日（本地兜底）';
+        }
+
         function initCalendar() {
             const now = new Date(); const y = calYear; const m = calMonth;
             const isCurrentMonth = (y === now.getFullYear() && m === now.getMonth() + 1);
@@ -423,7 +505,7 @@
             const first = new Date(y, m-1, 1).getDay(); const total = new Date(y, m, 0).getDate();
             const grid = document.getElementById('cal-grid-body');
             while (grid.children.length > 7) grid.removeChild(grid.lastChild);
-            const birthdays = JSON.parse(localStorage.getItem('mecc_birthdays') || '[]');
+            const birthdays = getDisplayedBirthdays();
             for(let i=0; i<first; i++) grid.appendChild(document.createElement('div')).className='day-cell other-month';
             for(let d=1; d<=total; d++) {
                 const cell = document.createElement('div'); const key = `${y}-${m}-${d}`;
@@ -572,27 +654,28 @@
             }
         }
 
-        function openBirthdayMgr() { document.getElementById('birthday-modal').style.display = 'flex'; renderBirthdayList(); }
+        function openBirthdayMgr() { document.getElementById('birthday-modal').style.display = 'flex'; updateBirthdaySourceTip(); renderBirthdayList(); }
         function closeBirthdayMgr() { document.getElementById('birthday-modal').style.display = 'none'; }
-        function getBirthdays() { return JSON.parse(localStorage.getItem('mecc_birthdays') || '[]'); }
-        function saveBirthdays(arr) { localStorage.setItem('mecc_birthdays', JSON.stringify(arr)); }
         function addBirthday() {
             const name = document.getElementById('bday-name').value.trim(); const month = parseInt(document.getElementById('bday-month').value); const day = parseInt(document.getElementById('bday-day').value);
             if (!name || !day || day < 1 || day > 31) { alert('请填写完整信息'); return; }
-            const arr = getBirthdays(); arr.push({ name, month, day }); arr.sort((a, b) => a.month - b.month || a.day - b.day);
-            saveBirthdays(arr); document.getElementById('bday-name').value = ''; document.getElementById('bday-day').value = '';
+            const arr = getBirthdays(); arr.push({ name, month, day });
+            const normalized = normalizeBirthdayRows(arr);
+            saveBirthdays(normalized);
+            document.getElementById('bday-name').value = ''; document.getElementById('bday-day').value = '';
             renderBirthdayList(); initCalendar();
         }
         function deleteBirthday(idx) { const arr = getBirthdays(); arr.splice(idx, 1); saveBirthdays(arr); renderBirthdayList(); initCalendar(); }
         
         function renderBirthdayList() {
-            const arr = getBirthdays(); const months = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            const arr = getDisplayedBirthdays(); const months = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
             const list = document.getElementById('birthday-list');
+            const canEdit = !(sanityBirthdayLoaded && sanityBirthdays.length);
             if (arr.length === 0) { list.innerHTML = '<div style="color:#aaa;font-size:0.95rem;text-align:center;padding:20px 0;">暂无生日记录</div>'; return; }
             list.innerHTML = arr.map((b, i) => `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8f9fa;border-radius:10px;font-family:var(--kaiti);border:1px solid #eee;">
                     <span style="font-weight:bold;color:#333;">🎂 ${b.name}</span><span style="color:#888;font-size:0.95rem;">${months[b.month]} ${b.day}日</span>
-                    <button onclick="deleteBirthday(${i})" style="background:#ffeeee;border:none;color:#e74c3c;cursor:pointer;font-size:1rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='#ffcccc'" onmouseout="this.style.background='#ffeeee'">✕</button>
+                    ${canEdit ? `<button onclick="deleteBirthday(${i})" style="background:#ffeeee;border:none;color:#e74c3c;cursor:pointer;font-size:1rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:0.2s;" onmouseover="this.style.background='#ffcccc'" onmouseout="this.style.background='#ffeeee'">✕</button>` : '<span style="font-size:.8rem;color:#96a2b3;">Cloud</span>'}
                 </div>`).join('');
         }
         
@@ -607,13 +690,13 @@
                         if (name && month >= 1 && month <= 12 && day >= 1 && day <= 31) { arr.push({ name, month, day }); added++; }
                     }
                 });
-                arr.sort((a, b) => a.month - b.month || a.day - b.day); saveBirthdays(arr);
+                saveBirthdays(normalizeBirthdayRows(arr));
                 renderBirthdayList(); initCalendar(); alert(`成功导入 ${added} 条生日记录！`);
             };
             reader.readAsText(input.files[0]); input.value = '';
         }
 
-        window.onload = () => { 
+        window.onload = async () => { 
             const lang = MECC_CONFIG.getLang();
             
             const titles_zh = ["📅 日期播报", "🌦️ 天气统计", "📐 形状", "🔢 百数图", "🏫 在校天数", "➕ 十几的练习"];
@@ -623,6 +706,8 @@
             currentNavTitle = t_titles[0];
             MECC_CONFIG.renderGlobalNav(currentNavTitle); 
 
+            await loadSanityBirthdays();
+            updateBirthdaySourceTip();
             initCalendar(); updateW(); initHundredGrid(); updateSchoolDays(); 
         };
     </script>

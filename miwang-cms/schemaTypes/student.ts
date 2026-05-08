@@ -6,10 +6,31 @@ export const student = defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'name',
-      title: '学生姓名',
+      name: 'nameZh',
+      title: '学生中文名',
       type: 'string',
-      validation: Rule => Rule.required()
+      validation: Rule =>
+        Rule.custom((value, context) =>
+          value || context.document?.nameEn ? true : '中文名或英文名至少填写一个'
+        )
+    }),
+    defineField({
+      name: 'nameEn',
+      title: '学生英文名',
+      type: 'string',
+      validation: Rule =>
+        Rule.custom((value, context) =>
+          value || context.document?.nameZh ? true : '中文名或英文名至少填写一个'
+        ),
+    }),
+    defineField({
+      name: 'birthday',
+      title: '生日',
+      type: 'date',
+      options: {
+        dateFormat: 'MM-DD',
+      },
+      description: '仅用于月/日展示（示例：2019-09-24）',
     }),
     defineField({
       name: 'academicYear',
@@ -44,20 +65,28 @@ export const student = defineType({
       title: '学生头像',
       type: 'image',
       options: { hotspot: true }
+    }),
+    defineField({
+      name: 'name',
+      title: '兼容旧字段：学生姓名 (Legacy)',
+      type: 'string',
+      description: '旧页面兼容字段；新数据请优先填写“学生中文名/学生英文名”',
     })
   ],
   preview: {
     select: {
-      title: 'name',
+      nameZh: 'nameZh',
+      nameEn: 'nameEn',
+      legacyName: 'name',
       className: 'className',
       year: 'academicYear',
       media: 'avatar'
     },
     prepare(selection) {
-      const { title, className, year, media } = selection
+      const { nameZh, nameEn, legacyName, className, year, media } = selection
       const classEmoji = className === 'elephant' ? '🐘 大象班' : '🐯 老虎班'
       return {
-        title: title,
+        title: nameZh || nameEn || legacyName || '未命名学生',
         subtitle: `${classEmoji} (${year || '25-26'} 学年)`,
         media: media
       }

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>学生回忆录 - Student Memories</title>
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <script src="../js/config.js"></script>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/common_nav.css" />
+  <style>
+    body{margin:0;padding-top:60px;background:#f7f3ec;color:#1e2e46}
+    .font-zh{font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif}
+    .font-en{font-family:"LXGW WenKai Lite",sans-serif}
+    .main{max-width:1200px;margin:0 auto;padding:22px 16px 48px}
+    .hero{background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 18px rgba(0,0,0,.08);margin-bottom:18px}
+    .hero h2{margin:0 0 6px;color:#174A49}
+    .hero p{margin:0;color:#5f6f88}
+    .year-block{background:#fff;border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 8px 18px rgba(0,0,0,.06)}
+    .year-title{margin:0 0 12px;color:#174A49}
+    .class-title{margin:14px 0 10px;color:#35597b;font-size:1rem}
+    .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+    .avatar-card{background:#f8fbff;border:1px solid #e5ecf5;border-radius:12px;padding:10px;text-align:center}
+    .avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 8px}
+    .name{font-size:.9rem;font-weight:700;color:#2b3550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .state{padding:32px 10px;text-align:center;color:#7a859a}
+  </style>
+</head>
+<body>
+  <script>
+    (function(){
+      var lang = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
+      var backHref = lang === 'en' ? '../parents.html' : '../teachers.html';
+      var backText = lang === 'en' ? 'Back to Parents Portal' : '返回工具台';
+      var titleInner = lang === 'en'
+        ? '<span class="font-en">Student Memories</span>'
+        : '<span class="font-zh">学生回忆录</span>&nbsp;<span class="font-en">Student Memories</span>';
+      document.write(
+        '<nav class="mecc-global-nav">' +
+          '<a href="' + backHref + '" class="mecc-nav-back' + (lang==='en' ? ' en' : '') + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:24px;height:24px;flex-shrink:0;"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '<span>' + backText + '</span>' +
+          '</a>' +
+          '<h1 class="mecc-nav-title">📸 ' + titleInner + '</h1>' +
+        '</nav>'
+      );
+    })();
+  </script>
+
+  <main class="main">
+    <section class="hero">
+      <h2 id="hero-title" class="font-zh">往届学生回忆页</h2>
+      <p id="hero-sub" class="font-zh">按学年和班级查看学生头像档案。</p>
+    </section>
+    <div id="content" class="state font-zh">正在加载…</div>
+  </main>
+
+  <script>
+    var LANG = (typeof MECC_CONFIG !== 'undefined') ? MECC_CONFIG.getLang() : 'zh';
+    var TXT = {
+      loading: LANG === 'en' ? 'Loading student memories…' : '正在加载学生回忆…',
+      empty: LANG === 'en' ? 'No alumni photos yet.' : '暂无往届学生头像数据。',
+      elephant: LANG === 'en' ? '🐘 Elephants' : '🐘 大象班',
+      tiger: LANG === 'en' ? '🐯 Tigers' : '🐯 老虎班',
+    };
+
+    document.getElementById('hero-title').textContent = LANG === 'en' ? 'Student Memories' : '往届学生回忆页';
+    document.getElementById('hero-sub').textContent = LANG === 'en'
+      ? 'Browse alumni photos by academic year and class.'
+      : '按学年和班级查看学生头像档案。';
+    document.getElementById('content').textContent = TXT.loading;
+
+    function escapeHtml(str){
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function pickName(stu){
+      if (LANG === 'en') return stu.nameEn || stu.nameZh || stu.name || '—';
+      return stu.nameZh || stu.nameEn || stu.name || '—';
+    }
+
+    function groupBy(arr, key){
+      return arr.reduce(function(acc, item){
+        var k = item[key] || 'unknown';
+        if(!acc[k]) acc[k] = [];
+        acc[k].push(item);
+        return acc;
+      }, {});
+    }
+
+    async function loadMemories(){
+      var query = '{"cfg":*[_type=="academicYearConfig" && _id=="academic-year-config"][0]{currentAcademicYear},"students":*[_type=="student" && defined(avatar)]|order(academicYear desc,className asc,coalesce(nameZh,nameEn,name) asc){academicYear,className,nameZh,nameEn,name,"photoUrl":avatar.asset->url}}';
+      var url = MECC_CONFIG.SANITY.buildQueryUrl(query);
+      var content = document.getElementById('content');
+      try{
+        var res = await fetch(url);
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        var data = await res.json();
+        var currentYear = data?.result?.cfg?.currentAcademicYear || '25-26';
+        var students = Array.isArray(data?.result?.students) ? data.result.students : [];
+        var alumni = students.filter(function(s){ return s.academicYear && s.academicYear !== currentYear; });
+        if(!alumni.length){
+          content.className = 'state font-zh';
+          content.textContent = TXT.empty;
+          return;
+        }
+        var byYear = groupBy(alumni, 'academicYear');
+        var years = Object.keys(byYear).sort().reverse();
+        var html = '';
+        years.forEach(function(year){
+          html += '<section class="year-block">';
+          html += '<h3 class="year-title font-en">' + escapeHtml(year) + '</h3>';
+          var byClass = groupBy(byYear[year], 'className');
+          ['elephant', 'tiger', 'unknown'].forEach(function(cls){
+            if(!byClass[cls] || !byClass[cls].length) return;
+            var classTitle = cls === 'elephant' ? TXT.elephant : cls === 'tiger' ? TXT.tiger : (LANG === 'en' ? 'Other' : '其他');
+            html += '<h4 class="class-title">' + classTitle + '</h4>';
+            html += '<div class="avatar-grid">';
+            byClass[cls].forEach(function(stu){
+              html += '<article class="avatar-card">';
+              html += '<img class="avatar" src="' + escapeHtml(stu.photoUrl) + '" alt="' + escapeHtml(pickName(stu)) + '" loading="lazy" />';
+              html += '<div class="name">' + escapeHtml(pickName(stu)) + '</div>';
+              html += '</article>';
+            });
+            html += '</div>';
+          });
+          html += '</section>';
+        });
+        content.className = '';
+        content.innerHTML = html;
+      }catch(e){
+        content.className = 'state';
+        content.textContent = (LANG === 'en' ? 'Failed to load data: ' : '数据加载失败：') + (e && e.message ? e.message : 'Unknown');
+      }
+    }
+
+    loadMemories();
+  </script>
+</body>
+</html>
