@@ -84,6 +84,7 @@
             box-sizing: border-box;
             height: 100%; /* 强制占满纵向空间 */
         }
+        #word-pool-mobile { display: none; }
         
         .image-stage { 
             flex: 2.2 1 500px; max-width: 1200px; 
@@ -134,6 +135,20 @@
             width: 60px; height: 60px; font-size: 30px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.2s, background 0.2s; z-index: 10006;
         }
+        #orientation-hint {
+            position: absolute; inset: 0; z-index: 10020; display: none;
+            align-items: center; justify-content: center; background: rgba(255, 249, 234, 0.95); padding: 20px;
+        }
+        .orientation-hint-card {
+            width: min(92vw, 440px); border-radius: 18px; border: 3px solid var(--main-teal);
+            background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,0.12); padding: 18px 16px 14px;
+            text-align: center; color: #1e2e46;
+        }
+        #orientation-hint-text { font-size: 1rem; line-height: 1.45; margin-bottom: 12px; }
+        #orientation-hint-btn {
+            border: none; border-radius: 999px; padding: 8px 18px; font-size: 0.95rem; font-weight: bold;
+            color: #fff; background: var(--main-teal); cursor: pointer;
+        }
 
         @media (max-width: 768px) {
             body { padding-top: 56px; }
@@ -153,13 +168,14 @@
 
             .play-layout { display: flex; flex-direction: column; padding: 5px; gap: 5px; overflow: visible !important; }
             .desktop-top-row { display: flex; flex-direction: column; gap: 5px; width: 100%; min-height: unset; flex: 0 0 auto; } 
-            .image-stage { order: 1; flex: 0 0 28dvh !important; border-radius: 16px !important; border-width: 3px !important; min-height: 28dvh; }
+            .image-stage { order: 1; flex: 0 0 22dvh !important; border-radius: 16px !important; border-width: 3px !important; min-height: 22dvh; }
             .drop-zone-wrapper { order: 2; padding: 0; }
-            .drop-zone { height: 10vh !important; min-height: 70px !important; padding: 5px 10px !important; gap: 4px !important; border-radius: 16px !important; }
-            #word-pool-left { order: 3; flex-direction: row; flex-wrap: wrap; padding: 5px; max-width: none; flex: 0 0 auto; min-height: unset; height: auto; justify-content: center; overflow: visible; gap: 8px; }
-            #word-pool-right { order: 4; flex-direction: row; flex-wrap: wrap; padding: 0 5px 5px; max-width: none; flex: 0 0 auto; min-height: unset; height: auto; justify-content: center; overflow: visible; gap: 8px; }
+            .drop-zone { height: 9dvh !important; min-height: 66px !important; padding: 4px 8px !important; gap: 4px !important; border-radius: 16px !important; }
+            #word-pool-left, #word-pool-right { display: none !important; }
+            #word-pool-mobile { order: 3; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; width: 100%; gap: 6px; padding: 4px 2px 8px; box-sizing: border-box; max-height: 34dvh; overflow-y: auto; }
 
-            .word-brick { font-size: clamp(1.2rem, 4.5vw, 2rem) !important; padding: 8px 16px !important; border-radius: 12px !important; margin: 4px !important; box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important; }
+            .word-brick { font-size: clamp(1rem, 3.7vw, 1.65rem) !important; padding: clamp(6px, 1.2vh, 8px) clamp(10px, 3vw, 14px) !important; border-radius: 12px !important; margin: 0 !important; box-shadow: 0 5px 0 rgba(0,0,0,0.12) !important; }
+            #orientation-hint-text { font-size: 0.95rem; }
         }
 
         .tag-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding: 0 20px; }
@@ -212,6 +228,13 @@
             <div class="drop-zone-wrapper">
                 <div class="drop-zone" id="drop-zone"></div>
             </div>
+            <div id="word-pool-mobile"></div>
+        </div>
+        <div id="orientation-hint">
+            <div class="orientation-hint-card">
+                <div id="orientation-hint-text">横屏体验更好，点击继续</div>
+                <button id="orientation-hint-btn" onclick="dismissOrientationHint()">继续</button>
+            </div>
         </div>
     </div>
 
@@ -228,8 +251,8 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: { title: "句子排排队", all: "全部", byWord: "按字词：", backList: "返回列表", readMode: "📖 全屏读字", hint: "点击任意位置返回", empty: "没有匹配的句子", error: "未能加载数据，请检查网络" },
-            en: { title: "Sentence Builder", all: "All", byWord: "By Word:", backList: "Back to List", readMode: "📖 Full Screen Read", hint: "Click anywhere to return", empty: "No sentences match.", error: "Failed to load data." }
+            zh: { title: "句子排排队", all: "全部", byWord: "按字词：", backList: "返回列表", readMode: "📖 全屏读字", hint: "点击任意位置返回", empty: "没有匹配的句子", error: "未能加载数据，请检查网络", rotateHint: "横屏体验更好，点击继续", continueBtn: "继续" },
+            en: { title: "Sentence Builder", all: "All", byWord: "By Word:", backList: "Back to List", readMode: "📖 Full Screen Read", hint: "Click anywhere to return", empty: "No sentences match.", error: "Failed to load data.", rotateHint: "Landscape works better. Tap to continue.", continueBtn: "Continue" }
         }[LANG];
 
         // ==========================================
@@ -245,6 +268,7 @@
         const playView = document.getElementById('play-view');
         const leftPool = document.getElementById('word-pool-left');
         const rightPool = document.getElementById('word-pool-right');
+        const mobilePool = document.getElementById('word-pool-mobile');
         const zone = document.getElementById('drop-zone');
         let currentLevelIdx = 0, currentData = null;
         let activeThemeTag = null, activeKeyword = null;
@@ -298,9 +322,11 @@
             document.getElementById('close-text').innerText = t.backList;
             document.getElementById('btn-read-mode').innerText = t.readMode;
             document.getElementById('ui-hint').innerText = t.hint;
+            document.getElementById('orientation-hint-text').innerText = t.rotateHint;
+            document.getElementById('orientation-hint-btn').innerText = t.continueBtn;
 
             if (LANG === 'en') {
-                const enElements = ['close-text', 'btn-read-mode', 'ui-hint'];
+                const enElements = ['close-text', 'btn-read-mode', 'ui-hint', 'orientation-hint-text', 'orientation-hint-btn'];
                 enElements.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('font-en');
@@ -405,7 +431,7 @@
             
             listView.style.display = 'none'; playView.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = '';
+            zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = ''; mobilePool.innerHTML = '';
             zone.dataset.locked = ''; document.getElementById('success-controls').style.visibility = 'hidden';
             
             let imgPath = currentData.image;
@@ -418,11 +444,19 @@
                 const brick = document.createElement('div');
                 brick.className = 'word-brick'; brick.innerHTML = splitFonts(word);
                 const color = getColorForWord(word);
-                brick.style.backgroundColor = color; brick.dataset.word = word; brick.dataset.pool = idx % 2 === 0 ? 'left' : 'right';
+                brick.style.backgroundColor = color; brick.dataset.word = word;
+                if (window.innerWidth <= 768) {
+                    brick.dataset.pool = 'mobile';
+                } else {
+                    brick.dataset.pool = idx % 2 === 0 ? 'left' : 'right';
+                }
                 addTouchLogic(brick);
-                if (idx % 2 === 0) leftPool.appendChild(brick); else rightPool.appendChild(brick);
+                if (brick.dataset.pool === 'mobile') mobilePool.appendChild(brick);
+                else if (brick.dataset.pool === 'left') leftPool.appendChild(brick);
+                else rightPool.appendChild(brick);
             });
             autoSizeZone();
+            showOrientationHintIfNeeded();
         }
 
         function getInsertTarget(clientX, clientY, draggingEl) {
@@ -472,7 +506,12 @@
                 else {
                     const zoneRect = zone.getBoundingClientRect();
                     if (touch.clientX >= zoneRect.left - 80 && touch.clientX <= zoneRect.right + 80 && touch.clientY >= zoneRect.top - 80  && touch.clientY <= zoneRect.bottom + 80) zone.insertBefore(el, getInsertTarget(touch.clientX, touch.clientY, el));
-                    else { el.style.fontSize = ''; el.style.padding = ''; el.style.maxWidth = ''; if (el.dataset.pool === 'left') leftPool.appendChild(el); else rightPool.appendChild(el); }
+                    else {
+                        el.style.fontSize = ''; el.style.padding = ''; el.style.maxWidth = '';
+                        if (el.dataset.pool === 'left') leftPool.appendChild(el);
+                        else if (el.dataset.pool === 'right') rightPool.appendChild(el);
+                        else mobilePool.appendChild(el);
+                    }
                 }
                 autoSizeZone(); check();
                 document.removeEventListener('mousemove', moveHandler); document.removeEventListener('touchmove', moveHandler);
@@ -546,9 +585,34 @@
             listView.style.display = 'flex'; 
             playView.style.display = 'none'; 
             document.body.style.overflow = ''; 
+            document.getElementById('orientation-hint').style.display = 'none';
             
             // 🌟 新增：返回列表后恢复之前的滚动位置
             window.scrollTo(0, savedScrollY);
+        }
+
+        function isPortraitMobile() {
+            if (window.innerWidth > 768) return false;
+            return window.matchMedia('(orientation: portrait)').matches || window.innerHeight > window.innerWidth;
+        }
+
+        function showOrientationHintIfNeeded() {
+            const hint = document.getElementById('orientation-hint');
+            hint.style.display = isPortraitMobile() ? 'flex' : 'none';
+        }
+
+        async function tryLockLandscapeBestEffort() {
+            try {
+                if (!isPortraitMobile()) return;
+                const target = document.documentElement;
+                if (!document.fullscreenElement && target.requestFullscreen) await target.requestFullscreen();
+                if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
+            } catch (e) {}
+        }
+
+        async function dismissOrientationHint() {
+            document.getElementById('orientation-hint').style.display = 'none';
+            await tryLockLandscapeBestEffort();
         }
     </script>
 </body>
