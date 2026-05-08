@@ -90,7 +90,7 @@
 
     async function loadMemories(){
       var query = '{"cfg":*[_type=="academicYearConfig" && _id=="academic-year-config"][0]{currentAcademicYear},"students":*[_type=="student" && defined(avatar)]|order(academicYear desc,className asc,coalesce(nameZh,nameEn,name) asc){academicYear,className,nameZh,nameEn,name,"photoUrl":avatar.asset->url}}';
-      var url = 'https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=' + encodeURIComponent(query);
+      var url = MECC_CONFIG.SANITY.buildQueryUrl(query);
       var content = document.getElementById('content');
       try{
         var res = await fetch(url);

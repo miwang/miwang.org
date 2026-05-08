@@ -6,9 +6,9 @@ import crypto from 'node:crypto'
 import process from 'node:process'
 import {createClient} from '@sanity/client'
 
-const PROJECT_ID = 'sow12t1i'
-const DATASET = 'production'
-const API_VERSION = '2023-05-03'
+const DEFAULT_PROJECT_ID = 'sow12t1i'
+const DEFAULT_DATASET = 'production'
+const DEFAULT_API_VERSION = '2023-05-03'
 const ALLOWED_CLASSES = new Set(['elephant', 'tiger'])
 
 function parseArgs(argv) {
@@ -32,6 +32,7 @@ Notes:
   - Default mode is dry-run (no upload/write).
   - Use --apply to upload images and create/update student docs.
   - Requires SANITY_API_TOKEN in environment.
+  - Optional: SANITY_PROJECT_ID / SANITY_DATASET / SANITY_API_VERSION.
 `)
 }
 
@@ -80,7 +81,7 @@ function parseCsv(content) {
 
 function buildDocId(row) {
   const raw = `${row.academicYear}|${row.className}|${row.nameZh}|${row.nameEn}|${row.birthday}`
-  return `student-${crypto.createHash('sha1').update(raw).digest('hex').slice(0, 24)}`
+  return `student-${crypto.createHash('sha256').update(raw).digest('hex')}`
 }
 
 function validateRow(row) {
@@ -116,9 +117,9 @@ async function run() {
   }
 
   const client = createClient({
-    projectId: PROJECT_ID,
-    dataset: DATASET,
-    apiVersion: API_VERSION,
+    projectId: process.env.SANITY_PROJECT_ID || DEFAULT_PROJECT_ID,
+    dataset: process.env.SANITY_DATASET || DEFAULT_DATASET,
+    apiVersion: process.env.SANITY_API_VERSION || DEFAULT_API_VERSION,
     token,
     useCdn: false,
   })

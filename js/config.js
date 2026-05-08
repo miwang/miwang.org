@@ -16,6 +16,16 @@ window.MECC_CONFIG = {
         PARENTS_PORTAL: "../parents.html"                
     },
 
+    SANITY: {
+        PROJECT_ID: "sow12t1i",
+        DATASET: "production",
+        API_VERSION: "v2023-05-03",
+        buildQueryUrl: function(query) {
+            const base = `https://${this.PROJECT_ID}.api.sanity.io/${this.API_VERSION}/data/query/${this.DATASET}?query=`;
+            return `${base}${encodeURIComponent(query)}`;
+        }
+    },
+
     // 语音合成 (TTS) 参数
     VOICE: {
         RATE: 0.85, 

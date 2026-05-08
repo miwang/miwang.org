@@ -323,7 +323,8 @@
         const wStats = JSON.parse(localStorage.getItem('mecc_weather_stats') || '{"sunny":0,"cloudy":0,"rainy":0,"snowy":0,"windy":0}');
         let selectedDateKey = "";
         const holidays = { "2026-1-1": "🎆", "2026-1-19": "✊🏾", "2026-2-14": "💝", "2026-2-16": "🎩", "2026-3-17": "☘️", "2026-4-5": "🐰", "2026-5-10": "💐", "2026-5-25": "🎖️", "2026-6-19": "✊🏿", "2026-7-4": "🎇", "2026-9-7": "👷", "2026-10-31":"🎃", "2026-11-11":"🎗️", "2026-11-26":"🦃", "2026-12-25":"🎄" };
-        const SANITY_DAILY_URL = 'https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query=';
+        const SANITY_DAILY_URL = MECC_CONFIG.SANITY;
+        const BDAY_STORAGE_KEY = 'mecc_birthdays_enc';
         let sanityBirthdays = [];
         let sanityBirthdayLoaded = false;
 
@@ -422,8 +423,26 @@
             return stu.nameZh || stu.nameEn || stu.name || '';
         }
 
-        function getBirthdays() { return JSON.parse(localStorage.getItem('mecc_birthdays') || '[]'); }
-        function saveBirthdays(arr) { localStorage.setItem('mecc_birthdays', JSON.stringify(arr)); }
+        function encodeBirthdayPayload(arr) {
+            try { return btoa(encodeURIComponent(JSON.stringify(arr))); } catch (_) { return ''; }
+        }
+
+        function decodeBirthdayPayload(raw) {
+            try { return JSON.parse(decodeURIComponent(atob(raw))); } catch (_) { return []; }
+        }
+
+        function getBirthdays() {
+            const encoded = localStorage.getItem(BDAY_STORAGE_KEY);
+            if (encoded) return decodeBirthdayPayload(encoded);
+            const legacy = JSON.parse(localStorage.getItem('mecc_birthdays') || '[]');
+            if (legacy.length) saveBirthdays(normalizeBirthdayRows(legacy));
+            return legacy;
+        }
+
+        function saveBirthdays(arr) {
+            localStorage.setItem(BDAY_STORAGE_KEY, encodeBirthdayPayload(arr));
+            localStorage.removeItem('mecc_birthdays');
+        }
 
         function normalizeBirthdayRows(rows) {
             const seen = new Set();
@@ -441,7 +460,7 @@
         async function loadSanityBirthdays() {
             const query = '{"cfg":*[_type=="academicYearConfig" && _id=="academic-year-config"][0]{currentAcademicYear},"students":*[_type=="student" && defined(birthday)]{academicYear,birthday,name,nameZh,nameEn}}';
             try {
-                const resp = await fetch(SANITY_DAILY_URL + encodeURIComponent(query));
+                const resp = await fetch(SANITY_DAILY_URL.buildQueryUrl(query));
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const data = await resp.json();
                 const currentYear = data?.result?.cfg?.currentAcademicYear || '25-26';

@@ -9,12 +9,19 @@ export const student = defineType({
       name: 'nameZh',
       title: '学生中文名',
       type: 'string',
-      validation: Rule => Rule.required()
+      validation: Rule =>
+        Rule.custom((value, context) =>
+          value || context.document?.nameEn ? true : '中文名或英文名至少填写一个'
+        )
     }),
     defineField({
       name: 'nameEn',
       title: '学生英文名',
       type: 'string',
+      validation: Rule =>
+        Rule.custom((value, context) =>
+          value || context.document?.nameZh ? true : '中文名或英文名至少填写一个'
+        ),
     }),
     defineField({
       name: 'birthday',

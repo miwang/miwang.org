@@ -21,7 +21,7 @@ Daily practice birthday sync will only show students from that year.
 
 Template file:
 
-- `/home/runner/work/miwang.org/miwang.org/miwang-cms/tools/student_import_template.csv`
+- `./tools/student_import_template.csv`
 
 Required CSV columns:
 
@@ -38,6 +38,9 @@ node tools/student_batch_import.mjs --csv ./tools/student_import_template.csv --
 # 2) Apply write (create/update docs + upload photos)
 SANITY_API_TOKEN=your_token_here \
 node tools/student_batch_import.mjs --csv ./your_students.csv --photos ./your_photos --apply
+
+# Optional overrides (defaults already set for this project)
+SANITY_PROJECT_ID=sow12t1i SANITY_DATASET=production SANITY_API_VERSION=2023-05-03
 ```
 
 Behavior:
