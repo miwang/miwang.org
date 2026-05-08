@@ -524,7 +524,7 @@ if (isEnglish) {
         const boardZone = document.getElementById('boardZone');
         const gameContainer = document.getElementById('gameContainer');
         const ruleBanner = document.getElementById('ruleText');
-        const DEFAULT_PIECE_SIZE = 115; // 与 CSS :root 的默认 --piece-size 保持一致
+        const DEFAULT_PIECE_SIZE = 115; // 与CSS :root的默认--piece-size保持一致
         const MOBILE_BREAKPOINT = 900;
         const MOBILE_SIDE_MARGIN = 8;
         const MOBILE_MIN_COLS = 3;
@@ -587,7 +587,8 @@ if (isEnglish) {
 
         function arrangeGrid(blocks) {
             const cssPieceSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--piece-size')) || DEFAULT_PIECE_SIZE;
-            const w = blocks[0]?.offsetWidth || cssPieceSize; 
+            const firstWidth = blocks[0]?.offsetWidth;
+            const w = (typeof firstWidth === 'number' && firstWidth > 0) ? firstWidth : cssPieceSize;
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
             const isMobile = screenW <= MOBILE_BREAKPOINT;
