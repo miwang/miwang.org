@@ -931,6 +931,8 @@
     let allWorksByBook = {};    /* { bookName: [work, ...] } */
     let currentBookName = '';   /* 当前打开的书名 */
 
+    const FALLBACK_BOOK_KEY = '其他';
+
     /* ─── 初始化 ─── */
     async function init() {
       try {
@@ -946,7 +948,7 @@
 
         /* 按书名分组 */
         result.forEach(work => {
-          const key = work.book || '其他';
+          const key = work.book || FALLBACK_BOOK_KEY;
           if (!allWorksByBook[key]) allWorksByBook[key] = [];
           allWorksByBook[key].push(work);
         });
@@ -965,7 +967,7 @@
     function renderBookGallery() {
       const gallery = document.getElementById('book-gallery');
       gallery.innerHTML = '';
-      const books = Object.keys(allWorksByBook);
+      const books = Object.keys(allWorksByBook).sort((a, b) => a.localeCompare(b, 'zh'));
       books.forEach((bookName, idx) => {
         const works = allWorksByBook[bookName];
         const card = document.createElement('div');
@@ -1009,7 +1011,7 @@
         card.className = 'work-item-card';
         card.style.animationDelay = `${idx * 60}ms`;
 
-        const thumbId = `thumb-${Math.random().toString(36).substr(2, 9)}`;
+        const thumbId = `thumb-${Math.random().toString(36).slice(2, 11)}`;
 
         const authorHTML = work.author
           ? `<div class="card-author-row">
