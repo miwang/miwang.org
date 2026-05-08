@@ -14,7 +14,7 @@
   <style>
     /* ══════════════════════════════════════════
        字体 & 全局变量
-    ═════════════════���════════════════════════ */
+    ══════════════════════════════════════════ */
     :root {
       --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", sans-serif;
       --font-en: "LXGW WenKai Lite", sans-serif;
@@ -36,7 +36,7 @@
     }
     .en, #current-page, #total-pages, .page-label,
     .author-label, #view-book, .card-author-name,
-    .info-label, .badge-unit {
+    .info-label, .badge-unit, .book-count-badge {
       font-family: var(--font-en) !important;
     }
 
@@ -96,21 +96,181 @@
     }
 
     /* ══════════════════════════════════════════
-       Gallery 网格
+       书本画廊（第一层）
+    ══════════════════════════════════════════ */
+    #book-gallery {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 32px;
+      padding: 0 24px 80px;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .book-card {
+      background: white;
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform .3s ease, box-shadow .3s ease;
+      animation: cardIn .45s both;
+      display: flex;
+      flex-direction: column;
+    }
+    .book-card:hover {
+      transform: translateY(-10px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 书本封面区 */
+    .book-cover {
+      height: 200px;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-mid) 100%);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* 装饰圆 */
+    .book-cover::before {
+      content: '';
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      bottom: -60px; right: -40px;
+      pointer-events: none;
+    }
+    .book-cover::after {
+      content: '';
+      position: absolute;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      top: -30px; left: -30px;
+      pointer-events: none;
+    }
+    .book-cover-icon {
+      font-size: 4rem;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.15));
+    }
+    /* 悬停时蒙层 */
+    .book-card:hover .book-cover::before,
+    .book-card:hover .book-cover::after {
+      opacity: 0;
+    }
+
+    /* 作品数量角标 */
+    .book-count-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: rgba(255,255,255,.92);
+      color: var(--teal);
+      font-size: .72rem;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      letter-spacing: .06em;
+      box-shadow: 0 2px 8px rgba(0,0,0,.10);
+      z-index: 2;
+    }
+
+    .book-meta {
+      padding: 18px 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .book-title {
+      margin: 0;
+      color: #3a6a6b;
+      font-size: 1.2rem;
+      font-weight: bold;
+      line-height: 1.4;
+    }
+    .book-subtitle {
+      color: var(--teal-mid);
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .book-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--teal), var(--teal-mid));
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       书内作品画廊（第二层）标题栏
+    ══════════════════════════════════════════ */
+    #works-header {
+      display: none;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px 20px;
+      align-items: center;
+      gap: 14px;
+    }
+    .works-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      color: var(--teal);
+      padding: 0;
+      cursor: pointer;
+      font-family: var(--font-zh);
+      font-size: .92rem;
+      font-weight: bold;
+      letter-spacing: .04em;
+      transition: color .2s;
+      flex-shrink: 0;
+    }
+    .works-back-btn:hover { color: var(--gold); }
+    .works-back-btn .btn-arrow { transition: transform .2s; }
+    .works-back-btn:hover .btn-arrow { transform: translateX(-3px); }
+
+    .works-header-title {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #3a6a6b;
+      line-height: 1.3;
+    }
+    .works-header-count {
+      font-family: var(--font-en);
+      font-size: .8rem;
+      color: var(--teal-mid);
+      background: var(--teal-light);
+      padding: 2px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       书内作品 Gallery 网格（第二层）
     ══════════════════════════════════════════ */
     #work-gallery {
       max-width: 1180px;
       margin: 0 auto;
-      display: grid;
+      display: none;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 28px;
       padding: 0 24px 80px;
-    }
-
-    /* 卡片入场动画 */
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
 
     .work-item-card {
@@ -573,7 +733,18 @@
     @media (max-width: 640px) {
       body { padding-top: 60px; }
 
-      /* 画廊：两列，间距收紧 */
+      /* 书本画廊：两列 */
+      #book-gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        padding: 0 12px 60px;
+      }
+      .book-cover { height: 140px; }
+      .book-cover-icon { font-size: 3rem; }
+      .book-meta { padding: 12px 12px 14px; gap: 5px; }
+      .book-title { font-size: 1rem; }
+
+      /* 书内画廊：两列，间距收紧 */
       #work-gallery,
       .skeleton-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -583,6 +754,14 @@
       .card-thumb { height: 160px; }
       .card-meta  { padding: 10px 12px 14px; gap: 6px; }
       .card-topic { font-size: .88rem; }
+
+      /* 书内标题栏 */
+      #works-header {
+        padding: 0 12px 14px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .works-header-title { font-size: 1rem; }
 
       /* Viewer：改为纵向布局，PDF 在上，信息栏在下 */
       #work-viewer-section { overflow: hidden; }
@@ -658,13 +837,25 @@
     <p>暂时还没有作品，敬请期待！</p>
   </div>
 
-  <!-- 画廊 -->
+  <!-- 书本画廊（第一层） -->
+  <div id="book-gallery"></div>
+
+  <!-- 书内作品标题栏（第二层） -->
+  <div id="works-header">
+    <button class="works-back-btn" onclick="showBookGallery()" aria-label="返回书本列表">
+      <span class="btn-arrow" aria-hidden="true">←</span> 所有书本
+    </button>
+    <h2 class="works-header-title" id="works-header-title">---</h2>
+    <span class="works-header-count" id="works-header-count"></span>
+  </div>
+
+  <!-- 书内作品画廊（第二层） -->
   <div id="work-gallery"></div>
 
   <!-- ══ Viewer ══ -->
   <div id="work-viewer-section">
     <div class="viewer-toolbar">
-      <button class="back-btn" onclick="showGallery()" aria-label="返回作品列表"><span class="btn-arrow" aria-hidden="true">←</span> 返回列表</button>
+      <button class="back-btn" onclick="showWorkGallery()" aria-label="返回作品列表"><span class="btn-arrow" aria-hidden="true">←</span> 返回列表</button>
       <div class="page-counter-wrap">
         <span class="page-label">PAGE</span>
         <span id="current-page">1</span>
@@ -735,7 +926,10 @@
     let pdfDoc = null, pageNum = 1, isRendering = false;
     let cachedAvailWidth = null, cachedAvailHeight = null;
     let totalPages = 0;
-    let savedScrollY = 0;   /* ← 保存列表滚动位置 */
+    let savedScrollY = 0;       /* 保存第二层滚动位置 */
+    let savedBookScrollY = 0;   /* 保存第一层滚动位置 */
+    let allWorksByBook = {};    /* { bookName: [work, ...] } */
+    let currentBookName = '';   /* 当前打开的书名 */
 
     /* ─── 初始化 ─── */
     async function init() {
@@ -750,41 +944,14 @@
           return;
         }
 
-        const gallery = document.getElementById('work-gallery');
-        result.forEach((work, idx) => {
-          const card    = document.createElement('div');
-          card.className = 'work-item-card';
-          card.style.animationDelay = `${idx * 60}ms`;
-
-          const thumbId = `thumb-${Math.random().toString(36).substr(2, 9)}`;
-
-          const authorHTML = work.author
-            ? `<div class="card-author-row">
-                 <img class="card-avatar"
-                      src="${work.author.avatarUrl || ''}"
-                      alt="${work.author.name}"
-                      onerror="this.style.display='none'">
-                 <span class="card-author-name">${work.author.name}</span>
-               </div>`
-            : '';
-
-          const unitLabel = work.unit ? work.unit : '';
-
-          card.innerHTML = `
-            <div class="card-thumb">
-              <canvas id="${thumbId}"></canvas>
-              ${unitLabel ? `<div class="badge-unit">${unitLabel}</div>` : ''}
-            </div>
-            <div class="card-meta">
-              <h3 class="card-topic">${work.topic || work.unit || '---'}</h3>
-              ${authorHTML}
-            </div>
-            <div class="card-stripe"></div>
-          `;
-          card.onclick = () => openWork(work);
-          gallery.appendChild(card);
-          generateThumb(work.pdfUrl, thumbId);
+        /* 按书名分组 */
+        result.forEach(work => {
+          const key = work.book || '其他';
+          if (!allWorksByBook[key]) allWorksByBook[key] = [];
+          allWorksByBook[key].push(work);
         });
+
+        renderBookGallery();
 
       } catch (e) {
         document.getElementById('skeleton-grid').style.display = 'none';
@@ -792,6 +959,96 @@
         msg.innerText = '数据加载失败，请稍后重试。';
         msg.style.display = 'block';
       }
+    }
+
+    /* ─── 渲染书本画廊（第一层） ─── */
+    function renderBookGallery() {
+      const gallery = document.getElementById('book-gallery');
+      gallery.innerHTML = '';
+      const books = Object.keys(allWorksByBook);
+      books.forEach((bookName, idx) => {
+        const works = allWorksByBook[bookName];
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.style.animationDelay = `${idx * 60}ms`;
+        card.innerHTML = `
+          <div class="book-cover">
+            <span class="book-cover-icon">📚</span>
+            <span class="book-count-badge">${works.length} 篇</span>
+          </div>
+          <div class="book-meta">
+            <h3 class="book-title">《${bookName}》</h3>
+            <div class="book-subtitle">共 ${works.length} 篇学生习作</div>
+          </div>
+          <div class="book-stripe"></div>
+        `;
+        card.onclick = () => showBookWorks(bookName);
+        gallery.appendChild(card);
+      });
+      gallery.style.display = 'grid';
+    }
+
+    /* ─── 显示某本书的作品（第二层） ─── */
+    function showBookWorks(bookName) {
+      savedBookScrollY = window.scrollY;
+      currentBookName  = bookName;
+      const works = allWorksByBook[bookName] || [];
+
+      document.getElementById('book-gallery').style.display   = 'none';
+
+      /* 设置标题栏 */
+      document.getElementById('works-header-title').innerText = `《${bookName}》`;
+      document.getElementById('works-header-count').innerText = `${works.length} 篇`;
+      document.getElementById('works-header').style.display   = 'flex';
+
+      /* 填充作品 */
+      const gallery = document.getElementById('work-gallery');
+      gallery.innerHTML = '';
+      works.forEach((work, idx) => {
+        const card    = document.createElement('div');
+        card.className = 'work-item-card';
+        card.style.animationDelay = `${idx * 60}ms`;
+
+        const thumbId = `thumb-${Math.random().toString(36).substr(2, 9)}`;
+
+        const authorHTML = work.author
+          ? `<div class="card-author-row">
+               <img class="card-avatar"
+                    src="${work.author.avatarUrl || ''}"
+                    alt="${work.author.name}"
+                    onerror="this.style.display='none'">
+               <span class="card-author-name">${work.author.name}</span>
+             </div>`
+          : '';
+
+        const unitLabel = work.unit ? work.unit : '';
+
+        card.innerHTML = `
+          <div class="card-thumb">
+            <canvas id="${thumbId}"></canvas>
+            ${unitLabel ? `<div class="badge-unit">${unitLabel}</div>` : ''}
+          </div>
+          <div class="card-meta">
+            <h3 class="card-topic">${work.topic || work.unit || '---'}</h3>
+            ${authorHTML}
+          </div>
+          <div class="card-stripe"></div>
+        `;
+        card.onclick = () => openWork(work);
+        gallery.appendChild(card);
+        generateThumb(work.pdfUrl, thumbId);
+      });
+
+      gallery.style.display = 'grid';
+      window.scrollTo(0, 0);
+    }
+
+    /* ─── 返回书本画廊（第一层） ─── */
+    function showBookGallery() {
+      document.getElementById('work-gallery').style.display  = 'none';
+      document.getElementById('works-header').style.display  = 'none';
+      document.getElementById('book-gallery').style.display  = 'grid';
+      requestAnimationFrame(() => window.scrollTo(0, savedBookScrollY));
     }
 
     /* ─── 缩略图 ─── */
@@ -810,11 +1067,12 @@
       } catch (e) {}
     }
 
-    /* ─── 打开作品 ─── */
+    /* ─── 打开作品（进入 PDF Viewer） ─── */
     function openWork(work) {
-      savedScrollY = window.scrollY;   /* ← 保存当前滚动位置 */
+      savedScrollY = window.scrollY;   /* 保存第二层滚动位置 */
       document.querySelector('.mecc-global-nav').style.display = 'none';
       document.getElementById('work-gallery').style.display    = 'none';
+      document.getElementById('works-header').style.display    = 'none';
       document.getElementById('empty-state').style.display     = 'none';
       const viewer = document.getElementById('work-viewer-section');
       viewer.style.display          = 'flex';
@@ -845,15 +1103,15 @@
       loadPDF(work.pdfUrl);
     }
 
-    /* ─── 返回列表 ─── */
-    function showGallery() {
+    /* ─── 返回作品列表（第二层） ─── */
+    function showWorkGallery() {
       document.querySelector('.mecc-global-nav').style.display = '';
-      document.getElementById('work-gallery').style.display    = 'grid';
       document.getElementById('work-viewer-section').style.display = 'none';
+      document.getElementById('works-header').style.display    = 'flex';
+      document.getElementById('work-gallery').style.display    = 'grid';
       pdfDoc = null;
       updateDots(0, 0);
       updateProgressBar(0, 0);
-      /* ← 恢复之前的滚动位置 */
       requestAnimationFrame(() => window.scrollTo(0, savedScrollY));
     }
 
@@ -959,7 +1217,7 @@
       if (document.getElementById('work-viewer-section').style.display === 'none') return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown') changePage(1);
       if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   || e.key === 'PageUp')   changePage(-1);
-      if (e.key === 'Escape') showGallery();
+      if (e.key === 'Escape') showWorkGallery();
     });
 
     /* ─── Resize ─── */
