@@ -524,6 +524,7 @@ if (isEnglish) {
         const boardZone = document.getElementById('boardZone');
         const gameContainer = document.getElementById('gameContainer');
         const ruleBanner = document.getElementById('ruleText');
+        const DEFAULT_PIECE_SIZE = 115; // 与 CSS :root 的默认 --piece-size 保持一致
         const MOBILE_BREAKPOINT = 900;
         const MOBILE_SIDE_MARGIN = 8;
         const MOBILE_MIN_COLS = 3;
@@ -585,7 +586,7 @@ if (isEnglish) {
         }
 
         function arrangeGrid(blocks) {
-            const cssPieceSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--piece-size')) || 115;
+            const cssPieceSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--piece-size')) || DEFAULT_PIECE_SIZE;
             const w = blocks[0]?.offsetWidth || cssPieceSize; 
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
@@ -598,6 +599,7 @@ if (isEnglish) {
                 const cols = Math.max(MOBILE_MIN_COLS, Math.min(MOBILE_MAX_COLS, Math.floor((screenW - MOBILE_SIDE_MARGIN * 2 + gap) / (w + gap))));
                 const totalW = cols * w + (cols - 1) * gap;
                 const startX = Math.max(MOBILE_SIDE_MARGIN, (screenW - totalW) / 2);
+                // 先把棋盘底部换算到 gameContainer 的局部坐标，再在其下方留出固定间距摆放拖拽卡片
                 const startY = Math.max(boardRect.bottom - containerRect.top + MOBILE_SPACING_BELOW_BOARD, MOBILE_MIN_TOP_FALLBACK);
 
                 blocks.forEach((block, i) => {
