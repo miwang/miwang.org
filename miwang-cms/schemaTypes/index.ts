@@ -14,6 +14,7 @@ import { extraPhrase } from './extraPhrase' // 🌟 1. 引入新加的补充词�
 import { studentWork } from './studentWork'
 import { hallOfFame } from './hallOfFame'
 import { pictureTalk } from './pictureTalk' // 🌟 引入看图说话模型
+import { academicYearConfig } from './academicYearConfig'
 
 
 
@@ -35,4 +36,5 @@ export const schemaTypes = [
   studentWork,
   hallOfFame,
   pictureTalk, // 🌟 注册看图说话
+  academicYearConfig,
  ]
