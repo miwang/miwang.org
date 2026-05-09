@@ -64,8 +64,9 @@
             position:absolute; bottom: min(70px, 8vh); left: 50%; margin-left: -90px; 
             width: 180px; height: 110px; cursor: pointer;
         }
-        .basket-back { position: absolute; top: 0; left: 10px; width: 160px; height: 60px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg"><path d="M 0 30 Q 80 80 160 30 Z" fill="%238D6E63"/></svg>'); background-size: 100% 100%; z-index: 5; }
-        .basket-front { position: absolute; bottom: 0; left: 0; width: 180px; height: 100px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 180 100" xmlns="http://www.w3.org/2000/svg"><path d="M 5 25 L 175 25 L 150 95 Q 90 110 30 95 Z" fill="%23FFB300" stroke="%23E65100" stroke-width="4"/><path d="M 25 45 L 155 45 M 28 65 L 152 65 M 32 85 L 148 85 M 60 25 L 50 95 M 90 25 L 90 100 M 120 25 L 130 95" stroke="%23E65100" stroke-width="3" opacity="0.6"/><rect x="0" y="15" width="180" height="15" rx="5" fill="%23FFCA28" stroke="%23E65100" stroke-width="4"/></svg>'); background-size: 100% 100%; z-index: 15; }
+        .basket-handle { position: absolute; top: -30px; left: 18px; width: 144px; height: 38px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 144 38" xmlns="http://www.w3.org/2000/svg"><path d="M 8 37 C 8 8 34 3 72 3 C 110 3 136 8 136 37" fill="none" stroke="%235D3A1A" stroke-width="14" stroke-linecap="round"/><path d="M 8 37 C 8 8 34 3 72 3 C 110 3 136 8 136 37" fill="none" stroke="%23C4966A" stroke-width="9" stroke-linecap="round"/><path d="M 20 37 C 20 16 40 9 72 9 C 104 9 124 16 124 37" fill="none" stroke="%23E8C090" stroke-width="3" stroke-linecap="round" opacity="0.55"/></svg>'); background-size: 100% 100%; z-index: 4; }
+        .basket-back { position: absolute; top: 8px; left: 10px; width: 160px; height: 60px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg"><ellipse cx="80" cy="40" rx="76" ry="20" fill="%23784421"/><ellipse cx="80" cy="36" rx="58" ry="13" fill="%23A05020" opacity="0.65"/></svg>'); background-size: 100% 100%; z-index: 5; }
+        .basket-front { position: absolute; bottom: 0; left: 0; width: 180px; height: 100px; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 180 100" xmlns="http://www.w3.org/2000/svg"><path d="M 10 22 L 170 22 L 148 93 Q 90 108 32 93 Z" fill="%23C4966A"/><path d="M 13 37 L 167 37 L 163 45 L 17 45 Z" fill="%23B07840" opacity="0.55"/><path d="M 18 53 L 162 53 L 157 61 L 23 61 Z" fill="%23B07840" opacity="0.55"/><path d="M 24 69 L 156 69 L 150 77 L 30 77 Z" fill="%23B07840" opacity="0.55"/><path d="M 31 85 L 149 85 L 143 93 Q 90 106 37 93 Z" fill="%23B07840" opacity="0.45"/><path d="M 50 22 L 44 93" stroke="%23784421" stroke-width="2" opacity="0.45"/><path d="M 75 22 L 72 100" stroke="%23784421" stroke-width="2" opacity="0.45"/><path d="M 90 22 L 90 100" stroke="%23784421" stroke-width="2" opacity="0.45"/><path d="M 105 22 L 108 100" stroke="%23784421" stroke-width="2" opacity="0.45"/><path d="M 130 22 L 136 93" stroke="%23784421" stroke-width="2" opacity="0.45"/><rect x="4" y="13" width="172" height="14" rx="7" fill="%23784421" stroke="%235D3A1A" stroke-width="1.5"/><rect x="8" y="15" width="164" height="7" rx="3" fill="%23C4966A" opacity="0.35"/><path d="M 18 28 Q 90 25 162 28 L 158 36 Q 90 32 22 36 Z" fill="rgba(255,255,255,0.13)"/></svg>'); background-size: 100% 100%; z-index: 15; }
 
         .fruit { 
             position:absolute; width: 75px; height: 75px; z-index: 10; cursor:pointer; 
@@ -112,9 +113,13 @@
             .target-board { padding: 6px 12px; top: 15px; }
 
             /* 🌟 移动端适配调整 */
-            #basket-container { width: 140px; height: 90px; bottom: 50px; margin-left: -70px; }
+            #basket-container { width: 100px; height: 65px; bottom: 45px; margin-left: -50px; }
+            .basket-handle { top: -18px; left: 10px; width: 80px; height: 22px; }
+            .basket-back { top: 5px; left: 6px; width: 88px; height: 36px; }
+            .basket-front { width: 100px; height: 57px; }
             .fruit { width: 64px; height: 64px; }
             .fruit span { width: 40px; height: 40px; font-size: 1.5rem; }
+            .score-pill { font-size: 0.8rem; padding: 4px 8px; top: 12px; right: 10px; }
             
             .btn { font-size:0.9rem; padding:6px 12px; }
             .btn-start { font-size:1rem; padding:6px 20px; }
@@ -141,6 +146,7 @@
         <div class="score-pill"><span id="ui-score-label">进度</span>: <span id="score" class="font-en">0 / 20</span></div>
         
         <div id="basket-container" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
+            <div class="basket-handle"></div>
             <div class="basket-back"></div>
             <div class="basket-front"></div>
         </div>
