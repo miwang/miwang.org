@@ -32,6 +32,8 @@
             flex-direction: column;
             height: 100vh;
             margin: 0;
+            padding-top: 60px;   /* 为 position:fixed 的导航栏留出空间 */
+            box-sizing: border-box;
         }
 
         /* 🌟 导航栏布局与文字 */
@@ -296,39 +298,52 @@
 
         @media (max-width: 900px) {
             :root {
-                --piece-size: 72px;
-                --board-gap: 8px;
-                --board-pad-y: 12px;
-                --board-pad-x: 12px;
+                --piece-size: 64px;
+                --board-gap: 7px;
+                --board-pad-y: 10px;
+                --board-pad-x: 10px;
             }
 
             body {
-                overflow: auto;
-                touch-action: manipulation;
+                overflow: hidden;
+                touch-action: none;
             }
 
             .game-container {
-                align-items: flex-start;
-                padding-top: 10px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 8px 8px 0;
             }
 
             .puzzle-board {
                 grid-template-columns: repeat(5, 1fr);
+                flex-shrink: 0;
             }
 
+            /* 规则提示横幅：脱离 absolute，回到正常流，紧跟棋盘下方 */
             .rule-banner {
-                bottom: 8px;
+                position: static;
+                left: auto;
+                bottom: auto;
+                transform: none;
                 max-width: calc(100vw - 16px);
                 white-space: normal;
-                font-size: 0.95rem;
-                line-height: 1.35;
-                padding: 8px 14px;
+                font-size: 0.88rem;
+                line-height: 1.4;
+                padding: 7px 14px;
+                margin: 8px 0 0;
+                flex-shrink: 0;
+            }
+
+            .rule-banner.unlocked {
+                transform: scale(1.02);
             }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 430px) {
             :root {
-                --piece-size: 62px;
+                --piece-size: 58px;
             }
         }
     </style>
@@ -596,13 +611,13 @@ if (isEnglish) {
 
             if (isMobile) {
                 const containerRect = gameContainer.getBoundingClientRect();
-                const boardRect = boardZone.getBoundingClientRect();
+                const bannerRect = ruleBanner.getBoundingClientRect();
                 const gap = Math.max(MOBILE_MIN_GAP, Math.round(w * 0.1));
                 const cols = Math.max(MOBILE_MIN_COLS, Math.min(MOBILE_MAX_COLS, Math.floor((screenW - MOBILE_SIDE_MARGIN * 2 + gap) / (w + gap))));
                 const totalW = cols * w + (cols - 1) * gap;
                 const startX = Math.max(MOBILE_SIDE_MARGIN, (screenW - totalW) / 2);
-                // 先把棋盘底部换算到 gameContainer 的局部坐标，再在其下方留出固定间距摆放拖拽卡片
-                const startY = Math.max(boardRect.bottom - containerRect.top + MOBILE_SPACING_BELOW_BOARD, MOBILE_MIN_VERTICAL_POSITION);
+                // 将提示横幅底部换算为 gameContainer 的局部坐标，在其下方摆放拖拽卡片
+                const startY = Math.max(bannerRect.bottom - containerRect.top + MOBILE_SPACING_BELOW_BOARD, MOBILE_MIN_VERTICAL_POSITION);
 
                 blocks.forEach((block, i) => {
                     const r = Math.floor(i / cols);
