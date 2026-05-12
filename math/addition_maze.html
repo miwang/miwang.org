@@ -363,7 +363,8 @@
 
         function rememberCell(r, c) {
             const key = `${r},${c}`;
-            selectionHistory = selectionHistory.filter(item => item !== key);
+            const idx = selectionHistory.indexOf(key);
+            if (idx !== -1) selectionHistory.splice(idx, 1);
             selectionHistory.push(key);
         }
 
@@ -378,7 +379,7 @@
             for (let i = selectionHistory.length - 1; i >= 0; i--) {
                 const [r, c] = selectionHistory[i].split(',').map(Number);
                 const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-                if (cell && ['selected', 'incorrect', 'correct'].some(cls => cell.classList.contains(cls))) {
+                if (cell && (cell.classList.contains('selected') || cell.classList.contains('incorrect') || cell.classList.contains('correct'))) {
                     return { r, c, cell };
                 }
             }
