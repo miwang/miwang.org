@@ -252,6 +252,7 @@
         };
 
         let currentTarget = 0; let rows = 8; let cols = 11; let endCellPos = {r: rows-1, c: cols-1};
+        let selectionHistory = [];
 
         function init() {
             const grid = document.getElementById('number-grid'); grid.innerHTML = '';
@@ -265,6 +266,7 @@
         function showStartPage() {
             document.getElementById('start-page').classList.add('active');
             document.getElementById('game-page').classList.remove('active');
+            selectionHistory = [];
             init(); 
         }
 
@@ -275,6 +277,7 @@
             
             if (window.innerWidth < 900) { rows = 8; cols = 5; } else { rows = 8; cols = 11; }
             endCellPos = {r: rows-1, c: cols-1};
+            selectionHistory = [];
             renderMaze(generateMazeData(num, rows, cols));
         }
 
@@ -337,10 +340,21 @@
         }
 
         function handleCellClick(cell, r, c) {
-            if (cell.classList.contains('correct')) { updateHints(r, c, cell); return; }
+            if (cell.classList.contains('correct')) {
+                rememberCell(r, c);
+                updateHints(r, c, cell);
+                return;
+            }
             if (cell.classList.contains('selected') || cell.classList.contains('incorrect')) {
-                cell.classList.remove('selected', 'incorrect', 'shake'); clearHints();
-            } else { cell.classList.add('selected'); updateHints(r, c, cell); }
+                const fallback = forgetCellAndGetPrevious(r, c);
+                cell.classList.remove('selected', 'incorrect', 'shake');
+                clearHints();
+                if (fallback) updateHints(fallback.r, fallback.c, fallback.cell);
+            } else {
+                cell.classList.add('selected');
+                rememberCell(r, c);
+                updateHints(r, c, cell);
+            }
         }
 
         function updateHints(r, c, currentCell) {
@@ -358,6 +372,30 @@
         }
 
         function clearHints() { document.querySelectorAll('.hint-arrow').forEach(el => el.remove()); }
+
+        function rememberCell(r, c) {
+            const key = `${r},${c}`;
+            selectionHistory = selectionHistory.filter(item => item !== key);
+            selectionHistory.push(key);
+        }
+
+        function forgetCellAndGetPrevious(r, c) {
+            const key = `${r},${c}`;
+            const removeIdx = selectionHistory.lastIndexOf(key);
+            if (removeIdx !== -1) selectionHistory.splice(removeIdx, 1);
+            return getLatestHintAnchor();
+        }
+
+        function getLatestHintAnchor() {
+            for (let i = selectionHistory.length - 1; i >= 0; i--) {
+                const [r, c] = selectionHistory[i].split(',').map(Number);
+                const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+                if (cell && (cell.classList.contains('selected') || cell.classList.contains('incorrect') || cell.classList.contains('correct'))) {
+                    return { r, c, cell };
+                }
+            }
+            return null;
+        }
 
         function checkAnswers() {
             clearHints(); let hasWrong = false; let hasSelected = false;
