@@ -1,5 +1,6 @@
 // 引入你所有的图纸文件
 import { book } from './book'
+import { parentContact } from './parentContact'
 import { word } from './word'
 import { sentence } from './sentence'
 import { song } from './song'
@@ -30,6 +31,7 @@ export const schemaTypes = [
   gameAudio,
   focusWall,
   student,
+  parentContact,
   centerConfig,
   sentenceConfig, 
   extraPhrase, // 🌟 2. 注册进系统

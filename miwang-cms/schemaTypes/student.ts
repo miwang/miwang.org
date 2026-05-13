@@ -71,7 +71,47 @@ export const student = defineType({
       title: '兼容旧字段：学生姓名 (Legacy)',
       type: 'string',
       description: '旧页面兼容字段；新数据请优先填写“学生中文名/学生英文名”',
-    })
+    }),
+    defineField({
+      name: 'homeroomCode',
+      title: 'Homeroom 编号 (原始)',
+      type: 'string',
+      description: '来自 roster 的原始班级编号，如 "15"（大象班）或 "17"（老虎班）',
+    }),
+    defineField({
+      name: 'status',
+      title: '学生状态',
+      type: 'string',
+      options: {
+        list: [
+          {title: '✅ 在读 (Active)', value: 'active'},
+          {title: '�� 已离校 (Inactive)', value: 'inactive'},
+          {title: '🎓 已毕业 (Graduated)', value: 'graduated'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'active',
+    }),
+    defineField({
+      name: 'notes',
+      title: '内部备注 (仅教师可见)',
+      type: 'text',
+      rows: 2,
+      description: '如特殊情况、饮食过敏等内部备注，不对外公开显示',
+    }),
+    defineField({
+      name: 'importSource',
+      title: '导入来源 (自动填写)',
+      type: 'string',
+      description: '批量导入时自动填写，如 "roster-import-2025-08-01"；手动录入时留空',
+      readOnly: true,
+    }),
+    defineField({
+      name: 'lastImportedAt',
+      title: '最后导入时间 (自动填写)',
+      type: 'datetime',
+      readOnly: true,
+    }),
   ],
   preview: {
     select: {
