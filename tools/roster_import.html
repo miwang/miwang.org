@@ -617,7 +617,9 @@ function extractRowsFromPage(textContent) {
 
 
 // ── Parser constants ────────────────────────────────────────
-const PHONE_RE = /(?<!\d)(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4}(?!\d)|\b\d{10}\b/g
+// Capture group 1 is the phone number body; optional leading delimiter avoids lookbehind
+// so this stays compatible with older JS engines.
+const PHONE_RE = /(?:^|[^\d])((?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4})(?!\d)/g
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
 const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
 const GRADE_ONLY_RE = /^[A-Z]{1,4}$/
@@ -628,6 +630,7 @@ const GRADE_ONLY_RE = /^[A-Z]{1,4}$/
 // Segment 3: literal comma + space
 // Segment 4: First name (one or more words)
 const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
+// Matches grade-prefixed names without comma, e.g. "KN John Smith".
 const STUDENT_START_NO_COMMA_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)+$/
 const STUDENT_START_PREFIX_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*$/
 const STUDENT_NAME_CONT_RE = /^[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
@@ -722,8 +725,9 @@ function getPossiblyMergedStudentStart(lines, index) {
 function parseStudentNameFromLine(line) {
     let s = normalizeRosterLine(line)
     if (!s) return ''
+    const normalized = s
     s = s.replace(/^[A-Z]{1,4}\s+(?=[A-Za-z].*,)/, '')
-    if (!s.includes(',') && STUDENT_START_NO_COMMA_RE.test(normalizeRosterLine(line))) {
+    if (!s.includes(',') && STUDENT_START_NO_COMMA_RE.test(normalized)) {
         s = s.replace(/^[A-Z]{1,4}\s+/, '')
     }
     if (!s.includes(',')) return s
@@ -835,7 +839,8 @@ function buildParsedRowFromBlock(block, importYear) {
     const lines = block.text.split('\n')
     const nameLine = lines[0] || ''
     const joined = lines.join(' | ')
-    const phones = (joined.match(PHONE_RE) || []).map(p => p.replace(/\D/g, '').slice(-10))
+    const phones = Array.from(joined.matchAll(PHONE_RE), m => (m[1] || '').replace(/\D/g, '').slice(-10))
+        .filter(Boolean)
     const emails = (joined.match(EMAIL_RE) || [])
     const homeroom = block.homeroom || ''
     const cls = homeroomToClass(homeroom)
