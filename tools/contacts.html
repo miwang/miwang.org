@@ -406,7 +406,8 @@ async function checkExistingSession() {
             document.getElementById('login-overlay').style.display = 'none'
             document.getElementById('main-content').style.display = 'block'
             const data = await resp.json()
-            renderContacts(data.data || [])
+            allContacts = data.data || []
+            applyFilters()
         }
         // If 401, stay on login overlay (no action needed)
     } catch (_) {}
