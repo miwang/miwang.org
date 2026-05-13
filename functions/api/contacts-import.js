@@ -145,22 +145,39 @@ export async function onRequestPost(context) {
     const studentId = buildStudentId(row)
     const contactId = buildContactId(studentId, row.academicYear || '25-26')
 
-    // Upsert student document (won't overwrite nameZh / avatar if already set
-    // because we use `patch` for those sensitive manual fields)
+    // 1. Create student doc only if it doesn't already exist.
+    //    This preserves any manually-entered nameZh / avatar set via Sanity Studio.
     mutations.push({
-      createOrReplace: {
+      createIfNotExists: {
         _id: studentId,
         _type: 'student',
         nameEn: row.nameEn || undefined,
-        nameZh: row.nameZh || undefined,
-        name: row.nameZh || row.nameEn || undefined, // legacy compat field
         className: row.className,
         academicYear: row.academicYear || '25-26',
-        homeroomCode: row.homeroomCode || undefined,
-        birthday: row.birthday || undefined,
         status: 'active',
-        importSource,
-        lastImportedAt: now,
+      },
+    })
+
+    // 2. Patch only the roster-sourced fields so manual fields (nameZh, avatar, notes)
+    //    are never overwritten by a re-import.
+    const patchSet = {
+      className: row.className,
+      academicYear: row.academicYear || '25-26',
+      status: 'active',
+      importSource,
+      lastImportedAt: now,
+    }
+    if (row.nameEn) patchSet.nameEn = row.nameEn
+    if (row.nameZh) patchSet.nameZh = row.nameZh
+    if (row.homeroomCode) patchSet.homeroomCode = row.homeroomCode
+    if (row.birthday) patchSet.birthday = row.birthday
+    // legacy compat: only set if doc doesn't already have a nameZh or nameEn
+    if (!row.nameZh && row.nameEn) patchSet.name = row.nameEn
+
+    mutations.push({
+      patch: {
+        id: studentId,
+        set: patchSet,
       },
     })
 

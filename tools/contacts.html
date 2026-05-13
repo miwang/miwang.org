@@ -384,7 +384,7 @@ async function doLogin() {
             document.getElementById('login-pwd').focus()
         }
     } catch (e) {
-        errEl.textContent = '网络错误，请检查连接后重试'
+        errEl.textContent = '网络错误，请检查连接后重试：' + e.message
     }
 }
 
@@ -483,6 +483,7 @@ function escHtml(s) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
 }
 
 const REL_LABELS = {mom:'妈妈', dad:'爸爸', grandparent:'祖父母', guardian:'监护人', other:'其他', parent:'家长'}
@@ -533,7 +534,7 @@ function renderCard(item) {
 
     let avatarHtml = ''
     if (s.avatarUrl) {
-        avatarHtml = `<img src="${escHtml(s.avatarUrl)}" alt="${escHtml(displayName)}" loading="lazy" onerror="this.style.display='none';this.parentNode.textContent='${escHtml(displayName.charAt(0))}'"/>`
+        avatarHtml = `<img src="${escHtml(s.avatarUrl)}" alt="${escHtml(displayName)}" loading="lazy" data-fallback="${escHtml(displayName.charAt(0).toUpperCase())}"/>`
     } else {
         avatarHtml = escHtml(displayName.charAt(0).toUpperCase())
     }
@@ -584,6 +585,15 @@ function renderCard(item) {
         <div class="card-contacts">${contactsHtml}</div>
     </div>`
 }
+
+// Handle avatar image load errors via delegation (avoids inline onerror with untrusted data)
+document.getElementById('contacts-wrap').addEventListener('error', function(e) {
+    const img = e.target
+    if (img.tagName !== 'IMG') return
+    const fallback = img.dataset.fallback || '?'
+    img.style.display = 'none'
+    img.parentNode.textContent = fallback
+}, true)
 
 // ─────────────────────────────────────────────
 // Init

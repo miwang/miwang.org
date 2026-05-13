@@ -89,7 +89,7 @@ Set these in **Cloudflare Pages → Settings → Environment Variables**:
 
 | Variable | Description |
 |---|---|
-| `CONTACTS_PASSWORD` | Teacher password for the contacts directory (choose a strong password, not "5683") |
+| `CONTACTS_PASSWORD` | Teacher password for the contacts directory — use a strong password (not a short PIN) |
 | `SANITY_API_TOKEN` | Sanity API token with **Editor** role (needed for both read and write operations) |
 
 To create a Sanity API token: Sanity project → API → Tokens → Add token → "Editor".

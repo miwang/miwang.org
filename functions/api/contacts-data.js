@@ -76,7 +76,12 @@ export async function onRequestGet(context) {
   const yearFilter = url.searchParams.get('year') || ''
   const classFilter = url.searchParams.get('class') || ''
 
-  const groq = `*[_type == "parentContact"] | order(
+  // Build GROQ filter conditions to push filtering to the database level
+  const conditions = ['_type == "parentContact"']
+  if (yearFilter) conditions.push(`academicYear == "${yearFilter}"`)
+  if (classFilter) conditions.push(`student->className == "${classFilter}"`)
+
+  const groq = `*[${conditions.join(' && ')}] | order(
     academicYear desc,
     student->className asc,
     student->nameEn asc,
@@ -104,14 +109,10 @@ export async function onRequestGet(context) {
     })
     if (!resp.ok) {
       const text = await resp.text()
-      return json({error: `Sanity 查询失败: ${resp.status}`}, 502)
+      return json({error: `Sanity 查询失败: ${resp.status} - ${text.slice(0, 200)}`}, 502)
     }
     const data = await resp.json()
     let results = Array.isArray(data.result) ? data.result : []
-
-    // Apply optional filters
-    if (yearFilter) results = results.filter(r => r.academicYear === yearFilter)
-    if (classFilter) results = results.filter(r => r.student?.className === classFilter)
 
     return json({ok: true, data: results, total: results.length})
   } catch (err) {
