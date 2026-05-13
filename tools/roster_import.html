@@ -321,8 +321,8 @@
             </div>
             <div class="section-body">
                 <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:10px;">
-                    以下是从 PDF 中提取的原始文本。每行一条记录最佳，如有格式问题可手动修改。
-                    格式建议：<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">Student Name, Homeroom, Parent Name, Phone, Email</code>
+                    以下是从 PDF 中提取的原始文本。解析器会自动按学生块（多行）识别；如有格式问题可手动修改。
+                    建议保留学生姓名行（如 <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">KN Last, First</code>）及其后续联系人信息行。
                 </p>
                 <textarea class="raw-text-area" id="raw-text" placeholder="PDF 文本将自动提取到这里，也可以手动粘贴…"></textarea>
                 <div class="text-hint">
@@ -534,13 +534,150 @@ function extractRowsFromPage(textContent) {
 // ── Parser ──────────────────────────────────────────────────
 const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}|\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
-const HOMEROOM_RE = /\b(15|17)\b/
+const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
+const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*,\s*[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*$/
+const NOISE_LINE_RE_LIST = [
+    /^section rosters?$/i,
+    PAGE_RE,
+    /^effective date:/i,
+    /^generated on/i,
+    /^course:/i,
+    /^room:/i,
+    /^term\(s\):/i,
+    /^sections?:/i,
+    /^active students?:/i,
+    /^grade levels?:/i,
+    /^student$/i,
+    /^start date$/i,
+    /^end date$/i,
+    /^student\s+start date\s+end date/i,
+    /^phone,\s*address and guardian\(s\)$/i,
+    /^address and guardian\(s\)\s*phone$/i,
+    /^mi teacher:/i,
+]
 
 // Map homeroom codes to class names
 function homeroomToClass(code) {
     if (code === '15') return 'elephant'
     if (code === '17') return 'tiger'
     return ''
+}
+
+function normalizeRosterLine(line) {
+    return String(line || '').replace(/\s+/g, ' ').trim()
+}
+
+function extractHomeroomFromLine(line) {
+    const s = normalizeRosterLine(line)
+    if (!s) return ''
+    const courseMatch = s.match(/course:.*?\b(?:HR[A-Z]*-)?(15|17)\b/i)
+    if (courseMatch) return courseMatch[1]
+    const homeroomMatch = s.match(/\bhomeroom\b.*?\b(15|17)\b/i)
+    if (homeroomMatch) return homeroomMatch[1]
+    const hrMatch = s.match(/\bHR[A-Z]*-(15|17)\b/i)
+    if (hrMatch) return hrMatch[1]
+    return ''
+}
+
+function isNoiseLine(line) {
+    const s = normalizeRosterLine(line)
+    if (!s) return true
+    if (NOISE_LINE_RE_LIST.some(re => re.test(s))) return true
+    if (/^(?:\d+\s+)?[A-Za-z].*\b(?:DE|PA|NJ|MD)\s+\d{5}(?:-\d{4})?$/i.test(s)) return true
+    return false
+}
+
+function isStudentStartLine(line) {
+    const s = normalizeRosterLine(line)
+    if (!s || isNoiseLine(s)) return false
+    if (/^(birthdate|start date|end date):/i.test(s)) return false
+    return STUDENT_START_RE.test(s)
+}
+
+function parseStudentNameFromLine(line) {
+    let s = normalizeRosterLine(line)
+    if (!s) return ''
+    s = s.replace(/^[A-Z]{1,4}\s+(?=[A-Za-z].*,)/, '')
+    if (!s.includes(',')) return s
+    const [lastRaw, firstRaw] = s.split(',', 2).map(v => v.trim())
+    const last = lastRaw.replace(/\s+/g, ' ')
+    const first = firstRaw.replace(/\s+/g, ' ')
+    if (first && last) return `${first} ${last}`.trim()
+    return s
+}
+
+function extractGuardianNameCandidates(lines, studentNameLine) {
+    const names = []
+    const studentBase = parseStudentNameFromLine(studentNameLine).toLowerCase()
+    const pushName = (raw) => {
+        const clean = normalizeRosterLine(raw)
+            .replace(/\b(?:mom|dad|mother|father|guardian|parent)\b/ig, '')
+            .trim()
+        if (!clean) return
+        if (clean.toLowerCase() === studentBase) return
+        if (!/[A-Za-z]/.test(clean) || /\d/.test(clean) || clean.includes('@')) return
+        if (!clean.includes(',') && clean.split(/\s+/).length < 2) return
+        if (!names.includes(clean)) names.push(clean)
+    }
+
+    for (const line of lines) {
+        let s = normalizeRosterLine(line)
+        if (!s || isNoiseLine(s) || isStudentStartLine(s)) continue
+        if (/^(birthdate|start date|end date):/i.test(s)) continue
+        s = s.replace(PHONE_RE, ' ').replace(EMAIL_RE, ' ').replace(/\s{2,}/g, ' ').trim()
+        if (!s) continue
+        const parts = s.split(/\s{2,}|;|\|/).map(p => p.trim()).filter(Boolean)
+        if (parts.length) parts.forEach(pushName)
+        else pushName(s)
+    }
+    return names
+}
+
+function buildParsedRowFromBlock(block, importYear) {
+    const joined = block.lines.join(' | ')
+    const phones = (joined.match(PHONE_RE) || []).map(p => p.replace(/\D/g, '').slice(-10))
+    const emails = (joined.match(EMAIL_RE) || [])
+    const homeroom = block.homeroom || ''
+    const cls = homeroomToClass(homeroom)
+    const nameEn = parseStudentNameFromLine(block.nameLine)
+    const guardianNames = extractGuardianNameCandidates(block.lines, block.nameLine)
+
+    const contacts = []
+    phones.forEach((ph, i) => {
+        contacts.push({
+            contactName: guardianNames[i] || '',
+            relationship: i === 0 ? 'mom' : 'dad',
+            type: 'phone',
+            value: formatPhone(ph),
+            isPrimary: i === 0,
+            notes: '',
+        })
+    })
+    emails.forEach((em, i) => {
+        contacts.push({
+            contactName: guardianNames[phones.length + i] || guardianNames[i] || '',
+            relationship: 'parent',
+            type: 'email',
+            value: em,
+            isPrimary: false,
+            notes: '',
+        })
+    })
+
+    const hasUsefulData = !!nameEn
+    if (!hasUsefulData) return null
+
+    const needsReview = !homeroom || contacts.length === 0
+    return {
+        nameEn: nameEn.trim(),
+        nameZh: '',
+        homeroomCode: homeroom,
+        className: cls,
+        academicYear: importYear,
+        contacts,
+        needsReview,
+        rawImportText: joined,
+    }
 }
 
 function parseRawText() {
@@ -550,82 +687,41 @@ function parseRawText() {
     const importYear = document.getElementById('import-year').value
     const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
     const parsedRows = []
+    let currentBlock = null
+    let currentPageHomeroom = ''
 
-    for (const line of lines) {
-        const phones = (line.match(PHONE_RE) || []).map(p => p.replace(/\D/g, '').slice(-10))
-        const emails = (line.match(EMAIL_RE) || [])
-        const homeroomMatch = line.match(HOMEROOM_RE)
-        const homeroom = homeroomMatch ? homeroomMatch[1] : ''
-        const cls = homeroomToClass(homeroom)
+    const pushCurrentBlock = () => {
+        if (!currentBlock) return
+        const row = buildParsedRowFromBlock(currentBlock, importYear)
+        if (row) parsedRows.push(row)
+        currentBlock = null
+    }
 
-        // Remove phone numbers, emails, and homeroom number to isolate name fragments
-        let cleanLine = line
-            .replace(PHONE_RE, ' ')
-            .replace(EMAIL_RE, ' ')
-            .replace(/\b(15|17)\b/, ' ')
-            .replace(/\b(?:hr|homeroom|room)\b:?/gi, ' ')
-            .replace(/\s{2,}/g, '  ')
-            .trim()
+    for (const rawLine of lines) {
+        const line = normalizeRosterLine(rawLine)
+        if (!line) continue
 
-        // Try to split into student name vs parent name
-        // Common formats: "Smith, John  Mary Smith  555-..." or "John Smith  17  Mom Name ..."
-        const fragments = cleanLine.split(/\s{2,}|\t/).map(s => s.trim()).filter(Boolean)
+        const metaHomeroom = extractHomeroomFromLine(line)
+        if (metaHomeroom) currentPageHomeroom = metaHomeroom
 
-        // Heuristic: first fragment with a comma is likely "Last, First" student name
-        let nameEn = ''
-        let parentFragments = []
-        if (fragments.length > 0) {
-            const commaFrag = fragments.find(f => f.includes(','))
-            if (commaFrag) {
-                // "Last, First" format
-                const [last, first] = commaFrag.split(',').map(s => s.trim())
-                nameEn = first && last ? `${first} ${last}` : commaFrag
-                parentFragments = fragments.filter(f => f !== commaFrag)
-            } else {
-                // Take first fragment as student name
-                nameEn = fragments[0]
-                parentFragments = fragments.slice(1)
-            }
+        if (PAGE_RE.test(line)) {
+            pushCurrentBlock()
+            continue
         }
 
-        // Build contacts from phones/emails
-        const contacts = []
-        phones.forEach((ph, i) => {
-            contacts.push({
-                contactName: parentFragments[i] || '',
-                relationship: i === 0 ? 'mom' : 'dad',
-                type: 'phone',
-                value: formatPhone(ph),
-                isPrimary: i === 0,
-                notes: '',
-            })
-        })
-        emails.forEach((em, i) => {
-            contacts.push({
-                contactName: parentFragments[phones.length + i] || '',
-                relationship: 'parent',
-                type: 'email',
-                value: em,
-                isPrimary: false,
-                notes: '',
-            })
-        })
+        if (isStudentStartLine(line)) {
+            pushCurrentBlock()
+            currentBlock = {nameLine: line, lines: [line], homeroom: currentPageHomeroom}
+            continue
+        }
 
-        const hasUsefulData = nameEn || phones.length || emails.length
-        if (!hasUsefulData) continue
-
-        const needsReview = !homeroom || !nameEn || contacts.length === 0
-        parsedRows.push({
-            nameEn: nameEn.trim(),
-            nameZh: '',
-            homeroomCode: homeroom,
-            className: cls,
-            academicYear: importYear,
-            contacts,
-            needsReview,
-            rawImportText: line,
-        })
+        if (isNoiseLine(line)) continue
+        if (currentBlock) {
+            currentBlock.lines.push(line)
+        }
     }
+
+    pushCurrentBlock()
 
     if (!parsedRows.length) {
         alert('未能从文本中识别出有效数据行。请检查文本格式，或手动添加行。')
