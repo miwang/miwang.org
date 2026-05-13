@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家长通讯录 — 王老师</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
+        :root {
+            --primary:    #1e565c;
+            --accent:     #44b88e;
+            --accent-lt:  #63cbb2;
+            --gold:       #f0a832;
+            --bg:         #f0f4f8;
+            --card-bg:    #ffffff;
+            --text:       #1e2d3b;
+            --text-muted: #64748b;
+            --border:     #e2e8f0;
+            --danger:     #e74c3c;
+            --font-zh:    "KaiTi-CJK", "LXGW WenKai Lite", serif;
+            --font-en:    "LXGW WenKai Lite", system-ui, sans-serif;
+            --radius:     14px;
+            --shadow:     0 4px 16px rgba(30,86,92,0.08);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-zh);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Login overlay ── */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, var(--primary) 0%, #183042 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .login-box {
+            background: #fff; border-radius: 20px;
+            padding: 40px 36px 36px; width: 100%; max-width: 380px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-icon { font-size: 3rem; margin-bottom: 14px; }
+        .login-title { font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 6px; }
+        .login-sub { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 28px; font-family: var(--font-en); }
+        .login-input {
+            width: 100%; padding: 14px 18px; font-size: 1.3rem;
+            border: 2px solid var(--border); border-radius: 10px;
+            text-align: center; letter-spacing: 6px; outline: none;
+            font-family: var(--font-en); color: var(--text);
+            transition: border-color 0.2s;
+            margin-bottom: 18px;
+        }
+        .login-input:focus { border-color: var(--primary); }
+        .login-btn {
+            width: 100%; padding: 14px; font-size: 1rem; font-weight: bold;
+            background: var(--primary); color: #fff; border: none;
+            border-radius: 10px; cursor: pointer; font-family: var(--font-zh);
+            transition: background 0.2s, transform 0.15s;
+        }
+        .login-btn:hover { background: #155a5f; }
+        .login-btn:active { transform: scale(0.98); }
+        .login-error { color: var(--danger); font-size: 0.88rem; margin-top: 12px; min-height: 20px; }
+
+        /* ── Header ── */
+        .site-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #183042 100%);
+            padding: 14px 24px 18px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        .site-header::after {
+            content: '';
+            position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--gold), var(--accent), var(--primary));
+        }
+        .header-row {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .header-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--accent-lt); text-decoration: none;
+            font-size: 0.92rem; font-weight: 600; font-family: var(--font-en);
+            transition: opacity 0.2s; white-space: nowrap;
+        }
+        .header-back:hover { opacity: 0.8; }
+        .header-title-block { text-align: center; flex: 1; }
+        .header-title {
+            font-size: 1.6rem; font-weight: bold; color: #fff;
+            font-family: var(--font-zh); letter-spacing: 1px;
+        }
+        .header-sub {
+            font-size: 0.8rem; color: rgba(255,255,255,0.5);
+            font-family: var(--font-en); letter-spacing: 2px; margin-top: 2px;
+        }
+        .header-logout {
+            font-size: 0.82rem; color: rgba(255,255,255,0.6);
+            background: transparent; border: 1px solid rgba(255,255,255,0.25);
+            padding: 6px 14px; border-radius: 8px; cursor: pointer;
+            font-family: var(--font-en); transition: all 0.2s; white-space: nowrap;
+        }
+        .header-logout:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            background: #fff; border-bottom: 1px solid var(--border);
+            padding: 14px 20px; display: flex; align-items: center;
+            flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .search-wrap {
+            position: relative; flex: 1; min-width: 180px; max-width: 340px;
+        }
+        .search-wrap i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.9rem;
+        }
+        .search-input {
+            width: 100%; padding: 9px 12px 9px 36px;
+            border: 1.5px solid var(--border); border-radius: 10px;
+            font-size: 0.95rem; font-family: var(--font-zh); outline: none;
+            background: var(--bg); transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--primary); background: #fff; }
+
+        .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .filter-tab {
+            padding: 7px 16px; border-radius: 20px; font-size: 0.88rem;
+            font-weight: 600; cursor: pointer; border: 1.5px solid var(--border);
+            background: var(--bg); color: var(--text-muted); font-family: var(--font-zh);
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .filter-tab.active {
+            background: var(--primary); color: #fff; border-color: var(--primary);
+        }
+        .filter-tab:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+        .year-select {
+            padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 10px;
+            font-family: var(--font-zh); font-size: 0.9rem; background: var(--bg);
+            outline: none; cursor: pointer;
+        }
+        .year-select:focus { border-color: var(--primary); }
+
+        .result-count {
+            margin-left: auto; font-size: 0.82rem; color: var(--text-muted);
+            font-family: var(--font-en); white-space: nowrap;
+        }
+
+        /* ── Status messages ── */
+        .status-msg {
+            text-align: center; padding: 60px 20px;
+            font-family: var(--font-zh); color: var(--text-muted); font-size: 1rem;
+        }
+        .status-msg i { font-size: 2.5rem; display: block; margin-bottom: 14px; opacity: 0.4; }
+
+        /* ── Contact list ── */
+        .contacts-wrap {
+            width: 94%; max-width: 900px; margin: 24px auto 40px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .class-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 16px;
+            background: var(--primary); color: #fff;
+            border-radius: 10px; font-size: 1rem; font-weight: bold;
+            letter-spacing: 1px; margin-top: 8px;
+        }
+        .class-header:first-child { margin-top: 0; }
+
+        .student-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1.5px solid var(--border);
+            overflow: hidden; transition: box-shadow 0.25s, transform 0.25s;
+        }
+        .student-card:hover { box-shadow: 0 8px 28px rgba(30,86,92,0.12); transform: translateY(-2px); }
+
+        .card-header {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 18px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .avatar-wrap {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            flex-shrink: 0; overflow: hidden; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #fff; font-weight: bold;
+        }
+        .avatar-wrap img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .student-names { flex: 1; min-width: 0; }
+        .student-name-zh {
+            font-size: 1.18rem; font-weight: bold; color: var(--text);
+            font-family: var(--font-zh);
+        }
+        .student-name-en {
+            font-size: 0.88rem; color: var(--text-muted);
+            font-family: var(--font-en); margin-top: 2px;
+        }
+        .class-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; flex-shrink: 0;
+        }
+        .class-badge.elephant { background: #e8f4f4; color: #1e565c; }
+        .class-badge.tiger   { background: #fef3e2; color: #9a6212; }
+        .homeroom-badge {
+            font-size: 0.78rem; color: var(--text-muted);
+            font-family: var(--font-en); margin-left: 4px;
+        }
+        .review-flag {
+            background: #fff3cd; color: #856404;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.76rem; font-weight: 600; flex-shrink: 0;
+        }
+
+        .card-contacts { padding: 12px 18px 16px; }
+        .contact-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .contact-item:last-child { border-bottom: none; }
+        .contact-icon {
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.95rem;
+        }
+        .contact-icon.phone   { background: #e8f4f4; color: #1e565c; }
+        .contact-icon.email   { background: #fef3e2; color: #9a6212; }
+        .contact-icon.wechat  { background: #d4edda; color: #155724; }
+        .contact-icon.other   { background: #f0f0f0; color: #555; }
+        .contact-info { flex: 1; min-width: 0; }
+        .contact-name-rel {
+            font-size: 0.82rem; color: var(--text-muted);
+            font-family: var(--font-en);
+        }
+        .contact-value {
+            font-size: 1rem; font-weight: 600; color: var(--text);
+            font-family: var(--font-en); word-break: break-all;
+        }
+        .contact-notes {
+            font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;
+        }
+        .contact-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .action-link {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--bg); color: var(--primary);
+            text-decoration: none; font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .action-link:hover { background: var(--primary); color: #fff; }
+        .primary-star {
+            color: var(--gold); font-size: 0.78rem; margin-left: 4px;
+        }
+
+        .no-contacts {
+            padding: 10px 0; font-size: 0.9rem; color: var(--text-muted);
+            font-style: italic; text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .contacts-wrap { width: 100%; padding: 0 10px; }
+            .filter-bar { padding: 10px 14px; }
+            .header-title { font-size: 1.3rem; }
+            .card-header { padding: 12px 14px 10px; }
+            .contact-item { padding: 7px 0; }
+            .card-contacts { padding: 10px 14px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Login overlay ─────────────────────────────────────── -->
+<div id="login-overlay">
+    <div class="login-box">
+        <div class="login-icon">🔐</div>
+        <div class="login-title">家长通讯录</div>
+        <div class="login-sub">Parent Contact Directory · Private Access</div>
+        <input
+            type="password"
+            id="login-pwd"
+            class="login-input"
+            placeholder="● ● ● ●"
+            maxlength="20"
+            autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') doLogin()"
+        >
+        <button class="login-btn" onclick="doLogin()">🔓 进入通讯录</button>
+        <div class="login-error" id="login-err"></div>
+    </div>
+</div>
+
+<!-- ── Main content (hidden until authenticated) ────────── -->
+<div id="main-content" style="display:none;">
+    <header class="site-header">
+        <div class="header-row">
+            <a href="../teachers.html" class="header-back">
+                <i class="fas fa-arrow-left"></i> 返回工具台
+            </a>
+            <div class="header-title-block">
+                <div class="header-title">📞 家长通讯录</div>
+                <div class="header-sub">Parent Contact Directory</div>
+            </div>
+            <button class="header-logout" onclick="doLogout()">退出 Logout</button>
+        </div>
+    </header>
+
+    <div class="filter-bar">
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input
+                type="text"
+                class="search-input"
+                id="search-input"
+                placeholder="搜索学生姓名…"
+                oninput="applyFilters()"
+            >
+        </div>
+        <div class="filter-tabs">
+            <div class="filter-tab active" data-class="" onclick="setClassFilter('')">全部</div>
+            <div class="filter-tab" data-class="elephant" onclick="setClassFilter('elephant')">🐘 大象班</div>
+            <div class="filter-tab" data-class="tiger" onclick="setClassFilter('tiger')">🐯 老虎班</div>
+        </div>
+        <select class="year-select" id="year-select" onchange="loadContacts()">
+            <option value="">所有学年</option>
+            <option value="25-26" selected>2025-2026</option>
+            <option value="26-27">2026-2027</option>
+            <option value="27-28">2027-2028</option>
+        </select>
+        <a href="roster_import.html" style="text-decoration:none;">
+            <button style="padding:8px 14px; background:var(--accent); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:var(--font-zh); font-size:0.85rem; font-weight:bold;">
+                📄 导入 Roster
+            </button>
+        </a>
+        <div class="result-count" id="result-count"></div>
+    </div>
+
+    <div class="contacts-wrap" id="contacts-wrap">
+        <div class="status-msg" id="status-msg">
+            <i class="fas fa-spinner fa-spin"></i>
+            正在加载联系人数据…
+        </div>
+    </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// Auth
+// ─────────────────────────────────────────────
+async function doLogin() {
+    const pwd = document.getElementById('login-pwd').value.trim()
+    if (!pwd) return
+    const errEl = document.getElementById('login-err')
+    errEl.textContent = ''
+    try {
+        const resp = await fetch('/api/contacts-login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password: pwd}),
+        })
+        if (resp.ok) {
+            document.getElementById('login-overlay').style.display = 'none'
+            document.getElementById('main-content').style.display = 'block'
+            loadContacts()
+        } else {
+            const d = await resp.json()
+            errEl.textContent = d.error || '密码错误，请重试'
+            document.getElementById('login-pwd').value = ''
+            document.getElementById('login-pwd').focus()
+        }
+    } catch (e) {
+        errEl.textContent = '网络错误，请检查连接后重试：' + e.message
+    }
+}
+
+function doLogout() {
+    // Clear the cookie by setting Max-Age=0 via the login endpoint is not possible
+    // from JS (HttpOnly); just reload so the server rejects the token next refresh.
+    // The session cookie will expire naturally within 24 h.
+    document.getElementById('main-content').style.display = 'none'
+    document.getElementById('login-overlay').style.display = 'flex'
+    document.getElementById('login-pwd').value = ''
+    document.getElementById('login-err').textContent = '已退出登录'
+}
+
+// Try auto-login using existing cookie (silent check)
+async function checkExistingSession() {
+    try {
+        const resp = await fetch('/api/contacts-data')
+        if (resp.ok) {
+            document.getElementById('login-overlay').style.display = 'none'
+            document.getElementById('main-content').style.display = 'block'
+            const data = await resp.json()
+            renderContacts(data.data || [])
+        }
+        // If 401, stay on login overlay (no action needed)
+    } catch (_) {}
+}
+
+// ─────────────────────────────────────────────
+// Contacts data
+// ─────────────────────────────────────────────
+let allContacts = []
+let classFilter = ''
+
+async function loadContacts() {
+    setStatus('<i class="fas fa-spinner fa-spin"></i> 正在加载联系人数据…')
+    const year = document.getElementById('year-select').value
+    const params = new URLSearchParams()
+    if (year) params.set('year', year)
+    try {
+        const resp = await fetch('/api/contacts-data?' + params.toString())
+        if (resp.status === 401) {
+            document.getElementById('main-content').style.display = 'none'
+            document.getElementById('login-overlay').style.display = 'flex'
+            return
+        }
+        if (!resp.ok) {
+            const d = await resp.json().catch(() => ({}))
+            setStatus('<i class="fas fa-exclamation-circle" style="color:#e74c3c"></i> 加载失败：' + (d.error || resp.status))
+            return
+        }
+        const d = await resp.json()
+        allContacts = d.data || []
+        applyFilters()
+    } catch (e) {
+        setStatus('<i class="fas fa-exclamation-circle" style="color:#e74c3c"></i> 网络错误：' + e.message)
+    }
+}
+
+function setClassFilter(cls) {
+    classFilter = cls
+    document.querySelectorAll('.filter-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.class === cls)
+    })
+    applyFilters()
+}
+
+function applyFilters() {
+    const q = (document.getElementById('search-input').value || '').toLowerCase()
+    let list = allContacts.filter(c => {
+        const s = c.student || {}
+        if (classFilter && s.className !== classFilter) return false
+        if (q) {
+            const nameZh = (s.nameZh || '').toLowerCase()
+            const nameEn = (s.nameEn || s.name || '').toLowerCase()
+            const contactVals = (c.contacts || []).map(x => (x.value || '').toLowerCase()).join(' ')
+            if (!nameZh.includes(q) && !nameEn.includes(q) && !contactVals.includes(q)) return false
+        }
+        return true
+    })
+    renderContacts(list)
+}
+
+// ─────────────────────────────────────────────
+// Rendering
+// ─────────────────────────────────────────────
+function setStatus(html) {
+    const wrap = document.getElementById('contacts-wrap')
+    wrap.innerHTML = `<div class="status-msg">${html}</div>`
+    document.getElementById('result-count').textContent = ''
+}
+
+function escHtml(s) {
+    if (!s) return ''
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
+const REL_LABELS = {mom:'妈妈', dad:'爸爸', grandparent:'祖父母', guardian:'监护人', other:'其他', parent:'家长'}
+const TYPE_ICONS = {phone:'fas fa-phone', email:'fas fa-envelope', wechat:'fab fa-weixin', other:'fas fa-comment'}
+
+function renderContacts(list) {
+    const wrap = document.getElementById('contacts-wrap')
+    document.getElementById('result-count').textContent = `${list.length} 位学生`
+
+    if (!list.length) {
+        wrap.innerHTML = '<div class="status-msg"><i class="fas fa-inbox"></i>暂无联系人记录<br><span style="font-size:0.85rem;margin-top:8px;display:block">请先通过「导入 Roster」功能上传家长通讯录</span></div>'
+        return
+    }
+
+    // Group by class
+    const groups = {}
+    for (const c of list) {
+        const cls = c.student?.className || 'unknown'
+        if (!groups[cls]) groups[cls] = []
+        groups[cls].push(c)
+    }
+
+    const classOrder = ['elephant', 'tiger', 'unknown']
+    const classLabels = {elephant:'🐘 大象班 Elephants', tiger:'🐯 老虎班 Tigers', unknown:'其他 Other'}
+    let html = ''
+
+    for (const cls of classOrder) {
+        if (!groups[cls]) continue
+        html += `<div class="class-header">${escHtml(classLabels[cls])}<span style="margin-left:auto;font-weight:normal;font-size:0.85rem;opacity:0.8">${groups[cls].length} 人</span></div>`
+        for (const item of groups[cls]) {
+            html += renderCard(item)
+        }
+    }
+
+    wrap.innerHTML = html
+}
+
+function renderCard(item) {
+    const s = item.student || {}
+    const nameZh = s.nameZh || s.name || ''
+    const nameEn = s.nameEn || s.name || ''
+    const displayName = nameZh || nameEn || '未知学生'
+    const cls = s.className || 'unknown'
+    const badgeClass = cls === 'elephant' ? 'elephant' : cls === 'tiger' ? 'tiger' : ''
+    const badgeLabel = cls === 'elephant' ? '🐘 大象班' : cls === 'tiger' ? '🐯 老虎班' : '未分班'
+    const homeroom = s.homeroomCode ? `<span class="homeroom-badge">HR${escHtml(s.homeroomCode)}</span>` : ''
+    const reviewFlag = item.needsReview ? '<span class="review-flag">⚠️ 待核对</span>' : ''
+
+    let avatarHtml = ''
+    if (s.avatarUrl) {
+        avatarHtml = `<img src="${escHtml(s.avatarUrl)}" alt="${escHtml(displayName)}" loading="lazy" data-fallback="${escHtml(displayName.charAt(0).toUpperCase())}"/>`
+    } else {
+        avatarHtml = escHtml(displayName.charAt(0).toUpperCase())
+    }
+
+    const contacts = item.contacts || []
+    let contactsHtml = ''
+    if (contacts.length === 0) {
+        contactsHtml = '<div class="no-contacts">暂无联系方式</div>'
+    } else {
+        for (const c of contacts) {
+            const type = c.type || 'other'
+            const iconCls = TYPE_ICONS[type] || TYPE_ICONS.other
+            const relLabel = REL_LABELS[c.relationship] || c.relationship || ''
+            const nameRelText = [c.contactName, relLabel].filter(Boolean).join(' · ')
+            const star = c.isPrimary ? '<span class="primary-star">★</span>' : ''
+
+            let actionLinks = ''
+            if (type === 'phone') {
+                actionLinks = `<a href="tel:${escHtml(c.value)}" class="action-link" title="拨打电话"><i class="fas fa-phone"></i></a>`
+            } else if (type === 'email') {
+                actionLinks = `<a href="mailto:${escHtml(c.value)}" class="action-link" title="发送邮件"><i class="fas fa-envelope"></i></a>`
+            }
+
+            contactsHtml += `
+            <div class="contact-item">
+                <div class="contact-icon ${escHtml(type)}"><i class="${escHtml(iconCls)}"></i></div>
+                <div class="contact-info">
+                    ${nameRelText ? `<div class="contact-name-rel">${escHtml(nameRelText)}</div>` : ''}
+                    <div class="contact-value">${escHtml(c.value)}${star}</div>
+                    ${c.notes ? `<div class="contact-notes">${escHtml(c.notes)}</div>` : ''}
+                </div>
+                <div class="contact-actions">${actionLinks}</div>
+            </div>`
+        }
+    }
+
+    return `
+    <div class="student-card">
+        <div class="card-header">
+            <div class="avatar-wrap">${avatarHtml}</div>
+            <div class="student-names">
+                <div class="student-name-zh">${escHtml(displayName)}</div>
+                ${nameZh && nameEn && nameZh !== nameEn ? `<div class="student-name-en">${escHtml(nameEn)}</div>` : ''}
+            </div>
+            <span class="class-badge ${escHtml(badgeClass)}">${badgeLabel}${homeroom}</span>
+            ${reviewFlag}
+        </div>
+        <div class="card-contacts">${contactsHtml}</div>
+    </div>`
+}
+
+// Handle avatar image load errors via delegation (avoids inline onerror with untrusted data)
+document.getElementById('contacts-wrap').addEventListener('error', function(e) {
+    const img = e.target
+    if (img.tagName !== 'IMG') return
+    const fallback = img.dataset.fallback || '?'
+    img.style.display = 'none'
+    img.parentNode.textContent = fallback
+}, true)
+
+// ─────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────
+checkExistingSession()
+</script>
+
+</body>
+</html>

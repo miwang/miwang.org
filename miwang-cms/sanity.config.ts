@@ -68,6 +68,24 @@ export default defineConfig({
               ),
 
             S.listItem()
+              .title('📞 家长联系方式 (私密)')
+              .id('parent-contacts')
+              .child(
+                S.list()
+                  .title('家长联系方式')
+                  .id('parent-contacts-list')
+                  .items([
+                    S.listItem().title('⚠️ 待核对').id('pc-review').child(S.documentList().id('pcd-review').title('待核对记录').filter('_type == "parentContact" && needsReview == true')),
+                    S.divider(),
+                    S.listItem().title('🐘 25-26 大象班联系人').id('pc-e-25-26').child(S.documentList().id('pcd-e-25-26').title('大象班联系人 (25-26)').filter('_type == "parentContact" && academicYear == "25-26" && student->className == "elephant"')),
+                    S.listItem().title('🐯 25-26 老虎班联系人').id('pc-t-25-26').child(S.documentList().id('pcd-t-25-26').title('老虎班联系人 (25-26)').filter('_type == "parentContact" && academicYear == "25-26" && student->className == "tiger"')),
+                    S.divider(),
+                    S.listItem().title('🐘 26-27 大象班联系人').id('pc-e-26-27').child(S.documentList().id('pcd-e-26-27').title('大象班联系人 (26-27)').filter('_type == "parentContact" && academicYear == "26-27" && student->className == "elephant"')),
+                    S.listItem().title('🐯 26-27 老虎班联系人').id('pc-t-26-27').child(S.documentList().id('pcd-t-26-27').title('老虎班联系人 (26-27)').filter('_type == "parentContact" && academicYear == "26-27" && student->className == "tiger"')),
+                  ])
+              ),
+
+            S.listItem()
               .title('🗓️ 当前学年设置')
               .id('academic-year-config')
               .child(
@@ -81,7 +99,7 @@ export default defineConfig({
 
             // 自动加载其余所有类型（绘本、儿歌、配置等），但排除掉已经在上面定义过的 student
             ...S.documentTypeListItems().filter(
-              (listItem) => !['student', 'academicYearConfig'].includes(listItem.getId() || '')
+              (listItem) => !['student', 'academicYearConfig', 'parentContact'].includes(listItem.getId() || '')
             ),
           ])
     }),

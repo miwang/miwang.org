@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roster 导入工具 — 王老师</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- PDF.js: text extraction runs entirely in the browser; the file never leaves the device -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+            crossorigin="anonymous"
+            integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+
+        :root {
+            --primary:    #1e565c;
+            --accent:     #44b88e;
+            --gold:       #f0a832;
+            --bg:         #f0f4f8;
+            --card-bg:    #ffffff;
+            --text:       #1e2d3b;
+            --text-muted: #64748b;
+            --border:     #e2e8f0;
+            --danger:     #e74c3c;
+            --warn:       #f39c12;
+            --font-zh:    "KaiTi-CJK", "LXGW WenKai Lite", serif;
+            --font-en:    "LXGW WenKai Lite", system-ui, sans-serif;
+            --radius:     14px;
+            --shadow:     0 4px 16px rgba(30,86,92,0.08);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-zh); background: var(--bg);
+            color: var(--text); min-height: 100vh;
+        }
+
+        /* ── Login overlay ── */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, var(--primary) 0%, #183042 100%);
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .login-box {
+            background: #fff; border-radius: 20px; padding: 40px 36px 36px;
+            width: 100%; max-width: 380px; box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-icon { font-size: 3rem; margin-bottom: 14px; }
+        .login-title { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin-bottom: 6px; }
+        .login-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 26px; font-family: var(--font-en); }
+        .login-input {
+            width: 100%; padding: 14px 18px; font-size: 1.3rem;
+            border: 2px solid var(--border); border-radius: 10px;
+            text-align: center; letter-spacing: 6px; outline: none;
+            font-family: var(--font-en); margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+        .login-input:focus { border-color: var(--primary); }
+        .login-btn {
+            width: 100%; padding: 14px; font-size: 1rem; font-weight: bold;
+            background: var(--primary); color: #fff; border: none;
+            border-radius: 10px; cursor: pointer; font-family: var(--font-zh);
+            transition: background 0.2s;
+        }
+        .login-btn:hover { background: #155a5f; }
+        .login-error { color: var(--danger); font-size: 0.88rem; margin-top: 10px; min-height: 20px; }
+
+        /* ── Header ── */
+        .site-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #183042 100%);
+            padding: 14px 24px 18px; position: relative; overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        .site-header::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--gold), var(--accent), var(--primary));
+        }
+        .header-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.7); text-decoration: none;
+            font-size: 0.92rem; font-family: var(--font-en); transition: opacity 0.2s;
+        }
+        .header-back:hover { opacity: 0.8; }
+        .header-title-block { flex: 1; text-align: center; }
+        .header-title { font-size: 1.6rem; font-weight: bold; color: #fff; letter-spacing: 1px; }
+        .header-sub { font-size: 0.78rem; color: rgba(255,255,255,0.5); font-family: var(--font-en); margin-top: 2px; }
+
+        /* ── Main container ── */
+        .container {
+            width: 96%; max-width: 1050px; margin: 28px auto 50px;
+            display: flex; flex-direction: column; gap: 22px;
+        }
+
+        .section-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1.5px solid var(--border);
+            overflow: hidden;
+        }
+        .section-head {
+            padding: 16px 22px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-num {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: bold; flex-shrink: 0;
+        }
+        .section-title-text { font-size: 1.05rem; font-weight: bold; }
+        .section-sub { font-size: 0.82rem; color: var(--text-muted); margin-left: auto; font-family: var(--font-en); }
+        .section-body { padding: 20px 22px; }
+
+        /* ── Step 1: Upload ── */
+        .drop-zone {
+            border: 2.5px dashed var(--border); border-radius: var(--radius);
+            padding: 50px 20px; text-align: center; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: var(--bg);
+        }
+        .drop-zone:hover, .drop-zone.over { border-color: var(--primary); background: #e8f4f4; }
+        .drop-icon { font-size: 2.8rem; margin-bottom: 14px; opacity: 0.5; }
+        .drop-label { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+        .drop-sub { font-size: 0.84rem; color: var(--text-muted); font-family: var(--font-en); }
+        .drop-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; }
+        #file-input { display: none; }
+        .file-chosen {
+            margin-top: 14px; padding: 10px 16px; background: #e8f4f4;
+            border-radius: 8px; display: flex; align-items: center; gap: 10px;
+            font-size: 0.9rem; color: var(--primary);
+        }
+        .file-chosen i { font-size: 1.2rem; }
+
+        /* ── Step 2: Raw text ── */
+        .raw-text-area {
+            width: 100%; min-height: 200px; max-height: 320px;
+            padding: 12px 14px; font-family: monospace; font-size: 0.83rem;
+            border: 1.5px solid var(--border); border-radius: 10px;
+            resize: vertical; outline: none; background: #fafafa;
+            line-height: 1.6;
+        }
+        .raw-text-area:focus { border-color: var(--primary); background: #fff; }
+        .text-hint { font-size: 0.82rem; color: var(--text-muted); margin-top: 8px; font-family: var(--font-en); }
+
+        /* ── Step config ── */
+        .config-row {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 18px;
+        }
+        .config-label { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+        .config-select, .config-input {
+            padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: var(--font-zh); font-size: 0.9rem; background: #fff;
+            outline: none;
+        }
+        .config-select:focus, .config-input:focus { border-color: var(--primary); }
+
+        /* ── Buttons ── */
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .btn {
+            padding: 10px 22px; border: none; border-radius: 10px;
+            cursor: pointer; font-family: var(--font-zh); font-size: 0.95rem;
+            font-weight: bold; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #155a5f; }
+        .btn-accent  { background: var(--accent); color: #fff; }
+        .btn-accent:hover { background: #37a07a; }
+        .btn-gold    { background: var(--gold); color: #1a2740; }
+        .btn-gold:hover { background: #d4922a; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Step 3: Preview table ── */
+        #preview-wrap { overflow-x: auto; }
+        .preview-table {
+            width: 100%; border-collapse: collapse; font-size: 0.88rem;
+            min-width: 720px;
+        }
+        .preview-table th {
+            background: var(--primary); color: #fff; padding: 10px 12px;
+            text-align: left; font-weight: 600; white-space: nowrap;
+        }
+        .preview-table td {
+            padding: 8px 10px; border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .preview-table tr:hover td { background: #f0f9f8; }
+        .preview-table tr.row-review td { background: #fffbea; }
+        .preview-table tr.row-review:hover td { background: #fef5cc; }
+        .tbl-input {
+            width: 100%; border: 1px solid var(--border); border-radius: 6px;
+            padding: 5px 8px; font-family: var(--font-zh); font-size: 0.87rem;
+            background: #fff; outline: none;
+        }
+        .tbl-input:focus { border-color: var(--primary); }
+        .tbl-select {
+            width: 100%; border: 1px solid var(--border); border-radius: 6px;
+            padding: 5px 8px; font-family: var(--font-zh); font-size: 0.85rem;
+            background: #fff; outline: none;
+        }
+        .contacts-cell { display: flex; flex-direction: column; gap: 6px; }
+        .contact-row {
+            display: grid; grid-template-columns: 80px 1fr 70px;
+            gap: 4px; align-items: center;
+        }
+        .review-badge {
+            display: inline-block; background: #fff3cd; color: #856404;
+            padding: 2px 8px; border-radius: 12px; font-size: 0.76rem; font-weight: 600;
+        }
+        .add-contact-btn {
+            background: transparent; border: 1px dashed var(--border);
+            border-radius: 6px; padding: 4px 10px; font-size: 0.8rem;
+            cursor: pointer; font-family: var(--font-zh); color: var(--text-muted);
+            margin-top: 4px; transition: border-color 0.2s;
+        }
+        .add-contact-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .remove-row-btn {
+            background: transparent; border: none; cursor: pointer;
+            color: #ccc; font-size: 1rem; padding: 2px 6px;
+            transition: color 0.2s;
+        }
+        .remove-row-btn:hover { color: var(--danger); }
+
+        /* ── Import result ── */
+        .result-box {
+            padding: 18px; border-radius: 10px; margin-top: 12px;
+            display: none; font-size: 0.95rem; line-height: 1.6;
+        }
+        .result-box.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-box.error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .progress-bar-wrap {
+            height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 10px;
+        }
+        .progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+        @media (max-width: 600px) {
+            .container { width: 100%; padding: 0 10px; }
+            .section-body { padding: 14px 14px; }
+            .contact-row { grid-template-columns: 70px 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Login overlay ── -->
+<div id="login-overlay">
+    <div class="login-box">
+        <div class="login-icon">📄</div>
+        <div class="login-title">Roster 导入工具</div>
+        <div class="login-sub">PDF Roster Import · Private Access</div>
+        <input type="password" id="login-pwd" class="login-input" placeholder="● ● ● ●" maxlength="20"
+            autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="login-btn" onclick="doLogin()">🔓 进入</button>
+        <div class="login-error" id="login-err"></div>
+    </div>
+</div>
+
+<!-- ── Main content ── -->
+<div id="main-content" style="display:none;">
+    <header class="site-header">
+        <div class="header-row">
+            <a href="../teachers.html" class="header-back"><i class="fas fa-arrow-left"></i> 返回工具台</a>
+            <div class="header-title-block">
+                <div class="header-title">📄 Roster 导入工具</div>
+                <div class="header-sub">PDF Roster Import · Semi-Automatic</div>
+            </div>
+            <a href="contacts.html" style="text-decoration:none;">
+                <button style="padding:8px 14px; background:var(--accent); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:var(--font-zh); font-size:0.85rem; font-weight:bold;">
+                    📞 查看通讯录
+                </button>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Step 1: Upload PDF -->
+        <div class="section-card">
+            <div class="section-head">
+                <div class="section-num">1</div>
+                <div class="section-title-text">上传 Roster PDF</div>
+                <div class="section-sub">支持拖放 · 点击选择</div>
+            </div>
+            <div class="section-body">
+                <div class="config-row">
+                    <span class="config-label">导入学年：</span>
+                    <select class="config-select" id="import-year">
+                        <option value="25-26">2025-2026 学年</option>
+                        <option value="26-27">2026-2027 学年</option>
+                        <option value="27-28">2027-2028 学年</option>
+                    </select>
+                    <span class="config-label" style="margin-left:14px;">Homeroom 映射：</span>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">15 → 🐘 大象班 &nbsp;|&nbsp; 17 → 🐯 老虎班</span>
+                </div>
+                <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <div class="drop-icon">📁</div>
+                    <div class="drop-label">点击选择 PDF，或将文件拖放到此处</div>
+                    <div class="drop-sub">Click to select PDF, or drag &amp; drop here</div>
+                    <div class="drop-hint">仅支持 PDF 格式 | PDF files only</div>
+                </div>
+                <input type="file" id="file-input" accept="application/pdf" onchange="handleFile(this.files[0])">
+                <div id="file-chosen" style="display:none;" class="file-chosen">
+                    <i class="fas fa-file-pdf"></i>
+                    <span id="file-name">—</span>
+                </div>
+                <div class="progress-bar-wrap" id="extract-progress-wrap" style="display:none;">
+                    <div class="progress-bar" id="extract-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Extracted text + manual edit -->
+        <div class="section-card" id="step2-card" style="display:none;">
+            <div class="section-head">
+                <div class="section-num">2</div>
+                <div class="section-title-text">提取的文本内容</div>
+                <div class="section-sub">可手动编辑后再解析</div>
+            </div>
+            <div class="section-body">
+                <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:10px;">
+                    以下是从 PDF 中提取的原始文本。每行一条记录最佳，如有格式问题可手动修改。
+                    格式建议：<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">Student Name, Homeroom, Parent Name, Phone, Email</code>
+                </p>
+                <textarea class="raw-text-area" id="raw-text" placeholder="PDF 文本将自动提取到这里，也可以手动粘贴…"></textarea>
+                <div class="text-hint">
+                    提示：每行对应一个学生记录。支持常见格式：Last, First 或 First Last、10位手机号、邮箱地址。
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="parseRawText()">
+                        <i class="fas fa-magic"></i> 解析文本 → 生成预览
+                    </button>
+                    <button class="btn btn-accent" onclick="addEmptyRow()">
+                        <i class="fas fa-plus"></i> 手动添加一行
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Preview table -->
+        <div class="section-card" id="step3-card" style="display:none;">
+            <div class="section-head">
+                <div class="section-num">3</div>
+                <div class="section-title-text">预览并确认导入数据</div>
+                <div class="section-sub" id="preview-count"></div>
+            </div>
+            <div class="section-body">
+                <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:14px;">
+                    请仔细核对以下信息。⚠️ 标记的行为低置信度，请重点检查。
+                    每行都可以直接编辑，不需要的行可以删除。
+                </p>
+                <div id="preview-wrap">
+                    <table class="preview-table" id="preview-table">
+                        <thead>
+                            <tr>
+                                <th style="width:30px;"></th>
+                                <th>英文姓名</th>
+                                <th>中文名（可选）</th>
+                                <th>HR</th>
+                                <th>班级</th>
+                                <th>家长联系方式</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-gold" onclick="doImport()" id="import-btn">
+                        <i class="fas fa-cloud-upload-alt"></i> 确认导入到数据库
+                    </button>
+                    <button class="btn btn-accent" onclick="addEmptyRow()">
+                        <i class="fas fa-plus"></i> 添加一行
+                    </button>
+                    <button class="btn" style="background:#f0f0f0; color:var(--text);" onclick="showStep2()">
+                        <i class="fas fa-redo"></i> 重新解析
+                    </button>
+                </div>
+                <div class="result-box" id="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Help notes -->
+        <div class="section-card" style="border-color: #d4edda;">
+            <div class="section-head" style="background:#f0fff4;">
+                <div class="section-num" style="background:var(--accent);">?</div>
+                <div class="section-title-text">使用说明</div>
+            </div>
+            <div class="section-body" style="font-size:0.88rem; line-height:1.8; color:var(--text-muted);">
+                <ol style="padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+                    <li><strong>上传 PDF</strong> → 系统自动提取文本内容</li>
+                    <li>检查提取的文本，如有乱序或缺失可手动修改</li>
+                    <li>点击<strong>「解析文本」</strong>自动识别学生名、Homeroom、电话、邮箱</li>
+                    <li>在预览表格里核对所有信息，⚠️ 标记的行需重点检查</li>
+                    <li>点击<strong>「确认导入」</strong>后系统自动创建学生档案和家长联系人</li>
+                    <li>导入后回到<strong>家长通讯录</strong>即可查看；你再去 Sanity 后台补充中文名和照片</li>
+                </ol>
+                <p style="margin-top:14px; padding:10px 14px; background:#fff3cd; border-radius:8px; color:#856404;">
+                    ⚠️ <strong>安全提示：</strong>家长联系数据通过服务端接口存入数据库，该页面必须登录才能访问。
+                    如有疑问请查阅 <code>miwang-cms/STUDENT_IMPORT.md</code>。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Auth ────────────────────────────────────────────────────
+async function doLogin() {
+    const pwd = document.getElementById('login-pwd').value.trim()
+    if (!pwd) return
+    const errEl = document.getElementById('login-err')
+    errEl.textContent = ''
+    try {
+        const resp = await fetch('/api/contacts-login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password: pwd}),
+        })
+        if (resp.ok) {
+            document.getElementById('login-overlay').style.display = 'none'
+            document.getElementById('main-content').style.display = 'block'
+        } else {
+            const d = await resp.json()
+            errEl.textContent = d.error || '密码错误，请重试'
+            document.getElementById('login-pwd').value = ''
+            document.getElementById('login-pwd').focus()
+        }
+    } catch (e) {
+        errEl.textContent = '网络错误：' + e.message
+    }
+}
+
+async function checkExistingSession() {
+    try {
+        const resp = await fetch('/api/contacts-data')
+        if (resp.ok) {
+            document.getElementById('login-overlay').style.display = 'none'
+            document.getElementById('main-content').style.display = 'block'
+        }
+    } catch (_) {}
+}
+
+// ── PDF.js setup ────────────────────────────────────────────
+// The worker is loaded from the same CDN for consistency with the main script
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+
+// ── Drag & Drop ─────────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone')
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over') })
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'))
+dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('over')
+    const file = e.dataTransfer.files[0]
+    if (file && file.type === 'application/pdf') handleFile(file)
+    else alert('请上传 PDF 文件 / Please upload a PDF file')
+})
+
+// ── File handling + PDF.js extraction ───────────────────────
+async function handleFile(file) {
+    if (!file) return
+    document.getElementById('file-name').textContent = file.name
+    document.getElementById('file-chosen').style.display = 'flex'
+    document.getElementById('step2-card').style.display = 'none'
+    document.getElementById('step3-card').style.display = 'none'
+
+    const progressWrap = document.getElementById('extract-progress-wrap')
+    const progressBar = document.getElementById('extract-progress')
+    progressWrap.style.display = 'block'
+    progressBar.style.width = '10%'
+
+    try {
+        const arrayBuffer = await file.arrayBuffer()
+        progressBar.style.width = '30%'
+
+        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise
+        progressBar.style.width = '50%'
+
+        const totalPages = pdf.numPages
+        let allRows = []
+
+        for (let p = 1; p <= totalPages; p++) {
+            const page = await pdf.getPage(p)
+            const textContent = await page.getTextContent()
+            const pageRows = extractRowsFromPage(textContent)
+            allRows = allRows.concat(pageRows)
+            progressBar.style.width = `${50 + Math.round((p / totalPages) * 40)}%`
+        }
+
+        progressBar.style.width = '100%'
+        setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%' }, 600)
+
+        // Fill raw text area
+        document.getElementById('raw-text').value = allRows.join('\n')
+        document.getElementById('step2-card').style.display = 'block'
+        document.getElementById('step2-card').scrollIntoView({behavior: 'smooth', block: 'start'})
+    } catch (err) {
+        progressWrap.style.display = 'none'
+        alert('PDF 解析失败: ' + err.message + '\n请尝试手动粘贴文本。')
+        document.getElementById('step2-card').style.display = 'block'
+    }
+}
+
+/**
+ * Extract text rows from a PDF page by clustering items by y-coordinate.
+ */
+function extractRowsFromPage(textContent) {
+    const items = textContent.items.filter(it => it.str && it.str.trim())
+    if (!items.length) return []
+
+    // Group by row: items with y within 4pt of each other belong to the same row
+    const rows = []
+    for (const item of items) {
+        const y = Math.round(item.transform[5])
+        const x = item.transform[4]
+        const existing = rows.find(r => Math.abs(r.y - y) <= 4)
+        if (existing) {
+            existing.items.push({x, str: item.str})
+        } else {
+            rows.push({y, items: [{x, str: item.str}]})
+        }
+    }
+
+    // Sort rows top-to-bottom (descending y in PDF coords), then items left-to-right
+    rows.sort((a, b) => b.y - a.y)
+    return rows.map(r => {
+        r.items.sort((a, b) => a.x - b.x)
+        return r.items.map(it => it.str).join('  ').trim()
+    }).filter(Boolean)
+}
+
+// ── Parser ──────────────────────────────────────────────────
+const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}|\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g
+const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
+const HOMEROOM_RE = /\b(15|17)\b/
+
+// Map homeroom codes to class names
+function homeroomToClass(code) {
+    if (code === '15') return 'elephant'
+    if (code === '17') return 'tiger'
+    return ''
+}
+
+function parseRawText() {
+    const raw = document.getElementById('raw-text').value.trim()
+    if (!raw) { alert('请先上传 PDF 或粘贴文本内容'); return }
+
+    const importYear = document.getElementById('import-year').value
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
+    const parsedRows = []
+
+    for (const line of lines) {
+        const phones = (line.match(PHONE_RE) || []).map(p => p.replace(/\D/g, '').slice(-10))
+        const emails = (line.match(EMAIL_RE) || [])
+        const homeroomMatch = line.match(HOMEROOM_RE)
+        const homeroom = homeroomMatch ? homeroomMatch[1] : ''
+        const cls = homeroomToClass(homeroom)
+
+        // Remove phone numbers, emails, and homeroom number to isolate name fragments
+        let cleanLine = line
+            .replace(PHONE_RE, ' ')
+            .replace(EMAIL_RE, ' ')
+            .replace(/\b(15|17)\b/, ' ')
+            .replace(/\b(?:hr|homeroom|room)\b:?/gi, ' ')
+            .replace(/\s{2,}/g, '  ')
+            .trim()
+
+        // Try to split into student name vs parent name
+        // Common formats: "Smith, John  Mary Smith  555-..." or "John Smith  17  Mom Name ..."
+        const fragments = cleanLine.split(/\s{2,}|\t/).map(s => s.trim()).filter(Boolean)
+
+        // Heuristic: first fragment with a comma is likely "Last, First" student name
+        let nameEn = ''
+        let parentFragments = []
+        if (fragments.length > 0) {
+            const commaFrag = fragments.find(f => f.includes(','))
+            if (commaFrag) {
+                // "Last, First" format
+                const [last, first] = commaFrag.split(',').map(s => s.trim())
+                nameEn = first && last ? `${first} ${last}` : commaFrag
+                parentFragments = fragments.filter(f => f !== commaFrag)
+            } else {
+                // Take first fragment as student name
+                nameEn = fragments[0]
+                parentFragments = fragments.slice(1)
+            }
+        }
+
+        // Build contacts from phones/emails
+        const contacts = []
+        phones.forEach((ph, i) => {
+            contacts.push({
+                contactName: parentFragments[i] || '',
+                relationship: i === 0 ? 'mom' : 'dad',
+                type: 'phone',
+                value: formatPhone(ph),
+                isPrimary: i === 0,
+                notes: '',
+            })
+        })
+        emails.forEach((em, i) => {
+            contacts.push({
+                contactName: parentFragments[phones.length + i] || '',
+                relationship: 'parent',
+                type: 'email',
+                value: em,
+                isPrimary: false,
+                notes: '',
+            })
+        })
+
+        const hasUsefulData = nameEn || phones.length || emails.length
+        if (!hasUsefulData) continue
+
+        const needsReview = !homeroom || !nameEn || contacts.length === 0
+        parsedRows.push({
+            nameEn: nameEn.trim(),
+            nameZh: '',
+            homeroomCode: homeroom,
+            className: cls,
+            academicYear: importYear,
+            contacts,
+            needsReview,
+            rawImportText: line,
+        })
+    }
+
+    if (!parsedRows.length) {
+        alert('未能从文本中识别出有效数据行。请检查文本格式，或手动添加行。')
+        return
+    }
+
+    renderPreviewTable(parsedRows)
+}
+
+function formatPhone(digits) {
+    if (digits.length === 10) {
+        return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+    }
+    return digits
+}
+
+// ── Preview table ────────────────────────────────────────────
+let tableRows = []  // array of row data objects (keep in sync with DOM)
+
+function renderPreviewTable(rows) {
+    tableRows = rows
+    const tbody = document.getElementById('preview-tbody')
+    tbody.innerHTML = ''
+    for (let i = 0; i < rows.length; i++) renderTableRow(tbody, rows[i], i)
+    document.getElementById('preview-count').textContent = `${rows.length} 行记录`
+    document.getElementById('step3-card').style.display = 'block'
+    document.getElementById('step3-card').scrollIntoView({behavior: 'smooth', block: 'start'})
+}
+
+function renderTableRow(tbody, row, idx) {
+    const tr = document.createElement('tr')
+    tr.dataset.idx = idx
+    if (row.needsReview) tr.classList.add('row-review')
+
+    tr.innerHTML = `
+    <td>
+        <button class="remove-row-btn" title="删除此行" onclick="removeRow(${idx})">×</button>
+    </td>
+    <td>
+        <input class="tbl-input" data-field="nameEn" value="${esc(row.nameEn)}" placeholder="First Last">
+        ${row.needsReview ? '<div class="review-badge">⚠️ 待核对</div>' : ''}
+    </td>
+    <td>
+        <input class="tbl-input" data-field="nameZh" value="${esc(row.nameZh)}" placeholder="中文名（后补）">
+    </td>
+    <td>
+        <input class="tbl-input" data-field="homeroomCode" value="${esc(row.homeroomCode)}" style="width:50px;" placeholder="15/17"
+            oninput="syncClass(this)">
+    </td>
+    <td>
+        <select class="tbl-select" data-field="className">
+            <option value="">—</option>
+            <option value="elephant" ${row.className==='elephant'?'selected':''}>🐘 大象班</option>
+            <option value="tiger"    ${row.className==='tiger'?'selected':''}>🐯 老虎班</option>
+        </select>
+    </td>
+    <td>
+        <div class="contacts-cell" id="contacts-cell-${idx}">
+            ${renderContactItems(row.contacts, idx)}
+        </div>
+        <button class="add-contact-btn" onclick="addContact(${idx})">+ 添加联系人</button>
+    </td>`
+
+    // Sync data back to tableRows on change
+    tr.querySelectorAll('[data-field]').forEach(el => {
+        el.addEventListener('change', () => {
+            tableRows[idx][el.dataset.field] = el.value
+            if (el.dataset.field === 'homeroomCode') {
+                tableRows[idx].className = homeroomToClass(el.value)
+            }
+        })
+    })
+
+    tbody.appendChild(tr)
+}
+
+function renderContactItems(contacts, rowIdx) {
+    if (!contacts || !contacts.length) return ''
+    return contacts.map((c, ci) => `
+    <div class="contact-row" id="contact-${rowIdx}-${ci}">
+        <select class="tbl-select" style="width:100%;" onchange="updateContact(${rowIdx},${ci},'type',this.value)">
+            <option value="phone"  ${c.type==='phone'?'selected':''}>📞 电话</option>
+            <option value="email"  ${c.type==='email'?'selected':''}>✉️ 邮箱</option>
+            <option value="wechat" ${c.type==='wechat'?'selected':''}>💬 微信</option>
+        </select>
+        <input class="tbl-input" value="${esc(c.value)}" placeholder="联系方式"
+            onchange="updateContact(${rowIdx},${ci},'value',this.value)">
+        <button class="remove-row-btn" onclick="removeContact(${rowIdx},${ci})">×</button>
+    </div>
+    <div style="margin-bottom:2px;">
+        <input class="tbl-input" value="${esc(c.contactName)}" placeholder="联系人姓名（可选）"
+            onchange="updateContact(${rowIdx},${ci},'contactName',this.value)"
+            style="font-size:0.8rem;">
+    </div>`).join('')
+}
+
+function syncClass(input) {
+    const tr = input.closest('tr')
+    const idx = parseInt(tr.dataset.idx)
+    const cls = homeroomToClass(input.value)
+    tableRows[idx].homeroomCode = input.value
+    tableRows[idx].className = cls
+    const sel = tr.querySelector('[data-field="className"]')
+    if (sel) sel.value = cls
+}
+
+function removeRow(idx) {
+    tableRows.splice(idx, 1)
+    const tbody = document.getElementById('preview-tbody')
+    tbody.innerHTML = ''
+    for (let i = 0; i < tableRows.length; i++) renderTableRow(tbody, tableRows[i], i)
+    document.getElementById('preview-count').textContent = `${tableRows.length} 行记录`
+}
+
+function addContact(rowIdx) {
+    if (!tableRows[rowIdx].contacts) tableRows[rowIdx].contacts = []
+    tableRows[rowIdx].contacts.push({contactName:'', relationship:'parent', type:'phone', value:'', isPrimary:false, notes:''})
+    const cell = document.getElementById(`contacts-cell-${rowIdx}`)
+    if (cell) cell.innerHTML = renderContactItems(tableRows[rowIdx].contacts, rowIdx)
+}
+
+function updateContact(rowIdx, ci, field, value) {
+    if (tableRows[rowIdx] && tableRows[rowIdx].contacts[ci]) {
+        tableRows[rowIdx].contacts[ci][field] = value
+    }
+}
+
+function removeContact(rowIdx, ci) {
+    tableRows[rowIdx].contacts.splice(ci, 1)
+    const cell = document.getElementById(`contacts-cell-${rowIdx}`)
+    if (cell) cell.innerHTML = renderContactItems(tableRows[rowIdx].contacts, rowIdx)
+}
+
+function addEmptyRow() {
+    const importYear = document.getElementById('import-year').value
+    const newRow = {nameEn:'', nameZh:'', homeroomCode:'', className:'', academicYear:importYear, contacts:[], needsReview:true, rawImportText:''}
+    tableRows.push(newRow)
+    const tbody = document.getElementById('preview-tbody')
+    renderTableRow(tbody, newRow, tableRows.length - 1)
+    document.getElementById('step3-card').style.display = 'block'
+    document.getElementById('preview-count').textContent = `${tableRows.length} 行记录`
+}
+
+function showStep2() {
+    document.getElementById('step3-card').style.display = 'none'
+    document.getElementById('step2-card').scrollIntoView({behavior:'smooth', block:'start'})
+}
+
+function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')
+}
+
+// ── Import ────────────────────────────────────────────────────
+async function doImport() {
+    // Collect current state from DOM inputs (user may have edited)
+    const tbody = document.getElementById('preview-tbody')
+    const rows = []
+    for (let i = 0; i < tableRows.length; i++) {
+        const tr = tbody.querySelector(`tr[data-idx="${i}"]`)
+        if (!tr) continue
+        const row = Object.assign({}, tableRows[i])
+        tr.querySelectorAll('[data-field]').forEach(el => { row[el.dataset.field] = el.value })
+        if (!row.nameEn && !row.nameZh) continue
+        rows.push(row)
+    }
+
+    if (!rows.length) { alert('没有有效数据行可导入'); return }
+
+    const btn = document.getElementById('import-btn')
+    btn.disabled = true
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在导入…'
+    const resultBox = document.getElementById('result-box')
+    resultBox.style.display = 'none'
+
+    try {
+        const resp = await fetch('/api/contacts-import', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({rows}),
+        })
+        const d = await resp.json()
+        if (resp.ok && d.ok) {
+            resultBox.className = 'result-box success'
+            resultBox.innerHTML = `✅ <strong>导入成功！</strong>共导入 ${d.imported} 条学生记录（写入 ${d.mutations} 个文档）。<br>
+                <small>接下来请到 <a href="contacts.html" style="color:inherit">家长通讯录</a> 查看结果，并去 Sanity 后台补充学生中文名和照片。</small>`
+        } else {
+            resultBox.className = 'result-box error'
+            resultBox.innerHTML = `❌ <strong>导入失败：</strong>${esc(d.error || '未知错误')}`
+        }
+    } catch (e) {
+        resultBox.className = 'result-box error'
+        resultBox.innerHTML = `❌ <strong>网络错误：</strong>${esc(e.message)}`
+    }
+
+    resultBox.style.display = 'block'
+    btn.disabled = false
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 确认导入到数据库'
+    resultBox.scrollIntoView({behavior:'smooth', block:'start'})
+}
+
+// ── Init ─────────────────────────────────────────────────────
+checkExistingSession()
+</script>
+
+</body>
+</html>
