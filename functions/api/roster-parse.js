@@ -164,6 +164,8 @@ async function callOpenAI(blocks, apiKey) {
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       response_format: {type: 'json_object'},
+      // Low temperature for deterministic, consistent parsing results;
+      // this is structured extraction, not creative text generation.
       temperature: 0.1,
       messages: [
         {role: 'system', content: SYSTEM_PROMPT},
@@ -216,6 +218,8 @@ export async function onRequestPost(context) {
 
   const {blocks = [], academicYear = '25-26'} = body
   if (!blocks.length) return json({error: '没有可解析的学生块'}, 400)
+  // Cap at 50 blocks per request to keep OpenAI token usage and response time reasonable.
+  // A typical single-class roster has 20-30 students; 50 covers even the largest plausible batch.
   if (blocks.length > 50) return json({error: '单次最多解析 50 个学生块'}, 400)
 
   let students, model

@@ -399,7 +399,8 @@
                     提示：每行对应一个学生记录。支持常见格式：Last, First 或 First Last、10位手机号、邮箱地址。
                 </div>
                 <div class="btn-row">
-                    <button class="btn btn-primary" id="ai-parse-btn" onclick="aiParseRawText()">
+                    <button class="btn btn-primary" id="ai-parse-btn" onclick="aiParseRawText()"
+                        aria-label="AI智能解析学生名册">
                         🤖 AI 智能解析
                     </button>
                     <button class="btn" style="background:#f0f0f0;color:var(--text);" onclick="parseRawText()">
@@ -619,7 +620,12 @@ function extractRowsFromPage(textContent) {
 const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}|\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
 const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
-// Student-start: optional grade prefix (e.g. "KN") then "Last, First" format
+// Student-start: optional grade prefix (e.g. "KN" = Kindergarten, "1" = 1st grade)
+// then "LastName, FirstName" format — each name part allows letters, apostrophes, dots, hyphens.
+// Segment 1: [A-Z]{1,4}\s+  — optional 1-4 char grade code + space
+// Segment 2: Last name (one or more words)
+// Segment 3: literal comma + space
+// Segment 4: First name (one or more words)
 const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
 const NOISE_LINE_RE_LIST = [
     /^section rosters?$/i,
@@ -929,6 +935,8 @@ function setAiStatus(type, message) {
 
 function updateCountWarning(parsed, expected) {
     const el = document.getElementById('count-warning')
+    // Allow a difference of 2 to account for late enrollments, recent withdrawals,
+    // or students that span multiple homerooms in the same PDF section.
     if (expected !== null && Math.abs(parsed - expected) > 2) {
         el.className = 'count-warning show'
         el.innerHTML = `⚠️ 班级声明人数 <strong>${expected}</strong> 人，实际解析到 <strong>${parsed}</strong> 人，差异超过 2，请核查是否有学生遗漏。`
@@ -1013,7 +1021,8 @@ function renderTableRow(tbody, row, idx) {
         ${row.needsReview ? '<div class="review-badge">⚠️ 待核对</div>' : ''}
         ${confBadge(row.confidence)}
         ${flagPills(row.flags)}
-        ${hasSource ? `<button class="source-btn" onclick="toggleSource(${idx})">📄 原始文本</button>
+        ${hasSource ? `<button class="source-btn" onclick="toggleSource(${idx})"
+            aria-label="显示原始文本">📄 原始文本</button>
         <div class="source-text" id="source-${idx}">${esc(row.rawImportText)}</div>` : ''}
     </td>
     <td>
