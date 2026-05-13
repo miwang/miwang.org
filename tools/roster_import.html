@@ -236,6 +236,76 @@
         }
         .progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
 
+        /* ── Confidence badges ── */
+        .conf-badge {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 1px 7px; border-radius: 10px; font-size: 0.73rem; font-weight: 700;
+            vertical-align: middle; margin-left: 4px;
+        }
+        .conf-high { background: #d4edda; color: #155724; }
+        .conf-mid  { background: #fff3cd; color: #856404; }
+        .conf-low  { background: #f8d7da; color: #721c24; }
+
+        /* ── Flag pills ── */
+        .flags-row { margin-top: 3px; display: flex; flex-wrap: wrap; gap: 3px; }
+        .flag-pill {
+            display: inline-block; padding: 1px 6px; border-radius: 8px;
+            font-size: 0.7rem; font-weight: 600;
+            background: #fff3cd; color: #856404; border: 1px solid #ffc107;
+        }
+
+        /* ── Source text toggle ── */
+        .source-btn {
+            background: none; border: none; cursor: pointer; color: var(--text-muted);
+            font-size: 0.75rem; padding: 2px 5px; margin-top: 3px;
+            display: inline-block; text-decoration: underline dotted;
+        }
+        .source-btn:hover { color: var(--primary); }
+        .source-text {
+            display: none; background: #f8f9fa; border: 1px solid var(--border);
+            border-radius: 6px; padding: 6px 8px; margin-top: 4px;
+            font-family: monospace; font-size: 0.75rem; white-space: pre-wrap;
+            color: var(--text-muted); line-height: 1.4;
+        }
+
+        /* ── Count warning ── */
+        .count-warning {
+            background: #fff3cd; color: #856404;
+            border: 1px solid #ffc107; border-radius: 8px;
+            padding: 9px 14px; margin-bottom: 12px;
+            font-size: 0.87rem; display: none; align-items: center; gap: 8px;
+        }
+        .count-warning.show { display: flex; }
+
+        /* ── AI status bar ── */
+        .ai-status {
+            padding: 9px 14px; border-radius: 8px; font-size: 0.87rem;
+            margin-top: 10px; display: none; align-items: center; gap: 10px;
+        }
+        .ai-status.loading { background: #e8f4f4; color: var(--primary); display: flex; }
+        .ai-status.error   { background: #f8d7da; color: #721c24;         display: flex; }
+        .ai-status.done    { background: #d4edda; color: #155724;         display: flex; }
+        .ai-spin { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Risk-sort toggle ── */
+        .sort-toggle {
+            font-size: 0.82rem; color: var(--text-muted); background: none;
+            border: 1px solid var(--border); border-radius: 6px;
+            padding: 4px 10px; cursor: pointer; font-family: var(--font-zh);
+            transition: border-color 0.2s;
+        }
+        .sort-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ── Import gate error list ── */
+        .gate-errors {
+            background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+            border-radius: 8px; padding: 12px 16px; margin-top: 10px;
+            font-size: 0.87rem; display: none;
+        }
+        .gate-errors.show { display: block; }
+        .gate-errors ul { margin: 6px 0 0 18px; line-height: 1.8; }
+
         @media (max-width: 600px) {
             .container { width: 100%; padding: 0 10px; }
             .section-body { padding: 14px 14px; }
@@ -329,13 +399,17 @@
                     提示：每行对应一个学生记录。支持常见格式：Last, First 或 First Last、10位手机号、邮箱地址。
                 </div>
                 <div class="btn-row">
-                    <button class="btn btn-primary" onclick="parseRawText()">
-                        <i class="fas fa-magic"></i> 解析文本 → 生成预览
+                    <button class="btn btn-primary" id="ai-parse-btn" onclick="aiParseRawText()">
+                        🤖 AI 智能解析
+                    </button>
+                    <button class="btn" style="background:#f0f0f0;color:var(--text);" onclick="parseRawText()">
+                        <i class="fas fa-magic"></i> 规则解析（备用）
                     </button>
                     <button class="btn btn-accent" onclick="addEmptyRow()">
                         <i class="fas fa-plus"></i> 手动添加一行
                     </button>
                 </div>
+                <div class="ai-status" id="ai-status"></div>
             </div>
         </div>
 
@@ -351,13 +425,19 @@
                     请仔细核对以下信息。⚠️ 标记的行为低置信度，请重点检查。
                     每行都可以直接编辑，不需要的行可以删除。
                 </p>
+                <div class="count-warning" id="count-warning"></div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                    <button class="sort-toggle" id="sort-toggle" onclick="toggleSort()">⚠️ 按风险排序</button>
+                    <span style="font-size:0.82rem;color:var(--text-muted);" id="sort-hint">当前：按风险优先（低置信度在前）</span>
+                </div>
                 <div id="preview-wrap">
                     <table class="preview-table" id="preview-table">
                         <thead>
                             <tr>
                                 <th style="width:30px;"></th>
-                                <th>英文姓名</th>
+                                <th>英文姓名 &amp; 置信度</th>
                                 <th>中文名（可选）</th>
+                                <th>生日</th>
                                 <th>HR</th>
                                 <th>班级</th>
                                 <th>家长联系方式</th>
@@ -377,6 +457,7 @@
                         <i class="fas fa-redo"></i> 重新解析
                     </button>
                 </div>
+                <div class="gate-errors" id="gate-errors"></div>
                 <div class="result-box" id="result-box"></div>
             </div>
         </div>
@@ -391,10 +472,12 @@
                 <ol style="padding-left:18px; display:flex; flex-direction:column; gap:6px;">
                     <li><strong>上传 PDF</strong> → 系统自动提取文本内容</li>
                     <li>检查提取的文本，如有乱序或缺失可手动修改</li>
-                    <li>点击<strong>「解析文本」</strong>自动识别学生名、Homeroom、电话、邮箱</li>
-                    <li>在预览表格里核对所有信息，⚠️ 标记的行需重点检查</li>
-                    <li>点击<strong>「确认导入」</strong>后系统自动创建学生档案和家长联系人</li>
+                    <li>点击<strong>「🤖 AI 智能解析」</strong>—— AI 自动识别学生姓名、生日、Homeroom、家长电话/邮箱，并输出置信度</li>
+                    <li>预览表格按<strong>风险优先排序</strong>：⚠️ 标记 / 低置信度行在前；点击「📄 原始文本」可核对 AI 依据</li>
+                    <li>直接在表格内编辑有问题的字段，缺少 HR 编号或联系方式的行无法导入</li>
+                    <li>点击<strong>「确认导入」</strong>—— 系统先验证必填项，再创建学生档案和家长联系人</li>
                     <li>导入后回到<strong>家长通讯录</strong>即可查看；你再去 Sanity 后台补充中文名和照片</li>
+                    <li>网络不可用时可使用<strong>「规则解析（备用）」</strong>做基础提取</li>
                 </ol>
                 <p style="margin-top:14px; padding:10px 14px; background:#fff3cd; border-radius:8px; color:#856404;">
                     ⚠️ <strong>安全提示：</strong>家长联系数据通过服务端接口存入数据库，该页面必须登录才能访问。
@@ -531,11 +614,13 @@ function extractRowsFromPage(textContent) {
     }).filter(Boolean)
 }
 
-// ── Parser ──────────────────────────────────────────────────
+
+// ── Parser constants ────────────────────────────────────────
 const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}|\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
 const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
-const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*,\s*[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*$/
+// Student-start: optional grade prefix (e.g. "KN") then "Last, First" format
+const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
 const NOISE_LINE_RE_LIST = [
     /^section rosters?$/i,
     PAGE_RE,
@@ -556,7 +641,6 @@ const NOISE_LINE_RE_LIST = [
     /^mi teacher:/i,
 ]
 
-// Map homeroom codes to class names
 function homeroomToClass(code) {
     if (code === '15') return 'elephant'
     if (code === '17') return 'tiger'
@@ -606,6 +690,66 @@ function parseStudentNameFromLine(line) {
     return s
 }
 
+// ── Phase A: Document segmentation ──────────────────────────
+/**
+ * Segment raw roster text into student blocks with homeroom metadata.
+ *
+ * Layers processed:
+ *   Layer 0 – global header noise (school name, dates, page numbers) → discard
+ *   Layer 1 – class section markers (Homeroom 15/17, course lines) → capture homeroom
+ *   Layer 2 – class metadata ("Active Students: 24") → capture expectedCount
+ *   Layer 3 – student blocks starting with "KN Last, First" → group lines
+ *
+ * Returns { blocks: [{text, homeroom}], expectedCount }
+ */
+function segmentDocument(rawText) {
+    const lines = rawText.split('\n').map(l => normalizeRosterLine(l)).filter(Boolean)
+    let currentHomeroom = ''
+    let expectedCount = null
+    const blocks = []
+    let currentBlock = null
+
+    const pushBlock = () => {
+        if (currentBlock && currentBlock.lines.length > 0) {
+            blocks.push({
+                text: currentBlock.lines.join('\n'),
+                homeroom: currentBlock.homeroom,
+            })
+        }
+        currentBlock = null
+    }
+
+    for (const line of lines) {
+        // Layer 1: homeroom / class section header
+        const hr = extractHomeroomFromLine(line)
+        if (hr) { currentHomeroom = hr; continue }
+
+        // Layer 2: expected student count ("Active Students: 24")
+        const cm = line.match(/active students?[:\s]+(\d+)/i)
+        if (cm) { expectedCount = parseInt(cm[1]); continue }
+
+        // Page markers close the current block (layout reset)
+        if (PAGE_RE.test(line)) { pushBlock(); continue }
+
+        // Layer 0: discard noise
+        if (isNoiseLine(line)) continue
+
+        // Layer 3: new student block starts at grade-prefixed "Last, First" line
+        if (isStudentStartLine(line)) {
+            pushBlock()
+            currentBlock = {homeroom: currentHomeroom, lines: [line]}
+            continue
+        }
+
+        // All other lines belong to the current student block
+        if (currentBlock) currentBlock.lines.push(line)
+    }
+
+    pushBlock()
+    return {blocks, expectedCount}
+}
+
+// ── Phase A fallback: rule-based row builder ─────────────────
 function extractGuardianNameCandidates(lines, studentNameLine) {
     const names = []
     const studentBase = parseStudentNameFromLine(studentNameLine).toLowerCase()
@@ -619,7 +763,6 @@ function extractGuardianNameCandidates(lines, studentNameLine) {
         if (!clean.includes(',') && clean.split(/\s+/).length < 2) return
         if (!names.includes(clean)) names.push(clean)
     }
-
     for (const line of lines) {
         let s = normalizeRosterLine(line)
         if (!s || isNoiseLine(s) || isStudentStartLine(s)) continue
@@ -633,14 +776,31 @@ function extractGuardianNameCandidates(lines, studentNameLine) {
     return names
 }
 
+function formatPhone(digits) {
+    if (digits.length === 10) {
+        return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+    }
+    return digits
+}
+
 function buildParsedRowFromBlock(block, importYear) {
-    const joined = block.lines.join(' | ')
+    const lines = block.text.split('\n')
+    const nameLine = lines[0] || ''
+    const joined = lines.join(' | ')
     const phones = (joined.match(PHONE_RE) || []).map(p => p.replace(/\D/g, '').slice(-10))
     const emails = (joined.match(EMAIL_RE) || [])
     const homeroom = block.homeroom || ''
     const cls = homeroomToClass(homeroom)
-    const nameEn = parseStudentNameFromLine(block.nameLine)
-    const guardianNames = extractGuardianNameCandidates(block.lines, block.nameLine)
+    const nameEn = parseStudentNameFromLine(nameLine)
+    const guardianNames = extractGuardianNameCandidates(lines, nameLine)
+
+    // Try to extract birthday (MM/DD/YYYY or MM-DD-YYYY)
+    let birthday = ''
+    const bdMatch = joined.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/)
+    if (bdMatch) {
+        const [, m, d, y] = bdMatch
+        birthday = `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`
+    }
 
     const contacts = []
     phones.forEach((ph, i) => {
@@ -664,82 +824,144 @@ function buildParsedRowFromBlock(block, importYear) {
         })
     })
 
-    const hasUsefulData = !!nameEn
-    if (!hasUsefulData) return null
+    if (!nameEn) return null
+
+    const flags = []
+    if (!birthday) flags.push('missing_birthday')
+    if (contacts.length === 0) flags.push('missing_contact')
 
     const needsReview = !homeroom || contacts.length === 0
     return {
         nameEn: nameEn.trim(),
         nameZh: '',
+        birthday,
         homeroomCode: homeroom,
         className: cls,
         academicYear: importYear,
         contacts,
+        confidence: needsReview ? 0.5 : 0.7,
+        flags,
         needsReview,
         rawImportText: joined,
     }
 }
 
+// ── Rule-based parse (fallback / offline) ────────────────────
 function parseRawText() {
     const raw = document.getElementById('raw-text').value.trim()
     if (!raw) { alert('请先上传 PDF 或粘贴文本内容'); return }
 
     const importYear = document.getElementById('import-year').value
-    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
-    const parsedRows = []
-    let currentBlock = null
-    let currentPageHomeroom = ''
+    const {blocks, expectedCount} = segmentDocument(raw)
 
-    const pushCurrentBlock = () => {
-        if (!currentBlock) return
-        const row = buildParsedRowFromBlock(currentBlock, importYear)
-        if (row) parsedRows.push(row)
-        currentBlock = null
-    }
-
-    for (const rawLine of lines) {
-        const line = normalizeRosterLine(rawLine)
-        if (!line) continue
-
-        const metaHomeroom = extractHomeroomFromLine(line)
-        if (metaHomeroom) currentPageHomeroom = metaHomeroom
-
-        if (PAGE_RE.test(line)) {
-            pushCurrentBlock()
-            continue
-        }
-
-        if (isStudentStartLine(line)) {
-            pushCurrentBlock()
-            currentBlock = {nameLine: line, lines: [line], homeroom: currentPageHomeroom}
-            continue
-        }
-
-        if (isNoiseLine(line)) continue
-        if (currentBlock) {
-            currentBlock.lines.push(line)
-        }
-    }
-
-    pushCurrentBlock()
-
-    if (!parsedRows.length) {
+    if (!blocks.length) {
         alert('未能从文本中识别出有效数据行。请检查文本格式，或手动添加行。')
         return
     }
 
+    const parsedRows = blocks.map(b => buildParsedRowFromBlock(b, importYear)).filter(Boolean)
+    if (!parsedRows.length) {
+        alert('规则解析无法识别有效学生记录，建议尝试「AI 智能解析」。')
+        return
+    }
+
+    updateCountWarning(parsedRows.length, expectedCount)
+    // Sort low-confidence first
+    parsedRows.sort((a, b) => a.confidence - b.confidence)
     renderPreviewTable(parsedRows)
+    setAiStatus('')
 }
 
-function formatPhone(digits) {
-    if (digits.length === 10) {
-        return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+// ── Phase B: AI-powered parse ────────────────────────────────
+async function aiParseRawText() {
+    const raw = document.getElementById('raw-text').value.trim()
+    if (!raw) { alert('请先上传 PDF 或粘贴文本内容'); return }
+
+    const importYear = document.getElementById('import-year').value
+
+    // Phase A: segment into blocks
+    const {blocks, expectedCount} = segmentDocument(raw)
+
+    if (!blocks.length) {
+        alert('未能识别出任何学生记录块，请检查文本格式。')
+        return
     }
-    return digits
+
+    setAiStatus('loading', `🤖 AI 正在解析 ${blocks.length} 个学生记录…`)
+    document.getElementById('ai-parse-btn').disabled = true
+
+    try {
+        const resp = await fetch('/api/roster-parse', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({blocks, academicYear: importYear}),
+        })
+
+        const d = await resp.json()
+        if (!resp.ok) throw new Error(d.error || `HTTP ${resp.status}`)
+
+        const rows = d.rows || []
+        if (!rows.length) throw new Error('AI 未返回任何解析结果')
+
+        updateCountWarning(rows.length, expectedCount)
+        // Sort by risk: lower confidence first, then alphabetical
+        rows.sort((a, b) => {
+            const ca = typeof a.confidence === 'number' ? a.confidence : 0.5
+            const cb = typeof b.confidence === 'number' ? b.confidence : 0.5
+            if (ca !== cb) return ca - cb
+            return (a.nameEn || '').localeCompare(b.nameEn || '')
+        })
+        renderPreviewTable(rows)
+        setAiStatus('done', `✅ AI 解析完成（${rows.length} 条记录，模型：${d.model || 'gpt-4o-mini'}）`)
+    } catch (err) {
+        setAiStatus('error', '❌ AI 解析失败：' + err.message + '。可改用「规则解析」作为备用。')
+    } finally {
+        document.getElementById('ai-parse-btn').disabled = false
+    }
+}
+
+function setAiStatus(type, message) {
+    const el = document.getElementById('ai-status')
+    el.className = 'ai-status' + (type ? ' ' + type : '')
+    el.textContent = message || ''
+    el.style.display = type ? '' : 'none'
+}
+
+function updateCountWarning(parsed, expected) {
+    const el = document.getElementById('count-warning')
+    if (expected !== null && Math.abs(parsed - expected) > 2) {
+        el.className = 'count-warning show'
+        el.innerHTML = `⚠️ 班级声明人数 <strong>${expected}</strong> 人，实际解析到 <strong>${parsed}</strong> 人，差异超过 2，请核查是否有学生遗漏。`
+    } else {
+        el.className = 'count-warning'
+    }
+}
+
+// ── Sort toggle ───────────────────────────────────────────────
+let sortByRisk = true
+
+function toggleSort() {
+    sortByRisk = !sortByRisk
+    const hint = document.getElementById('sort-hint')
+    hint.textContent = sortByRisk ? '当前：按风险优先（低置信度在前）' : '当前：按姓名字母顺序'
+    const sorted = [...tableRows]
+    if (sortByRisk) {
+        sorted.sort((a, b) => {
+            const ca = typeof a.confidence === 'number' ? a.confidence : 0.5
+            const cb = typeof b.confidence === 'number' ? b.confidence : 0.5
+            return ca !== cb ? ca - cb : (a.nameEn || '').localeCompare(b.nameEn || '')
+        })
+    } else {
+        sorted.sort((a, b) => (a.nameEn || '').localeCompare(b.nameEn || ''))
+    }
+    tableRows = sorted
+    const tbody = document.getElementById('preview-tbody')
+    tbody.innerHTML = ''
+    for (let i = 0; i < tableRows.length; i++) renderTableRow(tbody, tableRows[i], i)
 }
 
 // ── Preview table ────────────────────────────────────────────
-let tableRows = []  // array of row data objects (keep in sync with DOM)
+let tableRows = []
 
 function renderPreviewTable(rows) {
     tableRows = rows
@@ -748,13 +970,39 @@ function renderPreviewTable(rows) {
     for (let i = 0; i < rows.length; i++) renderTableRow(tbody, rows[i], i)
     document.getElementById('preview-count').textContent = `${rows.length} 行记录`
     document.getElementById('step3-card').style.display = 'block'
+    document.getElementById('gate-errors').className = 'gate-errors'
     document.getElementById('step3-card').scrollIntoView({behavior: 'smooth', block: 'start'})
+}
+
+function confBadge(confidence) {
+    if (typeof confidence !== 'number') return ''
+    const pct = Math.round(confidence * 100)
+    const cls = confidence >= 0.8 ? 'conf-high' : confidence >= 0.55 ? 'conf-mid' : 'conf-low'
+    return `<span class="conf-badge ${cls}">${pct}%</span>`
+}
+
+function flagPills(flags) {
+    if (!Array.isArray(flags) || !flags.length) return ''
+    const labels = {
+        missing_birthday:   '缺生日',
+        missing_contact:    '缺联系方式',
+        name_conflict:      '姓名冲突',
+        ambiguous_guardian: '监护人不明',
+        malformed_date:     '日期格式异常',
+        ambiguous_name:     '姓名模糊',
+        extra_data:         '多余数据',
+    }
+    return `<div class="flags-row">${flags.map(f =>
+        `<span class="flag-pill">${labels[f] || f}</span>`
+    ).join('')}</div>`
 }
 
 function renderTableRow(tbody, row, idx) {
     const tr = document.createElement('tr')
     tr.dataset.idx = idx
     if (row.needsReview) tr.classList.add('row-review')
+
+    const hasSource = row.rawImportText && row.rawImportText.trim()
 
     tr.innerHTML = `
     <td>
@@ -763,9 +1011,16 @@ function renderTableRow(tbody, row, idx) {
     <td>
         <input class="tbl-input" data-field="nameEn" value="${esc(row.nameEn)}" placeholder="First Last">
         ${row.needsReview ? '<div class="review-badge">⚠️ 待核对</div>' : ''}
+        ${confBadge(row.confidence)}
+        ${flagPills(row.flags)}
+        ${hasSource ? `<button class="source-btn" onclick="toggleSource(${idx})">📄 原始文本</button>
+        <div class="source-text" id="source-${idx}">${esc(row.rawImportText)}</div>` : ''}
     </td>
     <td>
         <input class="tbl-input" data-field="nameZh" value="${esc(row.nameZh)}" placeholder="中文名（后补）">
+    </td>
+    <td>
+        <input class="tbl-input" data-field="birthday" value="${esc(row.birthday || '')}" placeholder="YYYY-MM-DD" style="width:110px;">
     </td>
     <td>
         <input class="tbl-input" data-field="homeroomCode" value="${esc(row.homeroomCode)}" style="width:50px;" placeholder="15/17"
@@ -785,7 +1040,6 @@ function renderTableRow(tbody, row, idx) {
         <button class="add-contact-btn" onclick="addContact(${idx})">+ 添加联系人</button>
     </td>`
 
-    // Sync data back to tableRows on change
     tr.querySelectorAll('[data-field]').forEach(el => {
         el.addEventListener('change', () => {
             tableRows[idx][el.dataset.field] = el.value
@@ -798,14 +1052,20 @@ function renderTableRow(tbody, row, idx) {
     tbody.appendChild(tr)
 }
 
+function toggleSource(idx) {
+    const el = document.getElementById(`source-${idx}`)
+    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block'
+}
+
 function renderContactItems(contacts, rowIdx) {
     if (!contacts || !contacts.length) return ''
     return contacts.map((c, ci) => `
     <div class="contact-row" id="contact-${rowIdx}-${ci}">
         <select class="tbl-select" style="width:100%;" onchange="updateContact(${rowIdx},${ci},'type',this.value)">
-            <option value="phone"  ${c.type==='phone'?'selected':''}>📞 电话</option>
-            <option value="email"  ${c.type==='email'?'selected':''}>✉️ 邮箱</option>
-            <option value="wechat" ${c.type==='wechat'?'selected':''}>💬 微信</option>
+            <option value="phone"   ${c.type==='phone'?'selected':''}>📞 电话</option>
+            <option value="email"   ${c.type==='email'?'selected':''}>✉️ 邮箱</option>
+            <option value="wechat"  ${c.type==='wechat'?'selected':''}>💬 微信</option>
+            <option value="address" ${c.type==='address'?'selected':''}>🏠 地址</option>
         </select>
         <input class="tbl-input" value="${esc(c.value)}" placeholder="联系方式"
             onchange="updateContact(${rowIdx},${ci},'value',this.value)">
@@ -857,7 +1117,11 @@ function removeContact(rowIdx, ci) {
 
 function addEmptyRow() {
     const importYear = document.getElementById('import-year').value
-    const newRow = {nameEn:'', nameZh:'', homeroomCode:'', className:'', academicYear:importYear, contacts:[], needsReview:true, rawImportText:''}
+    const newRow = {
+        nameEn:'', nameZh:'', birthday:'', homeroomCode:'', className:'',
+        academicYear:importYear, contacts:[], confidence:0.5, flags:[],
+        needsReview:true, rawImportText:'',
+    }
     tableRows.push(newRow)
     const tbody = document.getElementById('preview-tbody')
     renderTableRow(tbody, newRow, tableRows.length - 1)
@@ -874,19 +1138,50 @@ function esc(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')
 }
 
-// ── Import ────────────────────────────────────────────────────
-async function doImport() {
-    // Collect current state from DOM inputs (user may have edited)
+// ── Import gate validation ───────────────────────────────────
+/**
+ * Collect current DOM state, validate minimum required fields:
+ *   nameEn (or nameZh) + homeroomCode + at least one phone/email contact.
+ * Returns { rows, errors }.
+ */
+function collectAndValidateRows() {
     const tbody = document.getElementById('preview-tbody')
     const rows = []
+    const errors = []
+
     for (let i = 0; i < tableRows.length; i++) {
         const tr = tbody.querySelector(`tr[data-idx="${i}"]`)
         if (!tr) continue
         const row = Object.assign({}, tableRows[i])
         tr.querySelectorAll('[data-field]').forEach(el => { row[el.dataset.field] = el.value })
-        if (!row.nameEn && !row.nameZh) continue
+
+        if (!row.nameEn && !row.nameZh) continue  // skip completely blank rows
         rows.push(row)
+
+        const label = row.nameEn || row.nameZh || `第 ${i+1} 行`
+        if (!row.homeroomCode) errors.push(`${label}：缺少 Homeroom 编号（HR）`)
+        const hasContact = (row.contacts || []).some(c => c.type === 'phone' || c.type === 'email')
+        if (!hasContact) errors.push(`${label}：缺少电话或邮箱联系方式`)
     }
+
+    return {rows, errors}
+}
+
+// ── Import ────────────────────────────────────────────────────
+async function doImport() {
+    const {rows, errors} = collectAndValidateRows()
+    const gateEl = document.getElementById('gate-errors')
+
+    if (errors.length) {
+        gateEl.className = 'gate-errors show'
+        gateEl.innerHTML = `❌ <strong>导入被阻止</strong>，以下记录缺少必填字段，请补全后再试：<ul>${
+            errors.map(e => `<li>${esc(e)}</li>`).join('')
+        }</ul>`
+        gateEl.scrollIntoView({behavior:'smooth', block:'start'})
+        return
+    }
+
+    gateEl.className = 'gate-errors'
 
     if (!rows.length) { alert('没有有效数据行可导入'); return }
 
