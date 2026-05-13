@@ -617,7 +617,7 @@ function extractRowsFromPage(textContent) {
 
 
 // ── Parser constants ────────────────────────────────────────
-const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4}\b|\b\d{10}\b/g
+const PHONE_RE = /(?<!\d)(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4}(?!\d)|\b\d{10}\b/g
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
 const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
 const GRADE_ONLY_RE = /^[A-Z]{1,4}$/
