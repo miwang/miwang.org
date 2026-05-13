@@ -620,6 +620,7 @@ function extractRowsFromPage(textContent) {
 const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}|\b\d{10}\b|\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
 const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
+const GRADE_ONLY_RE = /^[A-Z]{1,4}$/
 // Student-start: optional grade prefix (e.g. "KN" = Kindergarten, "1" = 1st grade)
 // then "LastName, FirstName" format — each name part allows letters, apostrophes, dots, hyphens.
 // Segment 1: [A-Z]{1,4}\s+  — optional 1-4 char grade code + space
@@ -627,6 +628,8 @@ const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
 // Segment 3: literal comma + space
 // Segment 4: First name (one or more words)
 const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
+const STUDENT_START_PREFIX_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*$/
+const STUDENT_NAME_CONT_RE = /^[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
 const NOISE_LINE_RE_LIST = [
     /^section rosters?$/i,
     PAGE_RE,
@@ -684,6 +687,37 @@ function isStudentStartLine(line) {
     return STUDENT_START_RE.test(s)
 }
 
+function skipPageMarkers(lines, index) {
+    let i = index
+    while (i < lines.length && PAGE_RE.test(lines[i])) i++
+    return i
+}
+
+function getPossiblyMergedStudentStart(lines, index) {
+    const current = normalizeRosterLine(lines[index])
+    if (!current || isNoiseLine(current) || PAGE_RE.test(current)) return null
+    if (isStudentStartLine(current)) return {line: current, nextIndex: index}
+
+    const nextIdx = skipPageMarkers(lines, index + 1)
+    if (nextIdx >= lines.length) return null
+    const next = normalizeRosterLine(lines[nextIdx])
+    if (!next || isNoiseLine(next)) return null
+
+    // PDF wrap case A: "KN Last," + newline + "First"
+    if (STUDENT_START_PREFIX_RE.test(current) && STUDENT_NAME_CONT_RE.test(next)) {
+        const combined = normalizeRosterLine(`${current} ${next}`)
+        if (isStudentStartLine(combined)) return {line: combined, nextIndex: nextIdx}
+    }
+
+    // PDF wrap case B: "KN" + newline + "Last, First"
+    if (GRADE_ONLY_RE.test(current)) {
+        const combined = normalizeRosterLine(`${current} ${next}`)
+        if (isStudentStartLine(combined)) return {line: combined, nextIndex: nextIdx}
+    }
+
+    return null
+}
+
 function parseStudentNameFromLine(line) {
     let s = normalizeRosterLine(line)
     if (!s) return ''
@@ -725,7 +759,11 @@ function segmentDocument(rawText) {
         currentBlock = null
     }
 
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+        const mergedStart = getPossiblyMergedStudentStart(lines, i)
+        const line = mergedStart ? mergedStart.line : lines[i]
+        if (mergedStart) i = mergedStart.nextIndex
+
         // Layer 1: homeroom / class section header
         const hr = extractHomeroomFromLine(line)
         if (hr) { currentHomeroom = hr; continue }
