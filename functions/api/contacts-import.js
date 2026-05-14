@@ -75,7 +75,7 @@ async function sanityQuery(groq, token) {
  */
 function buildStudentId(row) {
   const namePart = (row.nameEn || row.nameZh || '')
-    .toLowerCase()
+    .replace(/[A-Z]/g, m => m.toLowerCase())
     .replace(/[^a-z0-9\u4e00-\u9fff]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '') || 'unnamed'

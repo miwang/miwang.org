@@ -1284,7 +1284,9 @@ async function exportBackup() {
         if (!resp.ok || !data.ok) {
             throw new Error(data.error || `HTTP ${resp.status}`)
         }
-        const filename = `contacts-backup-${year}-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`
+        const now = new Date().toISOString()
+        const stamp = now.slice(0,10).replace(/-/g, '') + '-' + now.slice(11,19).replace(/:/g, '')
+        const filename = `contacts-backup-${year}-${stamp}.json`
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'})
         const a = document.createElement('a')
         a.href = URL.createObjectURL(blob)
@@ -1337,9 +1339,9 @@ async function doImport() {
             gateEl.innerHTML = `⚠️ <strong>检测到中置信匹配，已阻止自动覆盖：</strong><ul>${
                 d.pendingReviews.map(item => {
                     const names = (item.candidateStudents || [])
-                        .map(s => `${s.nameZh || '（无中文名）'} / ${s.nameEn || '（无英文名）'}`)
+                        .map(s => `${esc(s.nameZh || '（无中文名）')} / ${esc(s.nameEn || '（无英文名）')}`)
                         .join('；')
-                    return `<li>${esc(item.rowLabel || '未命名')}：${esc(item.reason || '待确认')} → 候选：${esc(names)}</li>`
+                    return `<li>${esc(item.rowLabel || '未命名')}：${esc(item.reason || '待确认')} → 候选：${names}</li>`
                 }).join('')
             }</ul><div style="margin-top:8px;">请先在表格中人工核对姓名后重试导入。</div>`
             gateEl.scrollIntoView({behavior:'smooth', block:'start'})
