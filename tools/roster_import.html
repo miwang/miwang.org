@@ -448,6 +448,9 @@
                     </table>
                 </div>
                 <div class="btn-row">
+                    <button class="btn" style="background:#f0f0f0; color:var(--text);" onclick="exportBackup()" id="backup-btn">
+                        <i class="fas fa-download"></i> 先导出当前数据备份
+                    </button>
                     <button class="btn btn-gold" onclick="doImport()" id="import-btn">
                         <i class="fas fa-cloud-upload-alt"></i> 确认导入到数据库
                     </button>
@@ -475,6 +478,7 @@
                     <li>检查提取的文本，如有乱序或缺失可手动修改</li>
                     <li>点击<strong>「🤖 AI 智能解析」</strong>—— AI 自动识别学生姓名、生日、Homeroom、家长电话/邮箱，并输出置信度</li>
                     <li>预览表格按<strong>风险优先排序</strong>：⚠️ 标记 / 低置信度行在前；点击「📄 原始文本」可核对 AI 依据</li>
+                    <li>导入前建议点击<strong>「先导出当前数据备份」</strong>，防止误合并时可回滚</li>
                     <li>直接在表格内编辑有问题的字段，缺少 HR 编号或联系方式的行无法导入</li>
                     <li>点击<strong>「确认导入」</strong>—— 系统先验证必填项，再创建学生档案和家长联系人</li>
                     <li>导入后回到<strong>家长通讯录</strong>即可查看；你再去 Sanity 后台补充中文名和照片</li>
@@ -1088,6 +1092,9 @@ function flagPills(flags) {
         malformed_date:     '日期格式异常',
         ambiguous_name:     '姓名模糊',
         extra_data:         '多余数据',
+        alias_match_pending: '别名待确认',
+        multiple_exact_zh_matches: '中文重名冲突',
+        multiple_alias_matches: '别名多候选',
     }
     return `<div class="flags-row">${flags.map(f =>
         `<span class="flag-pill">${labels[f] || f}</span>`
@@ -1265,6 +1272,37 @@ function collectAndValidateRows() {
     return {rows, errors}
 }
 
+async function exportBackup() {
+    const year = document.getElementById('import-year').value
+    const btn = document.getElementById('backup-btn')
+    const originalHtml = btn.innerHTML
+    btn.disabled = true
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在导出…'
+    try {
+        const resp = await fetch(`/api/contacts-backup?year=${encodeURIComponent(year)}`)
+        const data = await resp.json()
+        if (!resp.ok || !data.ok) {
+            throw new Error(data.error || `HTTP ${resp.status}`)
+        }
+        const now = new Date().toISOString()
+        const stamp = now.slice(0,10).replace(/-/g, '') + '-' + now.slice(11,19).replace(/:/g, '')
+        const filename = `contacts-backup-${year}-${stamp}.json`
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'})
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(a.href)
+    } catch (e) {
+        alert('备份导出失败：' + e.message)
+    } finally {
+        btn.disabled = false
+        btn.innerHTML = originalHtml
+    }
+}
+
 // ── Import ────────────────────────────────────────────────────
 async function doImport() {
     const {rows, errors} = collectAndValidateRows()
@@ -1296,10 +1334,30 @@ async function doImport() {
             body: JSON.stringify({rows}),
         })
         const d = await resp.json()
+        if (resp.status === 409 && Array.isArray(d.pendingReviews) && d.pendingReviews.length) {
+            gateEl.className = 'gate-errors show'
+            gateEl.innerHTML = `⚠️ <strong>检测到中置信匹配，已阻止自动覆盖：</strong><ul>${
+                d.pendingReviews.map(item => {
+                    const names = (item.candidateStudents || [])
+                        .map(s => `${esc(s.nameZh || '（无中文名）')} / ${esc(s.nameEn || '（无英文名）')}`)
+                        .join('；')
+                    return `<li>${esc(item.rowLabel || '未命名')}：${esc(item.reason || '待确认')} → 候选：${names}</li>`
+                }).join('')
+            }</ul><div style="margin-top:8px;">请先在表格中人工核对姓名后重试导入。</div>`
+            gateEl.scrollIntoView({behavior:'smooth', block:'start'})
+            return
+        }
         if (resp.ok && d.ok) {
             resultBox.className = 'result-box success'
+            const merge = d.mergeSummary || {}
+            const duplicateWarnings = Array.isArray(d.duplicateWarnings) ? d.duplicateWarnings : []
+            const duplicateHtml = duplicateWarnings.length
+                ? `<br><small>⚠️ 合并后疑似重复（中文名+班级）${duplicateWarnings.length} 组，请到通讯录抽查照片是否错绑。</small>`
+                : ''
             resultBox.innerHTML = `✅ <strong>导入成功！</strong>共导入 ${d.imported} 条学生记录（写入 ${d.mutations} 个文档）。<br>
-                <small>接下来请到 <a href="contacts.html" style="color:inherit">家长通讯录</a> 查看结果，并去 Sanity 后台补充学生中文名和照片。</small>`
+                <small>高置信自动合并：${merge.highConfidenceMerged || 0}；新建学生：${merge.createdNewStudents || 0}；保留旧值冲突：${merge.preservedOldFieldConflicts || 0}；联系人冲突：${merge.contactConflicts || 0}。</small>
+                ${duplicateHtml}<br>
+                <small>接下来请到 <a href="contacts.html" style="color:inherit">家长通讯录</a> 查看结果，并去 Sanity 后台补充/核对学生中文名和照片。</small>`
         } else {
             resultBox.className = 'result-box error'
             resultBox.innerHTML = `❌ <strong>导入失败：</strong>${esc(d.error || '未知错误')}`

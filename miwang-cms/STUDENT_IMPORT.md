@@ -115,11 +115,16 @@ The import tool uses a **two-phase parsing pipeline**:
 3. Upload the year's roster PDF — text is extracted entirely in-browser (file never leaves the device)
 4. Review extracted text; edit if needed
 5. Click **🤖 AI 智能解析** — Phase A segments, Phase B calls AI
-6. Preview table is sorted by risk (low confidence first); expand **📄 原始文本** to see what the AI used
-7. Class-count warning fires if parsed count differs from declared count by > 2
-8. Edit any incorrect fields inline; rows missing HR or contact info are blocked from import
-9. Click **确认导入** — import gate validates, then server writes student + parentContact docs to Sanity
-10. Go back to **家长通讯录** to verify; open the student doc in Sanity Studio to add **中文名** and **头像**
+6. Click **先导出当前数据备份** to export year-scoped JSON backup before merge/import
+7. Preview table is sorted by risk (low confidence first); expand **📄 原始文本** to see what the AI used
+8. Class-count warning fires if parsed count differs from declared count by > 2
+9. Edit any incorrect fields inline; rows missing HR or contact info are blocked from import
+10. Click **确认导入** — import gate validates, then server writes student + parentContact docs to Sanity
+11. Import now applies merge policy:
+   - high confidence auto-merge: exact `nameZh` + same year/class
+   - alias match (e.g. `中文名 + 英文 first name`) is blocked for manual review; no auto-overwrite
+   - existing name/avatar fields are preserved; new data fills only missing values; conflicts are retained on old values and flagged
+12. Go back to **家长通讯录** to verify; open the student doc in Sanity Studio to add/adjust **中文名** and **头像**
 
 **Fallback:** If AI is unavailable, click **规则解析（备用）** for rule-based extraction (no birthday or confidence, but always offline).
 
@@ -137,6 +142,7 @@ The import tool uses a **two-phase parsing pipeline**:
 |---|---|---|
 | `/api/contacts-login` | POST | Validates password, sets HttpOnly HMAC session cookie |
 | `/api/contacts-data` | GET | Returns parentContact list (requires valid cookie + `SANITY_API_TOKEN`) |
+| `/api/contacts-backup` | GET | Exports student + parentContact backup JSON (optional `?year=25-26`) |
 | `/api/roster-parse` | POST | AI-powered student block parser (requires valid cookie + `OPENAI_API_KEY`) |
 | `/api/contacts-import` | POST | Writes student + parentContact docs (requires valid cookie + `SANITY_API_TOKEN`) |
 
