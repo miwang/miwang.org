@@ -94,6 +94,14 @@ export default defineConfig({
                   .documentId('academic-year-config')
                   .title('当前学年设置')
               ),
+
+            S.listItem()
+              .title('🎯 小组轮换进度')
+              .id('center-rotation')
+              .child(
+                S.documentTypeList('centerRotation')
+                  .title('小组轮换进度（按学生引用）')
+              ),
             
             S.divider(),
 
