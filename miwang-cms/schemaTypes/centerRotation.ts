@@ -1,7 +1,9 @@
 import {defineField, defineType} from 'sanity'
 
+const DEFAULT_ACADEMIC_YEAR = '25-26'
+
 const YEAR_OPTIONS = [
-  {title: '2025-2026 学年', value: '25-26'},
+  {title: '2025-2026 学年', value: DEFAULT_ACADEMIC_YEAR},
   {title: '2026-2027 学年', value: '26-27'},
   {title: '2027-2028 学年', value: '27-28'},
 ]
@@ -38,7 +40,7 @@ export const centerRotation = defineType({
         list: YEAR_OPTIONS,
         layout: 'dropdown',
       },
-      initialValue: '25-26',
+      initialValue: DEFAULT_ACADEMIC_YEAR,
       validation: Rule => Rule.required(),
     }),
     defineField({
@@ -90,7 +92,7 @@ export const centerRotation = defineType({
                   to: [{type: 'student'}],
                   options: {
                     filter: ({document}) => {
-                      const year = document?.academicYear || '25-26'
+                      const year = document?.academicYear || DEFAULT_ACADEMIC_YEAR
                       const className = document?.className || ''
                       return {
                         filter: '_type == "student" && academicYear == $year && className == $className',
@@ -215,7 +217,7 @@ export const centerRotation = defineType({
       const classLabel = selection.className === 'elephant' ? '🐘 大象班' : '🐯 老虎班'
       return {
         title: selection.title || '小组轮换进度',
-        subtitle: `${classLabel}｜${selection.year || '25-26'}｜第 ${selection.step || 0} 轮`,
+        subtitle: `${classLabel}｜${selection.year || DEFAULT_ACADEMIC_YEAR}｜第 ${selection.step || 0} 轮`,
       }
     },
   },
