@@ -634,6 +634,10 @@ const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z
 const STUDENT_START_NO_COMMA_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)+$/
 const STUDENT_START_PREFIX_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*$/
 const STUDENT_NAME_CONT_RE = /^[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
+// Trailing start-date / end-date columns appended to student name rows by some roster systems
+// (e.g. PowerSchool outputs "KN Smith, John  08/30/2025  06/30/2026" on one line).
+// Matches one or two MM/DD/YYYY values at the end of a line.
+const TRAILING_DATES_RE = /\s+\d{1,2}\/\d{1,2}\/\d{4}(?:\s+\d{1,2}\/\d{1,2}\/\d{4})?$/
 const NOISE_LINE_RE_LIST = [
     /^section rosters?$/i,
     PAGE_RE,
@@ -643,12 +647,17 @@ const NOISE_LINE_RE_LIST = [
     /^room:/i,
     /^term\(s\):/i,
     /^sections?:/i,
+    /^active students?$/i,
     /^active students?:/i,
+    /^grade levels?$/i,
     /^grade levels?:/i,
     /^student$/i,
     /^start date$/i,
     /^end date$/i,
     /^student\s+start date\s+end date/i,
+    // Standalone two-date row ("08/30/2025  06/30/2026") produced when start/end dates
+    // appear on a separate line from the student name.
+    /^\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}\/\d{1,2}\/\d{4}$/,
     /^phone,\s*address and guardian\(s\)$/i,
     /^address and guardian\(s\)\s*phone$/i,
     /^mi teacher:/i,
@@ -688,7 +697,10 @@ function isStudentStartLine(line) {
     const s = normalizeRosterLine(line)
     if (!s || isNoiseLine(s)) return false
     if (/^(birthdate|start date|end date):/i.test(s)) return false
-    return STUDENT_START_RE.test(s) || STUDENT_START_NO_COMMA_RE.test(s)
+    // Strip trailing start/end date columns before matching — some roster systems
+    // append "MM/DD/YYYY  MM/DD/YYYY" to the student name on the same line.
+    const stripped = s.replace(TRAILING_DATES_RE, '').trim()
+    return STUDENT_START_RE.test(stripped) || STUDENT_START_NO_COMMA_RE.test(stripped)
 }
 
 function skipPageMarkers(lines, index) {
@@ -725,6 +737,8 @@ function getPossiblyMergedStudentStart(lines, index) {
 function parseStudentNameFromLine(line) {
     let s = normalizeRosterLine(line)
     if (!s) return ''
+    // Strip trailing start/end date columns before parsing
+    s = s.replace(TRAILING_DATES_RE, '').trim()
     const normalized = s
     s = s.replace(/^[A-Z]{1,4}\s+(?=[A-Za-z].*,)/, '')
     if (!s.includes(',') && STUDENT_START_NO_COMMA_RE.test(normalized)) {
@@ -789,7 +803,7 @@ function segmentDocument(rawText) {
         // Layer 3: new student block starts at grade-prefixed "Last, First" line
         if (isStudentStartLine(line)) {
             pushBlock()
-            currentBlock = {homeroom: currentHomeroom, lines: [line]}
+            currentBlock = {homeroom: currentHomeroom, lines: [line.replace(TRAILING_DATES_RE, '').trim()]}
             continue
         }
 
