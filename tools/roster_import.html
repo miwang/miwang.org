@@ -634,6 +634,8 @@ const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z
 const STUDENT_START_NO_COMMA_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)+$/
 const STUDENT_START_PREFIX_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*$/
 const STUDENT_NAME_CONT_RE = /^[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
+const STUDENT_START_WITH_TRAILING_FIELDS_RE = /^((?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*)(?=\s+(?:\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4}|\d{1,2}\/\d{1,2}\/\d{4})|\s*$)/
+const STUDENT_START_NO_COMMA_WITH_TRAILING_FIELDS_RE = /^([A-Z]{1,4}\s+[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)+)(?=\s+(?:\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4}|\d{1,2}\/\d{1,2}\/\d{4})|\s*$)/
 // Trailing start-date / end-date columns appended to student name rows by some roster systems
 // (e.g. PowerSchool outputs "KN Smith, John  08/30/2025  06/30/2026" on one line).
 // Matches one or two MM/DD/YYYY values at the end of a line.
@@ -700,6 +702,10 @@ function isStudentStartLine(line) {
     // Strip trailing start/end date columns before matching — some roster systems
     // append "MM/DD/YYYY  MM/DD/YYYY" to the student name on the same line.
     const stripped = s.replace(TRAILING_DATES_RE, '').trim()
+    const commaMatch = stripped.match(STUDENT_START_WITH_TRAILING_FIELDS_RE)
+    if (commaMatch) return STUDENT_START_RE.test(commaMatch[1].trim())
+    const noCommaMatch = stripped.match(STUDENT_START_NO_COMMA_WITH_TRAILING_FIELDS_RE)
+    if (noCommaMatch) return STUDENT_START_NO_COMMA_RE.test(noCommaMatch[1].trim())
     return STUDENT_START_RE.test(stripped) || STUDENT_START_NO_COMMA_RE.test(stripped)
 }
 
@@ -739,6 +745,12 @@ function parseStudentNameFromLine(line) {
     if (!s) return ''
     // Strip trailing start/end date columns before parsing
     s = s.replace(TRAILING_DATES_RE, '').trim()
+    const commaMatch = s.match(STUDENT_START_WITH_TRAILING_FIELDS_RE)
+    if (commaMatch) s = commaMatch[1].trim()
+    else {
+        const noCommaMatch = s.match(STUDENT_START_NO_COMMA_WITH_TRAILING_FIELDS_RE)
+        if (noCommaMatch) s = noCommaMatch[1].trim()
+    }
     const normalized = s
     s = s.replace(/^[A-Z]{1,4}\s+(?=[A-Za-z].*,)/, '')
     if (!s.includes(',') && STUDENT_START_NO_COMMA_RE.test(normalized)) {
