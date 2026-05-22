@@ -17,6 +17,7 @@ import { hallOfFame } from './hallOfFame'
 import { pictureTalk } from './pictureTalk' // 🌟 引入看图说话模型
 import { academicYearConfig } from './academicYearConfig'
 import { centerRotation } from './centerRotation'
+import { reportCard } from './reportCard'
 
 
 
@@ -41,4 +42,5 @@ export const schemaTypes = [
   pictureTalk, // 🌟 注册看图说话
   academicYearConfig,
   centerRotation,
+  reportCard,
  ]
