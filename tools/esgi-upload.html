@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ESGI Upload</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--shadow:0 16px 40px rgba(15,23,42,.1)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}.wrap{max-width:1180px;margin:0 auto;padding:22px}.panel{background:var(--panel);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}h1{margin:0 0 8px;font-size:26px}.sub{color:var(--muted);font-size:14px;line-height:1.5}label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#334155}select,input{border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end}.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.drop{border:2px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:22px;text-align:center}.status{font-size:14px;color:var(--muted);min-height:22px;margin-top:10px}.summary{display:flex;gap:10px;flex-wrap:wrap}.pill{display:inline-flex;gap:6px;align-items:center;background:#f1f5f9;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #e5e7eb;padding:9px 8px;text-align:left;vertical-align:top}th{background:#f8fafc;position:sticky;top:0}.ok{color:var(--green);font-weight:900}.bad{color:var(--red);font-weight:900}.small{font-size:12px;color:var(--muted)}
+    @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wrap{padding:12px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel">
+      <h1>ESGI Score Upload</h1>
+      <p class="sub">上传 ESGI Student Detail Report PDF。页面会在浏览器里解析 PDF，预览成绩，然后保存到 Sanity。保存时会自动把 Chinese Sight Words 最新分数写入 report card 的 Sight Words 字段。</p>
+      <div class="grid">
+        <div><label>学年</label><select id="academicYear"><option value="25-26">25-26</option><option value="26-27">26-27</option><option value="27-28">27-28</option></select></div>
+        <div><label>班级</label><select id="className"><option value="elephant">🐘 大象</option><option value="tiger">🐯 老虎</option></select></div>
+        <div><label>导入 MP / Quarter</label><select id="mp"><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></div>
+        <div><label>Report Date</label><input id="reportDate" type="date"></div>
+        <button class="btn" id="saveBtn" disabled>Save to Sanity</button>
+      </div>
+      <div class="drop" style="margin-top:14px">
+        <input id="fileInput" type="file" accept="application/pdf" />
+        <div class="small">Choose the ESGI Student Detail Report PDF exported from ESGI.</div>
+      </div>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="panel">
+      <div class="summary" id="summary"></div>
+    </section>
+
+    <section class="panel table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Chinese Sight Words</th><th>CR Colors</th><th>Numbers 1-20</th><th>Numbers 1-10</th><th>Counting Ones</th><th>Counting Tens</th><th>Dialogue</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="8" class="small">Upload a PDF to preview scores.</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const TESTS=['Chinese Sight Words','CR Colors','Chinese Number Identification 1-20','Chinese Number Identification 1-10','Chinese Counting By Ones','Chinese Counting by Tens','Kindergarten Chinese Dialogue'];
+const TOTALS={'Chinese Sight Words':50,'CR Colors':11,'Chinese Number Identification 1-20':20,'Chinese Number Identification 1-10':10,'Chinese Counting By Ones':100,'Chinese Counting by Tens':100,'Kindergarten Chinese Dialogue':5};
+let parsedResults=[];let sourceFileName='';
+const $=id=>document.getElementById(id);const statusEl=$('status');const tbody=$('tbody');const summary=$('summary');
+$('fileInput').addEventListener('change',handleFile);$('saveBtn').addEventListener('click',saveImport);
+function setStatus(m){statusEl.textContent=m}function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+async function handleFile(e){const file=e.target.files[0];if(!file)return;sourceFileName=file.name;setStatus('Reading PDF...');$('saveBtn').disabled=true;try{const buffer=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buffer}).promise;const pages=[];for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const content=await page.getTextContent();const text=content.items.map(item=>item.str).join('\n');pages.push(text)}parsedResults=parsePages(pages);render();$('saveBtn').disabled=parsedResults.length===0;setStatus(`Parsed ${parsedResults.length} students from ${pdf.numPages} pages.`)}catch(err){console.error(err);setStatus(err.message||'Could not parse PDF.')}}
+function parsePages(pages){const students=[];for(let i=0;i<pages.length;i+=2){const chunk=[pages[i]||'',pages[i+1]||''].join('\n');const studentName=findStudentName(pages[i]||'',pages[i+1]||'');if(!studentName)continue;const assessments=TESTS.map(test=>extractAssessment(chunk,test)).filter(Boolean);students.push({studentName,assessments,rawTextPreview:chunk.slice(0,1000)})}return students}
+function findStudentName(page1,page2){const lines=page1.split(/\n+/).map(s=>s.trim()).filter(Boolean);for(let idx=0;idx<lines.length;idx++){if(lines[idx].startsWith('Student Detail Report')){for(let j=idx+1;j<Math.min(lines.length,idx+6);j++){const candidate=lines[j];if(candidate&&!candidate.includes('Subject:')&&!candidate.includes('Teacher:')&&!TESTS.includes(candidate))return candidate}}}const match=page2.match(/Student:\s*([^\n]+)/);return match?match[1].trim():''}
+function extractAssessment(text,testName){const idx=text.indexOf(testName);if(idx<0)return null;const rest=text.slice(idx,idx+700);const scoreMatch=rest.match(/Score:\s*([0-9NT\s\/]+)/i);if(!scoreMatch)return null;const nums=(scoreMatch[1].match(/\d+/g)||[]).map(Number);if(nums.length<2)return null;const [baseline,q1,q2,q3,q4]=nums;const latestScore=Number.isFinite(q4)?q4:nums[nums.length-1];const totalPossible=TOTALS[testName]||null;const percent=totalPossible?Math.round((latestScore/totalPossible)*100):null;return {testName,baseline,q1,q2,q3,q4,latestScore,totalPossible,percent}}
+function scoreCell(student,test){const a=student.assessments.find(x=>x.testName===test);if(!a)return '<span class="bad">Missing</span>';return `<b>${a.latestScore}/${a.totalPossible||''}</b><div class="small">B:${a.baseline??''} Q1:${a.q1??''} Q2:${a.q2??''} Q3:${a.q3??''} Q4:${a.q4??''}</div>`}
+function render(){summary.innerHTML=`<span class="pill">Students: ${parsedResults.length}</span><span class="pill">Sight Words auto-fill: ${parsedResults.filter(s=>s.assessments.some(a=>a.testName==='Chinese Sight Words')).length}</span>`;tbody.innerHTML=parsedResults.map(s=>`<tr><td><b>${esc(s.studentName)}</b></td>${TESTS.map(t=>`<td>${scoreCell(s,t)}</td>`).join('')}</tr>`).join('')||'<tr><td colspan="8" class="small">No students parsed.</td></tr>'}
+async function saveImport(){if(!parsedResults.length)return;setStatus('Saving to Sanity...');$('saveBtn').disabled=true;try{const payload={academicYear:$('academicYear').value,className:$('className').value,markingPeriod:$('mp').value,reportDate:$('reportDate').value,sourceFileName,results:parsedResults};const res=await fetch('/api/esgi-import',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();if(!data.ok)throw new Error(data.error);setStatus(`Saved. Matched ${data.summary.matched}/${data.summary.total}; unmatched ${data.summary.unmatched}; report cards updated ${data.summary.reportCardsUpdated}.`)}catch(err){console.error(err);setStatus(err.message||'Save failed.')}finally{$('saveBtn').disabled=false}}
+</script>
+</body>
+</html>
