@@ -15,26 +15,26 @@
     h1{font-size:22px;margin:0 0 8px}.sub{font-size:13px;color:var(--muted);line-height:1.45;margin:0 0 14px}
     label{display:block;font-size:12px;font-weight:800;color:#334155;margin:10px 0 5px}
     select,input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;color:var(--ink)}
-    textarea{min-height:86px;resize:vertical}.filters{display:grid;grid-template-columns:1fr 1fr 76px;gap:8px;align-items:end}.search{margin:12px 0}
+    textarea{min-height:86px;resize:vertical}.filters{display:grid;grid-template-columns:1fr 1fr 96px;gap:8px;align-items:end}.search{margin:12px 0}
     .student-list{display:grid;gap:7px}.student{border:1px solid transparent;background:#f8fafc;border-radius:14px;padding:11px;cursor:pointer;text-align:left}.student:hover{border-color:#bfdbfe;background:#eff6ff}.student.active{border-color:#60a5fa;background:var(--blue2)}
     .student b{display:block;font-size:14px}.student span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
     .main{padding:16px;overflow:auto}.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}.title{font-weight:900;font-size:18px}.btns{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;background:var(--blue);color:#fff;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}.btn.secondary{background:#111827}.btn.soft{background:#e2e8f0;color:#172033}.btn:disabled{opacity:.5;cursor:not-allowed}
-    .editor{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}.card{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff}.card h2{font-size:15px;margin:0 0 8px}.meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .esgi-box{border:1px solid var(--line);border-radius:18px;background:#fff;margin-bottom:14px;overflow:hidden}.esgi-box summary{cursor:pointer;padding:13px 15px;font-weight:900;background:#eff6ff}.esgi-frame{width:100%;height:720px;border:0;display:block;background:#fff}.editor{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}.card{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff}.card h2{font-size:15px;margin:0 0 8px}.meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
     .rating-row{display:grid;grid-template-columns:1fr 152px;gap:10px;align-items:center;border-top:1px solid #eef2f7;padding:10px 0}.rating-row:first-of-type{border-top:0}.statement{font-size:13px;line-height:1.35}.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 0;text-align:center;font-size:12px;font-weight:900;cursor:pointer}.chip.active{background:#dcfce7;border-color:#86efac;color:#166534}
     #reportArea{width:8.5in;background:#fff;margin:0 auto;color:#111827;overflow:hidden}.report-page{width:8.5in;height:10.92in;overflow:hidden;padding:.55in .62in;background:#fff}.district{text-align:center;font-size:18px;font-weight:700;margin-bottom:4px}.report-title{text-align:center;font-size:17px;font-weight:700;margin-bottom:18px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px;margin-bottom:18px}.intro{font-size:13px;line-height:1.45;margin-bottom:16px}.section-heading{font-size:15px;font-weight:800;margin:14px 0 8px}.scale-list{font-size:12px;line-height:1.45;margin:0 0 12px 20px;padding:0}.rubric{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;margin-bottom:14px}.rubric th,.rubric td{border:1px solid #9ca3af;padding:7px 8px;vertical-align:middle}.rubric th{background:#f3f4f6;font-weight:800}.rubric th:first-child,.rubric td:first-child{text-align:left}.rubric th:not(:first-child),.rubric td:not(:first-child){width:44px;text-align:center;font-weight:800}.check{color:var(--green);font-size:16px}.score-note{font-weight:800;margin-left:5px}.comments-box{border:1px solid #9ca3af;min-height:96px;padding:10px;font-size:12px;line-height:1.45;white-space:pre-wrap}
-    @media(max-width:980px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.editor{grid-template-columns:1fr}#reportArea{transform:scale(.82);transform-origin:top center;margin-bottom:-1.8in}}
-    @media print{body{background:#fff}.sidebar,.topbar,.editor,.status{display:none!important}.app{display:block;padding:0}.main{box-shadow:none;padding:0}.panel{box-shadow:none;border-radius:0}#reportArea{margin:0}.report-page{height:11in;page-break-after:always}.report-page:last-child{page-break-after:auto}}
+    @media(max-width:980px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.editor{grid-template-columns:1fr}.esgi-frame{height:760px}#reportArea{transform:scale(.82);transform-origin:top center;margin-bottom:-1.8in}}
+    @media print{body{background:#fff}.sidebar,.topbar,.editor,.status,.esgi-box{display:none!important}.app{display:block;padding:0}.main{box-shadow:none;padding:0}.panel{box-shadow:none;border-radius:0}#reportArea{margin:0}.report-page{height:11in;page-break-after:always}.report-page:last-child{page-break-after:auto}}
   </style>
 </head>
 <body>
   <main class="app">
     <aside class="panel sidebar">
       <h1>Report Card</h1>
-      <p class="sub">选择学年、班级、MP 后读取 Sanity 学生名单。Cloudflare 负责保护这个页面。</p>
+      <p class="sub">选择学年、班级、MP 后读取 Sanity 学生名单。ESGI 成绩可以在右侧上传并自动填入 Sight Words。</p>
       <div class="filters">
         <div><label>学年</label><select id="year"><option value="25-26">25-26</option><option value="26-27">26-27</option><option value="27-28">27-28</option></select></div>
         <div><label>班级</label><select id="className"><option value="elephant">🐘 大象</option><option value="tiger">🐯 老虎</option></select></div>
-        <div><label>MP</label><input id="mp" value="2" /></div>
+        <div><label>MP</label><select id="mp"><option value="2">2</option><option value="1">1</option></select></div>
       </div>
       <input class="search" id="search" placeholder="Search student..." />
       <div class="student-list" id="studentList"></div>
@@ -50,9 +50,13 @@
           <button class="btn secondary" id="pdfBtn" disabled>Generate PDF</button>
         </div>
       </div>
+      <details class="esgi-box">
+        <summary>Upload ESGI Scores / 导入 ESGI 成绩</summary>
+        <iframe class="esgi-frame" src="/tools/esgi-upload.html" title="ESGI Upload"></iframe>
+      </details>
       <div class="editor" id="editor" hidden>
         <div class="card"><h2>Report Info</h2><div class="meta-grid"><div><label>School</label><input id="school"></div><div><label>Grade</label><input id="grade"></div><div><label>Teacher</label><input id="teacher"></div><div><label>Date</label><input id="reportDate" type="date"></div><div><label>Sight Words</label><input id="sightWordsScore" placeholder="48/50"></div></div><label>Teacher Comments</label><textarea id="teacherComments" placeholder="Optional comments..."></textarea></div>
-        <div class="card"><h2>Tips</h2><p class="sub">点 ES / MS / AS 后会立刻更新右侧预览。Save 会保存到 Sanity；Generate PDF 会先保存再下载。</p><p class="sub"><b>ES</b> Exceeds the standard<br><b>MS</b> Meets the standard<br><b>AS</b> Approaches the standard</p></div>
+        <div class="card"><h2>Tips</h2><p class="sub">幼儿园 report card 现在只有 MP1 和 MP2。ESGI 学年末成绩请导入到 MP2。导入后点击 Reload，再选择学生，就能看到 Sight Words 自动填入。</p><p class="sub"><b>ES</b> Exceeds the standard<br><b>MS</b> Meets the standard<br><b>AS</b> Approaches the standard</p></div>
       </div>
       <div class="card" id="ratingsCard" hidden></div>
       <div id="reportArea"><div style="padding:80px 20px;text-align:center;color:#687386">Choose a student from the left.</div></div>
