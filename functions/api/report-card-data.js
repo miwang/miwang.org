@@ -29,6 +29,10 @@ function jsonResponse(body, status = 200) {
   })
 }
 
+function getSanityToken(env) {
+  return env.SANITY_API_TOKEN || env.SANITY_READ_TOKEN || env.SANITY_WRITE_TOKEN || env.SANITY_TOKEN || ''
+}
+
 async function sanityFetch(query, params = {}, token) {
   const url = new URL(SANITY_QUERY_URL)
   url.searchParams.set('query', query)
@@ -49,7 +53,7 @@ async function sanityFetch(query, params = {}, token) {
 
 export async function onRequestGet(context) {
   try {
-    const token = context.env.SANITY_READ_TOKEN || context.env.SANITY_WRITE_TOKEN || context.env.SANITY_TOKEN
+    const token = getSanityToken(context.env)
     const url = new URL(context.request.url)
     const academicYear = url.searchParams.get('academicYear') || '25-26'
     const className = url.searchParams.get('className') || 'elephant'
