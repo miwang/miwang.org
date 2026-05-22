@@ -24,7 +24,17 @@ function normalizeName(name) {
 }
 
 function safeId(text) {
-  return clean(text, 180).replace(/[^a-zA-Z0-9._-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+  return clean(text, 180)
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 120) || crypto.randomUUID()
+}
+
+function isLikelyClassLine(name) {
+  const n = normalizeName(name)
+  return !n || n.includes('wang class') || n.includes('mr wang') || n.includes('class') || n.includes('homeroom') || n.includes('teacher')
 }
 
 async function sanityQuery(query, params, token) {
@@ -48,7 +58,7 @@ async function sanityMutate(mutations, token) {
 
 function assessmentDoc(item, match, payload, now) {
   const assessments = Array.isArray(item.assessments) ? item.assessments : []
-  const docId = `esgi.${safeId(payload.academicYear)}.${safeId(payload.markingPeriod)}.${safeId(item.studentName)}`
+  const docId = `esgi-${safeId(payload.academicYear)}-${safeId(payload.markingPeriod)}-${safeId(item.studentName)}`
   const finalClassName = match?.className || payload.className
   return {
     _id: docId,
@@ -63,7 +73,7 @@ function assessmentDoc(item, match, payload, now) {
     sourceFileName: clean(payload.sourceFileName, 240),
     assessments: assessments.map((a) => ({
       _type: 'object',
-      _key: safeId(a.testName) || crypto.randomUUID(),
+      _key: safeId(a.testName),
       testName: clean(a.testName, 180),
       baseline: Number.isFinite(a.baseline) ? a.baseline : null,
       q1: Number.isFinite(a.q1) ? a.q1 : null,
@@ -125,8 +135,8 @@ export async function onRequestPost(context) {
     const academicYear = clean(payload.academicYear, 20) || '25-26'
     const className = clean(payload.className, 30) || 'elephant'
     const markingPeriod = clean(payload.markingPeriod, 10) || '2'
-    const results = Array.isArray(payload.results) ? payload.results : []
-    if (!results.length) return jsonResponse({ok: false, error: 'No ESGI results were provided.'}, 400)
+    const results = (Array.isArray(payload.results) ? payload.results : []).filter((item) => item?.studentName && !isLikelyClassLine(item.studentName))
+    if (!results.length) return jsonResponse({ok: false, error: 'No valid ESGI student results were provided.'}, 400)
 
     const students = await sanityQuery(
       '*[_type == "student" && academicYear == $academicYear && coalesce(status, "active") == "active"]{_id,nameEn,nameZh,name,className}',
