@@ -15,6 +15,10 @@ function jsonResponse(body, status = 200) {
   })
 }
 
+function getSanityToken(env) {
+  return env.SANITY_API_TOKEN || env.SANITY_WRITE_TOKEN || env.SANITY_TOKEN || ''
+}
+
 function cleanString(value, maxLength = 2000) {
   if (value === null || value === undefined) return ''
   return String(value).trim().slice(0, maxLength)
@@ -52,9 +56,9 @@ async function sanityMutate(mutations, token) {
 
 export async function onRequestPost(context) {
   try {
-    const token = context.env.SANITY_WRITE_TOKEN || context.env.SANITY_TOKEN
+    const token = getSanityToken(context.env)
     if (!token) {
-      return jsonResponse({ok: false, error: 'Missing SANITY_WRITE_TOKEN in Cloudflare environment variables.'}, 500)
+      return jsonResponse({ok: false, error: 'Missing SANITY_API_TOKEN in Cloudflare environment variables.'}, 500)
     }
 
     const payload = await context.request.json()
