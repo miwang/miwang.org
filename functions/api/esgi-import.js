@@ -49,6 +49,7 @@ async function sanityMutate(mutations, token) {
 function assessmentDoc(item, match, payload, now) {
   const assessments = Array.isArray(item.assessments) ? item.assessments : []
   const docId = `esgi.${safeId(payload.academicYear)}.${safeId(payload.markingPeriod)}.${safeId(item.studentName)}`
+  const finalClassName = match?.className || payload.className
   return {
     _id: docId,
     _type: 'esgiAssessmentResult',
@@ -56,7 +57,7 @@ function assessmentDoc(item, match, payload, now) {
     matched: Boolean(match),
     needsReview: !match,
     academicYear: clean(payload.academicYear, 20),
-    className: clean(payload.className, 30),
+    className: clean(finalClassName, 30),
     markingPeriod: clean(payload.markingPeriod, 10),
     reportDate: clean(payload.reportDate, 20),
     sourceFileName: clean(payload.sourceFileName, 240),
@@ -82,7 +83,6 @@ function assessmentDoc(item, match, payload, now) {
 function reportCardPatch(match, item, payload, now) {
   const sightWords = (item.assessments || []).find((a) => normalizeName(a.testName) === 'chinese sight words')
   if (!match || !sightWords || !Number.isFinite(sightWords.latestScore)) return null
-  const total = Number.isFinite(sightWords.totalPossible) ? sightWords.totalPossible : 50
   const docId = `reportCard.${clean(payload.academicYear, 20)}.${clean(payload.markingPeriod, 10)}.${match._id.replace(/[^a-zA-Z0-9._-]/g, '-')}`
   return {
     createIfNotExists: {
@@ -90,7 +90,7 @@ function reportCardPatch(match, item, payload, now) {
       _type: 'reportCard',
       student: {_type: 'reference', _ref: match._id},
       academicYear: clean(payload.academicYear, 20),
-      className: clean(payload.className, 30),
+      className: clean(match.className || payload.className, 30),
       school: 'McIlvaine Early Childhood Center',
       grade: 'Kindergarten',
       teacher: 'Wang Laoshi',
@@ -109,6 +109,7 @@ function reportCardSet(match, item, payload, now) {
     patch: {
       id: docId,
       set: {
+        className: clean(match.className || payload.className, 30),
         sightWordsScore: `${sightWords.latestScore}/${total}`,
         lastSavedAt: now,
       },
@@ -123,13 +124,13 @@ export async function onRequestPost(context) {
     const payload = await context.request.json()
     const academicYear = clean(payload.academicYear, 20) || '25-26'
     const className = clean(payload.className, 30) || 'elephant'
-    const markingPeriod = clean(payload.markingPeriod, 10) || '4'
+    const markingPeriod = clean(payload.markingPeriod, 10) || '2'
     const results = Array.isArray(payload.results) ? payload.results : []
     if (!results.length) return jsonResponse({ok: false, error: 'No ESGI results were provided.'}, 400)
 
     const students = await sanityQuery(
-      '*[_type == "student" && academicYear == $academicYear && className == $className && coalesce(status, "active") == "active"]{_id,nameEn,nameZh,name}',
-      {academicYear, className},
+      '*[_type == "student" && academicYear == $academicYear && coalesce(status, "active") == "active"]{_id,nameEn,nameZh,name,className}',
+      {academicYear},
       token,
     )
     const byName = new Map()
@@ -139,7 +140,7 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString()
     const mutations = []
-    const summary = {total: results.length, matched: 0, unmatched: 0, reportCardsUpdated: 0}
+    const summary = {total: results.length, matched: 0, unmatched: 0, reportCardsUpdated: 0, selectedClass: className}
 
     results.forEach((item) => {
       const match = byName.get(normalizeName(item.studentName))
