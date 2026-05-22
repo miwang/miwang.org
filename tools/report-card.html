@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Report Card Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root{
+      --bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--blue2:#dbeafe;--green:#16a34a;--shadow:0 16px 40px rgba(15,23,42,.10)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}
+    .app{display:grid;grid-template-columns:340px minmax(520px,1fr);gap:18px;min-height:100vh;padding:18px}
+    .panel{background:var(--panel);border-radius:22px;box-shadow:var(--shadow)}
+    .sidebar{padding:16px;position:sticky;top:18px;height:calc(100vh - 36px);overflow:auto}
+    h1{font-size:22px;margin:0 0 8px}.sub{font-size:13px;color:var(--muted);line-height:1.45;margin:0 0 14px}
+    label{display:block;font-size:12px;font-weight:800;color:#334155;margin:10px 0 5px}
+    select,input,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;color:var(--ink)}
+    textarea{min-height:86px;resize:vertical}.filters{display:grid;grid-template-columns:1fr 1fr 76px;gap:8px;align-items:end}.search{margin:12px 0}
+    .student-list{display:grid;gap:7px}.student{border:1px solid transparent;background:#f8fafc;border-radius:14px;padding:11px;cursor:pointer;text-align:left}.student:hover{border-color:#bfdbfe;background:#eff6ff}.student.active{border-color:#60a5fa;background:var(--blue2)}
+    .student b{display:block;font-size:14px}.student span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
+    .main{padding:16px;overflow:auto}.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}.title{font-weight:900;font-size:18px}.btns{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;background:var(--blue);color:#fff;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}.btn.secondary{background:#111827}.btn.soft{background:#e2e8f0;color:#172033}.btn:disabled{opacity:.5;cursor:not-allowed}
+    .editor{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}.card{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff}.card h2{font-size:15px;margin:0 0 8px}.meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .rating-row{display:grid;grid-template-columns:1fr 152px;gap:10px;align-items:center;border-top:1px solid #eef2f7;padding:10px 0}.rating-row:first-of-type{border-top:0}.statement{font-size:13px;line-height:1.35}.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 0;text-align:center;font-size:12px;font-weight:900;cursor:pointer}.chip.active{background:#dcfce7;border-color:#86efac;color:#166534}
+    #reportArea{width:8.5in;background:#fff;margin:0 auto;color:#111827}.report-page{width:8.5in;min-height:11in;padding:.55in .62in;background:#fff;page-break-after:always}.report-page:last-child{page-break-after:auto}.district{text-align:center;font-size:18px;font-weight:700;margin-bottom:4px}.report-title{text-align:center;font-size:17px;font-weight:700;margin-bottom:18px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px;margin-bottom:18px}.intro{font-size:13px;line-height:1.45;margin-bottom:16px}.section-heading{font-size:15px;font-weight:800;margin:14px 0 8px}.scale-list{font-size:12px;line-height:1.45;margin:0 0 12px 20px;padding:0}.rubric{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;margin-bottom:14px}.rubric th,.rubric td{border:1px solid #9ca3af;padding:7px 8px;vertical-align:middle}.rubric th{background:#f3f4f6;font-weight:800}.rubric th:first-child,.rubric td:first-child{text-align:left}.rubric th:not(:first-child),.rubric td:not(:first-child){width:44px;text-align:center;font-weight:800}.check{color:var(--green);font-size:16px}.score-note{font-weight:800;margin-left:5px}.comments-box{border:1px solid #9ca3af;min-height:96px;padding:10px;font-size:12px;line-height:1.45;white-space:pre-wrap}
+    @media(max-width:980px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.editor{grid-template-columns:1fr}#reportArea{transform:scale(.82);transform-origin:top center;margin-bottom:-1.8in}}
+    @media print{body{background:#fff}.sidebar,.topbar,.editor,.status{display:none!important}.app{display:block;padding:0}.main{box-shadow:none;padding:0}.panel{box-shadow:none;border-radius:0}#reportArea{margin:0}.report-page{page-break-after:always}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="panel sidebar">
+      <h1>Report Card</h1>
+      <p class="sub">选择学年、班级、MP 后读取 Sanity 学生名单。Cloudflare 负责保护这个页面。</p>
+      <div class="filters">
+        <div><label>学年</label><select id="year"><option value="25-26">25-26</option><option value="26-27">26-27</option><option value="27-28">27-28</option></select></div>
+        <div><label>班级</label><select id="className"><option value="elephant">🐘 大象</option><option value="tiger">🐯 老虎</option></select></div>
+        <div><label>MP</label><input id="mp" value="2" /></div>
+      </div>
+      <input class="search" id="search" placeholder="Search student..." />
+      <div class="student-list" id="studentList"></div>
+      <div class="status" id="status"></div>
+    </aside>
+
+    <section class="panel main">
+      <div class="topbar">
+        <div class="title" id="pageTitle">Choose a student</div>
+        <div class="btns">
+          <button class="btn soft" id="reloadBtn">Reload</button>
+          <button class="btn" id="saveBtn" disabled>Save</button>
+          <button class="btn secondary" id="pdfBtn" disabled>Generate PDF</button>
+        </div>
+      </div>
+
+      <div class="editor" id="editor" hidden>
+        <div class="card">
+          <h2>Report Info</h2>
+          <div class="meta-grid">
+            <div><label>School</label><input id="school"></div>
+            <div><label>Grade</label><input id="grade"></div>
+            <div><label>Teacher</label><input id="teacher"></div>
+            <div><label>Date</label><input id="reportDate" type="date"></div>
+            <div><label>Sight Words</label><input id="sightWordsScore" placeholder="48/50"></div>
+          </div>
+          <label>Teacher Comments</label>
+          <textarea id="teacherComments" placeholder="Optional comments..."></textarea>
+        </div>
+        <div class="card">
+          <h2>Tips</h2>
+          <p class="sub">点 ES / MS / AS 后会立刻更新右侧预览。Save 会保存到 Sanity；Generate PDF 会先保存再下载。</p>
+          <p class="sub"><b>ES</b> Exceeds the standard<br><b>MS</b> Meets the standard<br><b>AS</b> Approaches the standard</p>
+        </div>
+      </div>
+
+      <div class="card" id="ratingsCard" hidden></div>
+      <div id="reportArea"><div style="padding:80px 20px;text-align:center;color:#687386">Choose a student from the left.</div></div>
+    </section>
+  </main>
+
+<script>
+const state={students:[],cardsByStudent:{},statements:[],defaults:{},activeStudent:null,form:null,dirty:false};
+const $=id=>document.getElementById(id);
+const els={year:$('year'),className:$('className'),mp:$('mp'),search:$('search'),studentList:$('studentList'),status:$('status'),pageTitle:$('pageTitle'),editor:$('editor'),ratingsCard:$('ratingsCard'),reportArea:$('reportArea'),saveBtn:$('saveBtn'),pdfBtn:$('pdfBtn'),reloadBtn:$('reloadBtn'),school:$('school'),grade:$('grade'),teacher:$('teacher'),reportDate:$('reportDate'),sightWordsScore:$('sightWordsScore'),teacherComments:$('teacherComments')};
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const displayName=s=>[s?.nameEn,s?.nameZh].filter(Boolean).join(' ')||s?.name||'Unnamed Student';
+const setStatus=m=>els.status.textContent=m;
+
+init();
+function init(){els.reloadBtn.onclick=loadData;els.year.onchange=loadData;els.className.onchange=loadData;els.mp.onchange=loadData;els.search.oninput=renderStudents;els.saveBtn.onclick=saveCurrent;els.pdfBtn.onclick=downloadPdf;['school','grade','teacher','reportDate','sightWordsScore','teacherComments'].forEach(id=>$(id).addEventListener('input',()=>{syncForm();renderReport();markDirty()}));loadData();}
+async function loadData(){setStatus('Loading...');els.studentList.innerHTML='';try{const qs=new URLSearchParams({academicYear:els.year.value,className:els.className.value,mp:els.mp.value});const res=await fetch('/api/report-card-data?'+qs,{cache:'no-store'});const data=await res.json();if(!data.ok)throw new Error(data.error);state.students=data.students||[];state.statements=data.statements||[];state.defaults=data.defaults||{};state.cardsByStudent={};(data.reportCards||[]).forEach(c=>{state.cardsByStudent[c.studentId]=c});renderStudents();setStatus(`${state.students.length} students loaded.`)}catch(e){setStatus(e.message||'Load failed.')}}
+function renderStudents(){const q=els.search.value.trim().toLowerCase();const list=state.students.filter(s=>displayName(s).toLowerCase().includes(q));els.studentList.innerHTML=list.map(s=>`<button class="student ${state.activeStudent?._id===s._id?'active':''}" data-id="${esc(s._id)}"><b>${esc(displayName(s))}</b><span>${esc(s.className)} · ${esc(s.academicYear)}</span></button>`).join('')||'<p class="sub">No students found.</p>';els.studentList.querySelectorAll('.student').forEach(btn=>btn.onclick=()=>selectStudent(btn.dataset.id));}
+function selectStudent(id){const s=state.students.find(x=>x._id===id);state.activeStudent=s;state.dirty=false;const card=state.cardsByStudent[id];const ratingMap={};(card?.ratings||[]).forEach(r=>ratingMap[r.key]=r.rating);state.form={studentId:id,academicYear:els.year.value,className:els.className.value,markingPeriod:els.mp.value,school:card?.school||state.defaults.school||'McIlvaine Early Childhood Center',grade:card?.grade||state.defaults.grade||'Kindergarten',teacher:card?.teacher||state.defaults.teacher||'Wang Laoshi',reportDate:card?.reportDate||state.defaults.reportDate||'',sightWordsScore:card?.sightWordsScore||'',teacherComments:card?.teacherComments||'',ratings:state.statements.map(item=>({...item,rating:ratingMap[item.key]||'MS'}))};fillForm();renderRatings();renderStudents();renderReport();els.editor.hidden=false;els.ratingsCard.hidden=false;els.saveBtn.disabled=false;els.pdfBtn.disabled=false;els.pageTitle.textContent=displayName(s);setStatus(card?'Existing report loaded.':'New report started.');}
+function fillForm(){['school','grade','teacher','reportDate','sightWordsScore','teacherComments'].forEach(id=>els[id].value=state.form[id]||'');}
+function syncForm(){if(!state.form)return;['school','grade','teacher','reportDate','sightWordsScore','teacherComments'].forEach(id=>state.form[id]=els[id].value);state.form.markingPeriod=els.mp.value;}
+function renderRatings(){const byDomain={};state.form.ratings.forEach(r=>(byDomain[r.domain] ||= []).push(r));els.ratingsCard.innerHTML=Object.entries(byDomain).map(([domain,items])=>`<h2>${esc(domain)}</h2>${items.map(item=>`<div class="rating-row"><div class="statement">${esc(item.statement)}</div><div class="chips">${['ES','MS','AS'].map(r=>`<button class="chip ${item.rating===r?'active':''}" data-key="${esc(item.key)}" data-rating="${r}">${r}</button>`).join('')}</div></div>`).join('')}`).join('');els.ratingsCard.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{const item=state.form.ratings.find(r=>r.key===btn.dataset.key);item.rating=btn.dataset.rating;renderRatings();renderReport();markDirty();});}
+function markDirty(){state.dirty=true;setStatus('Unsaved changes.');}
+async function saveCurrent(){if(!state.form)return;syncForm();setStatus('Saving...');els.saveBtn.disabled=true;try{const res=await fetch('/api/report-card-save',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(state.form)});const data=await res.json();if(!data.ok)throw new Error(data.error);state.dirty=false;setStatus('Saved to Sanity.');await loadData();if(state.activeStudent)selectStudent(state.activeStudent._id);}catch(e){setStatus(e.message||'Save failed.')}finally{els.saveBtn.disabled=false;}}
+async function downloadPdf(){if(!state.form)return;await saveCurrent();renderReport();setStatus('Generating PDF...');const name=displayName(state.activeStudent).replace(/[\\/:*?"<>|]/g,'-');await html2pdf().set({margin:0,filename:`${name} Report Card MP${state.form.markingPeriod||''}.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,letterRendering:true},jsPDF:{unit:'in',format:'letter',orientation:'portrait'},pagebreak:{mode:['css','legacy'],after:'.report-page'}}).from(els.reportArea).save();setStatus('PDF downloaded.');}
+function renderReport(){if(!state.form||!state.activeStudent)return;syncForm();els.reportArea.innerHTML=buildReportHtml();}
+function buildReportHtml(){const sections=['Listening Ability/Skill','Speaking Ability/Skill','Reading Ability/Skill','Writing Ability/Skill'];const grouped={};state.form.ratings.forEach(r=>(grouped[r.domain] ||= []).push(r));return `<article class="report-page">${header()}<p class="intro">This report is intended to help you see the progress your child is making in acquiring the Chinese language in the Immersion program.</p><div class="section-heading">How Well Your Child Are Expected to Have Learned and Demonstrated</div><p class="intro">During this marking period, your child has been learning and working on the content described above. In what follows is how well he/she can do with regard to the content and expectations:</p><ul class="scale-list"><li><b>Exceeds the standard</b> – your child demonstrates above the expectation consistently and reliably</li><li><b>Meets the standard</b> – your child demonstrates the expectation consistently</li><li><b>Approaches the standard</b> – your child does not demonstrate the expectation consistently</li></ul>${sections.slice(0,2).map(d=>sectionTable(d,grouped[d]||[])).join('')}</article><article class="report-page">${sections.slice(2).map(d=>sectionTable(d,grouped[d]||[])).join('')}${state.form.teacherComments?`<div class="section-heading">Teacher Comments</div><div class="comments-box">${esc(state.form.teacherComments)}</div>`:''}</article>`;}
+function header(){return `<div class="district">Caesar Rodney School District</div><div class="report-title">Dual Language Progress Report</div><div class="info-grid"><div><b>School:</b> ${esc(state.form.school)}</div><div><b>Student:</b> ${esc(displayName(state.activeStudent))}</div><div><b>Grade:</b> ${esc(state.form.grade)}</div><div><b>Teacher:</b> ${esc(state.form.teacher)}</div><div><b>Date:</b> ${esc(formatDate(state.form.reportDate))}</div><div><b>MP:</b> ${esc(state.form.markingPeriod)}</div></div>`;}
+function formatDate(v){if(!v)return'';const [y,m,d]=v.split('-');return y&&m&&d?`${m}-${d}-${String(y).slice(2)}`:v;}
+function sectionTable(domain,items){return `<div class="section-heading">${esc(domain)}</div><table class="rubric"><thead><tr><th>Can-Do Statements</th><th>ES</th><th>MS</th><th>AS</th></tr></thead><tbody>${items.map(row).join('')}</tbody></table>`;}
+function row(item){const note=item.key==='reading_sight_words'&&state.form.sightWordsScore?`<span class="score-note">${esc(state.form.sightWordsScore)}</span>`:'';return `<tr><td>${esc(item.statement)}${note}</td>${['ES','MS','AS'].map(r=>`<td>${item.rating===r?'<span class="check">✔</span>':''}</td>`).join('')}</tr>`;}
+</script>
+</body>
+</html>
