@@ -31,7 +31,6 @@
             flex-direction: column;
         }
 
-        /* ── Main layout ───────────────────────────────── */
         #main-layout {
             display: flex;
             flex-direction: row;
@@ -43,7 +42,6 @@
             min-height: 0;
         }
 
-        /* ── Left column: image ────────────────────────── */
         #left-col {
             display: flex;
             flex-direction: column;
@@ -87,7 +85,6 @@
 
         #image-placeholder svg { opacity: 0.35; }
 
-        /* Progress bar under image */
         #progress-bar-wrap {
             height: 8px;
             background: #e2e8f0;
@@ -111,7 +108,6 @@
             flex-shrink: 0;
         }
 
-        /* ── Right column: maze + controls ────────────── */
         #right-col {
             display: flex;
             flex-direction: column;
@@ -134,10 +130,8 @@
         #maze-grid {
             display: grid;
             gap: 6px;
-            /* columns set by JS */
         }
 
-        /* Maze cell */
         .maze-cell {
             width: var(--cell-size);
             height: var(--cell-size);
@@ -169,18 +163,18 @@
             transform: scale(1.06);
         }
 
+        /* FIX 3: selected cells keep pointer so undo tap works */
         .maze-cell.selected {
             background: linear-gradient(135deg, #a8d8ea, #74b9d0);
             border-color: #5ba0c0;
             color: white;
-            cursor: default;
+            cursor: pointer;
             transform: scale(1);
         }
 
-        .maze-cell.start-cell {
-            border-color: var(--accent-yellow);
-            background: #fff9e6;
-            box-shadow: 0 0 0 3px rgba(243,178,54,0.25);
+        /* FIX 3: last selected cell gets a subtle undo indicator */
+        .maze-cell.selected.last-selected {
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.45);
         }
 
         .maze-cell.done {
@@ -195,19 +189,12 @@
             animation: shake 0.4s ease;
         }
 
+        /* FIX 2: end-cell flag only — no start-cell special styling at all */
         .maze-cell.end-cell::after {
             content: '🏁';
             position: absolute;
             top: -6px; right: -6px;
             font-size: 0.8rem;
-            line-height: 1;
-        }
-
-        .maze-cell.start-cell::before {
-            content: '⭐';
-            position: absolute;
-            top: -6px; left: -6px;
-            font-size: 0.75rem;
             line-height: 1;
         }
 
@@ -219,7 +206,6 @@
             80%     { transform: translateX(4px); }
         }
 
-        /* ── Success overlay ───────────────────────────── */
         #success-panel {
             display: none;
             flex-direction: row;
@@ -230,9 +216,8 @@
             border-radius: 14px;
             border: 2px solid var(--correct-green);
             overflow: hidden;
-            /* Absolute overlay so it never pushes the maze grid up */
             position: absolute;
-            bottom: 56px; /* sit above the bottom-bar */
+            bottom: 56px;
             left: 0;
             right: 0;
             z-index: 20;
@@ -246,7 +231,6 @@
             color: #1a5c3a;
         }
 
-        /* ── Wrong-sentence hint overlay ────────────────── */
         #hint-panel {
             display: none;
             flex-direction: row;
@@ -269,7 +253,6 @@
             color: #7a1a1a;
         }
 
-        /* ── Bottom controls ────────────────────────────── */
         #bottom-bar {
             display: flex;
             flex-wrap: wrap;
@@ -293,10 +276,7 @@
             gap: 6px;
         }
 
-        .action-btn svg {
-            flex-shrink: 0;
-        }
-
+        .action-btn svg { flex-shrink: 0; }
         .action-btn:active { transform: scale(0.95); }
 
         .btn-next {
@@ -313,7 +293,6 @@
         }
         .btn-shuffle:hover { background: #d0d8e0; }
 
-        /* ── Scoreboard column ──────────────────────────── */
         #score-col {
             display: flex;
             flex-direction: column;
@@ -338,28 +317,10 @@
             box-sizing: border-box;
         }
 
-        #score-title {
-            font-family: var(--kaiti);
-            font-size: 0.78rem;
-            color: #777;
-            white-space: nowrap;
-        }
+        #score-title { font-family: var(--kaiti); font-size: 0.78rem; color: #777; white-space: nowrap; }
+        #score-count { font-family: var(--kaiti); font-size: 2rem; font-weight: bold; color: var(--main-teal); line-height: 1; }
+        #score-unit  { font-family: var(--kaiti); font-size: 0.78rem; color: #999; }
 
-        #score-count {
-            font-family: var(--kaiti);
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--main-teal);
-            line-height: 1;
-        }
-
-        #score-unit {
-            font-family: var(--kaiti);
-            font-size: 0.78rem;
-            color: #999;
-        }
-
-        /* ── Loading / error ─────────────────────────────── */
         #loading-overlay {
             position: absolute;
             inset: 0;
@@ -384,52 +345,18 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes tada {
-            0%   { transform: scale(1); }
-            10%,20% { transform: scale(0.9) rotate(-3deg); }
-            30%,50%,70%,90% { transform: scale(1.15) rotate(3deg); }
-            40%,60%,80% { transform: scale(1.15) rotate(-3deg); }
-            100% { transform: scale(1); }
-        }
 
-        /* ── Mobile stacking ─────────────────────────────── */
         @media (max-width: 600px) {
-            #main-layout {
-                flex-direction: column;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
-
+            #main-layout { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
             body { overflow: auto; }
-
-            #left-col {
-                width: 100%;
-                height: 38vh;
-                flex-shrink: 0;
-            }
-
+            #left-col { width: 100%; height: 38vh; flex-shrink: 0; }
             #right-col { overflow: visible; }
-
             #maze-wrapper { overflow: visible; }
-
-            .maze-cell {
-                --cell-size: clamp(50px, 15vw, 65px);
-            }
-
-            #score-col {
-                flex-direction: row;
-                width: 100%;
-            }
-
-            #score-card {
-                flex-direction: row;
-                gap: 8px;
-                padding: 8px 14px;
-                width: auto;
-            }
+            .maze-cell { --cell-size: clamp(50px, 15vw, 65px); }
+            #score-col { flex-direction: row; width: 100%; }
+            #score-card { flex-direction: row; gap: 8px; padding: 8px 14px; width: auto; }
         }
 
-        /* ── Tag pills (shown when tag filter active) ─────── */
         #tag-indicator {
             display: none;
             font-family: var(--wenkai);
@@ -441,7 +368,6 @@
             flex-shrink: 0;
         }
 
-        /* ── Peek button & panel ─────────────────────────── */
         #top-bar {
             display: flex;
             align-items: center;
@@ -454,7 +380,16 @@
             color: #3949ab;
             box-shadow: 0 3px 0 #9fa8da;
         }
-        .btn-peek:hover { background: #d5d8f0; }
+        .btn-peek:hover:not(:disabled) { background: #d5d8f0; }
+
+        /* FIX 5: disabled peek button after first use */
+        .btn-peek:disabled {
+            background: #efefef;
+            color: #bbb;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
 
         #peek-panel {
             display: none;
@@ -475,7 +410,6 @@
             text-align: center;
         }
 
-        /* ── SVG path overlay ────────────────────────────── */
         #maze-container {
             position: relative;
             display: inline-block;
@@ -483,10 +417,8 @@
 
         #path-svg {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
             overflow: visible;
         }
@@ -501,16 +433,13 @@
 </head>
 <body>
 
-    <!-- Loading overlay (covers whole page) -->
     <div id="loading-overlay">
         <div class="spinner"></div>
         <span id="loading-msg">加载句子中…</span>
     </div>
 
-    <!-- Main layout -->
     <div id="main-layout">
 
-        <!-- LEFT: image -->
         <div id="left-col">
             <div id="image-stage">
                 <img id="sentence-img" src="" alt="情境图片" style="display:none;" aria-label="句子情境图">
@@ -529,9 +458,7 @@
             <div id="progress-text" style="display:none;"></div>
         </div>
 
-        <!-- RIGHT: maze + controls -->
         <div id="right-col">
-            <!-- Peek button above maze -->
             <div id="top-bar">
                 <button class="action-btn btn-peek" id="btn-peek"
                         onclick="peekSentence()" aria-label="看一看句子">
@@ -543,7 +470,6 @@
                 </button>
             </div>
 
-            <!-- Peek panel (sentence overlay, auto-hides after 5s) -->
             <div id="peek-panel" role="status" aria-live="polite"></div>
 
             <div id="maze-wrapper" role="grid" aria-label="字词迷宫">
@@ -553,20 +479,16 @@
                 </div>
             </div>
 
-            <!-- Success panel -->
             <div id="success-panel" role="alert" aria-live="polite">
                 <span class="success-sentence" id="success-sentence"></span>
             </div>
 
-            <!-- Wrong-sentence hint panel -->
             <div id="hint-panel" role="alert" aria-live="polite"></div>
 
-            <!-- Bottom controls -->
             <div id="bottom-bar">
                 <span id="tag-indicator"></span>
                 <button class="action-btn btn-next" id="btn-next"
                         onclick="loadNextSentence()" aria-label="下一个句子">
-                    <!-- Next-sentence icon: document + forward arrow -->
                     <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="3" y="3" width="18" height="24" rx="3" stroke="#1a2740" stroke-width="2.2" fill="none"/>
                         <line x1="7" y1="10" x2="17" y2="10" stroke="#1a2740" stroke-width="1.8" stroke-linecap="round"/>
@@ -579,7 +501,6 @@
                 </button>
                 <button class="action-btn btn-shuffle" id="btn-shuffle"
                         onclick="reshuffleMaze()" aria-label="交换一下">
-                    <!-- Hand-drawn shuffle arrows SVG -->
                     <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M4 10 C8 10 11 10 14 14 C17 18 20 22 24 22 L29 22" stroke="#444" stroke-width="2.2" stroke-linecap="round" fill="none"/>
                         <path d="M25 18 L30 22 L25 26" stroke="#444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -591,7 +512,6 @@
             </div>
         </div>
 
-        <!-- SCORE: scoreboard -->
         <div id="score-col">
             <div id="score-card">
                 <div id="score-title">记分牌</div>
@@ -611,21 +531,19 @@
     const QUERY      = encodeURIComponent('*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url}');
     const API_URL    = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
 
-    // Grid constraints (auto-sized by sentence length, up to 5×5)
-    const MAX_GRID_ROWS = 5;
-    const MAX_GRID_COLS = 5;
-    const MAX_GRID_CELLS = MAX_GRID_ROWS * MAX_GRID_COLS;
-
-    // Max attempts for randomized path generation.
+    const MAX_GRID_ROWS    = 5;
+    const MAX_GRID_COLS    = 5;
+    const MAX_GRID_CELLS   = MAX_GRID_ROWS * MAX_GRID_COLS;
     const MAX_PATH_ATTEMPTS = 200;
 
-    const STRIP_PUNCTUATION_RE = /[，,、。！？；：\s]/g;
-    const FILTER_PUNCTUATION_RE = /[“”"'‘’（）()【】《》]/;
+    const STRIP_PUNCTUATION_RE  = /[，,、。！？；：\s]/g;
+    const FILTER_PUNCTUATION_RE = /["""'''（）()【】《》]/;
 
-    // Fallback characters (used only when sight-word/sentence sources are insufficient)
-    const DISTRACTOR_POOL = [
-        '的一是在不有会你他她我们上下左右中大小日月山水火木土金风雨云星',
-    ].join('').split('').filter((ch, i, arr) => arr.indexOf(ch) === i); // deduplicate
+    // FIX 1: kindergarten-appropriate distractor characters only — no digits, no rare chars
+    const DISTRACTOR_POOL = Array.from(new Set(
+        '的了也在是不有会你他她我上下左右来去大小多少好长短高矮里外前后中日月山水火木土金风雨云天地手口目耳心年生老师同学朋友爸妈哥姐弟妹家门窗书包桌椅吃饭喝走跑跳唱画说看见听想要做得能'
+            .split('')
+    ));
 
     // ═══════════════════════════════════════════════════════════
     //  I18N
@@ -638,6 +556,7 @@
             noImage:     '（暂无图片）',
             mazeLabel:   '字词迷宫',
             peekBtn:     '看一看句子',
+            peekUsed:    '已经看过了',
             nextBtn:     '下一个句子',
             shuffleBtn:  '交换一下',
             scoreTitle:  '记分牌',
@@ -649,7 +568,7 @@
             errTooLong:  '当前句子字数超出迷宫尺寸限制（最大5×5=25字），请换一题。',
             errMazeFail: '迷宫生成失败，正在换一题…',
             progress:    (step, n) => `已找到 ${step} / ${n} 个字`,
-            wrongHint:   (assembled) => `句子不对哦，再试试！（${assembled}）`,
+            wrongHint:   () => `顺序不对哦，再试试！`,
         },
         en: {
             navTitle:    'Sentence Maze',
@@ -657,6 +576,7 @@
             noImage:     '(No image)',
             mazeLabel:   'Sentence maze',
             peekBtn:     'Peek at Sentence',
+            peekUsed:    'Already peeked',
             nextBtn:     'Next Sentence',
             shuffleBtn:  'Shuffle',
             scoreTitle:  'Score',
@@ -668,7 +588,7 @@
             errTooLong:  'Current sentence exceeds maze size limit (max 5×5=25 chars), please try another.',
             errMazeFail: 'Maze generation failed, trying another…',
             progress:    (step, n) => `Found ${step} / ${n} characters`,
-            wrongHint:   (assembled) => `Wrong sentence, try again! (${assembled})`,
+            wrongHint:   () => `Wrong order, try again!`,
         },
     };
     const t = ALL_STRINGS[LANG] || ALL_STRINGS.zh;
@@ -676,17 +596,19 @@
     // ═══════════════════════════════════════════════════════════
     //  STATE
     // ═══════════════════════════════════════════════════════════
-    let allSentences   = [];
-    let sightWordChars = [];
-    let currentSentence = null;
-    let wordList       = [];     // parsed words array
-    let currentStep    = 0;      // number of cells selected so far
-    let pathCells      = [];     // [{row,col}] of correct path
-    let cellMeta       = [];     // flat array of {word, isPath, pathIdx, row, col}
-    let scoreCount     = 0;      // number of sentences completed
-    let clickedFlatIndices = []; // flat cell indices clicked in order (for SVG line)
-    let peekTimer      = null;   // auto-hide timer for peek panel
-    let hintResetTimer = null;   // timer to auto-reset after wrong sentence
+    let allSentences       = [];
+    let remainingSentences = []; // FIX 4: queue of unseen sentences
+    let sightWordChars     = [];
+    let currentSentence    = null;
+    let wordList           = [];
+    let currentStep        = 0;
+    let pathCells          = [];
+    let cellMeta           = [];
+    let scoreCount         = 0;
+    let clickedFlatIndices = [];
+    let peekTimer          = null;
+    let hintResetTimer     = null;
+    let peekUsed           = false; // FIX 5: one peek per sentence
 
     // ═══════════════════════════════════════════════════════════
     //  INIT
@@ -695,20 +617,18 @@
         MECC_CONFIG.renderGlobalNav(t.navTitle);
         document.getElementById('head-title').innerText = t.navTitle + ' - MECC';
 
-        // Apply localized UI text
-        document.getElementById('loading-msg').textContent = t.loading;
-        document.getElementById('no-image-text').textContent = t.noImage;
+        document.getElementById('loading-msg').textContent         = t.loading;
+        document.getElementById('no-image-text').textContent       = t.noImage;
         document.getElementById('maze-wrapper').setAttribute('aria-label', t.mazeLabel);
         document.getElementById('btn-peek').setAttribute('aria-label', t.peekBtn);
-        document.getElementById('btn-peek-text').textContent = t.peekBtn;
+        document.getElementById('btn-peek-text').textContent       = t.peekBtn;
         document.getElementById('btn-next').setAttribute('aria-label', t.nextBtn);
-        document.getElementById('btn-next-text').textContent = t.nextBtn;
+        document.getElementById('btn-next-text').textContent       = t.nextBtn;
         document.getElementById('btn-shuffle').setAttribute('aria-label', t.shuffleBtn);
-        document.getElementById('btn-shuffle-text').textContent = t.shuffleBtn;
-        document.getElementById('score-title').textContent = t.scoreTitle;
-        document.getElementById('score-unit').textContent = t.scoreUnit;
+        document.getElementById('btn-shuffle-text').textContent    = t.shuffleBtn;
+        document.getElementById('score-title').textContent         = t.scoreTitle;
+        document.getElementById('score-unit').textContent          = t.scoreUnit;
 
-        // Show tag filter indicator if ?tag= present
         const tag = new URLSearchParams(window.location.search).get('tag');
         if (tag) {
             const indicator = document.getElementById('tag-indicator');
@@ -732,9 +652,10 @@
                 chars.push(...splitToChars(item.char || ''));
                 chars.push(...splitToChars(item.phrases || ''));
             }
-            sightWordChars = Array.from(new Set(chars));
+            // FIX 1: strip digits from sight-word distractor candidates
+            sightWordChars = Array.from(new Set(chars)).filter(ch => !/[0-9０-９]/.test(ch));
         } catch (e) {
-            console.warn('四会字加载失败，将使用句子字符与备用干扰池生成干扰项。', e);
+            console.warn('四会字加载失败', e);
             sightWordChars = [];
         }
     }
@@ -746,17 +667,16 @@
             const { result } = await res.json();
             allSentences = (result || []).filter(s => s && s.words && s.words.trim());
 
-            // Filter by tag if provided
             const tag = new URLSearchParams(window.location.search).get('tag');
             if (tag) {
                 const filtered = allSentences.filter(s => s.tags && s.tags.includes(tag));
                 if (filtered.length > 0) allSentences = filtered;
             }
 
-            if (allSentences.length === 0) {
-                showError(t.errNoData);
-                return;
-            }
+            if (allSentences.length === 0) { showError(t.errNoData); return; }
+
+            // FIX 4: build shuffled queue of valid sentences
+            rebuildQueue();
 
             hideLoading();
             loadNextSentence();
@@ -766,57 +686,52 @@
         }
     }
 
+    // FIX 4: fill remainingSentences with all valid sentences in random order
+    function rebuildQueue() {
+        remainingSentences = allSentences.filter(s => {
+            const parsed = parseWords(s.words || '');
+            return parsed.length > 0 && chooseGridSize(parsed.length) !== null;
+        });
+        shuffleArrayInPlace(remainingSentences);
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  SENTENCE LOADING
     // ═══════════════════════════════════════════════════════════
     function loadNextSentence() {
-        if (allSentences.length === 0) return;
-
-        // Iteratively pick a sentence with parseable words, avoiding repeat where possible.
-        let candidate = null;
-        let parsedCandidate = [];
-        const pool = allSentences.length > 1
-            ? allSentences.filter(s => s !== currentSentence)
-            : allSentences.slice();
-
-        // Shuffle pool so we try sentences in random order
-        shuffleArrayInPlace(pool);
-
-        for (const s of pool) {
-            const parsed = parseWords(s.words || '');
-            const gridSize = chooseGridSize(parsed.length);
-            if (parsed.length > 0 && gridSize) {
-                candidate = s;
-                parsedCandidate = parsed;
-                break;
-            }
+        // FIX 4: when queue is empty, refill so the game continues (loops)
+        if (remainingSentences.length === 0) {
+            rebuildQueue();
+            if (remainingSentences.length === 0) { showError(t.errNoFit); return; }
         }
 
-        if (!candidate) {
-            showError(t.errNoFit);
+        const candidate = remainingSentences.shift();
+        const parsedCandidate = parseWords(candidate.words || '');
+
+        if (!parsedCandidate.length || !chooseGridSize(parsedCandidate.length)) {
+            loadNextSentence(); // skip invalid, try next
             return;
         }
 
         currentSentence = candidate;
-        wordList = parsedCandidate.length > 0 ? parsedCandidate : parseWords(candidate.words);
+        wordList        = parsedCandidate;
 
-        // Render image
         renderImage(candidate.image);
 
-        // Reset state
         currentStep = 0;
         clickedFlatIndices = [];
         hidePeek();
         hideSuccessPanel();
         hideHintPanel();
 
-        // Build maze
-        buildMaze();
+        // FIX 5: reset peek for each new sentence
+        peekUsed = false;
+        resetPeekButton();
 
-        // Reset progress
+        buildMaze();
         updateProgress();
         document.getElementById('progress-bar-wrap').style.display = 'block';
-        document.getElementById('progress-text').style.display = 'block';
+        document.getElementById('progress-text').style.display     = 'block';
     }
 
     function reshuffleMaze() {
@@ -833,15 +748,11 @@
     // ═══════════════════════════════════════════════════════════
     //  WORD PARSING
     // ═══════════════════════════════════════════════════════════
-    function parseWords(raw) {
-        if (!raw) return [];
-        return splitToChars(raw);
-    }
+    function parseWords(raw) { return splitToChars(raw); }
 
     function splitToChars(raw) {
         if (!raw) return [];
-        const stripped = raw.replace(STRIP_PUNCTUATION_RE, '');
-        return Array.from(stripped)
+        return Array.from(raw.replace(STRIP_PUNCTUATION_RE, ''))
             .map(ch => ch.trim())
             .filter(ch => ch && !FILTER_PUNCTUATION_RE.test(ch));
     }
@@ -858,14 +769,14 @@
     //  IMAGE
     // ═══════════════════════════════════════════════════════════
     function renderImage(url) {
-        const img = document.getElementById('sentence-img');
+        const img         = document.getElementById('sentence-img');
         const placeholder = document.getElementById('image-placeholder');
         if (url) {
             img.src = url;
-            img.style.display = 'block';
+            img.style.display         = 'block';
             placeholder.style.display = 'none';
         } else {
-            img.style.display = 'none';
+            img.style.display         = 'none';
             placeholder.style.display = 'flex';
         }
     }
@@ -874,16 +785,12 @@
     //  MAZE GENERATION
     // ═══════════════════════════════════════════════════════════
     function buildMaze() {
-        const n = wordList.length;
+        const n        = wordList.length;
         const gridSize = chooseGridSize(n);
-        if (!gridSize) {
-            showError(t.errTooLong);
-            return;
-        }
+        if (!gridSize) { showError(t.errTooLong); return; }
         const { rows, cols } = gridSize;
         const total = rows * cols;
 
-        // Generate path: fixed start at top-left, fixed end at bottom-right
         pathCells = generatePathFromCorners(rows, cols, n);
         if (!Array.isArray(pathCells) || pathCells.length !== n) {
             showError(t.errMazeFail);
@@ -891,16 +798,12 @@
             return;
         }
 
-        // Build path lookup for exact sequence mapping
         const pathIndexByFlat = new Map();
         pathCells.forEach(([r, c], idx) => pathIndexByFlat.set(r * cols + c, idx));
 
-        // Collect distractor words from other sentences
         const otherWords = collectDistractors(wordList);
 
-        // Assign words to cells
         cellMeta = [];
-
         for (let i = 0; i < total; i++) {
             const row = Math.floor(i / cols);
             const col = i % cols;
@@ -917,139 +820,103 @@
 
     function chooseGridSize(n) {
         if (!Number.isInteger(n) || n < 1 || n > MAX_GRID_CELLS) return null;
-
         const candidates = [];
         for (let rows = 2; rows <= MAX_GRID_ROWS; rows++) {
             for (let cols = 2; cols <= MAX_GRID_COLS; cols++) {
-                const total = rows * cols;
-                // Shortest possible corner-to-corner path length (Manhattan path including start/end cells)
-                const minPathLength = rows + cols - 1;
+                const total          = rows * cols;
+                const minPathLength  = rows + cols - 1;
                 if (n < minPathLength || n > total) continue;
                 candidates.push({
-                    rows,
-                    cols,
-                    total,
+                    rows, cols, total,
                     extra: total - n,
                     isNearSquare: Math.abs(rows - cols) <= 1
                 });
             }
         }
-
         if (candidates.length === 0) return null;
         const preferred = candidates.some(c => c.isNearSquare)
             ? candidates.filter(c => c.isNearSquare)
             : candidates;
-
-        // Target roughly n distractor cells (≈50% of grid).
-        // Sort by: (1) closest to target distractor count, (2) closer to square, (3) smaller total.
         const targetDistractors = n;
         preferred.sort((a, b) =>
             Math.abs(a.extra - targetDistractors) - Math.abs(b.extra - targetDistractors) ||
             Math.abs(a.rows - a.cols) - Math.abs(b.rows - b.cols) ||
             a.total - b.total
         );
-
         return preferred[0];
     }
 
-    /**
-     * Randomized DFS path of length `n` on a rows×cols grid.
-     * Start is fixed at (0,0), end is fixed at (rows-1, cols-1).
-     */
     function generatePathFromCorners(rows, cols, n) {
-        const endR = rows - 1;
-        const endC = cols - 1;
+        const endR = rows - 1, endC = cols - 1;
         const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
         const tryBuildPath = (shuffleDirs) => {
             const visited = new Set([0]);
-            const path = [[0, 0]];
-
+            const path    = [[0, 0]];
             const dfs = (r, c) => {
                 if (path.length === n) return r === endR && c === endC;
-
                 const remainingSteps = n - path.length;
-                const distToEnd = Math.abs(r - endR) + Math.abs(c - endC);
-                if (distToEnd > remainingSteps) return false;
-
+                if (Math.abs(r - endR) + Math.abs(c - endC) > remainingSteps) return false;
                 const orderedDirs = shuffleDirs
                     ? shuffleArrayInPlace(dirs.slice())
                     : dirs.slice().sort((a, b) => {
-                        const aDist = Math.abs((r + a[0]) - endR) + Math.abs((c + a[1]) - endC);
-                        const bDist = Math.abs((r + b[0]) - endR) + Math.abs((c + b[1]) - endC);
+                        const aDist = Math.abs((r+a[0]) - endR) + Math.abs((c+a[1]) - endC);
+                        const bDist = Math.abs((r+b[0]) - endR) + Math.abs((c+b[1]) - endC);
                         return aDist - bDist;
                     });
                 for (const [dr, dc] of orderedDirs) {
-                    const nr = r + dr;
-                    const nc = c + dc;
+                    const nr = r + dr, nc = c + dc;
                     if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
-
                     const key = nr * cols + nc;
                     if (visited.has(key)) continue;
-
-                    const nextRemaining = remainingSteps - 1;
-                    const nextDist = Math.abs(nr - endR) + Math.abs(nc - endC);
-                    if (nextDist > nextRemaining) continue;
-
+                    if (Math.abs(nr - endR) + Math.abs(nc - endC) > remainingSteps - 1) continue;
                     visited.add(key);
                     path.push([nr, nc]);
                     if (dfs(nr, nc)) return true;
                     path.pop();
                     visited.delete(key);
                 }
-
                 return false;
             };
-
             return dfs(0, 0) ? path : null;
         };
-
-        for (let attempt = 0; attempt < MAX_PATH_ATTEMPTS; attempt++) {
-            const randomPath = tryBuildPath(true);
-            if (randomPath) return randomPath;
+        for (let i = 0; i < MAX_PATH_ATTEMPTS; i++) {
+            const p = tryBuildPath(true);
+            if (p) return p;
         }
-
-        const deterministicPath = tryBuildPath(false);
-        if (deterministicPath) return deterministicPath;
-
-        return null;
+        return tryBuildPath(false) || null;
     }
 
-    /**
-     * Collect distractor single characters from sight words + other sentences + fallback pool.
-     */
+    // FIX 1: no digits in distractor pool
     function collectDistractors(targetWords) {
         const targetSet = new Set(targetWords);
-        const words = [];
+        const words     = [];
 
-        // From sight words
         for (const ch of sightWordChars) {
             if (!targetSet.has(ch)) words.push(ch);
         }
-
-        // From other Sanity sentences
         for (const s of allSentences) {
             if (s === currentSentence) continue;
-            const parsed = parseWords(s.words || '');
-            for (const w of parsed) {
+            for (const w of parseWords(s.words || '')) {
                 if (!targetSet.has(w)) words.push(w);
             }
         }
-
-        // Add built-in single characters
         for (const ch of DISTRACTOR_POOL) {
             if (!targetSet.has(ch)) words.push(ch);
         }
 
-        return Array.from(new Set(words.filter(ch => ch.length === 1)));
+        return Array.from(new Set(
+            words.filter(ch => ch.length === 1 && !/[0-9０-９]/.test(ch))
+        ));
     }
 
     function pickDistractor(pool) {
-        if (pool.length === 0) return '字';
+        if (pool.length === 0) return '好';
         return pool[Math.floor(Math.random() * pool.length)];
     }
 
     // ═══════════════════════════════════════════════════════════
     //  RENDER GRID
+    //  FIX 2: no special colour or icon for the start cell
     // ═══════════════════════════════════════════════════════════
     function renderGrid(rows, cols, total) {
         const grid = document.getElementById('maze-grid');
@@ -1066,9 +933,7 @@
             cell.setAttribute('aria-label', meta.word);
             cell.setAttribute('role', 'gridcell');
 
-            if (meta.isPath && meta.pathIdx === 0) {
-                cell.classList.add('start-cell');
-            }
+            // FIX 2: only mark the END cell — no start-cell class / no star icon
             if (meta.isPath && meta.pathIdx === wordList.length - 1) {
                 cell.classList.add('end-cell');
             }
@@ -1080,43 +945,65 @@
 
     // ═══════════════════════════════════════════════════════════
     //  INTERACTION
+    //  FIX 3: tapping the last-selected cell cancels it (undo)
     // ═══════════════════════════════════════════════════════════
     function onCellClick(flatIndex) {
-        if (currentStep >= wordList.length) return; // game complete
+        if (currentStep >= wordList.length) return;
 
         const cell = document.querySelector(`.maze-cell[data-index="${flatIndex}"]`);
+        if (!cell || cell.classList.contains('done')) return;
 
-        // Ignore already-selected or done cells
-        if (cell.classList.contains('done') || cell.classList.contains('selected')) return;
-
-        // Accept any click — select the cell
-        cell.classList.add('selected');
-        cell.classList.remove('start-cell');
-
-        // Draw line from previous selected cell to this one
-        if (clickedFlatIndices.length > 0) {
-            const prevIndex = clickedFlatIndices[clickedFlatIndices.length - 1];
-            drawPathLine(prevIndex, flatIndex);
+        // FIX 3: if the player taps the most-recently selected cell, undo that step
+        if (cell.classList.contains('selected')) {
+            const lastIdx = clickedFlatIndices[clickedFlatIndices.length - 1];
+            if (lastIdx === flatIndex) {
+                cell.classList.remove('selected', 'last-selected');
+                clickedFlatIndices.pop();
+                currentStep--;
+                removeLastPathLine();
+                // re-mark the new last cell
+                if (clickedFlatIndices.length > 0) {
+                    const newLast = document.querySelector(
+                        `.maze-cell[data-index="${clickedFlatIndices[clickedFlatIndices.length - 1]}"]`
+                    );
+                    if (newLast) newLast.classList.add('last-selected');
+                }
+                updateProgress();
+                hideHintPanel();
+            }
+            return;
         }
+
+        // Remove last-selected highlight from previous cell
+        if (clickedFlatIndices.length > 0) {
+            const prevCell = document.querySelector(
+                `.maze-cell[data-index="${clickedFlatIndices[clickedFlatIndices.length - 1]}"]`
+            );
+            if (prevCell) prevCell.classList.remove('last-selected');
+
+            drawPathLine(clickedFlatIndices[clickedFlatIndices.length - 1], flatIndex);
+        }
+
+        cell.classList.add('selected', 'last-selected');
         clickedFlatIndices.push(flatIndex);
         currentStep++;
-
         updateProgress();
 
         if (currentStep === wordList.length) {
-            // Assemble the sentence from selected cells in click order
+            // Remove last-selected highlight before checking
+            cell.classList.remove('last-selected');
+
             const assembled = clickedFlatIndices.map(i => cellMeta[i].word).join('');
             const correct   = wordList.join('');
 
             if (assembled === correct) {
-                // Mark all as done
                 clickedFlatIndices.forEach(i => {
                     const c = document.querySelector(`.maze-cell[data-index="${i}"]`);
                     if (c) { c.classList.remove('selected'); c.classList.add('done'); }
                 });
                 onComplete();
             } else {
-                showWrongHint(assembled);
+                showWrongHint();
             }
         }
     }
@@ -1125,10 +1012,10 @@
     //  PROGRESS
     // ═══════════════════════════════════════════════════════════
     function updateProgress() {
-        const n = wordList.length;
+        const n   = wordList.length;
         const pct = n > 0 ? Math.round((currentStep / n) * 100) : 0;
-        document.getElementById('progress-bar').style.width = pct + '%';
-        document.getElementById('progress-text').textContent = t.progress(currentStep, n);
+        document.getElementById('progress-bar').style.width      = pct + '%';
+        document.getElementById('progress-text').textContent     = t.progress(currentStep, n);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -1136,25 +1023,13 @@
     // ═══════════════════════════════════════════════════════════
     function launchFireworks() {
         if (typeof confetti === 'undefined') return;
-        const bursts = [
-            { x: 0.25, y: 0.35 },
-            { x: 0.75, y: 0.25 },
-            { x: 0.5,  y: 0.45 },
-            { x: 0.15, y: 0.6  },
-            { x: 0.85, y: 0.55 },
-        ];
-        bursts.forEach(({ x, y }, i) => {
-            setTimeout(() => {
-                confetti({
-                    particleCount: 180,
-                    spread: 120,
-                    startVelocity: 45,
-                    origin: { x, y },
-                    colors: ['#f3b236', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#ff6b6b', '#fff'],
-                    ticks: 200,
-                });
-            }, i * 280);
-        });
+        [{x:0.25,y:0.35},{x:0.75,y:0.25},{x:0.5,y:0.45},{x:0.15,y:0.6},{x:0.85,y:0.55}]
+            .forEach(({x,y}, i) => setTimeout(() => confetti({
+                particleCount: 180, spread: 120, startVelocity: 45,
+                origin: {x,y},
+                colors: ['#f3b236','#2ecc71','#e74c3c','#3498db','#9b59b6','#ff6b6b','#fff'],
+                ticks: 200,
+            }), i * 280));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -1162,28 +1037,16 @@
     // ═══════════════════════════════════════════════════════════
     function onComplete() {
         const fullSentence = wordList.join('') + (currentSentence.punctuation || '');
-
-        // Try to play the full sentence
         try { MECC_AUDIO.readText(fullSentence); } catch(e) {}
-        try { MECC_AUDIO.playSfx('tada'); } catch(e) {}
+        try { MECC_AUDIO.playSfx('tada'); }       catch(e) {}
+        try { MECC_UI.fireConfetti('normal'); }    catch(e) {}
 
-        // Confetti
-        try { MECC_UI.fireConfetti('normal'); } catch(e) {}
+        document.getElementById('success-sentence').textContent = '🎊 ' + fullSentence;
+        document.getElementById('success-panel').style.display  = 'flex';
 
-        // Show success panel
-        const panel = document.getElementById('success-panel');
-        const sentEl = document.getElementById('success-sentence');
-        sentEl.textContent = '🎊 ' + fullSentence;
-        panel.style.display = 'flex';
-
-        // Increment score
         scoreCount++;
         document.getElementById('score-count').textContent = scoreCount;
-
-        // Fireworks every 10 sentences
-        if (scoreCount % 10 === 0) {
-            launchFireworks();
-        }
+        if (scoreCount % 10 === 0) launchFireworks();
 
         updateProgress();
     }
@@ -1194,15 +1057,13 @@
 
     function hideHintPanel() {
         if (hintResetTimer) { clearTimeout(hintResetTimer); hintResetTimer = null; }
-        const panel = document.getElementById('hint-panel');
-        if (panel) panel.style.display = 'none';
+        document.getElementById('hint-panel').style.display = 'none';
     }
 
-    function showWrongHint(assembled) {
+    function showWrongHint() {
         hideHintPanel();
-        const panel = document.getElementById('hint-panel');
-        panel.textContent = t.wrongHint(assembled);
-        panel.style.display = 'flex';
+        document.getElementById('hint-panel').textContent    = t.wrongHint();
+        document.getElementById('hint-panel').style.display  = 'flex';
         hintResetTimer = setTimeout(() => {
             hideHintPanel();
             resetSelections();
@@ -1210,10 +1071,9 @@
     }
 
     function resetSelections() {
-        // Un-highlight all selected cells
         clickedFlatIndices.forEach(i => {
             const cell = document.querySelector(`.maze-cell[data-index="${i}"]`);
-            if (cell) cell.classList.remove('selected');
+            if (cell) cell.classList.remove('selected', 'last-selected');
         });
         clickedFlatIndices = [];
         currentStep = 0;
@@ -1222,66 +1082,78 @@
     }
 
     // ═══════════════════════════════════════════════════════════
-    //  SVG PATH LINE
+    //  SVG PATH LINES
     // ═══════════════════════════════════════════════════════════
     function clearPathSVG() {
         const svg = document.getElementById('path-svg');
         if (svg) svg.innerHTML = '';
     }
 
-    function drawPathLine(fromFlatIndex, toFlatIndex) {
+    // FIX 3: remove just the last line segment (for undo)
+    function removeLastPathLine() {
+        const svg = document.getElementById('path-svg');
+        if (svg && svg.lastChild) svg.removeChild(svg.lastChild);
+    }
+
+    function drawPathLine(fromIdx, toIdx) {
         const svg = document.getElementById('path-svg');
         if (!svg) return;
-
-        const fromCell = document.querySelector(`.maze-cell[data-index="${fromFlatIndex}"]`);
-        const toCell   = document.querySelector(`.maze-cell[data-index="${toFlatIndex}"]`);
+        const fromCell = document.querySelector(`.maze-cell[data-index="${fromIdx}"]`);
+        const toCell   = document.querySelector(`.maze-cell[data-index="${toIdx}"]`);
         if (!fromCell || !toCell) return;
 
         const svgRect  = svg.getBoundingClientRect();
         const fromRect = fromCell.getBoundingClientRect();
         const toRect   = toCell.getBoundingClientRect();
 
-        const x1 = fromRect.left - svgRect.left + fromRect.width  / 2;
-        const y1 = fromRect.top  - svgRect.top  + fromRect.height / 2;
-        const x2 = toRect.left   - svgRect.left + toRect.width    / 2;
-        const y2 = toRect.top    - svgRect.top  + toRect.height   / 2;
-
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x1);
-        line.setAttribute('y1', y1);
-        line.setAttribute('x2', x2);
-        line.setAttribute('y2', y2);
+        line.setAttribute('x1', fromRect.left - svgRect.left + fromRect.width  / 2);
+        line.setAttribute('y1', fromRect.top  - svgRect.top  + fromRect.height / 2);
+        line.setAttribute('x2', toRect.left   - svgRect.left + toRect.width    / 2);
+        line.setAttribute('y2', toRect.top    - svgRect.top  + toRect.height   / 2);
         svg.appendChild(line);
     }
 
     // ═══════════════════════════════════════════════════════════
-    //  PEEK SENTENCE
+    //  PEEK  (FIX 5: one use per sentence, then button disabled)
     // ═══════════════════════════════════════════════════════════
     function peekSentence() {
-        if (!currentSentence) return;
+        if (!currentSentence || peekUsed) return;
 
-        const panel = document.getElementById('peek-panel');
+        peekUsed = true;
+        disablePeekButton();
+
         const fullSentence = wordList.join('') + (currentSentence.punctuation || '');
-        panel.textContent = fullSentence;
-        panel.style.display = 'block';
+        const panel = document.getElementById('peek-panel');
+        panel.textContent    = fullSentence;
+        panel.style.display  = 'block';
 
-        // Reset auto-hide timer
         if (peekTimer) clearTimeout(peekTimer);
         peekTimer = setTimeout(hidePeek, 5000);
     }
 
+    function disablePeekButton() {
+        const btn = document.getElementById('btn-peek');
+        btn.disabled = true;
+        document.getElementById('btn-peek-text').textContent = t.peekUsed;
+    }
+
+    function resetPeekButton() {
+        const btn = document.getElementById('btn-peek');
+        btn.disabled = false;
+        document.getElementById('btn-peek-text').textContent = t.peekBtn;
+    }
+
     function hidePeek() {
         if (peekTimer) { clearTimeout(peekTimer); peekTimer = null; }
-        const panel = document.getElementById('peek-panel');
-        if (panel) panel.style.display = 'none';
+        document.getElementById('peek-panel').style.display = 'none';
     }
 
     // ═══════════════════════════════════════════════════════════
     //  LOADING / ERROR UI
     // ═══════════════════════════════════════════════════════════
     function hideLoading() {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.style.display = 'none';
+        document.getElementById('loading-overlay').style.display = 'none';
     }
 
     function showError(msg) {
@@ -1289,6 +1161,7 @@
         const spinner = overlay.querySelector('.spinner');
         if (spinner) spinner.style.display = 'none';
         document.getElementById('loading-msg').textContent = msg;
+        overlay.style.display = 'flex';
     }
 
     </script>
