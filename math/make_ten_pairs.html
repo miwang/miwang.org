@@ -444,7 +444,9 @@ function nextQuestion() {
     eqGiven.textContent = currentGiven;
     eqBlank.textContent = '?';
     eqBlank.style.animation = 'none';
-    void eqBlank.offsetWidth; // reflow
+    // Force a reflow so removing + re-adding the animation class has effect
+    // eslint-disable-next-line no-unused-expressions
+    eqBlank.offsetWidth;
     eqBlank.style.animation = '';
 
     buildTenFrame(currentGiven);
