@@ -41,7 +41,7 @@
         .uploaded-img  { width: 100%; height: 100%; object-fit: cover; }
         .color-block   { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 55px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); font-family: "KaiTi-CJK", "LXGW WenKai Lite", sans-serif !important; }
         .bg-red    { background: linear-gradient(135deg, #ff7675, #d63031); }
-        .bg-green  { background: linear-gradient(135deg, #55efc4, #00b894); }
+        .bg-green  { background: linear-gradient(135deg, #7bed9f, #2e7d32); }
         .bg-yellow { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #d35400; }
         .bg-blue   { background: linear-gradient(135deg, #74b9ff, #0984e3); }
 
@@ -55,7 +55,7 @@
         .math-icon { width: 70px; flex-shrink: 0; font-size: min(8vh, 60px); text-align: center; display: flex; align-items: center; justify-content: center; }
         .math-list { flex: 1; display: flex; align-items: center; gap: 10px; overflow-x: auto; overflow-y: hidden; justify-content: flex-start; padding-left: 5px; scrollbar-width: none; min-width: 0; }
         .math-list::-webkit-scrollbar { display: none; }
-        .icon-cir { color: #d63031; } .icon-tri { color: #00b894; } .icon-squ { color: #0984e3; }
+        .icon-cir { color: #d63031; } .icon-tri { color: #2e7d32; } .icon-squ { color: #0984e3; }
 
         .avatar-circle { width: min(20vh, 155px); height: min(20vh, 155px); border-radius: 50%; background: white; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; flex-shrink: 0; cursor: grab; transform: translate3d(0,0,0); }
         .math-list .avatar-circle { width: min(15vh, 115px); height: min(15vh, 115px); border-width: 3px; }
@@ -94,6 +94,7 @@ let data = { students: [], step: 0, lastDateStr: "暂无记录" };
 let sanityStudents = [];
 let cloudBgs = {}; // 🌟 存储云端拉取的背景图
 let academicYearStr = "";
+const MATH_SUBGROUP_COUNT = 3;
 
 function commit() {
     _localVer++; data._sid = SESSION_ID; data._ver = _localVer;
@@ -221,8 +222,33 @@ function syncRoster() {
     }
 }
 
-function rotateNext() { data.step++; updateDate(); commit(); }
-function rotatePrev() { if (data.step > 0) { data.step--; updateDate(); commit(); } }
+function getVisualZoneForStep(student, step) {
+    return (student.groupIndex + step) % 4;
+}
+
+function cycleMathSubGroup(student, delta) {
+    const current = Number.isInteger(student.mathSubGroup) ? student.mathSubGroup : 0;
+    student.mathSubGroup = (current + delta + MATH_SUBGROUP_COUNT) % MATH_SUBGROUP_COUNT;
+}
+
+function rotateNext() {
+    data.students.forEach(student => {
+        if (getVisualZoneForStep(student, data.step) === 0) cycleMathSubGroup(student, 1);
+    });
+    data.step++;
+    updateDate();
+    commit();
+}
+
+function rotatePrev() {
+    if (data.step <= 0) return;
+    data.step--;
+    data.students.forEach(student => {
+        if (getVisualZoneForStep(student, data.step) === 0) cycleMathSubGroup(student, -1);
+    });
+    updateDate();
+    commit();
+}
 function updateDate() {
     const now = new Date(), d = ["日","一","二","三","四","五","六"];
     data.lastDateStr = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 星期${d[now.getDay()]}`;
