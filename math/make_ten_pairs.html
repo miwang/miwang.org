@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>凑十法 / Make Ten Pairs</title>
+    <script src="../js/config.js"></script>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            background: #e8f4f8;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        body { padding-top: 60px; }
+
+        /* ── Page wrapper ── */
+        .page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: calc(100vh - 60px);
+            padding: 24px 16px 32px;
+            gap: 20px;
+        }
+
+        /* ── Progress bar ── */
+        .progress-wrap {
+            width: min(480px, 100%);
+            background: #fff;
+            border-radius: 999px;
+            height: 14px;
+            border: 2px solid #b2d8e8;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #44b8a0, #2ecc71);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+        .progress-label {
+            font-size: 0.88rem;
+            color: #4d7a8a;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 6px 24px rgba(30,80,100,0.10);
+            padding: 28px 24px 24px;
+            width: min(500px, 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* ── Question label ── */
+        .question-label {
+            font-size: clamp(1rem, 2.5vw, 1.15rem);
+            color: #3a6070;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* ── Ten-frame ── */
+        .ten-frame {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 6px;
+            width: min(300px, 80%);
+        }
+
+        .dot-cell {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 2.5px solid #b2c8d8;
+            background: #f5fbfd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .dot-cell.filled {
+            background: #f4789d;
+            border-color: #d0367c;
+        }
+
+        .dot-cell.filled::after {
+            content: '●';
+            color: #fff;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            line-height: 1;
+        }
+
+        /* ── Equation display ── */
+        .equation {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 700;
+            font-family: "LXGW WenKai Lite", sans-serif;
+            color: #1a3040;
+        }
+
+        .eq-given {
+            color: #d0367c;
+            min-width: 1.2em;
+            text-align: center;
+        }
+
+        .eq-blank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.4em;
+            height: 1.1em;
+            border: 3px dashed #4a9eb5;
+            border-radius: 10px;
+            color: #4a9eb5;
+            font-size: inherit;
+            background: #eaf6fb;
+            animation: pulse-blank 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-blank {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74,158,181,0.3); }
+            50%       { box-shadow: 0 0 0 6px rgba(74,158,181,0); }
+        }
+
+        /* ── Choices ── */
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .choice-btn {
+            border: none;
+            border-radius: 16px;
+            padding: 16px 6px;
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 700;
+            font-family: "LXGW WenKai Lite", sans-serif;
+            color: #1a3040;
+            background: #eaf2f8;
+            border: 3px solid #b2d0e8;
+            cursor: pointer;
+            transition: transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-3px) scale(1.07);
+            background: #d4ebf7;
+            border-color: #4a9eb5;
+            box-shadow: 0 6px 18px rgba(74,158,181,0.25);
+        }
+
+        .choice-btn.correct {
+            background: #c8f5d8;
+            border-color: #2ecc71;
+            color: #1a5030;
+            animation: pop-correct 0.4s ease;
+        }
+
+        .choice-btn.wrong {
+            background: #ffe0e0;
+            border-color: #e74c3c;
+            animation: shake-btn 0.4s ease;
+        }
+
+        @keyframes pop-correct {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.18); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake-btn {
+            0%,100% { transform: translateX(0); }
+            25%     { transform: translateX(-8px); }
+            75%     { transform: translateX(8px); }
+        }
+
+        /* ── Found pairs strip ── */
+        .found-section {
+            width: min(500px, 100%);
+        }
+
+        .found-label {
+            font-size: 0.92rem;
+            color: #4d7a8a;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .found-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .found-chip {
+            background: #c8f5d8;
+            border: 2px solid #2ecc71;
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a4030;
+            font-family: "LXGW WenKai Lite", sans-serif;
+            animation: chip-pop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes chip-pop {
+            from { transform: scale(0.4); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        /* ── Congrats modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 30, 50, 0.55);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 24px;
+            padding: 40px 32px 32px;
+            text-align: center;
+            max-width: 360px;
+            width: calc(100% - 40px);
+            box-shadow: 0 12px 40px rgba(20,60,80,0.25);
+        }
+
+        .modal-emoji { font-size: 3rem; margin-bottom: 12px; }
+
+        .modal-msg {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: #1a3040;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .modal-restart-btn {
+            border: none;
+            border-radius: 999px;
+            padding: 14px 36px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #44b8a0, #2ecc71);
+            cursor: pointer;
+            font-family: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 14px rgba(46,204,113,0.4);
+        }
+
+        .modal-restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46,204,113,0.45);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .page { padding: 16px 12px 24px; gap: 16px; }
+            .card { padding: 20px 16px; gap: 16px; }
+            .choices { gap: 8px; }
+            .choice-btn { padding: 12px 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <!-- Progress -->
+    <div style="width: min(500px, 100%);">
+        <div class="progress-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-label" id="progress-label"></div>
+    </div>
+
+    <!-- Game card -->
+    <div class="card">
+        <p class="question-label" id="question-label"></p>
+
+        <!-- Ten-frame -->
+        <div class="ten-frame" id="ten-frame" aria-hidden="true"></div>
+
+        <!-- Equation: given + ___ = 10 -->
+        <div class="equation">
+            <span class="eq-given" id="eq-given"></span>
+            <span>+</span>
+            <span class="eq-blank" id="eq-blank">?</span>
+            <span>= 10</span>
+        </div>
+
+        <!-- Answer choices -->
+        <div class="choices" id="choices"></div>
+    </div>
+
+    <!-- Found pairs -->
+    <div class="found-section" id="found-section" style="display:none">
+        <div class="found-label" id="found-label"></div>
+        <div class="found-list" id="found-list"></div>
+    </div>
+</div>
+
+<!-- Congrats modal -->
+<div class="modal-overlay" id="modal" style="display:none">
+    <div class="modal-box">
+        <div class="modal-emoji">🎉</div>
+        <div class="modal-msg" id="modal-msg"></div>
+        <button class="modal-restart-btn" id="modal-restart-btn"></button>
+    </div>
+</div>
+
+<script>
+/* ── i18n ── */
+const I18N = {
+    zh: {
+        pageTitle: '凑十法',
+        navTitle: '凑十法',
+        question: (n) => `数字 ${n} 需要几才能凑成 10？`,
+        progressLabel: (found, total) => `已找到 ${found} / ${total} 个`,
+        foundLabel: '已找到的对子 🎈',
+        modalMsg: '🌟 太棒了！你找到了全部的凑十对子！',
+        modalRestart: '再玩一次',
+    },
+    en: {
+        pageTitle: 'Make Ten Pairs',
+        navTitle: 'Make Ten Pairs',
+        question: (n) => `What number goes with ${n} to make 10?`,
+        progressLabel: (found, total) => `${found} of ${total} pairs found`,
+        foundLabel: 'Pairs found 🎈',
+        modalMsg: '🌟 Amazing! You found all the number pairs that make 10!',
+        modalRestart: 'Play Again',
+    }
+};
+
+/* ── Setup ── */
+const lang = MECC_CONFIG.getLang();
+const T = I18N[lang];
+
+document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+document.title = T.pageTitle;
+MECC_CONFIG.renderGlobalNav(T.navTitle);
+
+/* ── State ── */
+// All pairs 0+10 … 10+0
+const ALL_PAIRS = Array.from({length: 11}, (_, i) => i); // given numbers 0..10
+let queue = [];           // shuffled list of given numbers yet to be asked
+let foundSet = new Set(); // set of found "given" numbers
+let currentGiven = null;
+let locked = false;
+
+const TOTAL = ALL_PAIRS.length; // 11
+
+/* ── DOM refs ── */
+const progressBar    = document.getElementById('progress-bar');
+const progressLabel  = document.getElementById('progress-label');
+const tenFrame       = document.getElementById('ten-frame');
+const questionLabel  = document.getElementById('question-label');
+const eqGiven        = document.getElementById('eq-given');
+const eqBlank        = document.getElementById('eq-blank');
+const choicesEl      = document.getElementById('choices');
+const foundSection   = document.getElementById('found-section');
+const foundLabel     = document.getElementById('found-label');
+const foundList      = document.getElementById('found-list');
+const modal          = document.getElementById('modal');
+const modalMsg       = document.getElementById('modal-msg');
+const modalRestartBtn = document.getElementById('modal-restart-btn');
+
+foundLabel.textContent = T.foundLabel;
+modalMsg.textContent   = T.modalMsg;
+modalRestartBtn.textContent = T.modalRestart;
+
+/* ── Ten-frame builder ── */
+function buildTenFrame(n) {
+    tenFrame.innerHTML = '';
+    for (let i = 0; i < 10; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'dot-cell' + (i < n ? ' filled' : '');
+        tenFrame.appendChild(cell);
+    }
+}
+
+/* ── Progress ── */
+function updateProgress() {
+    const pct = (foundSet.size / TOTAL) * 100;
+    progressBar.style.width = pct + '%';
+    progressLabel.textContent = T.progressLabel(foundSet.size, TOTAL);
+}
+
+/* ── Choices ── */
+function makeChoices(correct) {
+    // 3 wrong distractors, shuffled with correct
+    const pool = Array.from({length: 11}, (_, i) => i).filter(n => n !== correct);
+    // pick 3 random distractors
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const distractors = pool.slice(0, 3);
+    const all = [...distractors, correct].sort(() => Math.random() - 0.5);
+    return all;
+}
+
+/* ── Next question ── */
+function nextQuestion() {
+    if (queue.length === 0) {
+        showCongrats();
+        return;
+    }
+    locked = false;
+    currentGiven = queue.shift();
+    const correct = 10 - currentGiven;
+
+    questionLabel.textContent = T.question(currentGiven);
+    eqGiven.textContent = currentGiven;
+    eqBlank.textContent = '?';
+    eqBlank.style.animation = 'none';
+    void eqBlank.offsetWidth; // reflow
+    eqBlank.style.animation = '';
+
+    buildTenFrame(currentGiven);
+
+    // Build choices
+    choicesEl.innerHTML = '';
+    const choices = makeChoices(correct);
+    choices.forEach(num => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = num;
+        btn.setAttribute('aria-label', String(num));
+        btn.addEventListener('click', () => handleChoice(btn, num, correct));
+        // Touch devices: prevent double-fire
+        btn.addEventListener('touchend', (e) => { e.preventDefault(); handleChoice(btn, num, correct); });
+        choicesEl.appendChild(btn);
+    });
+}
+
+/* ── Handle answer ── */
+function handleChoice(btn, chosen, correct) {
+    if (locked) return;
+    MECC_AUDIO.init();
+
+    if (chosen === correct) {
+        locked = true;
+        btn.classList.add('correct');
+        eqBlank.textContent = correct;
+        eqBlank.style.animation = 'none';
+        eqBlank.style.color = '#2ecc71';
+        eqBlank.style.borderColor = '#2ecc71';
+        eqBlank.style.background = '#c8f5d8';
+
+        MECC_AUDIO.playSfx('tada');
+        foundSet.add(currentGiven);
+        updateProgress();
+        addFoundChip(currentGiven, correct);
+
+        setTimeout(() => {
+            nextQuestion();
+        }, 900);
+    } else {
+        btn.classList.add('wrong');
+        MECC_AUDIO.playSfx('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 450);
+    }
+}
+
+/* ── Found chip ── */
+function addFoundChip(given, partner) {
+    foundSection.style.display = 'block';
+    const chip = document.createElement('div');
+    chip.className = 'found-chip';
+    chip.textContent = `${given} + ${partner} = 10`;
+    foundList.appendChild(chip);
+}
+
+/* ── Congrats ── */
+function showCongrats() {
+    modal.style.display = 'flex';
+    if (typeof confetti === 'function') {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+    }
+    MECC_AUDIO.playSfx('tada');
+}
+
+/* ── Restart ── */
+function startGame() {
+    foundSet.clear();
+    foundList.innerHTML = '';
+    foundSection.style.display = 'none';
+    modal.style.display = 'none';
+
+    // Shuffle all 11 given numbers
+    queue = [...ALL_PAIRS].sort(() => Math.random() - 0.5);
+    updateProgress();
+    nextQuestion();
+}
+
+modalRestartBtn.addEventListener('click', startGame);
+
+/* ── Boot ── */
+updateProgress();
+startGame();
+</script>
+</body>
+</html>
