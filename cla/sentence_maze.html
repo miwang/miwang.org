@@ -719,7 +719,7 @@
                 const res = await fetchWithTimeout(API_URL, {}, FETCH_TIMEOUT_MS);
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const { result } = await res.json();
-                return (result || []).map(normalizeSentence).filter(s => s && s.words);
+                return (result || []).map(normalizeSentence).filter(Boolean);
             } catch (err) {
                 lastError = err;
                 if (attempt < FETCH_RETRY_COUNT) await wait(300 * (attempt + 1));
@@ -732,7 +732,7 @@
         const res = await fetchWithTimeout(FALLBACK_SENTENCE_URL, {}, FETCH_TIMEOUT_MS);
         if (!res.ok) throw new Error('Fallback HTTP ' + res.status);
         const data = await res.json();
-        return (data?.sentence_list || []).map(normalizeSentence).filter(s => s && s.words);
+        return (data?.sentence_list || []).map(normalizeSentence).filter(Boolean);
     }
 
     function normalizeSentence(item) {

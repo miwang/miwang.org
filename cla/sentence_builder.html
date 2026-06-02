@@ -592,7 +592,11 @@
             videoPlayer.style.display = 'block';
             document.getElementById('main-image').style.backgroundImage = 'none';
             document.getElementById('main-image').style.backgroundColor = '#fff';
-            try { await videoPlayer.play(); } catch (_) {}
+            try {
+                await videoPlayer.play();
+            } catch (err) {
+                console.warn('Sentence video autoplay blocked:', err);
+            }
         }
 
         function closePlay() { 
