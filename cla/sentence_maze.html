@@ -344,6 +344,18 @@
             animation: spin 0.8s linear infinite;
         }
 
+        .retry-btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-family: var(--kaiti);
+            font-size: 1rem;
+            color: white;
+            background: var(--main-teal);
+            cursor: pointer;
+            display: none;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 600px) {
@@ -436,6 +448,7 @@
     <div id="loading-overlay">
         <div class="spinner"></div>
         <span id="loading-msg">加载句子中…</span>
+        <button id="retry-load-btn" class="retry-btn" onclick="retryLoadSentences()">重试</button>
     </div>
 
     <div id="main-layout">
@@ -528,8 +541,11 @@
     // ═══════════════════════════════════════════════════════════
     const PROJECT_ID = 'sow12t1i';
     const DATASET    = 'production';
-    const QUERY      = encodeURIComponent('*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url}');
+    const QUERY      = encodeURIComponent('*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url, "video": video.asset->url}');
     const API_URL    = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
+    const FALLBACK_SENTENCE_URL = '../data/sentences.json';
+    const FETCH_TIMEOUT_MS = 12000; // Give Sanity queries enough time on mobile networks to avoid false failures.
+    const FETCH_RETRY_COUNT = 2;
 
     const MAX_GRID_ROWS    = 5;
     const MAX_GRID_COLS    = 5;
@@ -564,6 +580,8 @@
             tagLabel:    '标签：',
             errNoData:   '暂时没有句子数据，请检查 Sanity CMS。',
             errLoadFail: '加载失败，请检查网络后刷新。',
+            retryLoad:   '重试',
+            retrying:    '重新加载中…',
             errNoFit:    '没有找到适合迷宫尺寸限制（最大5×5=25字）的句子。',
             errTooLong:  '当前句子字数超出迷宫尺寸限制（最大5×5=25字），请换一题。',
             errMazeFail: '迷宫生成失败，正在换一题…',
@@ -584,6 +602,8 @@
             tagLabel:    'Tag: ',
             errNoData:   'No sentence data. Please check Sanity CMS.',
             errLoadFail: 'Failed to load. Please check network and refresh.',
+            retryLoad:   'Retry',
+            retrying:    'Reloading…',
             errNoFit:    'No sentence fits the maze size limit (max 5×5=25 chars).',
             errTooLong:  'Current sentence exceeds maze size limit (max 5×5=25 chars), please try another.',
             errMazeFail: 'Maze generation failed, trying another…',
@@ -609,6 +629,7 @@
     let peekTimer          = null;
     let hintResetTimer     = null;
     let peekUsed           = false; // FIX 5: one peek per sentence
+    let isLoadingSentences = false;
 
     // ═══════════════════════════════════════════════════════════
     //  INIT
@@ -628,6 +649,7 @@
         document.getElementById('btn-shuffle-text').textContent    = t.shuffleBtn;
         document.getElementById('score-title').textContent         = t.scoreTitle;
         document.getElementById('score-unit').textContent          = t.scoreUnit;
+        document.getElementById('retry-load-btn').textContent      = t.retryLoad;
 
         const tag = new URLSearchParams(window.location.search).get('tag');
         if (tag) {
@@ -661,11 +683,13 @@
     }
 
     async function loadAllSentences() {
+        if (isLoadingSentences) return;
+        isLoadingSentences = true;
         try {
-            const res = await fetch(API_URL);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const { result } = await res.json();
-            allSentences = (result || []).filter(s => s && s.words && s.words.trim());
+            allSentences = await fetchSentencesFromSanity();
+            if (!allSentences.length) {
+                allSentences = await fetchFallbackSentences();
+            }
 
             const tag = new URLSearchParams(window.location.search).get('tag');
             if (tag) {
@@ -682,7 +706,68 @@
             loadNextSentence();
         } catch (e) {
             console.error('Sanity fetch error:', e);
-            showError(t.errLoadFail);
+            showError(t.errLoadFail, { canRetry: true });
+        } finally {
+            isLoadingSentences = false;
+        }
+    }
+
+    async function fetchSentencesFromSanity() {
+        let lastError = null;
+        for (let attempt = 0; attempt <= FETCH_RETRY_COUNT; attempt++) {
+            try {
+                const res = await fetchWithTimeout(API_URL, {}, FETCH_TIMEOUT_MS);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const { result } = await res.json();
+                return (result || []).map(normalizeSentence).filter(Boolean);
+            } catch (err) {
+                lastError = err;
+                if (attempt < FETCH_RETRY_COUNT) await wait(300 * (attempt + 1));
+            }
+        }
+        throw lastError || new Error('Failed to load sentence data from Sanity.');
+    }
+
+    async function fetchFallbackSentences() {
+        const res = await fetchWithTimeout(FALLBACK_SENTENCE_URL, {}, FETCH_TIMEOUT_MS);
+        if (!res.ok) throw new Error('Fallback HTTP ' + res.status);
+        const data = await res.json();
+        return (data?.sentence_list || []).map(normalizeSentence).filter(Boolean);
+    }
+
+    function normalizeSentence(item) {
+        if (!item || typeof item.words !== 'string') return null;
+        const words = item.words.trim();
+        if (!words) return null;
+        const rawTags = item.tags;
+        const tags = Array.isArray(rawTags)
+            ? rawTags
+            : (typeof rawTags === 'string' ? rawTags.split(/[,，、\s]+/).map(tag => tag.trim()).filter(Boolean) : []);
+        return {
+            words,
+            punctuation: item.punctuation || '',
+            image: item.image || '',
+            video: item.video || '',
+            tags,
+        };
+    }
+
+    function wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } catch (err) {
+            if (err && err.name === 'AbortError') {
+                throw new Error(`Request timed out after ${timeoutMs}ms`);
+            }
+            throw err;
+        } finally {
+            clearTimeout(timer);
         }
     }
 
@@ -1154,14 +1239,30 @@
     // ═══════════════════════════════════════════════════════════
     function hideLoading() {
         document.getElementById('loading-overlay').style.display = 'none';
+        const retryBtn = document.getElementById('retry-load-btn');
+        if (retryBtn) retryBtn.style.display = 'none';
     }
 
-    function showError(msg) {
+    function showError(msg, options = {}) {
+        const { canRetry = false } = options;
         const overlay = document.getElementById('loading-overlay');
         const spinner = overlay.querySelector('.spinner');
+        const retryBtn = document.getElementById('retry-load-btn');
         if (spinner) spinner.style.display = 'none';
+        if (retryBtn) retryBtn.style.display = canRetry ? 'inline-flex' : 'none';
         document.getElementById('loading-msg').textContent = msg;
         overlay.style.display = 'flex';
+    }
+
+    function retryLoadSentences() {
+        if (isLoadingSentences) return;
+        const overlay = document.getElementById('loading-overlay');
+        const spinner = overlay.querySelector('.spinner');
+        const retryBtn = document.getElementById('retry-load-btn');
+        if (spinner) spinner.style.display = 'block';
+        if (retryBtn) retryBtn.style.display = 'none';
+        document.getElementById('loading-msg').textContent = t.retrying;
+        loadAllSentences();
     }
 
     </script>

@@ -21,6 +21,14 @@ export const sentence = defineType({
       type: 'image',
     }),
     defineField({
+      name: 'video',
+      title: '完成后播放视频（MP4）',
+      type: 'file',
+      options: {
+        accept: 'video/mp4',
+      },
+    }),
+    defineField({
       name: 'tags',
       title: '标签分类',
       type: 'string',

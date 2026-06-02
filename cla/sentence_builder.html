@@ -90,6 +90,17 @@
             flex: 2.2 1 500px; max-width: 1200px; 
             background: white no-repeat center center / contain; 
             border: 5px solid var(--main-teal); border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            position: relative;
+            overflow: hidden;
+        }
+        .sentence-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #fff;
+            display: none;
         }
         .drop-zone-wrapper { flex: 0 0 auto; width: 100%; display: flex; justify-content: center; }
         .drop-zone {
@@ -206,7 +217,9 @@
         <div class="play-layout">
             <div class="desktop-top-row">
                 <div id="word-pool-left" class="side-pool"></div>
-                <div class="image-stage" id="main-image"></div>
+                <div class="image-stage" id="main-image">
+                    <video id="sentence-video" class="sentence-video" controls playsinline preload="metadata" aria-label="句子完成后视频 / Sentence completion video" title="句子完成后视频 / Sentence completion video"></video>
+                </div>
                 <div id="word-pool-right" class="side-pool"></div>
             </div>
             <div class="drop-zone-wrapper">
@@ -239,7 +252,7 @@
         const PROJECT_ID = 'sow12t1i';
         const DATASET = 'production';
         // GROQ 查询：提取 type 为 sentence 的文档，并把 image 引用转化为直链
-        const QUERY = encodeURIComponent('*[_type == "sentence"]{words, punctuation, "image": image.asset->url, tags}');
+        const QUERY = encodeURIComponent('*[_type == "sentence"]{words, punctuation, "image": image.asset->url, "video": video.asset->url, tags}');
         const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
         const MOBILE_BREAKPOINT = 768;
 
@@ -249,6 +262,7 @@
         const rightPool = document.getElementById('word-pool-right');
         const mobilePool = document.getElementById('word-pool-mobile');
         const zone = document.getElementById('drop-zone');
+        const videoPlayer = document.getElementById('sentence-video');
         let currentLevelIdx = 0, currentData = null;
         let activeThemeTag = null, activeKeyword = null;
         
@@ -318,6 +332,7 @@
                         words: item.words ? item.words.split(/[,，、\s]+/).map(w => w.trim()).filter(w => w) : [],
                         punctuation: item.punctuation || "", 
                         image: item.image || "", // 从 Sanity 取到的高清大图 URL
+                        video: item.video || "",
                         tags: item.tags ? item.tags.split(/[,，、\s]+/).map(t => t.trim()).filter(t => t) : []
                     }));
                     initGallery();
@@ -409,6 +424,7 @@
             document.body.style.overflow = 'hidden';
             zone.innerHTML = ''; leftPool.innerHTML = ''; rightPool.innerHTML = ''; mobilePool.innerHTML = '';
             zone.dataset.locked = ''; document.getElementById('success-controls').style.visibility = 'hidden';
+            stopSentenceVideo();
             
             let imgPath = currentData.image;
             // 兼容可能残留的相对路径
@@ -525,6 +541,7 @@
             if (current === currentData.words.join('')) {
                 zone.dataset.locked = '1'; document.getElementById('success-controls').style.visibility = 'visible';
                 if (typeof MECC_AUDIO !== 'undefined' && MECC_AUDIO.playSfx) MECC_AUDIO.playSfx('tada'); 
+                playSentenceVideo();
                 autoSizeZone(); 
                 const punc = currentData.punctuation || '';
                 if (punc && !zone.querySelector('.auto-punctuation')) {
@@ -556,7 +573,34 @@
             playUnifiedAudio(fullText); 
         }
 
+        function stopSentenceVideo() {
+            if (!videoPlayer) return;
+            videoPlayer.pause();
+            videoPlayer.removeAttribute('src');
+            videoPlayer.load();
+            videoPlayer.style.display = 'none';
+            document.getElementById('main-image').style.backgroundColor = '';
+        }
+
+        async function playSentenceVideo() {
+            if (!videoPlayer) return;
+            const rawVideo = currentData && currentData.video ? currentData.video : '';
+            if (!rawVideo) return;
+            let videoPath = rawVideo;
+            if (!videoPath.startsWith('/') && !videoPath.startsWith('http')) videoPath = '../' + videoPath;
+            videoPlayer.src = videoPath;
+            videoPlayer.style.display = 'block';
+            document.getElementById('main-image').style.backgroundImage = 'none';
+            document.getElementById('main-image').style.backgroundColor = '#fff';
+            try {
+                await videoPlayer.play();
+            } catch (err) {
+                console.warn('Sentence video autoplay blocked:', err);
+            }
+        }
+
         function closePlay() { 
+            stopSentenceVideo();
             listView.style.display = 'flex'; 
             playView.style.display = 'none'; 
             document.body.style.overflow = ''; 
