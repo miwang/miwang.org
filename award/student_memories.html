@@ -88,7 +88,7 @@
 
     function pickEnglishFirstName(stu){
       var raw = String(stu.nameEn || stu.name || '').trim();
-      var match = raw.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/);
+      var match = raw.match(/[A-Za-z]+(?:['-][A-Za-z]+)?/);
       return match ? match[0] : '—';
     }
 
