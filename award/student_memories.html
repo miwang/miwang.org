@@ -82,9 +82,14 @@
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    function pickName(stu){
-      if (LANG === 'en') return stu.nameEn || stu.nameZh || stu.name || '—';
+    function pickPrimaryName(stu){
       return stu.nameZh || stu.nameEn || stu.name || '—';
+    }
+
+    function pickEnglishFirstName(stu){
+      var raw = String(stu.nameEn || stu.name || '').trim();
+      var match = raw.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/);
+      return match ? match[0] : '—';
     }
 
     function groupBy(arr, key){
@@ -133,7 +138,7 @@
     }
 
     function pickAvatarMark(stu){
-      var n = String(pickName(stu) || '').trim();
+      var n = String(pickPrimaryName(stu) || '').trim();
       return n ? n.charAt(0).toUpperCase() : '?';
     }
 
@@ -178,12 +183,12 @@
             byClass[cls].forEach(function(stu){
               html += '<article class="avatar-card">';
               if(stu.photoUrl){
-                html += '<img class="avatar" src="' + escapeHtml(stu.photoUrl) + '" alt="' + escapeHtml(pickName(stu)) + '" loading="lazy" />';
+                html += '<img class="avatar" src="' + escapeHtml(stu.photoUrl) + '" alt="' + escapeHtml(pickPrimaryName(stu)) + '" loading="lazy" />';
               }else{
-                html += '<div class="avatar avatar-fallback" aria-label="' + escapeHtml(pickName(stu)) + '">' + escapeHtml(pickAvatarMark(stu)) + '</div>';
+                html += '<div class="avatar avatar-fallback" aria-label="' + escapeHtml(pickPrimaryName(stu)) + '">' + escapeHtml(pickAvatarMark(stu)) + '</div>';
               }
-              html += '<div class="name">' + escapeHtml(pickName(stu)) + '</div>';
-              html += '<div class="meta">' + escapeHtml(gradeLabel) + '</div>';
+              html += '<div class="name">' + escapeHtml(pickPrimaryName(stu)) + '</div>';
+              html += '<div class="meta font-en">' + escapeHtml(pickEnglishFirstName(stu)) + '</div>';
               html += '</article>';
             });
             html += '</div>';
