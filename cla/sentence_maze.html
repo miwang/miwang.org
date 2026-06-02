@@ -544,7 +544,7 @@
     const QUERY      = encodeURIComponent('*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url, "video": video.asset->url}');
     const API_URL    = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${QUERY}`;
     const FALLBACK_SENTENCE_URL = '../data/sentences.json';
-    const FETCH_TIMEOUT_MS = 12000;
+    const FETCH_TIMEOUT_MS = 12000; // 移动网络下给 Sanity 查询留足时间，避免误判为失败
     const FETCH_RETRY_COUNT = 2;
 
     const MAX_GRID_ROWS    = 5;
