@@ -107,6 +107,36 @@
       padding: 0 24px 80px;
     }
 
+    #teacher-admin-entry {
+      max-width: 1180px;
+      margin: 0 auto 16px;
+      padding: 0 24px;
+      display: none;
+      justify-content: flex-end;
+    }
+    #teacher-admin-entry.show { display: flex; }
+    .hof-admin-btn {
+      border: 1px solid #d8e7e7;
+      background: #fff;
+      color: #3a6a6b;
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-zh);
+      font-size: .88rem;
+      font-weight: bold;
+      box-shadow: 0 4px 14px rgba(89,133,134,.12);
+      transition: all .2s ease;
+    }
+    .hof-admin-btn:hover {
+      transform: translateY(-1px);
+      border-color: #bfd9d9;
+      box-shadow: 0 8px 18px rgba(89,133,134,.18);
+    }
+
     @keyframes cardIn {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -838,6 +868,11 @@
   </div>
 
   <!-- 书本画廊（第一层） -->
+  <div id="teacher-admin-entry">
+    <button class="hof-admin-btn" type="button" onclick="openHallOfFameAdmin()">
+      🏆 荣誉殿堂管理 <span class="en">Admin</span>
+    </button>
+  </div>
   <div id="book-gallery"></div>
 
   <!-- 书内作品标题栏（第二层） -->
@@ -932,6 +967,10 @@
     let currentBookName = '';   /* 当前打开的书名 */
 
     const FALLBACK_BOOK_KEY = '其他';
+
+    function openHallOfFameAdmin() {
+      window.location.href = '../tools/hall_of_fame_admin.html';
+    }
 
     /* ─── 初始化 ─── */
     async function init() {
@@ -1234,6 +1273,9 @@
     /* ─── 入口 ─── */
     window.onload = () => {
       MECC_CONFIG.renderGlobalNav(pageTitle);
+      if (isTeacher) {
+        document.getElementById('teacher-admin-entry').classList.add('show');
+      }
       document.getElementById('author-role-label').innerText = authorLabel;
       init();
     };
