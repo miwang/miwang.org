@@ -80,7 +80,7 @@ function clean(value, max) {
 function normalizeName(name) {
   return clean(name, 160)
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim()
     .replace(/\s+/g, ' ')
 }
@@ -183,6 +183,10 @@ export async function onRequestPost(context) {
       : 'chinese_words'
 
     var normalizedName = normalizeName(award.studentName || '')
+    if (!normalizedName) {
+      unmatched.push(award.studentName || '(empty)')
+      continue
+    }
     var student = studentMap.get(normalizedName)
 
     // Partial match fallback
