@@ -436,7 +436,7 @@ function isHeaderLine(s) {
 }
 function looksLikeName(s) {
   return !isHeaderLine(s) &&
-    /^[A-Z][A-Za-z''\-]+(?:\s+[A-Z][A-Za-z''\-]+)+$/.test(s) && s.length < 80;
+    /^[\p{Lu}][\p{L}''\-]+(?:\s+[\p{Lu}][\p{L}''\-]+)+$/u.test(s) && s.length < 80;
 }
 function findNameInText(text) {
   var m = String(text || '').match(/Student:\s*([^\n]+)/);
