@@ -423,7 +423,7 @@ var SIGHT_WORDS_TOTAL = 50;
 var parsedStudents = [];
 
 function normalizeNameKey(s) {
-  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  return String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
 }
 function isHeaderLine(s) {
   var n = normalizeNameKey(s);

@@ -184,7 +184,7 @@ export async function onRequestPost(context) {
 
     var normalizedName = normalizeName(award.studentName || '')
     if (!normalizedName) {
-      unmatched.push(award.studentName)
+      unmatched.push(award.studentName || '(empty)')
       continue
     }
     var student = studentMap.get(normalizedName)
