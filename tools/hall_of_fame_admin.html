@@ -437,12 +437,12 @@ function isHeaderLine(s) {
 }
 function looksLikeName(s) {
   return !isHeaderLine(s) &&
-    /^[\p{Lu}][\p{L}''\-]+(?:\s+[\p{Lu}][\p{L}''\-]+)+$/u.test(s) && s.length < 80;
+    /^[\p{Lu}][\p{L}''\-]+(?:\s+[\p{Lu}][\p{L}''\-]*\.?)+$/u.test(s) && s.length < 80;
 }
 function extractLeadingName(raw) {
   var text = String(raw || '').replace(/\s+/g, ' ').trim();
   if (!text) return '';
-  var m = text.match(/^([\p{Lu}][\p{L}'’\-]+(?:\s+[\p{Lu}][\p{L}'’\-]+)+)\b/u);
+  var m = text.match(/^([\p{Lu}][\p{L}''\-]+(?:\s+[\p{Lu}][\p{L}''\-]*\.?)+)\b/u);
   if (!m) return '';
   var name = m[1].trim();
   return looksLikeName(name) ? name : '';
