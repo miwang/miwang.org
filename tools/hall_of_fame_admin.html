@@ -438,9 +438,17 @@ function looksLikeName(s) {
   return !isHeaderLine(s) &&
     /^[A-Z][A-Za-z''\-]+(?:\s+[A-Z][A-Za-z''\-]+)+$/.test(s) && s.length < 80;
 }
+function findNameInText(text) {
+  var m = String(text || '').match(/Student:\s*([^\n]+)/);
+  if (!m) return '';
+  var name = m[1].trim();
+  return looksLikeName(name) ? name : '';
+}
 function findStudentName(page1, page2) {
-  var m = page2.match(/Student:\s*([^\n]+)/);
-  if (m && looksLikeName(m[1].trim())) return m[1].trim();
+  var n1 = findNameInText(page1);
+  if (n1) return n1;
+  var n2 = findNameInText(page2);
+  if (n2) return n2;
   var lines = page1.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean);
   var idx = lines.findIndex(function(l){ return l === SIGHT_WORDS_TEST; });
   var search = idx > 0 ? lines.slice(0, idx) : lines.slice(0, 14);
@@ -463,16 +471,21 @@ function extractSightWords(text) {
            q3: q3 != null ? q3 : null, q4: q4 != null ? q4 : null, latest: latest };
 }
 function parsePages(pages) {
-  var students = [];
-  for (var i = 0; i < pages.length; i += 2) {
+  var byName = new Map();
+  for (var i = 0; i < pages.length; i++) {
     var p1 = pages[i] || '', p2 = pages[i+1] || '';
     var name = findStudentName(p1, p2);
     if (!name || isHeaderLine(name)) continue;
-    var chunk = p1 + '\n' + p2;
-    var sw = extractSightWords(chunk);
-    students.push({name: name, sw: sw});
+    var sw = extractSightWords(p1) || extractSightWords(p1 + '\n' + p2);
+    var key = normalized(name);
+    var prev = byName.get(key);
+    var prevScore = prev && prev.sw && isFinite(prev.sw.latest) ? prev.sw.latest : -1;
+    var currScore = sw && isFinite(sw.latest) ? sw.latest : -1;
+    if (!prev || currScore > prevScore) {
+      byName.set(key, {name: name, sw: sw});
+    }
   }
-  return students;
+  return Array.from(byName.values());
 }
 
 // ── Drag-and-drop setup ──────────────────────────────────────────────────────
