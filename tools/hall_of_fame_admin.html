@@ -422,11 +422,11 @@ var SIGHT_WORDS_TEST = 'Chinese Sight Words';
 var SIGHT_WORDS_TOTAL = 50;
 var parsedStudents = [];
 
-function normalized(s) {
+function normalizeNameKey(s) {
   return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 }
 function isHeaderLine(s) {
-  var n = normalized(s);
+  var n = normalizeNameKey(s);
   return !n || /^\d{1,2}\s+\d{1,2}\s+\d{4}$/.test(n) || /^\d+$/.test(n) ||
     n.includes('student detail report') || n.includes('subject') ||
     n.includes('teacher') || n.includes('class') || n.includes('student') ||
@@ -470,20 +470,33 @@ function extractSightWords(text) {
   return { baseline: b, q1: q1 != null ? q1 : null, q2: q2 != null ? q2 : null,
            q3: q3 != null ? q3 : null, q4: q4 != null ? q4 : null, latest: latest };
 }
+function hasValidSightWords(sw) {
+  return !!(sw && isFinite(sw.latest));
+}
 function parsePages(pages) {
   var byName = new Map();
   for (var i = 0; i < pages.length; i++) {
     var p1 = pages[i] || '', p2 = pages[i+1] || '';
-    var name = findStudentName(p1, p2);
+    var name = findStudentName(p1, '');
     if (!name || isHeaderLine(name)) continue;
-    var sw = extractSightWords(p1) || extractSightWords(p1 + '\n' + p2);
-    var key = normalized(name);
+    var sw = extractSightWords(p1);
+    var usedNextPage = false;
+    if (!hasValidSightWords(sw) && p2 && !findNameInText(p2)) {
+      var chunk = p1 + '\n' + p2;
+      var pairSw = extractSightWords(chunk);
+      if (hasValidSightWords(pairSw)) {
+        sw = pairSw;
+        usedNextPage = true;
+      }
+    }
+    var key = normalizeNameKey(name);
     var prev = byName.get(key);
     var prevScore = prev && prev.sw && isFinite(prev.sw.latest) ? prev.sw.latest : -1;
     var currScore = sw && isFinite(sw.latest) ? sw.latest : -1;
     if (!prev || currScore > prevScore) {
       byName.set(key, {name: name, sw: sw});
     }
+    if (usedNextPage) i++;
   }
   return Array.from(byName.values());
 }
