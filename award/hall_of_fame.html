@@ -207,6 +207,159 @@
       .ov-mecc{ font-size:14px; top:16.5%; right:60%; }
       .sparkle svg{ width:14px; height:14px; }
     }
+
+    /* ── 管理入口按钮（仅教师可见） ── */
+    .admin-entry-btn{
+      position:fixed; bottom:24px; right:24px; z-index:100;
+      background:var(--hof-green); color:#fff; border:none; border-radius:50%;
+      width:52px; height:52px; font-size:1.4rem; cursor:pointer;
+      box-shadow:0 4px 16px rgba(0,0,0,.2); transition:transform .2s, background .2s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .admin-entry-btn:hover{ transform:scale(1.1); background:var(--hof-gold); color:#153026; }
+
+    /* ── 管理面板 Login overlay ── */
+    #adminLoginOverlay{
+      position:fixed; inset:0; z-index:9999;
+      background:linear-gradient(135deg, var(--hof-green), #0f2718);
+      display:none; align-items:center; justify-content:center; padding:20px;
+    }
+    .admin-login-box{
+      background:#fff; border-radius:20px; padding:40px 36px;
+      width:100%; max-width:360px; text-align:center;
+      box-shadow:0 24px 60px rgba(0,0,0,.3);
+    }
+    .admin-login-icon{ font-size:3rem; margin-bottom:12px; }
+    .admin-login-title{ font-size:1.4rem; font-weight:bold; color:var(--hof-green); margin-bottom:4px; font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif; }
+    .admin-login-sub{ font-size:.85rem; color:#687386; margin-bottom:24px; font-family:"LXGW WenKai Lite",system-ui,sans-serif; }
+    .admin-login-input{
+      width:100%; padding:13px 16px; font-size:1.3rem; text-align:center;
+      letter-spacing:6px; border:2px solid #d9dee8; border-radius:10px;
+      outline:none; margin-bottom:14px; font-family:"LXGW WenKai Lite",system-ui,sans-serif; color:#172033;
+      transition:border-color .2s;
+    }
+    .admin-login-input:focus{ border-color:var(--hof-green); }
+    .admin-login-btn{
+      width:100%; padding:13px; font-size:1rem; font-weight:bold;
+      background:var(--hof-green); color:#fff; border:none; border-radius:10px;
+      cursor:pointer; transition:background .2s; font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
+    }
+    .admin-login-btn:hover{ background:#145028; }
+    .admin-login-err{ color:#dc2626; font-size:.85rem; margin-top:10px; min-height:20px; }
+    .admin-login-cancel{
+      margin-top:12px; background:none; border:none; color:#687386; font-size:.85rem;
+      cursor:pointer; text-decoration:underline; font-family:"LXGW WenKai Lite",system-ui,sans-serif;
+    }
+
+    /* ── 管理面板主体 ── */
+    #adminPanel{ display:none; }
+    .admin-panel-wrap{
+      max-width:1100px; margin:0 auto; padding:26px 20px 60px;
+    }
+    .admin-panel-header{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:18px; flex-wrap:wrap; gap:10px;
+    }
+    .admin-panel-title{
+      font-size:1.3rem; font-weight:bold; color:var(--hof-green);
+      font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
+    }
+    .admin-logout-btn{
+      background:transparent; border:1px solid #d9dee8; color:#687386;
+      padding:6px 14px; border-radius:8px; cursor:pointer; font-size:.82rem;
+      font-family:"LXGW WenKai Lite",system-ui,sans-serif; transition:all .2s;
+    }
+    .admin-logout-btn:hover{ background:#f1f5f9; color:#172033; }
+    .admin-panel{
+      background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(15,23,42,.10);
+      padding:22px; margin-bottom:18px;
+    }
+    .admin-panel .panel-title{
+      font-size:1.1rem; font-weight:bold; color:var(--hof-green);
+      margin-bottom:16px; display:flex; align-items:center; gap:8px;
+      font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
+    }
+    .admin-month-nav{ display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+    .admin-month-label{ font-size:1.1rem; font-weight:bold; color:var(--hof-green); min-width:140px; font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif; }
+    .admin-refresh-btn{
+      margin-left:auto; background:#f1f5f9; border:1px solid #d9dee8;
+      border-radius:8px; padding:7px 14px; cursor:pointer; font-size:.85rem;
+      color:#687386; transition:background .2s;
+    }
+    .admin-refresh-btn:hover{ background:#e2e8f0; color:#172033; }
+    .admin-award-table{ width:100%; border-collapse:collapse; font-size:.9rem; }
+    .admin-award-table th{ background:#f8fafc; padding:9px 10px; text-align:left; border-bottom:2px solid #d9dee8; font-weight:700; }
+    .admin-award-table td{ padding:9px 10px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .admin-award-table tr:hover td{ background:#fafbfc; }
+    .admin-badge-type{ display:inline-block; padding:3px 10px; border-radius:20px; font-size:.78rem; font-weight:bold; color:#fff; }
+    .admin-badge-cw{ background:var(--hof-green); }
+    .admin-badge-ma{ background:#1E3A8A; }
+    .admin-badge-pr{ background:#5B21B6; }
+    .admin-del-btn{
+      background:#fee2e2; color:#dc2626; border:none; border-radius:6px;
+      padding:5px 10px; cursor:pointer; font-size:.8rem; transition:background .2s;
+    }
+    .admin-del-btn:hover{ background:#fca5a5; }
+    .admin-state-box{ text-align:center; padding:32px 20px; color:#687386; font-size:.95rem; }
+    .admin-spinner{
+      width:38px; height:38px; border:3px solid #E8E0D0;
+      border-top-color:var(--hof-green); border-radius:50%;
+      animation:spin .7s linear infinite; margin:0 auto 12px;
+    }
+    .admin-upload-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+    @media (max-width:640px){ .admin-upload-grid{ grid-template-columns:1fr; } }
+    .admin-field-label{ display:block; font-size:.82rem; font-weight:800; color:#334155; margin-bottom:5px; font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif; }
+    .admin-field-select, .admin-field-input{
+      width:100%; padding:10px 12px; border:1.5px solid #d9dee8;
+      border-radius:10px; font-family:"LXGW WenKai Lite",system-ui,sans-serif; font-size:.95rem; background:#fff; outline:none;
+      transition:border-color .2s;
+    }
+    .admin-field-select:focus, .admin-field-input:focus{ border-color:var(--hof-green); }
+    .admin-drop-zone{
+      border:2px dashed #a7c4b5; background:#f0faf5; border-radius:14px;
+      padding:28px 20px; text-align:center; cursor:pointer; transition:background .2s;
+    }
+    .admin-drop-zone:hover, .admin-drop-zone.drag-over{ background:#dcfce7; border-color:var(--hof-green); }
+    .admin-drop-icon{ font-size:2rem; margin-bottom:8px; }
+    .admin-drop-hint{ font-size:.85rem; color:#687386; margin-top:4px; font-family:"LXGW WenKai Lite",system-ui,sans-serif; }
+    #adminPdfInput{ display:none; }
+    .admin-parse-status{ font-size:.85rem; color:#687386; margin-top:10px; min-height:20px; font-family:"LXGW WenKai Lite",system-ui,sans-serif; }
+    .admin-parse-status.ok{ color:#16a34a; }
+    .admin-parse-status.err{ color:#dc2626; }
+    .admin-sel-table{ width:100%; border-collapse:collapse; font-size:.88rem; }
+    .admin-sel-table th{ background:#f8fafc; padding:9px 10px; text-align:left; border-bottom:2px solid #d9dee8; }
+    .admin-sel-table td{ padding:8px 10px; border-bottom:1px solid #f1f5f9; }
+    .admin-sel-table tr.selected td{ background:#f0fdf4; }
+    .admin-sel-table input[type="checkbox"]{ width:17px; height:17px; cursor:pointer; accent-color:var(--hof-green); }
+    .admin-score-pill{ display:inline-block; min-width:34px; padding:2px 8px; border-radius:12px; font-weight:bold; text-align:center; font-size:.85rem; }
+    .admin-score-high{ background:#dcfce7; color:#15803d; }
+    .admin-score-mid{ background:#fef9c3; color:#854d0e; }
+    .admin-score-low{ background:#fee2e2; color:#dc2626; }
+    .admin-select-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:.88rem; }
+    .admin-select-row button{
+      padding:5px 12px; border:1px solid #d9dee8; border-radius:7px;
+      background:#f8fafc; cursor:pointer; font-size:.82rem; transition:background .2s;
+    }
+    .admin-select-row button:hover{ background:#e2e8f0; }
+    .admin-save-bar{
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+      padding-top:14px; border-top:1px solid #d9dee8; margin-top:14px;
+    }
+    .admin-save-btn{
+      background:var(--hof-green); color:#fff; border:none; border-radius:10px;
+      padding:11px 26px; font-size:1rem; font-weight:bold; cursor:pointer;
+      transition:background .2s; font-family:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
+    }
+    .admin-save-btn:hover:not(:disabled){ background:#145028; }
+    .admin-save-btn:disabled{ opacity:.5; cursor:not-allowed; }
+    .admin-save-status{ font-size:.88rem; font-family:"LXGW WenKai Lite",system-ui,sans-serif; }
+    .admin-save-status.ok{ color:#16a34a; }
+    .admin-save-status.err{ color:#dc2626; }
+    .admin-unmatched-box{
+      background:#fff7ed; border:1px solid #fed7aa; border-radius:10px;
+      padding:12px 16px; margin-top:10px; font-size:.85rem;
+    }
+    .admin-unmatched-box strong{ color:#c2410c; }
   </style>
 </head>
 <body>
@@ -422,6 +575,432 @@
 
     updateNavBtn();
     loadData();
+  </script>
+
+  <!-- ── 管理入口（仅教师可见） ── -->
+  <script>
+  (function(){
+    var params = new URLSearchParams(window.location.search);
+    var isTeacher = params.get('role') === 'teachers';
+    if(!isTeacher) return;
+
+    // Insert admin entry button
+    var entryBtn = document.createElement('button');
+    entryBtn.className = 'admin-entry-btn';
+    entryBtn.innerHTML = '⚙️';
+    entryBtn.title = '荣誉殿堂管理';
+    entryBtn.onclick = function(){ showAdminLogin(); };
+    document.body.appendChild(entryBtn);
+
+    // Insert login overlay
+    var loginHtml =
+      '<div id="adminLoginOverlay">' +
+        '<div class="admin-login-box">' +
+          '<div class="admin-login-icon">🏆</div>' +
+          '<div class="admin-login-title">荣誉殿堂 管理</div>' +
+          '<div class="admin-login-sub">Hall of Fame Admin</div>' +
+          '<input class="admin-login-input" id="adminPwInput" type="password" placeholder="••••••" autocomplete="current-password" />' +
+          '<button class="admin-login-btn" id="adminLoginBtn">登录</button>' +
+          '<div class="admin-login-err" id="adminLoginErr"></div>' +
+          '<button class="admin-login-cancel" id="adminLoginCancel">取消</button>' +
+        '</div>' +
+      '</div>';
+    document.body.insertAdjacentHTML('beforeend', loginHtml);
+
+    // Insert admin panel
+    var panelHtml =
+      '<div id="adminPanel">' +
+        '<div class="admin-panel-wrap">' +
+          '<div class="admin-panel-header">' +
+            '<div class="admin-panel-title">🏆 荣誉殿堂 管理</div>' +
+            '<button class="admin-logout-btn" onclick="adminLogout()">退出管理</button>' +
+          '</div>' +
+          '<div class="admin-panel">' +
+            '<div class="panel-title">📅 月度奖项管理</div>' +
+            '<div class="admin-month-nav">' +
+              '<button class="nav-btn" onclick="adminChangeMonth(-1)">◀</button>' +
+              '<div class="admin-month-label" id="adminMonthLabel">—</div>' +
+              '<button class="nav-btn" onclick="adminChangeMonth(1)">▶</button>' +
+              '<button class="admin-refresh-btn" onclick="adminLoadAwards()">↻ 刷新</button>' +
+            '</div>' +
+            '<div id="adminAwardList"><div class="admin-state-box"><div class="admin-spinner"></div><p>正在加载…</p></div></div>' +
+          '</div>' +
+          '<div class="admin-panel">' +
+            '<div class="panel-title">📄 上传四会字报告 · 选取大师奖</div>' +
+            '<div class="admin-upload-grid">' +
+              '<div><label class="admin-field-label">获奖月份</label><input class="admin-field-input" id="adminMonthPicker" type="month" /></div>' +
+              '<div><label class="admin-field-label">奖项类型</label>' +
+                '<select class="admin-field-select" id="adminAwardType">' +
+                  '<option value="chinese_words">🏆 四会字大师奖</option>' +
+                  '<option value="mathematics">📐 数学大师奖</option>' +
+                  '<option value="progression">🌟 最佳进步奖</option>' +
+                '</select>' +
+              '</div>' +
+            '</div>' +
+            '<div class="admin-drop-zone" id="adminDropZone" onclick="document.getElementById(\'adminPdfInput\').click()">' +
+              '<div class="admin-drop-icon">📂</div>' +
+              '<div class="font-zh">点击或拖拽上传 ESGI 学生报告 PDF</div>' +
+              '<div class="admin-drop-hint">支持 ESGI Student Detail Report（多学生合并文件）</div>' +
+              '<input id="adminPdfInput" type="file" accept="application/pdf" />' +
+            '</div>' +
+            '<div class="admin-parse-status" id="adminParseStatus"></div>' +
+            '<div id="adminSelArea" style="display:none;margin-top:18px;">' +
+              '<div class="admin-select-row">' +
+                '<span id="adminSelCount">已选 0 人</span>' +
+                '<button onclick="adminSelectAll(true)">全选</button>' +
+                '<button onclick="adminSelectAll(false)">全不选</button>' +
+                '<button onclick="adminSelectTopN(5)">选前 5 名</button>' +
+              '</div>' +
+              '<div style="overflow:auto;">' +
+                '<table class="admin-sel-table"><thead><tr>' +
+                  '<th style="width:36px">选</th><th>学生姓名</th><th>四会字得分</th>' +
+                  '<th>B</th><th>1</th><th>2</th><th>3</th><th>4</th>' +
+                '</tr></thead><tbody id="adminSelTbody"></tbody></table>' +
+              '</div>' +
+              '<div class="admin-save-bar">' +
+                '<button class="admin-save-btn" id="adminSaveBtn" onclick="adminSaveAwards()">💾 保存所选学生的荣誉奖项</button>' +
+                '<span class="admin-save-status" id="adminSaveStatus"></span>' +
+              '</div>' +
+              '<div id="adminUnmatchedBox" style="display:none" class="admin-unmatched-box"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    document.body.insertAdjacentHTML('beforeend', panelHtml);
+
+    // ── Admin state ──
+    var adminViewYear = new Date().getFullYear();
+    var adminViewMonth = new Date().getMonth() + 1;
+    var adminParsed = [];
+    var adminAuthed = false;
+    var MONTHS_ZH = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+    function pad2(n){ return String(n).padStart(2,'0'); }
+
+    // ── Login ──
+    window.showAdminLogin = function(){
+      if(adminAuthed){ showAdminPanel(); return; }
+      document.getElementById('adminLoginOverlay').style.display = 'flex';
+      setTimeout(function(){ document.getElementById('adminPwInput').focus(); }, 100);
+    };
+
+    document.getElementById('adminLoginCancel').onclick = function(){
+      document.getElementById('adminLoginOverlay').style.display = 'none';
+    };
+
+    document.getElementById('adminLoginBtn').onclick = doAdminLogin;
+    document.getElementById('adminPwInput').addEventListener('keydown', function(e){
+      if(e.key==='Enter') doAdminLogin();
+    });
+
+    function doAdminLogin(){
+      var pw = document.getElementById('adminPwInput').value;
+      document.getElementById('adminLoginErr').textContent = '';
+      fetch('/api/contacts-login', {
+        method:'POST', headers:{'content-type':'application/json'},
+        body:JSON.stringify({password:pw}), credentials:'same-origin'
+      })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if(!res.ok){ document.getElementById('adminLoginErr').textContent = res.data.error||'密码错误'; return; }
+        document.getElementById('adminLoginOverlay').style.display = 'none';
+        adminAuthed = true;
+        showAdminPanel();
+      })
+      .catch(function(e){ document.getElementById('adminLoginErr').textContent = '网络错误：'+e.message; });
+    }
+
+    function showAdminPanel(){
+      document.getElementById('adminPanel').style.display = 'block';
+      entryBtn.style.display = 'none';
+      var now = new Date();
+      document.getElementById('adminMonthPicker').value = now.getFullYear()+'-'+pad2(now.getMonth()+1);
+      updateAdminMonthLabel();
+      adminLoadAwards();
+    }
+
+    window.adminLogout = function(){
+      document.cookie = 'contacts_session=; Max-Age=0; Path=/';
+      adminAuthed = false;
+      document.getElementById('adminPanel').style.display = 'none';
+      entryBtn.style.display = 'flex';
+    };
+
+    function updateAdminMonthLabel(){
+      document.getElementById('adminMonthLabel').textContent = adminViewYear+'年 '+MONTHS_ZH[adminViewMonth-1];
+    }
+
+    window.adminChangeMonth = function(delta){
+      adminViewMonth += delta;
+      if(adminViewMonth<1){ adminViewMonth=12; adminViewYear--; }
+      if(adminViewMonth>12){ adminViewMonth=1; adminViewYear++; }
+      updateAdminMonthLabel();
+      adminLoadAwards();
+    };
+
+    // ── Load awards ──
+    var ADMIN_AWARD_LABELS = {
+      chinese_words:{label:'四会字大师奖', cls:'admin-badge-cw'},
+      mathematics:{label:'数学大师奖', cls:'admin-badge-ma'},
+      progression:{label:'最佳进步奖', cls:'admin-badge-pr'}
+    };
+
+    window.adminLoadAwards = function(){
+      var area = document.getElementById('adminAwardList');
+      area.innerHTML = '<div class="admin-state-box"><div class="admin-spinner"></div><p>正在加载…</p></div>';
+      var ym = adminViewYear+'-'+pad2(adminViewMonth);
+      var query = '*[_type=="hallOfFame" && string::startsWith(awardMonth,"'+ym+'")] | order(_createdAt asc){_id, awardType, awardTitle, sightWordScore, awardMonth, "studentName":studentRef->name}';
+      var url = 'https://sow12t1i.api.sanity.io/v2023-05-03/data/query/production?query='+encodeURIComponent(query);
+      fetch(url)
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(function(data){
+          var list = Array.isArray(data.result)?data.result:[];
+          if(!list.length){ area.innerHTML='<div class="admin-state-box"><div style="font-size:2rem">🌟</div><p class="font-zh">本月暂无奖项记录</p></div>'; return; }
+          var rows = list.map(function(item){
+            var cfg = ADMIN_AWARD_LABELS[item.awardType]||ADMIN_AWARD_LABELS.chinese_words;
+            var scoreHtml = (item.sightWordScore!=null)?escapeHtml(item.sightWordScore)+' 字':'—';
+            return '<tr><td><b>'+escapeHtml(item.studentName||'—')+'</b></td>'+
+              '<td><span class="admin-badge-type '+cfg.cls+'">'+cfg.label+'</span></td>'+
+              '<td>'+scoreHtml+'</td>'+
+              '<td>'+escapeHtml(item.awardMonth?item.awardMonth.slice(0,7):'—')+'</td>'+
+              '<td><button class="admin-del-btn" onclick="adminDeleteAward(\''+escapeHtml(item._id)+'\',this)">删除</button></td></tr>';
+          }).join('');
+          area.innerHTML='<table class="admin-award-table"><thead><tr><th>学生</th><th>奖项</th><th>四会字得分</th><th>月份</th><th>操作</th></tr></thead><tbody>'+rows+'</tbody></table>';
+        })
+        .catch(function(e){ area.innerHTML='<div class="admin-state-box"><div style="font-size:2rem">❌</div><p>'+escapeHtml(e.message)+'</p></div>'; });
+    };
+
+    window.adminDeleteAward = function(docId, btn){
+      if(!confirm('确定删除该奖项记录？')) return;
+      btn.disabled=true; btn.textContent='…';
+      fetch('/api/hall-of-fame-import',{
+        method:'POST', headers:{'content-type':'application/json'},
+        body:JSON.stringify({action:'delete', docId:docId}), credentials:'same-origin'
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.ok){ var row=btn.closest('tr'); if(row) row.remove(); }
+        else{ alert('删除失败：'+(data.error||'未知错误')); btn.disabled=false; btn.textContent='删除'; }
+      })
+      .catch(function(e){ alert('网络错误：'+e.message); btn.disabled=false; btn.textContent='删除'; });
+    };
+
+    // ── PDF parsing ──
+    var SIGHT_WORDS_TEST = 'Chinese Sight Words';
+    var SIGHT_WORDS_TOTAL = 50;
+
+    function normalizeNameKey(s){ return String(s||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim(); }
+    function isHeaderLine(s){
+      var n = normalizeNameKey(s);
+      return !n || /^\d{1,2}\s+\d{1,2}\s+\d{4}$/.test(n) || /^\d+$/.test(n) ||
+        n.includes('student detail report') || n.includes('subject') ||
+        n.includes('teacher') || n.includes('class') || n.includes('student') ||
+        n.includes('wang class') || n.includes('mr wang') || n.includes('homeroom') ||
+        n === 'k chinese' || n === 'chinese sight words' ||
+        ['b','score','scores','test session date','correct','incorrect','notes','summary'].some(function(x){ return n.startsWith(x); });
+    }
+    function looksLikeName(s){
+      return !isHeaderLine(s) &&
+        /^[\p{Lu}][\p{L}''\-]+(?:\s+[\p{Lu}][\p{L}''\-]+)+$/u.test(s) && s.length < 80;
+    }
+    function findNameInText(text){
+      var m = String(text||'').match(/Student:\s*([^\n]+)/);
+      if(!m) return '';
+      var name = m[1].trim();
+      return looksLikeName(name) ? name : '';
+    }
+    function findStudentName(page1, page2){
+      var n1=findNameInText(page1); if(n1) return n1;
+      var n2=findNameInText(page2); if(n2) return n2;
+      var lines=page1.split(/\n+/).map(function(l){return l.trim();}).filter(Boolean);
+      var idx=lines.findIndex(function(l){return l===SIGHT_WORDS_TEST;});
+      var search=idx>0?lines.slice(0,idx):lines.slice(0,14);
+      for(var i=search.length-1;i>=0;i--){ if(looksLikeName(search[i])) return search[i]; }
+      return '';
+    }
+    function extractSightWords(text){
+      var idx=text.indexOf(SIGHT_WORDS_TEST); if(idx<0) return null;
+      var rest=text.slice(idx,idx+500);
+      var m=rest.match(/Score:\s*([0-9NT\s\/]+)/i); if(!m) return null;
+      var nums=(m[1].match(/\d+/g)||[]).map(Number); if(nums.length<2) return null;
+      var b=nums[0],q1=nums[1],q2=nums[2],q3=nums[3],q4=nums[4];
+      var latest=(q4!=null&&isFinite(q4))?q4:nums[nums.length-1];
+      return {baseline:b,q1:q1!=null?q1:null,q2:q2!=null?q2:null,q3:q3!=null?q3:null,q4:q4!=null?q4:null,latest:latest};
+    }
+    function hasValidSightWords(sw){ return !!(sw&&isFinite(sw.latest)); }
+    function parsePages(pages){
+      var byName=new Map();
+      for(var i=0;i<pages.length;i++){
+        var p1=pages[i]||'',p2=pages[i+1]||'';
+        var name=findStudentName(p1,p2);
+        if(!name||isHeaderLine(name)) continue;
+        var sw=extractSightWords(p1); var usedNextPage=false;
+        if(!hasValidSightWords(sw)&&p2&&!findNameInText(p2)){
+          var chunk=p1+'\n'+p2; var pairSw=extractSightWords(chunk);
+          if(hasValidSightWords(pairSw)){sw=pairSw;usedNextPage=true;}
+        }
+        var key=normalizeNameKey(name);
+        var prev=byName.get(key);
+        var prevScore=prev&&prev.sw&&isFinite(prev.sw.latest)?prev.sw.latest:-1;
+        var currScore=sw&&isFinite(sw.latest)?sw.latest:-1;
+        if(!prev||currScore>prevScore) byName.set(key,{name:name,sw:sw});
+        if(usedNextPage) i++;
+      }
+      return Array.from(byName.values());
+    }
+
+    // ── Drop zone ──
+    var adminDZ = document.getElementById('adminDropZone');
+    adminDZ.addEventListener('dragover',function(e){e.preventDefault();adminDZ.classList.add('drag-over');});
+    adminDZ.addEventListener('dragleave',function(){adminDZ.classList.remove('drag-over');});
+    adminDZ.addEventListener('drop',function(e){
+      e.preventDefault();adminDZ.classList.remove('drag-over');
+      var file=e.dataTransfer.files[0]; if(file) adminHandleFile(file);
+    });
+    document.getElementById('adminPdfInput').addEventListener('change',function(e){
+      if(e.target.files[0]) adminHandleFile(e.target.files[0]);
+    });
+
+    function setAdminParseStatus(msg,cls){
+      var el=document.getElementById('adminParseStatus');
+      el.textContent=msg; el.className='admin-parse-status'+(cls?' '+cls:'');
+    }
+
+    function adminHandleFile(file){
+      // Load pdf.js if not already
+      if(typeof pdfjsLib==='undefined'){
+        var s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload=function(){
+          pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          doAdminParse(file);
+        };
+        document.head.appendChild(s);
+      } else { doAdminParse(file); }
+    }
+
+    async function doAdminParse(file){
+      setAdminParseStatus('正在解析 PDF…','');
+      adminParsed=[];
+      document.getElementById('adminSelArea').style.display='none';
+      try{
+        if(typeof pdfjsLib!=='undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc){
+          pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        var buf=await file.arrayBuffer();
+        var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        var pages=[];
+        for(var i=1;i<=pdf.numPages;i++){
+          var page=await pdf.getPage(i);
+          var content=await page.getTextContent();
+          pages.push(content.items.map(function(it){return it.str;}).join('\n'));
+        }
+        adminParsed=parsePages(pages).filter(function(s){return !isHeaderLine(s.name);});
+        if(!adminParsed.length){ setAdminParseStatus('未能解析到学生数据，请确认 PDF 格式是否正确。','err'); return; }
+        adminParsed.sort(function(a,b){
+          var sa=a.sw?a.sw.latest:-1, sb=b.sw?b.sw.latest:-1; return sb-sa;
+        });
+        setAdminParseStatus('解析完成，共找到 '+adminParsed.length+' 名学生。请选择获奖名单后保存。','ok');
+        adminRenderSelTable();
+        document.getElementById('adminSelArea').style.display='block';
+      }catch(e){ setAdminParseStatus('PDF 解析失败：'+e.message,'err'); }
+    }
+
+    function adminScoreClass(score){
+      if(score==null) return '';
+      if(score>=40) return 'admin-score-high';
+      if(score>=20) return 'admin-score-mid';
+      return 'admin-score-low';
+    }
+
+    function adminRenderSelTable(){
+      var tbody=document.getElementById('adminSelTbody');
+      tbody.innerHTML=adminParsed.map(function(s,idx){
+        var sw=s.sw; var latest=sw?sw.latest:null;
+        var latestHtml=(latest!=null)?'<span class="admin-score-pill '+adminScoreClass(latest)+'">'+latest+'</span>':'<span style="color:#687386">—</span>';
+        return '<tr id="admin-srow-'+idx+'">'+
+          '<td><input type="checkbox" id="admin-chk-'+idx+'" onchange="adminOnCheck()" /></td>'+
+          '<td><b>'+escapeHtml(s.name)+'</b></td>'+
+          '<td>'+latestHtml+' <span style="color:#687386;font-size:.78rem">/ '+SIGHT_WORDS_TOTAL+'</span></td>'+
+          '<td>'+escapeHtml(sw?sw.baseline:'—')+'</td>'+
+          '<td>'+escapeHtml(sw&&sw.q1!=null?sw.q1:'—')+'</td>'+
+          '<td>'+escapeHtml(sw&&sw.q2!=null?sw.q2:'—')+'</td>'+
+          '<td>'+escapeHtml(sw&&sw.q3!=null?sw.q3:'—')+'</td>'+
+          '<td>'+escapeHtml(sw&&sw.q4!=null?sw.q4:'—')+'</td></tr>';
+      }).join('');
+      adminOnCheck();
+    }
+
+    window.adminOnCheck = function(){
+      var count=0;
+      adminParsed.forEach(function(_,i){
+        var chk=document.getElementById('admin-chk-'+i);
+        var row=document.getElementById('admin-srow-'+i);
+        if(chk&&chk.checked){count++;if(row)row.classList.add('selected');}
+        else{if(row)row.classList.remove('selected');}
+      });
+      document.getElementById('adminSelCount').textContent='已选 '+count+' 人';
+      document.getElementById('adminSaveBtn').disabled=(count===0);
+    };
+
+    window.adminSelectAll = function(checked){
+      adminParsed.forEach(function(_,i){ var chk=document.getElementById('admin-chk-'+i); if(chk)chk.checked=checked; });
+      adminOnCheck();
+    };
+
+    window.adminSelectTopN = function(n){
+      var selected=0;
+      adminParsed.forEach(function(s,i){
+        var chk=document.getElementById('admin-chk-'+i); if(!chk) return;
+        var score=s.sw?s.sw.latest:null;
+        if(score!=null&&selected<n){chk.checked=true;selected++;}else{chk.checked=false;}
+      });
+      adminOnCheck();
+    };
+
+    // ── Save awards ──
+    function setAdminSaveStatus(msg,cls){
+      var el=document.getElementById('adminSaveStatus');
+      el.textContent=msg; el.className='admin-save-status'+(cls?' '+cls:'');
+    }
+
+    window.adminSaveAwards = function(){
+      var monthVal=document.getElementById('adminMonthPicker').value;
+      if(!monthVal){setAdminSaveStatus('请先选择获奖月份！','err');return;}
+      var awardType=document.getElementById('adminAwardType').value;
+      var awards=[];
+      adminParsed.forEach(function(s,i){
+        var chk=document.getElementById('admin-chk-'+i);
+        if(chk&&chk.checked) awards.push({studentName:s.name, awardType:awardType, sightWordScore:s.sw?s.sw.latest:null});
+      });
+      if(!awards.length){setAdminSaveStatus('请至少选择一名学生！','err');return;}
+      var btn=document.getElementById('adminSaveBtn');
+      btn.disabled=true; setAdminSaveStatus('正在保存…','');
+      document.getElementById('adminUnmatchedBox').style.display='none';
+      fetch('/api/hall-of-fame-import',{
+        method:'POST', headers:{'content-type':'application/json'},
+        body:JSON.stringify({action:'create',month:monthVal,awards:awards}), credentials:'same-origin'
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        btn.disabled=false;
+        if(!data.ok){setAdminSaveStatus('保存失败：'+(data.error||'未知错误'),'err');return;}
+        var s=data.summary;
+        setAdminSaveStatus('✅ 已保存 '+s.created+' 条记录！','ok');
+        if(s.unmatchedNames&&s.unmatchedNames.length){
+          var box=document.getElementById('adminUnmatchedBox');
+          box.style.display='';
+          box.innerHTML='<strong>⚠️ 以下学生姓名未在 Sanity 中找到匹配，请手动添加：</strong><br>'+
+            s.unmatchedNames.map(function(n){return escapeHtml(n);}).join('、');
+        }
+        var browserYM=adminViewYear+'-'+pad2(adminViewMonth);
+        if(monthVal===browserYM) adminLoadAwards();
+        // Also refresh the display grid
+        loadData();
+      })
+      .catch(function(e){btn.disabled=false;setAdminSaveStatus('网络错误：'+e.message,'err');});
+    };
+  })();
   </script>
 </body>
 </html>
