@@ -444,11 +444,9 @@ function findNameInText(text) {
   var name = m[1].trim();
   return looksLikeName(name) ? name : '';
 }
-function findStudentName(page1, page2) {
+function findStudentName(page1) {
   var n1 = findNameInText(page1);
   if (n1) return n1;
-  var n2 = findNameInText(page2);
-  if (n2) return n2;
   var lines = page1.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean);
   var idx = lines.findIndex(function(l){ return l === SIGHT_WORDS_TEST; });
   var search = idx > 0 ? lines.slice(0, idx) : lines.slice(0, 14);
@@ -476,19 +474,10 @@ function hasValidSightWords(sw) {
 function parsePages(pages) {
   var byName = new Map();
   for (var i = 0; i < pages.length; i++) {
-    var p1 = pages[i] || '', p2 = pages[i+1] || '';
-    var name = findStudentName(p1, p2);
+    var p1 = pages[i] || '';
+    var name = findStudentName(p1);
     if (!name || isHeaderLine(name)) continue;
     var sw = extractSightWords(p1);
-    var usedNextPage = false;
-    if (!hasValidSightWords(sw) && p2 && !findNameInText(p2)) {
-      var chunk = p1 + '\n' + p2;
-      var pairSw = extractSightWords(chunk);
-      if (hasValidSightWords(pairSw)) {
-        sw = pairSw;
-        usedNextPage = true;
-      }
-    }
     var key = normalizeNameKey(name);
     var prev = byName.get(key);
     var prevScore = prev && prev.sw && isFinite(prev.sw.latest) ? prev.sw.latest : -1;
@@ -496,7 +485,6 @@ function parsePages(pages) {
     if (!prev || currScore > prevScore) {
       byName.set(key, {name: name, sw: sw});
     }
-    if (usedNextPage) i++;
   }
   return Array.from(byName.values());
 }
