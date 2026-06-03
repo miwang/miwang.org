@@ -477,7 +477,7 @@ function parsePages(pages) {
   var byName = new Map();
   for (var i = 0; i < pages.length; i++) {
     var p1 = pages[i] || '', p2 = pages[i+1] || '';
-    var name = findStudentName(p1, '');
+    var name = findStudentName(p1, p2);
     if (!name || isHeaderLine(name)) continue;
     var sw = extractSightWords(p1);
     var usedNextPage = false;
