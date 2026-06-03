@@ -420,6 +420,7 @@ function deleteAward(docId, btn) {
 // ── PDF Parsing (reuses ESGI report format) ──────────────────────────────────
 var SIGHT_WORDS_TEST = 'Chinese Sight Words';
 var SIGHT_WORDS_TOTAL = 50;
+var NAME_SEARCH_LINES = 20;
 var parsedStudents = [];
 
 function normalizeNameKey(s) {
@@ -464,6 +465,7 @@ function findNameInText(text) {
   return '';
 }
 function findStudentName(page1, page2) {
+  // ESGI often puts "Student:" on the second page of a two-page student block.
   var n2 = findNameInText(page2);
   if (n2) return n2;
   var n1 = findNameInText(page1);
@@ -473,7 +475,7 @@ function findStudentName(page1, page2) {
   if (n3) return n3;
   var lines = merged.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean);
   var idx = lines.findIndex(function(l){ return l === SIGHT_WORDS_TEST; });
-  var search = idx > 0 ? lines.slice(0, idx) : lines.slice(0, 20);
+  var search = idx > 0 ? lines.slice(0, idx) : lines.slice(0, NAME_SEARCH_LINES);
   for (var i = search.length - 1; i >= 0; i--) {
     if (looksLikeName(search[i])) return search[i];
   }
@@ -497,12 +499,17 @@ function hasValidSightWords(sw) {
 }
 function parsePages(pages) {
   var byName = new Map();
+  // Use a sliding 2-page window to tolerate odd page splits in exported reports.
   for (var i = 0; i < pages.length; i++) {
     var p1 = pages[i] || '';
     var p2 = pages[i + 1] || '';
     var name = findStudentName(p1, p2);
     if (!name || isHeaderLine(name)) continue;
-    var sw = extractSightWords(p1 + '\n' + p2) || extractSightWords(p1) || extractSightWords(p2);
+    var chunk = p1 + '\n' + p2;
+    // Try merged text first (name/score can span pages), then fall back to each page.
+    var sw = extractSightWords(chunk);
+    if (!sw) sw = extractSightWords(p1);
+    if (!sw && p2) sw = extractSightWords(p2);
     var key = normalizeNameKey(name);
     var prev = byName.get(key);
     var prevScore = prev && prev.sw && isFinite(prev.sw.latest) ? prev.sw.latest : -1;
