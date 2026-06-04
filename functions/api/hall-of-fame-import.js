@@ -160,17 +160,30 @@ export async function onRequestPost(context) {
     return json({error: '没有选择任何学生'}, 400)
   }
 
-  // Fetch all students from Sanity for name matching
-  var students = await sanityQuery('*[_type=="student"]{_id, name}', sanityToken)
+  // Compute academic year from month (e.g. "2025-10" → "25-26", "2026-03" → "25-26")
+  var monthParts = month.split('-')
+  var monthYear = parseInt(monthParts[0], 10)
+  var monthNum = parseInt(monthParts[1], 10)
+  var startYear = monthNum >= 9 ? monthYear : monthYear - 1
+  var academicYear = String(startYear).slice(-2) + '-' + String(startYear + 1).slice(-2)
 
-  // Build a normalized-name → student map and a word-set → student map
+  // Fetch students from Sanity filtered to the current academic year, including nameEn and nameZh
+  var students = await sanityQuery(
+    '*[_type=="student" && academicYear==' + JSON.stringify(academicYear) + ']{_id, name, nameEn, nameZh}',
+    sanityToken,
+  )
+
+  // Build normalized-name → student maps covering name, nameEn fields
   var studentMap = new Map()
   var wordSetMap = new Map()
   for (var i = 0; i < students.length; i++) {
     var s = students[i]
-    if (s._id && s.name) {
-      var norm = normalizeName(s.name)
-      studentMap.set(norm, s)
+    if (!s._id) continue
+    var nameCandidates = [s.nameEn, s.name].filter(Boolean)
+    for (var k = 0; k < nameCandidates.length; k++) {
+      var norm = normalizeName(nameCandidates[k])
+      if (!norm) continue
+      if (!studentMap.has(norm)) studentMap.set(norm, s)
       var ws = norm.split(' ').sort().join(' ')
       if (!wordSetMap.has(ws)) wordSetMap.set(ws, s)
     }
@@ -230,7 +243,7 @@ export async function onRequestPost(context) {
     if (score !== null) doc.sightWordScore = score
 
     mutations.push({createOrReplace: doc})
-    matched.push({studentName: student.name, docId: newDocId})
+    matched.push({studentName: student.nameZh || student.nameEn || student.name, docId: newDocId})
   }
 
   if (mutations.length > 0) {
