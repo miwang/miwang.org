@@ -161,6 +161,7 @@ export async function onRequestPost(context) {
   }
 
   // Compute academic year from month (e.g. "2025-10" → "25-26", "2026-03" → "25-26")
+  // month is guaranteed to match /^\d{4}-\d{2}$/ by the validation above
   var monthParts = month.split('-')
   var monthYear = parseInt(monthParts[0], 10)
   var monthNum = parseInt(monthParts[1], 10)
