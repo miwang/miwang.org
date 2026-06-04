@@ -797,7 +797,8 @@
         n.includes('teacher') || n.includes('class') || n.includes('student') ||
         n.includes('wang class') || n.includes('mr wang') || n.includes('homeroom') ||
         n === 'k chinese' || n === 'chinese sight words' ||
-        ['b','score','scores','test session date','correct','incorrect','notes','summary'].some(function(x){ return n.startsWith(x); });
+        n === 'b' ||
+        ['score','scores','test session date','correct','incorrect','notes','summary'].some(function(x){ return n.startsWith(x); });
     }
     function looksLikeName(s){
       return !isHeaderLine(s) &&

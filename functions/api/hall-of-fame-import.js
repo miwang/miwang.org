@@ -163,12 +163,16 @@ export async function onRequestPost(context) {
   // Fetch all students from Sanity for name matching
   var students = await sanityQuery('*[_type=="student"]{_id, name}', sanityToken)
 
-  // Build a normalized-name → student map
+  // Build a normalized-name → student map and a word-set → student map
   var studentMap = new Map()
+  var wordSetMap = new Map()
   for (var i = 0; i < students.length; i++) {
     var s = students[i]
     if (s._id && s.name) {
-      studentMap.set(normalizeName(s.name), s)
+      var norm = normalizeName(s.name)
+      studentMap.set(norm, s)
+      var ws = norm.split(' ').sort().join(' ')
+      if (!wordSetMap.has(ws)) wordSetMap.set(ws, s)
     }
   }
 
@@ -189,13 +193,19 @@ export async function onRequestPost(context) {
     }
     var student = studentMap.get(normalizedName)
 
-    // Partial match fallback
+    // Partial match fallback: substring containment
     if (!student) {
       studentMap.forEach(function(val, key) {
         if (!student && (key.indexOf(normalizedName) >= 0 || normalizedName.indexOf(key) >= 0)) {
           student = val
         }
       })
+    }
+
+    // Word-set fallback: match regardless of word order (e.g. "Chen Benjamin" vs "Benjamin Chen")
+    if (!student) {
+      var queryWords = normalizedName.split(' ').sort().join(' ')
+      student = wordSetMap.get(queryWords) || null
     }
 
     if (!student) {
