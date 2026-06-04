@@ -189,10 +189,20 @@ export async function onRequestPost(context) {
     }
     var student = studentMap.get(normalizedName)
 
-    // Partial match fallback
+    // Partial match fallback: substring containment
     if (!student) {
       studentMap.forEach(function(val, key) {
         if (!student && (key.indexOf(normalizedName) >= 0 || normalizedName.indexOf(key) >= 0)) {
+          student = val
+        }
+      })
+    }
+
+    // Word-set fallback: match regardless of word order (e.g. "Chen Benjamin" vs "Benjamin Chen")
+    if (!student) {
+      var queryWords = normalizedName.split(' ').sort().join(' ')
+      studentMap.forEach(function(val, key) {
+        if (!student && key.split(' ').sort().join(' ') === queryWords) {
           student = val
         }
       })
