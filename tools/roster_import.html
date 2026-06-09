@@ -627,25 +627,30 @@ const PHONE_RE = /(?:^|[^\d])((?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4
 const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g
 const PAGE_RE = /^page\s+\d+\s+of\s+\d+$/i
 const GRADE_ONLY_RE = /^[A-Z]{1,4}$/
-// Student-start: optional grade prefix (e.g. "KN" = Kindergarten, "1" = 1st grade)
-// then "LastName, FirstName" format — each name part allows letters, apostrophes, dots, hyphens.
-// Segment 1: [A-Z]{1,4}\s+  — optional 1-4 char grade code + space
+// Student-start: REQUIRED grade prefix (e.g. "KN" = Kindergarten) then "LastName, FirstName".
+// 🐛 FIX (2026-06): the grade prefix used to be optional — `(?:[A-Z]{1,4}\s+)?` — which let
+// wrapped address fragments like "Camden Wyoming, Breanna Sawyer" masquerade as a student
+// (City="last", Guardian="first"), creating phantom students. Every real K roster row begins
+// with "KN ", so the prefix is now mandatory. (We only teach Kindergarten — KN is always present.)
+// Segment 1: [A-Z]{1,4}\s+  — required 1-4 char grade code + space
 // Segment 2: Last name (one or more words)
 // Segment 3: literal comma + space
 // Segment 4: First name (one or more words)
-const STUDENT_START_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
+const STUDENT_START_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*,\s*[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*$/
 // Matches grade-prefixed names without comma, e.g. "KN John Smith".
-const STUDENT_START_NO_COMMA_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)+$/
-const STUDENT_START_PREFIX_RE = /^(?:[A-Z]{1,4}\s+)?[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*,\s*$/
-const STUDENT_NAME_CONT_RE = /^[A-Za-z][A-Za-z''.\-]*(?:\s+[A-Za-z][A-Za-z''.\-]*)*$/
+const STUDENT_START_NO_COMMA_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)+$/
+// 🐛 FIX (2026-06): prefix required here too (was optional), same phantom-student reason.
+const STUDENT_START_PREFIX_RE = /^[A-Z]{1,4}\s+[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*,\s*$/
+const STUDENT_NAME_CONT_RE = /^[A-Za-z][A-Za-z'’.\-]*(?:\s+[A-Za-z][A-Za-z'’.\-]*)*$/
 const TRAILING_STUDENT_FIELD_RE = /(?:\(?\d{3}\)?[-.\s]*\d{3}[-.\s]*\d{4}|\d{1,2}\/\d{1,2}\/\d{4})/
 // Extracts only the leading student name when line has trailing roster fields
 // (phone/start-date/guardian) on the same line.
+// 🐛 FIX (2026-06): prefix required (was optional) — same phantom-student reason.
 const STUDENT_START_WITH_TRAILING_FIELDS_RE = new RegExp(
-    `^((?:[A-Z]{1,4}\\s+)?[A-Za-z][A-Za-z''.\\-]*(?:\\s+[A-Za-z][A-Za-z''.\\-]*)*,\\s*[A-Za-z][A-Za-z''.\\-]*(?:\\s+[A-Za-z][A-Za-z''.\\-]*)*)(?=\\s+${TRAILING_STUDENT_FIELD_RE.source}|\\s*$)`
+    `^([A-Z]{1,4}\\s+[A-Za-z][A-Za-z'’.\\-]*(?:\\s+[A-Za-z][A-Za-z'’.\\-]*)*,\\s*[A-Za-z][A-Za-z'’.\\-]*(?:\\s+[A-Za-z][A-Za-z'’.\\-]*)*)(?=\\s+${TRAILING_STUDENT_FIELD_RE.source}|\\s*$)`
 )
 const STUDENT_START_NO_COMMA_WITH_TRAILING_FIELDS_RE = new RegExp(
-    `^([A-Z]{1,4}\\s+[A-Za-z][A-Za-z''.\\-]*(?:\\s+[A-Za-z][A-Za-z''.\\-]*)+)(?=\\s+${TRAILING_STUDENT_FIELD_RE.source}|\\s*$)`
+    `^([A-Z]{1,4}\\s+[A-Za-z][A-Za-z'’.\\-]*(?:\\s+[A-Za-z][A-Za-z'’.\\-]*)+)(?=\\s+${TRAILING_STUDENT_FIELD_RE.source}|\\s*$)`
 )
 // Trailing start-date / end-date columns appended to student name rows by some roster systems
 // (e.g. PowerSchool outputs "KN Smith, John  08/30/2025  06/30/2026" on one line).
@@ -779,7 +784,10 @@ function parseStudentNameFromLine(line) {
     if (!s.includes(',')) return s
     const [lastRaw, firstRaw] = s.split(',', 2).map(v => v.trim())
     const last = lastRaw.replace(/\s+/g, ' ')
-    const first = firstRaw.replace(/\s+/g, ' ')
+    // 🐛 FIX (2026-06): drop a trailing single-letter middle initial so "Thomas, Skylar M"
+    // becomes "Skylar Thomas" (not "Skylar M Thomas"). PowerSchool appends a middle initial
+    // (M / W / J / F …) after the first name; we don't store it.
+    const first = firstRaw.replace(/\s+/g, ' ').replace(/\s+[A-Z]\.?$/, '').trim()
     if (first && last) return `${first} ${last}`.trim()
     return s
 }
