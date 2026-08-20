@@ -1,0 +1,513 @@
+diff --git a/css/common_nav.css b/css/common_nav.css
+index 7a7977d..8771c34 100644
+--- a/css/common_nav.css
++++ b/css/common_nav.css
+@@ -1,7 +1,7 @@
+-/* css/common_nav.css */
++/* css/common_nav.css — 全站统一导航栏（活泼童趣版） */
+ :root {
+     --nav-font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+-    --nav-font-en: "LXGW WenKai Lite", sans-serif;
++    --nav-font-en: "Baloo 2", "Fredoka", "LXGW WenKai Lite", sans-serif;
+ }
+ 
+ /* 🌟 全局统一导航栏容器 */
+@@ -11,8 +11,9 @@
+     left: 0;
+     width: 100%;
+     height: 60px;
+-    background: #598586;
+-    border-bottom: 5px solid #f3b236;
++    background: linear-gradient(120deg, #4FC3F7 0%, #35D0BA 100%);
++    border-bottom: 5px solid #FFC94D;
++    box-shadow: 0 4px 14px rgba(53,64,90,0.18);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+@@ -21,40 +22,52 @@
+     padding: 0 14px;
+ }
+ 
+-/* 🌟 全局统一返回按钮（融入导航栏） */
++/* 🌟 全局统一返回按钮（圆润气泡感） */
+ .mecc-nav-back {
+     position: absolute;
+-    left: 20px;
++    left: 14px;
+     display: flex;
+     align-items: center;
+-    gap: 6px;
++    gap: 8px;
+     color: #ffffff;
+     text-decoration: none;
+-    font-size: 1.05rem;
++    font-size: 1.02rem;
+     font-weight: bold;
+-    transition: opacity 0.2s ease;
++    transition: transform 0.15s ease, opacity 0.2s ease;
+     cursor: pointer;
+     white-space: nowrap;
+     max-width: 42%;
+     overflow: hidden;
+     text-overflow: ellipsis;
++    background: rgba(255,255,255,0.20);
++    padding: 6px 14px 6px 8px;
++    border-radius: 999px;
+ }
+ 
+ .mecc-nav-back:hover {
+-    opacity: 0.7;
++    background: rgba(255,255,255,0.32);
++    transform: translateY(-1px);
++}
++.mecc-nav-back:active {
++    transform: translateY(1px) scale(0.97);
+ }
+ 
+ .mecc-nav-back svg {
+     width: 24px;
+     height: 24px;
+     flex-shrink: 0;
++    background: #fff;
++    border-radius: 50%;
++    padding: 3px;
++    color: #35D0BA;
+ }
+ 
+ /* 🌟 全局统一标题 */
+ .mecc-nav-title {
+     color: #ffffff;
++    font-family: var(--nav-font-en);
+     font-size: 1.3rem;
+-    font-weight: bold;
++    font-weight: 700;
+     margin: 0;
+     letter-spacing: 1px;
+     text-align: center;
+@@ -63,9 +76,10 @@
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
++    text-shadow: 0 2px 0 rgba(0,0,0,0.10);
+ }
+ 
+-/* 字体适配 */
++/* 字体适配：中文标题用楷体，保留手写感；英文/拼音用圆润字体 */
+ .mecc-nav-title,
+ .mecc-nav-back span {
+     font-family: var(--nav-font-zh) !important;
+@@ -99,6 +113,7 @@
+         font-size: 0.95rem;
+         gap: 0 !important;
+         max-width: none;
++        padding: 6px;
+     }
+ 
+     .mecc-nav-back span {
+diff --git a/css/style.css b/css/style.css
+index 7d7c81b..aaa1bc7 100644
+--- a/css/style.css
++++ b/css/style.css
+@@ -1,9 +1,11 @@
+ /* ══════════════════════════════════════════
+    Wang Laoshi's Space — Global Stylesheet
++   "活泼童趣" 统一视觉系统 (Playful Kids Theme)
+    ══════════════════════════════════════════ */
+ 
+-/* 1. Web Font */
++/* 1. Web Fonts */
+ @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
++@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap');
+ 
+ /* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+    so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@@ -26,6 +28,47 @@
+         U+20000-2A6DF; /* CJK Extension B */
+ }
+ 
++/* ══════════════════════════════════════════
++   2. 全站设计令牌 (Design Tokens)
++   ══════════════════════════════════════════ */
++:root {
++    /* 糖果主色板 */
++    --c-sky:     #4FC3F7;   /* 天空蓝 — 主色 */
++    --c-mint:    #35D0BA;   /* 薄荷绿 — 辅助/成功 */
++    --c-coral:   #FF7A63;   /* 珊瑚橙 — 强调/CTA */
++    --c-sun:     #FFC94D;   /* 阳光黄 — 高亮/星星 */
++    --c-grape:   #B18CF0;   /* 葡萄紫 — 装饰 */
++    --c-berry:   #FF6FA5;   /* 覆盆子粉 — 装饰/徽章 */
++
++    /* 中性色 */
++    --c-ink:      #35405A;  /* 主文字（比纯黑更柔和） */
++    --c-ink-soft: #6B7690;  /* 次要文字 */
++    --c-cream:    #FFF8EC;  /* 主背景 — 温暖奶油色 */
++    --c-card:     #FFFFFF;  /* 卡片底色 */
++
++    /* 兼容旧变量名（部分内联样式仍引用），指向新配色 */
++    --c-navy:    var(--c-ink);
++    --c-gold:    var(--c-sun);
++    --c-lacquer: var(--c-coral);
++    --c-teal:    var(--c-mint);
++    --bg-paper:  var(--c-cream);
++    --card-bg:   rgba(255, 255, 255, 0.92);
++    --text-main: var(--c-ink);
++    --text-muted:var(--c-ink-soft);
++
++    /* 字体 */
++    --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
++    --font-en: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
++    --font-display: "Baloo 2", "Fredoka", var(--font-en); /* 圆润活泼标题/数字字体 */
++
++    /* 形态 */
++    --radius: 24px;
++    --radius-lg: 28px;
++    --radius-sm: 14px;
++    --shadow-pop: 0 6px 0 rgba(0,0,0,0.08), 0 10px 22px rgba(53,64,90,0.14);
++    --shadow-soft: 0 8px 24px rgba(53,64,90,0.10);
++}
++
+ /* 2. Global Reset & Base */
+ *, *::before, *::after {
+     box-sizing: border-box;
+@@ -34,18 +77,24 @@
+ }
+ 
+ body {
+-    font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+-    background-color: #f0f3f7;
+-    color: #1a2740;
++    font-family: var(--font-en);
++    background-color: var(--c-cream);
++    background-image:
++        radial-gradient(circle at 10% 15%, rgba(79,195,247,0.10) 0, transparent 40%),
++        radial-gradient(circle at 90% 85%, rgba(255,201,77,0.14) 0, transparent 42%);
++    color: var(--c-ink);
+     -webkit-font-smoothing: antialiased;
+     -moz-osx-font-smoothing: grayscale;
+ }
+ 
+ /* ── Font Utility Classes ── */
+ 
+-/* English: LXGW WenKai Lite */
++/* English / numbers: playful rounded display font */
+ .font-en {
+-    font-family: "LXGW WenKai Lite", system-ui, sans-serif !important;
++    font-family: var(--font-en) !important;
++}
++.font-display {
++    font-family: var(--font-display) !important;
+ }
+ 
+ /* Chinese: KaiTi priority, LXGW fallback */
+@@ -60,31 +109,34 @@ body {
+ 
+ /* 3. Legacy Header (used by sub-pages not yet migrated) */
+ .header {
+-    background: linear-gradient(135deg, #1a2740 0%, #243552 100%);
++    background: linear-gradient(135deg, var(--c-sky) 0%, var(--c-mint) 100%);
+     color: white;
+-    padding: 15px 10px;
++    padding: 18px 10px;
+     text-align: center;
+     border-bottom: none;
+     position: relative;
+     overflow: hidden;
++    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+ }
+ .header::after {
+     content: '';
+     position: absolute;
+     bottom: 0; left: 0; right: 0;
+-    height: 4px;
+-    background: linear-gradient(90deg, #4e8a8b, #f0a832, #4e8a8b);
++    height: 6px;
++    background: linear-gradient(90deg, var(--c-sun), var(--c-coral), var(--c-grape), var(--c-sun));
+ }
+ 
+ .header h1 {
+     margin: 0;
++    font-family: var(--font-display);
+     font-size: 2rem;
+     color: #fff;
++    text-shadow: 0 2px 0 rgba(0,0,0,0.08);
+ }
+ 
+ /* 4. Navigation */
+ .back-btn {
+-    color: #f0a832;
++    color: var(--c-coral);
+     text-decoration: none;
+     font-weight: bold;
+     transition: opacity 0.2s;
+@@ -94,41 +146,70 @@ body {
+ .back-btn-home {
+     position: absolute;
+     top: 15px; left: 20px;
+-    color: rgba(255,255,255,0.7);
++    color: rgba(255,255,255,0.85);
+     text-decoration: none;
+     font-size: 0.9rem;
+     font-weight: 600;
+     z-index: 50;
+     padding: 6px 14px;
+-    border-radius: 8px;
++    border-radius: var(--radius-sm);
+     transition: background 0.2s, color 0.2s;
+ }
+ .back-btn-home:hover {
+-    background: rgba(255,255,255,0.08);
+-    color: #f0a832;
++    background: rgba(255,255,255,0.18);
++    color: #fff;
+ }
+ 
+-/* 5. Global Button */
++/* 5. Global Button — 糖果立体按钮 (Duolingo 风) */
+ .btn {
+-    padding: 10px 22px;
+-    background-color: #f0a832;
+-    color: #1a2740;
++    padding: 12px 26px;
++    background-color: var(--c-sun);
++    color: var(--c-ink);
+     border: none;
+-    border-radius: 10px;
++    border-radius: var(--radius-sm);
+     cursor: pointer;
+-    font-weight: bold;
+-    font-family: inherit;
+-    font-size: 0.95rem;
+-    transition: background 0.2s, transform 0.15s;
++    font-weight: 700;
++    font-family: var(--font-display);
++    font-size: 1rem;
++    box-shadow: 0 5px 0 #d9a230;
++    transition: background 0.15s, transform 0.12s, box-shadow 0.12s;
+ }
+ .btn:hover {
+-    background-color: #d4922a;
++    background-color: #ffd876;
+ }
+ .btn:active {
+-    transform: scale(0.97);
++    transform: translateY(4px);
++    box-shadow: 0 1px 0 #d9a230;
+ }
+ 
+-/* 6. Animations */
++/* 按钮配色变体 */
++.btn-coral { background-color: var(--c-coral); color: #fff; box-shadow: 0 5px 0 #d9503b; }
++.btn-coral:hover { background-color: #ff9483; }
++.btn-coral:active { box-shadow: 0 1px 0 #d9503b; }
++
++.btn-sky { background-color: var(--c-sky); color: #fff; box-shadow: 0 5px 0 #2a9bd6; }
++.btn-sky:hover { background-color: #78d3ff; }
++.btn-sky:active { box-shadow: 0 1px 0 #2a9bd6; }
++
++.btn-mint { background-color: var(--c-mint); color: #fff; box-shadow: 0 5px 0 #1fa895; }
++.btn-mint:hover { background-color: #5be3cf; }
++.btn-mint:active { box-shadow: 0 1px 0 #1fa895; }
++
++/* 6. 卡片组件 — 可选复用 */
++.card-playful {
++    background: var(--c-card);
++    border-radius: var(--radius);
++    box-shadow: var(--shadow-soft);
++    border: 3px solid rgba(53,64,90,0.06);
++    padding: 24px;
++    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
++}
++.card-playful:hover {
++    transform: translateY(-4px) rotate(-0.5deg);
++    box-shadow: var(--shadow-pop);
++}
++
++/* 7. Animations */
+ @keyframes tada {
+     0%   { transform: scale(1); }
+     10%, 20% { transform: scale(0.9) rotate(-3deg); }
+@@ -143,3 +224,9 @@ body {
+     to   { opacity: 1; transform: translateY(0); }
+ }
+ .fade-in { animation: fadeIn 0.4s ease-out; }
++
++@keyframes floaty {
++    0%, 100% { transform: translateY(0); }
++    50% { transform: translateY(-6px); }
++}
++.float { animation: floaty 3s ease-in-out infinite; }
+diff --git a/index.html b/index.html
+index 5975e05..2f0346e 100644
+--- a/index.html
++++ b/index.html
+@@ -8,57 +8,73 @@
+     <link rel="stylesheet" href="css/style.css">
+     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+     <style>
+-        /* 🌿 引入文楷字体 */
++        /* 🌿 引入文楷字体 + 圆润活泼标题字体 */
+         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
++        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap');
+ 
+         :root {
+-            --c-navy:    #183042;
+-            --c-gold:    #e6c27a;
+-            --c-lacquer: #a32e2e;
+-            --c-teal:    #217273;
+-            --bg-paper:  #faf6ed;
+-            
+-            --card-bg:   rgba(255, 255, 255, 0.78);
+-            --text-main: #2c3e50;
+-            --text-muted:#566573;
+-            
+-            /* 🌟 核心修正 1：字体兜底逻辑 (楷体 -> 文楷 -> 系统) */
++            /* 糖果主色板 — 与全站 css/style.css 保持一致 */
++            --c-navy:    #35405A;   /* 主文字 */
++            --c-gold:    #FFC94D;   /* 阳光黄 */
++            --c-lacquer: #FF7A63;   /* 珊瑚橙 */
++            --c-teal:    #35D0BA;   /* 薄荷绿 */
++            --c-sky:     #4FC3F7;   /* 天空蓝 */
++            --c-grape:   #B18CF0;   /* 葡萄紫 */
++            --bg-paper:  #FFF8EC;   /* 奶油底色 */
++
++            --card-bg:   rgba(255, 255, 255, 0.88);
++            --text-main: #35405A;
++            --text-muted:#6B7690;
++
++            /* 字体兜底逻辑：圆润活泼标题字体 -> 文楷 -> 系统 */
+             --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+-            --font-en: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+-            
+-            --radius: 22px;
++            --font-en: "Baloo 2", "Fredoka", "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
++
++            --radius: 28px;
+         }
+ 
+         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+-        /* 🌟 核心修正 2：锁定一屏高度，禁止滚动 */
++        /* 🌟 锁定一屏高度，禁止滚动 */
+         body {
+             font-family: var(--font-en);
+             color: var(--text-main);
+             -webkit-font-smoothing: antialiased;
+             margin: 0;
+-            height: 100vh; 
+-            overflow: hidden; 
++            height: 100vh;
++            overflow: hidden;
+             display: flex;
+             flex-direction: column;
+             background-color: var(--bg-paper);
+-            background-image: url('images/bg-landscape.webp');
+-            background-size: cover;
+-            background-position: center center;
++            background-image:
++                radial-gradient(circle at 8% 12%, rgba(79,195,247,0.22) 0, transparent 32%),
++                radial-gradient(circle at 92% 18%, rgba(255,201,77,0.26) 0, transparent 30%),
++                radial-gradient(circle at 15% 90%, rgba(177,140,240,0.18) 0, transparent 30%),
++                radial-gradient(circle at 88% 88%, rgba(53,208,186,0.22) 0, transparent 34%);
+             background-attachment: fixed;
+         }
+-        
+-        /* 🌟 核心修正 3：极轻薄的蒙版，背景画不再被遮挡 */
++
++        /* 🌟 轻柔的光斑蒙版，让糖果色背景更柔和 */
+         body::before {
+             content: '';
+             position: fixed;
+             inset: 0;
+-            background: radial-gradient(circle, rgba(250, 246, 237, 0.1) 0%, rgba(250, 246, 237, 0.35) 100%);
+-            backdrop-filter: blur(1px);
+-            -webkit-backdrop-filter: blur(1px);
++            background: radial-gradient(circle, rgba(255,248,236,0.05) 0%, rgba(255,248,236,0.25) 100%);
++            pointer-events: none;
+             z-index: -1;
+         }
+ 
++        /* 🌟 漂浮云朵装饰 */
++        .deco-cloud {
++            position: absolute;
++            opacity: 0.9;
++            pointer-events: none;
++            z-index: -1;
++        }
++        .deco-cloud.c1 { top: 6%; left: 6%; width: 90px; }
++        .deco-cloud.c2 { top: 12%; right: 8%; width: 70px; }
++        .deco-cloud.c3 { bottom: 8%; left: 12%; width: 60px; }
++
+         /* ─── 紧凑型头部 ─── */
+         .site-header {
+             padding: 30px 24px 10px; /* 压缩上下留白 */
+@@ -126,44 +142,44 @@
+             padding: 45px 30px; /* 保持原卡片大小的核心内边距 */
+             text-decoration: none;
+             color: var(--text-main);
+-            border: 1px solid rgba(230, 194, 122, 0.3);
+-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
++            border: 3px solid rgba(255, 201, 77, 0.5);
++            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             text-align: center;
+             backdrop-filter: blur(12px);
+             -webkit-backdrop-filter: blur(12px);
+-            box-shadow: 0 8px 30px rgba(24, 48, 66, 0.04);
++            box-shadow: 0 8px 24px rgba(53,64,90,0.08);
+         }
+ 
+         .portal-card:hover {
+-            transform: translateY(-8px);
++            transform: translateY(-8px) rotate(-1deg);
+             border-color: var(--c-gold);
+-            background-color: rgba(255, 255, 255, 0.9);
++            background-color: rgba(255, 255, 255, 0.96);
+             box-shadow: 0 15px 40px rgba(163, 46, 46, 0.1);
+         }
+ 
+         .image-placeholder {
+-            width: 110px; height: 110px;
+-            border: 3px solid var(--c-gold);
++            width: 116px; height: 116px;
++            border: 4px solid var(--c-gold);
+             border-radius: 50%;
+             margin-bottom: 25px;
+             display: flex; align-items: center; justify-content: center;
+-            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+-            transition: transform 0.5s ease;
++            box-shadow: 0 6px 15px rgba(53,64,90,0.10);
++            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+             background-size: 65%; background-position: center; background-repeat: no-repeat;
+         }
+-        .portal-card:hover .image-placeholder { transform: rotate(5deg) scale(1.05); }
++        .portal-card:hover .image-placeholder { transform: rotate(-6deg) scale(1.08); }
+ 
+         .teacher-card .image-placeholder {
+-            background-color: var(--c-navy);
+-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z' fill='none' stroke='%23e6c27a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M50 25 L50 65' stroke='%23e6c27a' stroke-width='4'/%3E%3Cpath d='M35 40 L45 35 M65 40 L55 35' stroke='%23e6c27a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
++            background-color: var(--c-sky);
++            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M50 25 L50 65' stroke='%23ffffff' stroke-width='4'/%3E%3Cpath d='M35 40 L45 35 M65 40 L55 35' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+         }
+ 
+         .parent-card .image-placeholder {
+             background-color: var(--c-lacquer);
+-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 60 L50 40 L70 60 L70 75 L30 75 Z' fill='none' stroke='%23faf6ed' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 50 L50 25 L80 50' fill='none' stroke='%23faf6ed' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M45 75 L45 55 L55 55 L55 75' fill='none' stroke='%23faf6ed' stroke-width='4'/%3E%3C/svg%3E");
++            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 60 L50 40 L70 60 L70 75 L30 75 Z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 50 L50 25 L80 50' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M45 75 L45 55 L55 55 L55 75' fill='none' stroke='%23ffffff' stroke-width='4'/%3E%3C/svg%3E");
+         }
+ 
+         .card-title-en {
+@@ -228,6 +244,12 @@
+ 
+     <main class="portal-main">
+         <div class="portal-container">
++            <svg class="deco-cloud c1 float" viewBox="0 0 100 60" fill="var(--c-sky)" opacity="0.5">
++                <ellipse cx="30" cy="38" rx="26" ry="18"/><ellipse cx="55" cy="28" rx="20" ry="16"/><ellipse cx="75" cy="40" rx="18" ry="14"/>
++            </svg>
++            <svg class="deco-cloud c2 float" viewBox="0 0 100 60" fill="var(--c-grape)" opacity="0.4">
++                <ellipse cx="30" cy="38" rx="26" ry="18"/><ellipse cx="55" cy="28" rx="20" ry="16"/><ellipse cx="75" cy="40" rx="18" ry="14"/>
++            </svg>
+             <svg class="deco-seal" width="70" height="70" viewBox="0 0 40 40">
+                 <rect x="4" y="4" width="32" height="32" rx="4" fill="var(--c-lacquer)"/>
+                 <path d="M14 15H26" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M17 21H23" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M11 28H29" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M20 15V28" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> </svg>

@@ -1,9 +1,11 @@
 /* ══════════════════════════════════════════
    Wang Laoshi's Space — Global Stylesheet
+   "活泼童趣" 统一视觉系统 (Playful Kids Theme)
    ══════════════════════════════════════════ */
 
-/* 1. Web Font */
+/* 1. Web Fonts */
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap');
 
 /* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
    so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
@@ -26,6 +28,47 @@
         U+20000-2A6DF; /* CJK Extension B */
 }
 
+/* ══════════════════════════════════════════
+   2. 全站设计令牌 (Design Tokens)
+   ══════════════════════════════════════════ */
+:root {
+    /* 糖果主色板 */
+    --c-sky:     #4FC3F7;   /* 天空蓝 — 主色 */
+    --c-mint:    #35D0BA;   /* 薄荷绿 — 辅助/成功 */
+    --c-coral:   #FF7A63;   /* 珊瑚橙 — 强调/CTA */
+    --c-sun:     #FFC94D;   /* 阳光黄 — 高亮/星星 */
+    --c-grape:   #B18CF0;   /* 葡萄紫 — 装饰 */
+    --c-berry:   #FF6FA5;   /* 覆盆子粉 — 装饰/徽章 */
+
+    /* 中性色 */
+    --c-ink:      #35405A;  /* 主文字（比纯黑更柔和） */
+    --c-ink-soft: #6B7690;  /* 次要文字 */
+    --c-cream:    #FFF8EC;  /* 主背景 — 温暖奶油色 */
+    --c-card:     #FFFFFF;  /* 卡片底色 */
+
+    /* 兼容旧变量名（部分内联样式仍引用），指向新配色 */
+    --c-navy:    var(--c-ink);
+    --c-gold:    var(--c-sun);
+    --c-lacquer: var(--c-coral);
+    --c-teal:    var(--c-mint);
+    --bg-paper:  var(--c-cream);
+    --card-bg:   rgba(255, 255, 255, 0.92);
+    --text-main: var(--c-ink);
+    --text-muted:var(--c-ink-soft);
+
+    /* 字体 */
+    --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
+    --font-en: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+    --font-display: "Baloo 2", "Fredoka", var(--font-en); /* 圆润活泼标题/数字字体 */
+
+    /* 形态 */
+    --radius: 24px;
+    --radius-lg: 28px;
+    --radius-sm: 14px;
+    --shadow-pop: 0 6px 0 rgba(0,0,0,0.08), 0 10px 22px rgba(53,64,90,0.14);
+    --shadow-soft: 0 8px 24px rgba(53,64,90,0.10);
+}
+
 /* 2. Global Reset & Base */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -34,18 +77,24 @@
 }
 
 body {
-    font-family: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
-    background-color: #f0f3f7;
-    color: #1a2740;
+    font-family: var(--font-en);
+    background-color: var(--c-cream);
+    background-image:
+        radial-gradient(circle at 10% 15%, rgba(79,195,247,0.10) 0, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(255,201,77,0.14) 0, transparent 42%);
+    color: var(--c-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Font Utility Classes ── */
 
-/* English: LXGW WenKai Lite */
+/* English / numbers: playful rounded display font */
 .font-en {
-    font-family: "LXGW WenKai Lite", system-ui, sans-serif !important;
+    font-family: var(--font-en) !important;
+}
+.font-display {
+    font-family: var(--font-display) !important;
 }
 
 /* Chinese: KaiTi priority, LXGW fallback */
@@ -60,31 +109,34 @@ body {
 
 /* 3. Legacy Header (used by sub-pages not yet migrated) */
 .header {
-    background: linear-gradient(135deg, #1a2740 0%, #243552 100%);
+    background: linear-gradient(135deg, var(--c-sky) 0%, var(--c-mint) 100%);
     color: white;
-    padding: 15px 10px;
+    padding: 18px 10px;
     text-align: center;
     border-bottom: none;
     position: relative;
     overflow: hidden;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 .header::after {
     content: '';
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #4e8a8b, #f0a832, #4e8a8b);
+    height: 6px;
+    background: linear-gradient(90deg, var(--c-sun), var(--c-coral), var(--c-grape), var(--c-sun));
 }
 
 .header h1 {
     margin: 0;
+    font-family: var(--font-display);
     font-size: 2rem;
     color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.08);
 }
 
 /* 4. Navigation */
 .back-btn {
-    color: #f0a832;
+    color: var(--c-coral);
     text-decoration: none;
     font-weight: bold;
     transition: opacity 0.2s;
@@ -94,41 +146,70 @@ body {
 .back-btn-home {
     position: absolute;
     top: 15px; left: 20px;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.85);
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 600;
     z-index: 50;
     padding: 6px 14px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     transition: background 0.2s, color 0.2s;
 }
 .back-btn-home:hover {
-    background: rgba(255,255,255,0.08);
-    color: #f0a832;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
 }
 
-/* 5. Global Button */
+/* 5. Global Button — 糖果立体按钮 (Duolingo 风) */
 .btn {
-    padding: 10px 22px;
-    background-color: #f0a832;
-    color: #1a2740;
+    padding: 12px 26px;
+    background-color: var(--c-sun);
+    color: var(--c-ink);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    font-weight: bold;
-    font-family: inherit;
-    font-size: 0.95rem;
-    transition: background 0.2s, transform 0.15s;
+    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    box-shadow: 0 5px 0 #d9a230;
+    transition: background 0.15s, transform 0.12s, box-shadow 0.12s;
 }
 .btn:hover {
-    background-color: #d4922a;
+    background-color: #ffd876;
 }
 .btn:active {
-    transform: scale(0.97);
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #d9a230;
 }
 
-/* 6. Animations */
+/* 按钮配色变体 */
+.btn-coral { background-color: var(--c-coral); color: #fff; box-shadow: 0 5px 0 #d9503b; }
+.btn-coral:hover { background-color: #ff9483; }
+.btn-coral:active { box-shadow: 0 1px 0 #d9503b; }
+
+.btn-sky { background-color: var(--c-sky); color: #fff; box-shadow: 0 5px 0 #2a9bd6; }
+.btn-sky:hover { background-color: #78d3ff; }
+.btn-sky:active { box-shadow: 0 1px 0 #2a9bd6; }
+
+.btn-mint { background-color: var(--c-mint); color: #fff; box-shadow: 0 5px 0 #1fa895; }
+.btn-mint:hover { background-color: #5be3cf; }
+.btn-mint:active { box-shadow: 0 1px 0 #1fa895; }
+
+/* 6. 卡片组件 — 可选复用 */
+.card-playful {
+    background: var(--c-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    border: 3px solid rgba(53,64,90,0.06);
+    padding: 24px;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+.card-playful:hover {
+    transform: translateY(-4px) rotate(-0.5deg);
+    box-shadow: var(--shadow-pop);
+}
+
+/* 7. Animations */
 @keyframes tada {
     0%   { transform: scale(1); }
     10%, 20% { transform: scale(0.9) rotate(-3deg); }
@@ -143,3 +224,9 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 .fade-in { animation: fadeIn 0.4s ease-out; }
+
+@keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+.float { animation: floaty 3s ease-in-out infinite; }

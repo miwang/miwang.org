@@ -8,56 +8,72 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
-        /* 🌿 引入文楷字体 */
+        /* 🌿 引入文楷字体 + 圆润活泼标题字体 */
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap');
 
         :root {
-            --c-navy:    #183042;
-            --c-gold:    #e6c27a;
-            --c-lacquer: #a32e2e;
-            --c-teal:    #217273;
-            --bg-paper:  #faf6ed;
-            
-            --card-bg:   rgba(255, 255, 255, 0.78);
-            --text-main: #2c3e50;
-            --text-muted:#566573;
-            
-            /* 🌟 核心修正 1：字体兜底逻辑 (楷体 -> 文楷 -> 系统) */
+            /* 糖果主色板 — 与全站 css/style.css 保持一致 */
+            --c-navy:    #35405A;   /* 主文字 */
+            --c-gold:    #FFC94D;   /* 阳光黄 */
+            --c-lacquer: #FF7A63;   /* 珊瑚橙 */
+            --c-teal:    #35D0BA;   /* 薄荷绿 */
+            --c-sky:     #4FC3F7;   /* 天空蓝 */
+            --c-grape:   #B18CF0;   /* 葡萄紫 */
+            --bg-paper:  #FFF8EC;   /* 奶油底色 */
+
+            --card-bg:   rgba(255, 255, 255, 0.88);
+            --text-main: #35405A;
+            --text-muted:#6B7690;
+
+            /* 字体兜底逻辑：圆润活泼标题字体 -> 文楷 -> 系统 */
             --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
-            --font-en: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
-            
-            --radius: 22px;
+            --font-en: "Baloo 2", "Fredoka", "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+
+            --radius: 28px;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* 🌟 核心修正 2：锁定一屏高度，禁止滚动 */
+        /* 🌟 锁定一屏高度，禁止滚动 */
         body {
             font-family: var(--font-en);
             color: var(--text-main);
             -webkit-font-smoothing: antialiased;
             margin: 0;
-            height: 100vh; 
-            overflow: hidden; 
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             background-color: var(--bg-paper);
-            background-image: url('images/bg-landscape.webp');
-            background-size: cover;
-            background-position: center center;
+            background-image:
+                radial-gradient(circle at 8% 12%, rgba(79,195,247,0.22) 0, transparent 32%),
+                radial-gradient(circle at 92% 18%, rgba(255,201,77,0.26) 0, transparent 30%),
+                radial-gradient(circle at 15% 90%, rgba(177,140,240,0.18) 0, transparent 30%),
+                radial-gradient(circle at 88% 88%, rgba(53,208,186,0.22) 0, transparent 34%);
             background-attachment: fixed;
         }
-        
-        /* 🌟 核心修正 3：极轻薄的蒙版，背景画不再被遮挡 */
+
+        /* 🌟 轻柔的光斑蒙版，让糖果色背景更柔和 */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle, rgba(250, 246, 237, 0.1) 0%, rgba(250, 246, 237, 0.35) 100%);
-            backdrop-filter: blur(1px);
-            -webkit-backdrop-filter: blur(1px);
+            background: radial-gradient(circle, rgba(255,248,236,0.05) 0%, rgba(255,248,236,0.25) 100%);
+            pointer-events: none;
             z-index: -1;
         }
+
+        /* 🌟 漂浮云朵装饰 */
+        .deco-cloud {
+            position: absolute;
+            opacity: 0.9;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .deco-cloud.c1 { top: 6%; left: 6%; width: 90px; }
+        .deco-cloud.c2 { top: 12%; right: 8%; width: 70px; }
+        .deco-cloud.c3 { bottom: 8%; left: 12%; width: 60px; }
 
         /* ─── 紧凑型头部 ─── */
         .site-header {
@@ -126,44 +142,44 @@
             padding: 45px 30px; /* 保持原卡片大小的核心内边距 */
             text-decoration: none;
             color: var(--text-main);
-            border: 1px solid rgba(230, 194, 122, 0.3);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid rgba(255, 201, 77, 0.5);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 8px 30px rgba(24, 48, 66, 0.04);
+            box-shadow: 0 8px 24px rgba(53,64,90,0.08);
         }
 
         .portal-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-8px) rotate(-1deg);
             border-color: var(--c-gold);
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.96);
             box-shadow: 0 15px 40px rgba(163, 46, 46, 0.1);
         }
 
         .image-placeholder {
-            width: 110px; height: 110px;
-            border: 3px solid var(--c-gold);
+            width: 116px; height: 116px;
+            border: 4px solid var(--c-gold);
             border-radius: 50%;
             margin-bottom: 25px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-            transition: transform 0.5s ease;
+            box-shadow: 0 6px 15px rgba(53,64,90,0.10);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             background-size: 65%; background-position: center; background-repeat: no-repeat;
         }
-        .portal-card:hover .image-placeholder { transform: rotate(5deg) scale(1.05); }
+        .portal-card:hover .image-placeholder { transform: rotate(-6deg) scale(1.08); }
 
         .teacher-card .image-placeholder {
-            background-color: var(--c-navy);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z' fill='none' stroke='%23e6c27a' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M50 25 L50 65' stroke='%23e6c27a' stroke-width='4'/%3E%3Cpath d='M35 40 L45 35 M65 40 L55 35' stroke='%23e6c27a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-color: var(--c-sky);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M50 25 L50 65' stroke='%23ffffff' stroke-width='4'/%3E%3Cpath d='M35 40 L45 35 M65 40 L55 35' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
         }
 
         .parent-card .image-placeholder {
             background-color: var(--c-lacquer);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 60 L50 40 L70 60 L70 75 L30 75 Z' fill='none' stroke='%23faf6ed' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 50 L50 25 L80 50' fill='none' stroke='%23faf6ed' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M45 75 L45 55 L55 55 L55 75' fill='none' stroke='%23faf6ed' stroke-width='4'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 60 L50 40 L70 60 L70 75 L30 75 Z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 50 L50 25 L80 50' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M45 75 L45 55 L55 55 L55 75' fill='none' stroke='%23ffffff' stroke-width='4'/%3E%3C/svg%3E");
         }
 
         .card-title-en {
@@ -228,6 +244,12 @@
 
     <main class="portal-main">
         <div class="portal-container">
+            <svg class="deco-cloud c1 float" viewBox="0 0 100 60" fill="var(--c-sky)" opacity="0.5">
+                <ellipse cx="30" cy="38" rx="26" ry="18"/><ellipse cx="55" cy="28" rx="20" ry="16"/><ellipse cx="75" cy="40" rx="18" ry="14"/>
+            </svg>
+            <svg class="deco-cloud c2 float" viewBox="0 0 100 60" fill="var(--c-grape)" opacity="0.4">
+                <ellipse cx="30" cy="38" rx="26" ry="18"/><ellipse cx="55" cy="28" rx="20" ry="16"/><ellipse cx="75" cy="40" rx="18" ry="14"/>
+            </svg>
             <svg class="deco-seal" width="70" height="70" viewBox="0 0 40 40">
                 <rect x="4" y="4" width="32" height="32" rx="4" fill="var(--c-lacquer)"/>
                 <path d="M14 15H26" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M17 21H23" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M11 28H29" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M20 15V28" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> </svg>

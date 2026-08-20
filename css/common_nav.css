@@ -1,7 +1,7 @@
-/* css/common_nav.css */
+/* css/common_nav.css — 全站统一导航栏（活泼童趣版） */
 :root {
     --nav-font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
-    --nav-font-en: "LXGW WenKai Lite", sans-serif;
+    --nav-font-en: "Baloo 2", "Fredoka", "LXGW WenKai Lite", sans-serif;
 }
 
 /* 🌟 全局统一导航栏容器 */
@@ -11,8 +11,9 @@
     left: 0;
     width: 100%;
     height: 60px;
-    background: #598586;
-    border-bottom: 5px solid #f3b236;
+    background: linear-gradient(120deg, #4FC3F7 0%, #35D0BA 100%);
+    border-bottom: 5px solid #FFC94D;
+    box-shadow: 0 4px 14px rgba(53,64,90,0.18);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -21,40 +22,52 @@
     padding: 0 14px;
 }
 
-/* 🌟 全局统一返回按钮（融入导航栏） */
+/* 🌟 全局统一返回按钮（圆润气泡感） */
 .mecc-nav-back {
     position: absolute;
-    left: 20px;
+    left: 14px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: #ffffff;
     text-decoration: none;
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     font-weight: bold;
-    transition: opacity 0.2s ease;
+    transition: transform 0.15s ease, opacity 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
     max-width: 42%;
     overflow: hidden;
     text-overflow: ellipsis;
+    background: rgba(255,255,255,0.20);
+    padding: 6px 14px 6px 8px;
+    border-radius: 999px;
 }
 
 .mecc-nav-back:hover {
-    opacity: 0.7;
+    background: rgba(255,255,255,0.32);
+    transform: translateY(-1px);
+}
+.mecc-nav-back:active {
+    transform: translateY(1px) scale(0.97);
 }
 
 .mecc-nav-back svg {
     width: 24px;
     height: 24px;
     flex-shrink: 0;
+    background: #fff;
+    border-radius: 50%;
+    padding: 3px;
+    color: #35D0BA;
 }
 
 /* 🌟 全局统一标题 */
 .mecc-nav-title {
     color: #ffffff;
+    font-family: var(--nav-font-en);
     font-size: 1.3rem;
-    font-weight: bold;
+    font-weight: 700;
     margin: 0;
     letter-spacing: 1px;
     text-align: center;
@@ -63,9 +76,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.10);
 }
 
-/* 字体适配 */
+/* 字体适配：中文标题用楷体，保留手写感；英文/拼音用圆润字体 */
 .mecc-nav-title,
 .mecc-nav-back span {
     font-family: var(--nav-font-zh) !important;
@@ -99,6 +113,7 @@
         font-size: 0.95rem;
         gap: 0 !important;
         max-width: none;
+        padding: 6px;
     }
 
     .mecc-nav-back span {
