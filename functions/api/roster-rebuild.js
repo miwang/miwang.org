@@ -68,6 +68,55 @@ async function isValidSession(request, pw) {
 const norm = s => String(s || '').toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
 const dropInitials = s => norm(s).split(' ').filter(w => w.length > 1).join(' ')
 
+/**
+ * First + last token only.
+ *
+ * The roster prints the school's full legal name ("Lyanna Garcia Requilman")
+ * while Sanity often holds a shortened form ("Lyanna Requilman"). Verified
+ * unique across all 49 students in both cohorts, so it is a safe key.
+ */
+const firstLast = s => {
+  const p = norm(s).split(' ').filter(Boolean)
+  return p.length > 1 ? `${p[0]} ${p[p.length - 1]}` : (p[0] || '')
+}
+
+const firstOnly = s => norm(s).split(' ')[0] || ''
+
+/**
+ * Lookup tiers, most specific first. Each key keeps ALL candidates so an
+ * ambiguous key is rejected rather than silently resolved -- "Everleigh"
+ * matches both Everleigh Dare and Everleigh Riley in 25-26.
+ */
+function buildTiers(students) {
+  const mk = fn => {
+    const m = new Map()
+    for (const s of students) {
+      const k = fn(s.nameEn || s.name)
+      if (!k) continue
+      if (!m.has(k)) m.set(k, [])
+      m.get(k).push(s)
+    }
+    return m
+  }
+  return [
+    { name: 'exact', key: norm, map: mk(norm) },
+    { name: 'no_middle_initial', key: dropInitials, map: mk(dropInitials) },
+    { name: 'first_last', key: firstLast, map: mk(firstLast) },
+    { name: 'first_name_only', key: firstOnly, map: mk(firstOnly) },
+  ]
+}
+
+/** Resolve one roster name to a student, or report ambiguity. */
+function resolve(rosterName, tiers) {
+  for (const t of tiers) {
+    const hits = t.map.get(t.key(rosterName))
+    if (!hits || !hits.length) continue
+    if (hits.length === 1) return { student: hits[0], method: t.name }
+    return { ambiguous: hits, method: t.name }
+  }
+  return {}
+}
+
 async function sanity(path, token, init) {
   const res = await fetch(`https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}${path}`, {
     ...init,
@@ -123,24 +172,40 @@ export async function onRequestPost(context) {
         "contacts": *[_type=="parentContact" && academicYear==$y]{_id, "sid": student._ref, "count": count(contacts)}}`,
       { y: academicYear },
     )
-    const byName = new Map()
-    for (const s of existing.students) {
-      for (const key of [norm(s.nameEn || s.name), dropInitials(s.nameEn || s.name)]) {
-        if (key && !byName.has(key)) byName.set(key, s)
-      }
-    }
+    const tiers = buildTiers(existing.students)
     const pcBySid = new Map(existing.contacts.map(c => [c.sid, c]))
 
     const rows = []
+    const claimed = new Map()
     for (const st of students) {
-      const hit = byName.get(norm(st.nameEn)) || byName.get(dropInitials(st.nameEn))
+      const r = resolve(st.nameEn, tiers)
+      if (r.ambiguous) {
+        rows.push({
+          nameEn: st.nameEn, status: 'ambiguous', matchMethod: r.method,
+          note: `按「${r.method}」匹配到多人：${r.ambiguous.map(s => s.nameEn || s.name).join(' / ')}，请先在 Sanity 补全姓名`,
+        })
+        continue
+      }
+      const hit = r.student
       if (!hit) {
         rows.push({ nameEn: st.nameEn, status: 'no_student', note: 'Sanity 中找不到该学生' })
         continue
       }
+      if (claimed.has(hit._id)) {
+        rows.push({
+          nameEn: st.nameEn, status: 'ambiguous', matchMethod: r.method,
+          note: `与「${claimed.get(hit._id)}」匹配到同一个学生文档，请人工确认`,
+        })
+        continue
+      }
+      claimed.set(hit._id, st.nameEn)
+
       const pc = pcBySid.get(hit._id)
       rows.push({
         nameEn: st.nameEn,
+        sanityName: hit.nameEn || hit.name || '',
+        matchMethod: r.method,
+        looseMatch: r.method === 'first_last' || r.method === 'first_name_only',
         studentId: hit._id,
         nameZh: hit.nameZh || null,
         className: hit.className || null,
@@ -159,6 +224,8 @@ export async function onRequestPost(context) {
     const summary = {
       submitted: students.length,
       ready: rows.filter(r => r.status === 'ready').length,
+      looseMatches: rows.filter(r => r.looseMatch).length,
+      ambiguous: rows.filter(r => r.status === 'ambiguous').length,
       missingStudent: rows.filter(r => r.status === 'no_student').length,
       missingParentContact: rows.filter(r => r.status === 'no_parentcontact').length,
       birthdaysToFix: rows.filter(r => r.birthdayChanges).length,
