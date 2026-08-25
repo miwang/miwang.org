@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>兄弟姐妹手动关联</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:22px}
+.panel{background:var(--panel);border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.1);padding:18px;margin-bottom:16px}
+h1{margin:0 0 6px;font-size:25px}.sub{color:var(--muted);font-size:14px;line-height:1.6}
+label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#334155}
+select,input{border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;width:100%}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#e2e8f0;color:#334155}.btn.danger{background:var(--red)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.status{font-size:14px;color:var(--muted);min-height:22px;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;text-align:left;padding:9px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#475569}
+td{border-top:1px solid #eef2f7;padding:9px 8px;vertical-align:middle}
+.tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:900}
+.t-man{background:#dbeafe;color:#1e40af}.t-inf{background:#dcfce7;color:#166534}.t-rej{background:#fee2e2;color:#991b1b}
+.sm{font-size:11px;color:#94a3b8}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:10px}
+.errbox{background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:10px;color:#991b1b}
+.pill{display:inline-flex;background:#f1f5f9;border-radius:999px;padding:7px 12px;font-weight:800;font-size:13px;margin:3px 5px 0 0}
+@media(max-width:800px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:12px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="panel">
+    <h1>兄弟姐妹手动关联</h1>
+    <p class="sub">
+      自动推断只对有家长联系信息的学年有效（25-26 起）。<b>23-24 这类只有姓名和生日的旧名单，必须在这里手动关联。</b><br>
+      手动关联优先级高于自动推断——共同监护、再婚、改姓这些情况，地址规则判不出来。
+    </p>
+    <div id="summary"><span class="pill">加载中…</span></div>
+  </section>
+
+  <section class="panel">
+    <h2 style="font-size:17px;margin:0 0 4px">新增关联</h2>
+    <div class="grid">
+      <div><label>学生 A</label><select id="a"></select></div>
+      <div><label>学生 B</label><select id="b"></select></div>
+    </div>
+    <div class="grid3" style="margin-top:8px">
+      <div><label>关系（可留空）</label><input id="relation" placeholder="兄妹 / 姐弟 / 双胞胎" maxlength="40" /></div>
+      <div><label>备注（仅老师可见）</label><input id="note" placeholder="例如：家长在开学日提到" maxlength="300" /></div>
+      <div><button class="btn" id="linkBtn">建立关联</button></div>
+    </div>
+    <div class="status" id="status"></div>
+    <div id="msg"></div>
+  </section>
+
+  <section class="panel">
+    <h2 style="font-size:17px;margin:0 0 10px">现有关联</h2>
+    <table>
+      <thead><tr><th style="width:30%">学生 A</th><th style="width:30%">学生 B</th><th style="width:12%">来源</th><th>依据 / 关系</th><th style="width:130px">操作</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="5" class="sm">加载中…</td></tr></tbody>
+    </table>
+    <div class="warnbox">
+      <b>「否决」</b>用于自动推断错了的情况——比如两户人家共用单位电话被判成亲戚。否决只影响显示，不改动家长联系数据。
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id)
+const esc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))
+const PROJECT = 'sow12t1i', DATASET = 'production'
+let STUDENTS = [], BY_ID = {}, SIB = null
+
+const label = s => `${s.nameZh ? s.nameZh + ' ' : ''}${s.nameEn || s.name || ''} · ${s.academicYear || '?'} ${s.className === 'elephant' ? '🐘' : s.className === 'tiger' ? '🐯' : ''}`
+
+async function loadStudents(){
+  const q = '*[_type=="student"]|order(academicYear desc, className asc, nameEn asc){_id,nameEn,nameZh,name,academicYear,className}'
+  const url = `https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(q)}`
+  const res = await fetch(url)
+  const data = await res.json()
+  STUDENTS = data.result || []
+  STUDENTS.forEach(s => { BY_ID[s._id] = s })
+  const opts = '<option value="">— 选择学生 —</option>' +
+    STUDENTS.map(s => `<option value="${esc(s._id)}">${esc(label(s))}</option>`).join('')
+  $('a').innerHTML = opts
+  $('b').innerHTML = opts
+}
+
+async function loadLinks(){
+  try{
+    const res = await fetch('/api/siblings?t=' + Date.now())
+    SIB = await res.json()
+  }catch(e){ SIB = null }
+  render()
+}
+
+function render(){
+  if (!SIB || !SIB.ok){
+    $('summary').innerHTML = '<span class="pill">无法读取关联数据</span>'
+    $('tbody').innerHTML = '<tr><td colspan="5" class="sm">加载失败</td></tr>'
+    return
+  }
+  const st = SIB.stats || {}
+  $('summary').innerHTML =
+    `<span class="pill">共 ${SIB.pairs.length} 对</span>` +
+    `<span class="pill">自动推断 ${st.inferredLinks ?? 0}</span>` +
+    `<span class="pill">手动 ${st.manualLinks ?? 0}</span>` +
+    `<span class="pill">已否决 ${st.rejectedPairs ?? 0}</span>` +
+    `<span class="pill">学生总数 ${STUDENTS.length}</span>`
+
+  const EV = { address:'同一住址', phone:'同一电话', email:'同一邮箱', manual:'手动指定' }
+  $('tbody').innerHTML = SIB.pairs.map(p => {
+    const A = BY_ID[p.a], B = BY_ID[p.b]
+    const src = p.source === 'manual'
+      ? '<span class="tag t-man">手动</span>'
+      : '<span class="tag t-inf">自动</span>'
+    const why = (p.evidence || []).map(k => EV[k] || k).join(' · ') + (p.relation ? ` <b>${esc(p.relation)}</b>` : '')
+    return `<tr>
+      <td>${A ? esc(label(A)) : '<span class="sm">' + esc(p.a) + '</span>'}</td>
+      <td>${B ? esc(label(B)) : '<span class="sm">' + esc(p.b) + '</span>'}</td>
+      <td>${src}</td>
+      <td class="sm">${why}${p.note ? '<div class="sm">' + esc(p.note) + '</div>' : ''}</td>
+      <td>
+        ${p.source === 'manual'
+          ? `<button class="btn ghost" data-act="remove" data-a="${esc(p.a)}" data-b="${esc(p.b)}">删除</button>`
+          : `<button class="btn danger" data-act="reject" data-a="${esc(p.a)}" data-b="${esc(p.b)}">否决</button>`}
+      </td>
+    </tr>`
+  }).join('') || '<tr><td colspan="5" class="sm">还没有任何关联。</td></tr>'
+
+  $('tbody').querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => send(btn.dataset.act, btn.dataset.a, btn.dataset.b))
+  })
+}
+
+async function send(action, a, b, relation, note){
+  const A = BY_ID[a], B = BY_ID[b]
+  const names = `${A ? label(A) : a} ↔ ${B ? label(B) : b}`
+  const verb = { link:'建立关联', reject:'否决', remove:'删除关联' }[action]
+  if (!confirm(`${verb}：\n${names}\n\n确定？`)) return
+  $('status').textContent = verb + '中…'
+  $('msg').innerHTML = ''
+  try{
+    const res = await fetch('/api/sibling-link', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ action, a, b, relation, note })
+    })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error)
+    $('status').textContent = verb + '成功。'
+    $('relation').value = ''; $('note').value = ''
+    await loadLinks()
+  }catch(err){
+    $('status').textContent = ''
+    $('msg').innerHTML = `<div class="errbox">${esc(err.message)}</div>`
+  }
+}
+
+$('linkBtn').addEventListener('click', () => {
+  const a = $('a').value, b = $('b').value
+  if (!a || !b) { $('msg').innerHTML = '<div class="errbox">请选择两个学生。</div>'; return }
+  if (a === b) { $('msg').innerHTML = '<div class="errbox">不能和自己关联。</div>'; return }
+  send('link', a, b, $('relation').value, $('note').value)
+})
+
+;(async () => { await loadStudents(); await loadLinks() })()
+</script>
+</body>
+</html>

@@ -54,16 +54,23 @@ export async function onRequestGet(context) {
       context.env.SANITY_WRITE_TOKEN || context.env.SANITY_TOKEN
     if (!token) return json({ ok: false, error: '服务器缺少环境变量：SANITY_API_TOKEN' }, 500)
 
-    const groq = `*[_type=="parentContact" && defined(student)]{
-      "sid": student._ref,
-      "addresses": contacts[type=="address"].value,
-      "phones": contacts[type=="phone" && notes != "work"].value,
-      "emails": contacts[type=="email"].value
+    const groq = `{
+      "contacts": *[_type=="parentContact" && defined(student)]{
+        "sid": student._ref,
+        "addresses": contacts[type=="address"].value,
+        "phones": contacts[type=="phone" && notes != "work"].value,
+        "emails": contacts[type=="email"].value
+      },
+      "links": *[_type=="siblingLink" && defined(a) && defined(b)]{
+        _id, "a": a._ref, "b": b._ref, relation, note, rejected
+      }
     }`
     const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?query=${encodeURIComponent(groq)}`
     const res = await fetch(url, { headers: { authorization: 'Bearer ' + token } })
     if (!res.ok) throw new Error(`Sanity query failed: ${res.status}`)
-    const records = (await res.json()).result || []
+    const payload = (await res.json()).result || {}
+    const records = payload.contacts || []
+    const manual = payload.links || []
 
     // bucket -> set of student ids sharing that value
     const buckets = { address: new Map(), phone: new Map(), email: new Map() }
@@ -103,7 +110,28 @@ export async function onRequestGet(context) {
     for (const [key, p] of pairs) {
       if (p.score < THRESHOLD) continue
       const [a, b] = key.split('|')
-      linked.push({ a, b, evidence: [...p.kinds].sort(), score: p.score })
+      linked.push({ a, b, evidence: [...p.kinds].sort(), score: p.score, source: 'inferred' })
+    }
+
+    // Manual links come last so a teacher always overrides inference: a
+    // rejected pair is removed even if the contact data says otherwise, which
+    // matters for shared custody, guardianship and re-marriage cases that no
+    // address rule can get right.
+    const rejected = new Set()
+    for (const l of manual) {
+      if (!l.a || !l.b || l.a === l.b) continue
+      const key = [l.a, l.b].sort().join('|')
+      if (l.rejected) { rejected.add(key); continue }
+      const at = linked.findIndex(x => [x.a, x.b].sort().join('|') === key)
+      const entry = {
+        a: l.a, b: l.b, evidence: ['manual'], score: 99,
+        source: 'manual', relation: l.relation || null, note: l.note || null,
+      }
+      if (at >= 0) linked[at] = entry
+      else linked.push(entry)
+    }
+    for (let i = linked.length - 1; i >= 0; i--) {
+      if (rejected.has([linked[i].a, linked[i].b].sort().join('|'))) linked.splice(i, 1)
     }
 
     // Union-find so a household of three or more resolves to one group.
@@ -136,6 +164,9 @@ export async function onRequestGet(context) {
       stats: {
         studentsWithContacts: records.length,
         pairsLinked: linked.length,
+        manualLinks: linked.filter(l => l.source === 'manual').length,
+        inferredLinks: linked.filter(l => l.source === 'inferred').length,
+        rejectedPairs: rejected.size,
         households: [...groups.values()].filter(g => g.length > 1).length,
       },
     }, 200, 600)
