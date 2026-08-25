@@ -20,7 +20,18 @@
     .year-title{margin:0 0 12px;color:#174A49}
     .class-title{margin:14px 0 10px;color:#35597b;font-size:1rem}
     .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
-    .avatar-card{background:#f8fbff;border:1px solid #e5ecf5;border-radius:12px;padding:10px;text-align:center}
+    .avatar-card{background:#f8fbff;border:1px solid #e5ecf5;border-radius:12px;padding:10px;text-align:center;position:relative;cursor:default}
+    .avatar-card.has-sib{cursor:pointer}
+    .avatar-card.has-sib:hover,.avatar-card.has-sib:focus{border-color:#8fb8d8;box-shadow:0 6px 18px rgba(30,86,92,.12);outline:none}
+    .avatar-card.is-open{border-color:#2563eb}
+    .sib-badge{position:absolute;top:6px;right:6px;font-size:13px;line-height:1;filter:saturate(.9)}
+    .sib-panel{grid-column:1/-1;background:#fff;border:1px solid #dbe6f2;border-radius:12px;padding:12px 14px;margin:4px 0 10px;text-align:left}
+    .sib-panel h5{margin:0 0 8px;font-size:14px;color:#1e565c}
+    .sib-list{display:flex;flex-wrap:wrap;gap:10px}
+    .sib-item{display:flex;align-items:center;gap:8px;background:#f8fbff;border:1px solid #e5ecf5;border-radius:10px;padding:6px 10px}
+    .sib-item img,.sib-item .ph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#e5ecf5;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5b7a8c}
+    .sib-meta{font-size:11px;color:#7b90a0}
+    .sib-why{font-size:11px;color:#94a3b8;margin-top:8px}
     .avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 8px}
     .avatar-fallback{background:#dbe9fb;color:#2c4a74;font-weight:700;display:flex;align-items:center;justify-content:center}
     .name{font-size:.9rem;font-weight:700;color:#2b3550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -152,7 +163,7 @@
     }
 
     async function loadMemories(){
-      var query = '*[_type=="student" && (defined(nameZh) || defined(nameEn) || defined(name))]|order(academicYear desc,className asc,coalesce(nameZh,nameEn,name) asc){academicYear,className,nameZh,nameEn,name,"photoUrl":avatar.asset->url}';
+      var query = '*[_type=="student" && (defined(nameZh) || defined(nameEn) || defined(name))]|order(academicYear desc,className asc,coalesce(nameZh,nameEn,name) asc){_id,academicYear,className,nameZh,nameEn,name,"photoUrl":avatar.asset->url}';
       var url = MECC_CONFIG.SANITY.buildQueryUrl(query);
       var content = document.getElementById('content');
       try{
@@ -165,7 +176,7 @@
           content.textContent = TXT.empty;
           return;
         }
-        students.forEach(function(s){ s.className = normalizeClassName(s.className); });
+        students.forEach(function(s){ s.className = normalizeClassName(s.className); if(s._id) STUDENTS_BY_ID[s._id] = s; });
         var byYear = groupBy(students, 'academicYear');
         var years = Object.keys(byYear).sort(sortAcademicYears);
         var html = '';
@@ -181,7 +192,7 @@
             html += '<h4 class="class-title">' + classTitle + '</h4>';
             html += '<div class="avatar-grid">';
             byClass[cls].forEach(function(stu){
-              html += '<article class="avatar-card">';
+              html += '<article class="avatar-card" data-sid="' + escapeHtml(stu._id) + '" tabindex="0" role="button">';
               if(stu.photoUrl){
                 html += '<img class="avatar" src="' + escapeHtml(stu.photoUrl) + '" alt="' + escapeHtml(pickPrimaryName(stu)) + '" loading="lazy" />';
               }else{
@@ -189,6 +200,7 @@
               }
               html += '<div class="name">' + escapeHtml(pickPrimaryName(stu)) + '</div>';
               html += '<div class="meta font-en">' + escapeHtml(pickEnglishFirstName(stu)) + '</div>';
+              html += '<div class="sib-badge" hidden>👨‍👩‍👧</div>';
               html += '</article>';
             });
             html += '</div>';
@@ -203,7 +215,80 @@
       }
     }
 
-    loadMemories();
+    var SIBLINGS = null;
+    var STUDENTS_BY_ID = {};
+
+    function sibLabel(kinds){
+      var map = { address: LANG === 'en' ? 'same address' : '同一住址',
+                  phone:   LANG === 'en' ? 'same phone'   : '同一电话',
+                  email:   LANG === 'en' ? 'same email'   : '同一邮箱' };
+      return (kinds || []).map(function(k){ return map[k] || k; }).join(' · ');
+    }
+
+    function buildSibPanel(sid){
+      var ids = (SIBLINGS && SIBLINGS.siblingsOf && SIBLINGS.siblingsOf[sid]) || [];
+      var mine = ids.map(function(id){ return STUDENTS_BY_ID[id]; }).filter(Boolean);
+      if(!mine.length) return null;
+      var panel = document.createElement('div');
+      panel.className = 'sib-panel';
+      var title = LANG === 'en' ? 'Siblings who also studied Chinese' : '也学过中文的兄弟姐妹';
+      var items = mine.map(function(s){
+        var av = s.photoUrl
+          ? '<img src="' + escapeHtml(s.photoUrl) + '" alt="' + escapeHtml(pickPrimaryName(s)) + '" loading="lazy">'
+          : '<div class="ph">' + escapeHtml(pickAvatarMark(s)) + '</div>';
+        return '<div class="sib-item">' + av + '<div><div>' + escapeHtml(pickPrimaryName(s)) + '</div>' +
+               '<div class="sib-meta font-en">' + escapeHtml(s.academicYear || '') + ' · ' + escapeHtml(getGradeLabel(s.academicYear)) + '</div></div></div>';
+      }).join('');
+      // evidence kinds only - never the underlying address / phone / email
+      var why = (SIBLINGS.pairs || []).filter(function(p){
+        return (p.a === sid && ids.indexOf(p.b) >= 0) || (p.b === sid && ids.indexOf(p.a) >= 0);
+      }).reduce(function(acc, p){ (p.evidence || []).forEach(function(k){ if(acc.indexOf(k) < 0) acc.push(k); }); return acc; }, []);
+      panel.innerHTML = '<h5 class="font-zh">' + escapeHtml(title) + '</h5><div class="sib-list">' + items + '</div>' +
+        (why.length ? '<div class="sib-why">' + (LANG === 'en' ? 'Matched by: ' : '匹配依据：') + escapeHtml(sibLabel(why)) + '</div>' : '');
+      return panel;
+    }
+
+    function toggleCard(card){
+      var sid = card.getAttribute('data-sid');
+      var grid = card.parentNode;
+      var open = grid.querySelector('.sib-panel[data-owner="' + sid + '"]');
+      grid.querySelectorAll('.sib-panel').forEach(function(n){ n.remove(); });
+      grid.querySelectorAll('.avatar-card.is-open').forEach(function(n){ n.classList.remove('is-open'); });
+      if(open) return;
+      var panel = buildSibPanel(sid);
+      if(!panel) return;
+      panel.setAttribute('data-owner', sid);
+      card.classList.add('is-open');
+      // place the panel after the row the card sits in
+      grid.insertBefore(panel, card.nextSibling);
+    }
+
+    function wireSiblings(){
+      if(!SIBLINGS || !SIBLINGS.ok) return;
+      document.querySelectorAll('.avatar-card').forEach(function(card){
+        var sid = card.getAttribute('data-sid');
+        var has = SIBLINGS.siblingsOf && SIBLINGS.siblingsOf[sid] && SIBLINGS.siblingsOf[sid].length;
+        if(!has) return;
+        card.classList.add('has-sib');
+        var badge = card.querySelector('.sib-badge');
+        if(badge){ badge.hidden = false; badge.title = LANG === 'en' ? 'Has siblings here' : '有兄弟姐妹也学过中文'; }
+        card.addEventListener('click', function(){ toggleCard(card); });
+        card.addEventListener('keydown', function(e){
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleCard(card); }
+        });
+      });
+    }
+
+    async function loadSiblings(){
+      try{
+        var res = await fetch('/api/siblings');
+        if(!res.ok) return;
+        var data = await res.json();
+        if(data && data.ok){ SIBLINGS = data; wireSiblings(); }
+      }catch(e){ /* roster still works without sibling links */ }
+    }
+
+    loadMemories().then(loadSiblings);
   </script>
 </body>
 </html>
