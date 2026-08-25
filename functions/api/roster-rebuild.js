@@ -88,7 +88,19 @@ export async function onRequestPost(context) {
   try {
     const pw = context.env.CONTACTS_PASSWORD
     const token = context.env.SANITY_API_TOKEN || context.env.SANITY_WRITE_TOKEN || context.env.SANITY_TOKEN
-    if (!pw || !token) return json({ ok: false, error: '服务器未配置 CONTACTS_PASSWORD / SANITY_API_TOKEN' }, 500)
+    if (!pw || !token) {
+      // Name the missing variable(s) only — never echo a value. Pages keeps
+      // Production and Preview variables separate, so a preview deployment can
+      // be missing them while the live site works fine.
+      const missing = []
+      if (!pw) missing.push('CONTACTS_PASSWORD')
+      if (!token) missing.push('SANITY_API_TOKEN')
+      return json({
+        ok: false,
+        error: `服务器缺少环境变量：${missing.join('、')}。` +
+          `若这是 Cloudflare 预览部署，请确认 Preview 环境也配置了这些变量，并重新部署后再试。`,
+      }, 500)
+    }
     if (!(await isValidSession(context.request, pw))) {
       return json({ ok: false, error: '未登录或登录已过期，请重新登录。' }, 401)
     }
