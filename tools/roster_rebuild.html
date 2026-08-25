@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>名单重建 · 家长联系人</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:22px}
+.panel{background:var(--panel);border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.1);padding:18px;margin-bottom:16px}
+h1{margin:0 0 6px;font-size:26px}.sub{color:var(--muted);font-size:14px;line-height:1.6}
+label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#334155}
+select{border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;width:100%}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}
+.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap;width:100%}
+.btn.warn{background:var(--amber)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.drop{border:2px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:24px;text-align:center;margin-top:14px}
+.drop.hot{background:#dbeafe;border-color:var(--blue)}
+.status{font-size:14px;color:var(--muted);min-height:22px;margin-top:10px}
+.pill{display:inline-flex;gap:6px;align-items:center;background:#f1f5f9;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px;margin:3px 4px 0 0}
+.pill.g{background:#dcfce7;color:#166534}.pill.a{background:#fef3c7;color:#92400e}.pill.r{background:#fee2e2;color:#991b1b}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#f8fafc;text-align:left;padding:9px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#475569;position:sticky;top:0}
+td{border-top:1px solid #eef2f7;padding:8px;vertical-align:top}
+.tag{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:900}
+.t-ok{background:#dcfce7;color:#166534}.t-rev{background:#fef3c7;color:#92400e}.t-no{background:#fee2e2;color:#991b1b}.t-done{background:#dbeafe;color:#1e40af}
+.sm{font-size:11px;color:#94a3b8}.mono{font-variant-numeric:tabular-nums}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:10px}
+.errbox{background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:10px;color:#991b1b}
+.table-wrap{overflow:auto;max-height:62vh}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wrap{padding:12px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="panel">
+    <h1>名单重建 · 家长联系人</h1>
+    <p class="sub">
+      上传学校导出的 <b>Section Rosters</b> PDF。<b>解析全部在你的浏览器本地完成</b>，PDF 不上传服务器，
+      家长信息也不会写入代码仓库。确认对照表后，才把结构化结果写入 Sanity。
+    </p>
+    <div class="grid">
+      <div><label>学年</label><select id="year"><option value="26-27">26-27</option><option value="25-26">25-26</option><option value="27-28">27-28</option></select></div>
+      <div><label>同时修正学生生日</label><select id="bday"><option value="1">是（推荐）</option><option value="0">否，只写联系人</option></select></div>
+      <div><button class="btn" id="previewBtn" disabled>核对（不写入）</button></div>
+      <div><button class="btn warn" id="commitBtn" disabled>确认写入 Sanity</button></div>
+    </div>
+    <div class="drop" id="drop">
+      <input id="file" type="file" accept="application/pdf" multiple style="width:auto" />
+      <div class="sm" style="margin-top:8px">可一次选中同一学年的两个班（大象 HRKN-15 / 老虎 HRKN-17）。学年与班级会从 PDF 表头自动读取。</div>
+    </div>
+    <div class="status" id="status">等待选择 PDF。</div>
+    <div id="problems"></div>
+  </section>
+
+  <section class="panel"><div id="summary"><span class="pill">尚未核对</span></div></section>
+
+  <section class="panel table-wrap">
+    <table>
+      <thead><tr><th style="width:20%">学生</th><th style="width:9%">班级</th><th style="width:14%">生日</th><th style="width:12%">联系条目</th><th style="width:10%">状态</th><th>备注</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="6" class="sm">选择 PDF 后点「核对」。</td></tr></tbody>
+    </table>
+  </section>
+</main>
+
+<script type="module">
+import * as pdfjs from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs'
+import { extractPages, parseRoster, readHeader, audit, toContacts } from '../js/roster-parser.js'
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs'
+
+const $ = id => document.getElementById(id)
+const esc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))
+let parsed = []      // students with .contacts attached
+let rows = []        // preview rows from the server
+
+const setStatus = m => { $('status').textContent = m }
+
+$('file').addEventListener('change', e => handle([...e.target.files]))
+const drop = $('drop')
+;['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('hot') }))
+;['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('hot') }))
+drop.addEventListener('drop', e => handle([...e.dataTransfer.files].filter(f => /pdf$/i.test(f.name))))
+
+async function handle(files){
+  if (!files.length) return
+  parsed = []; rows = []
+  $('commitBtn').disabled = true; $('previewBtn').disabled = true
+  $('problems').innerHTML = ''
+  setStatus(`正在本地解析 ${files.length} 个 PDF…`)
+  const allProblems = []
+  try{
+    for (const f of files){
+      const buf = new Uint8Array(await f.arrayBuffer())
+      const doc = await pdfjs.getDocument({ data: buf }).promise
+      const pages = await extractPages(doc)
+      const hdr = readHeader(pages[0])
+      const students = parseRoster(pages)
+      const probs = audit(students)
+      probs.forEach(p => allProblems.push(`${f.name}：${p}`))
+      if (!students.length) allProblems.push(`${f.name}：没有解析出任何学生，可能不是 Section Rosters 格式`)
+      if (hdr.academicYear) $('year').value = hdr.academicYear
+      students.forEach(s => parsed.push({ ...s, ...hdr, ...toContacts(s) }))
+      setStatus(`${f.name} → ${hdr.academicYear} ${hdr.className || '?'} · ${students.length} 人`)
+    }
+  }catch(err){
+    $('problems').innerHTML = `<div class="errbox">解析失败：${esc(err.message)}</div>`
+    setStatus('解析失败。'); return
+  }
+  if (allProblems.length){
+    $('problems').innerHTML = `<div class="warnbox"><b>解析发现 ${allProblems.length} 处问题，建议先解决再写入：</b><br>${allProblems.slice(0,25).map(esc).join('<br>')}</div>`
+  } else {
+    $('problems').innerHTML = `<div class="warnbox" style="background:#f0fdf4;border-color:#bbf7d0"><b>✅ 解析自检通过</b>，共 ${parsed.length} 人，未发现格式异常。</div>`
+  }
+  setStatus(`本地解析完成，共 ${parsed.length} 人。点「核对」与 Sanity 比对。`)
+  $('previewBtn').disabled = false
+}
+
+$('previewBtn').addEventListener('click', () => run('preview'))
+$('commitBtn').addEventListener('click', () => {
+  const n = rows.filter(r => r.status === 'ready').length
+  if (!confirm(`将覆盖 ${n} 条家长联系人记录（原内容不保留）。确定继续？`)) return
+  run('commit')
+})
+
+async function run(mode){
+  $('previewBtn').disabled = true; $('commitBtn').disabled = true
+  setStatus(mode === 'preview' ? '正在与 Sanity 比对…' : '正在写入 Sanity…')
+  try{
+    const res = await fetch('/api/roster-rebuild', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({
+        mode, academicYear: $('year').value, writeBirthday: $('bday').value === '1',
+        students: parsed.map(s => ({ nameEn: s.nameEn, birthday: s.birthday, contacts: s.contacts, needsReview: s.needsReview, reviewNote: s.reviewNote })),
+        apply: mode === 'commit' ? rows.filter(r => r.status === 'ready').map(r => r.nameEn) : undefined,
+      })
+    })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error)
+    if (mode === 'preview'){ rows = data.rows; render(data.summary) ; $('commitBtn').disabled = rows.every(r => r.status !== 'ready') }
+    else {
+      rows = rows.map(r => data.applied.includes(r.nameEn) ? { ...r, status:'written' } : r)
+      render(data.summary)
+      setStatus(`写入完成：${data.applied.length} 名学生，${data.mutationsWritten} 条变更。`)
+      return
+    }
+    setStatus(`核对完成。可写入 ${data.summary.ready} 人，生日待修正 ${data.summary.birthdaysToFix} 条。`)
+  }catch(err){
+    $('problems').innerHTML = `<div class="errbox">${esc(err.message)}</div>`
+    setStatus('操作失败。')
+  }finally{ $('previewBtn').disabled = false }
+}
+
+function render(sum){
+  $('summary').innerHTML =
+    `<span class="pill g">✅ 可写入 ${sum.ready}</span>`+
+    `<span class="pill a">🎂 生日待修正 ${sum.birthdaysToFix}</span>`+
+    `<span class="pill a">⚠️ 待复核 ${sum.needsReview}</span>`+
+    `<span class="pill r">❌ 找不到学生 ${sum.missingStudent}</span>`+
+    `<span class="pill r">❌ 无联系人文档 ${sum.missingParentContact}</span>`+
+    `<span class="pill">Sanity 该学年共 ${sum.cohortSizeInSanity} 人</span>`
+  const tag = s => ({ready:'<span class="tag t-ok">可写入</span>',written:'<span class="tag t-done">已写入</span>',no_student:'<span class="tag t-no">无学生</span>',no_parentcontact:'<span class="tag t-no">无文档</span>'}[s] || '')
+  $('tbody').innerHTML = rows.map(r => `<tr>
+    <td><b>${esc(r.nameEn)}</b>${r.nameZh ? `<div class="sm">${esc(r.nameZh)}</div>` : ''}</td>
+    <td class="sm">${esc(r.className || '')}</td>
+    <td class="mono">${r.birthdayChanges ? `<span class="sm">${esc(r.oldBirthday||'—')}</span> → <b>${esc(r.newBirthday)}</b>` : esc(r.newBirthday || '—')}</td>
+    <td class="mono sm">${r.oldContactCount} → <b>${r.newContactCount}</b></td>
+    <td>${tag(r.status)}</td>
+    <td class="sm">${r.needsReview ? `<span class="tag t-rev">待复核</span> ${esc(r.reviewNote)}` : esc(r.note || '')}</td>
+  </tr>`).join('') || '<tr><td colspan="6" class="sm">无数据。</td></tr>'
+}
+</script>
+</body>
+</html>
