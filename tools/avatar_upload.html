@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>学生头像批量上传</title>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;--shadow:0 16px 40px rgba(15,23,42,.1)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}.wrap{max-width:1180px;margin:0 auto;padding:22px}.panel{background:var(--panel);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}h1{margin:0 0 8px;font-size:26px}.sub{color:var(--muted);font-size:14px;line-height:1.5}label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#334155}select,input{border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;width:100%}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}.btn.ghost{background:#e2e8f0;color:#334155}.btn:disabled{opacity:.5;cursor:not-allowed}.drop{border:2px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:26px;text-align:center;transition:.15s}.drop.hot{background:#dbeafe;border-color:var(--blue)}.status{font-size:14px;color:var(--muted);min-height:22px;margin-top:10px}.summary{display:flex;gap:10px;flex-wrap:wrap}.pill{display:inline-flex;gap:6px;align-items:center;background:#f1f5f9;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px}.pill.g{background:#dcfce7;color:#166534}.pill.a{background:#fef3c7;color:#92400e}.pill.r{background:#fee2e2;color:#991b1b}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #e5e7eb;padding:9px 8px;text-align:left;vertical-align:middle}th{background:#f8fafc;position:sticky;top:0;z-index:1}.thumb{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#e2e8f0;display:block}.tag{display:inline-block;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900}.t-ok{background:#dcfce7;color:#166534}.t-rev{background:#fef3c7;color:#92400e}.t-amb{background:#ffedd5;color:#9a3412}.t-no{background:#fee2e2;color:#991b1b}.t-done{background:#dbeafe;color:#1e40af}.t-err{background:#fee2e2;color:#991b1b}.small{font-size:12px;color:var(--muted)}.row-actions{display:flex;gap:6px;align-items:center}select.pick{min-width:200px;font-size:12px;padding:6px 8px}.bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px}.bar>i{display:block;height:100%;background:var(--blue);width:0;transition:.2s}
+    @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wrap{padding:12px}select.pick{min-width:140px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel">
+      <h1>学生头像批量上传</h1>
+      <p class="sub">
+        一次拖入全部照片，页面按<b>文件名</b>自动匹配学生，核对无误后一次性上传到 Sanity。<br>
+        文件名请用学生的英文名或中文名，例如 <code>Adalynn E McDonald.jpg</code>、<code>McDonald, Adalynn E.jpg</code>、<code>麦雅琳.jpg</code> 都可以识别。
+      </p>
+      <div class="grid">
+        <div><label>学年</label><select id="academicYear"><option value="26-27">26-27</option><option value="25-26">25-26</option><option value="27-28">27-28</option></select></div>
+        <div><label>班级</label><select id="className"><option value="">全部班级</option><option value="elephant">🐘 大象 (15)</option><option value="tiger">🐯 老虎 (17)</option></select></div>
+        <div><label>已有头像的学生</label><select id="overwrite"><option value="0">跳过，不覆盖</option><option value="1">覆盖replace</option></select></div>
+        <div><button class="btn" id="uploadBtn" disabled>开始上传</button></div>
+      </div>
+
+      <div class="drop" id="drop" style="margin-top:14px">
+        <input id="fileInput" type="file" accept="image/*" multiple style="width:auto" />
+        <div class="small" style="margin-top:8px">把 49 张照片一次全部拖进来，或点击选择。支持 JPG / PNG / WebP / HEIC，单张上限 12MB。</div>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="status" id="status">等待选择照片。</div>
+    </section>
+
+    <section class="panel">
+      <div class="summary" id="summary"><span class="pill">尚未匹配</span></div>
+    </section>
+
+    <section class="panel table-wrap">
+      <table>
+        <thead><tr><th style="width:56px">预览</th><th>文件名</th><th style="width:110px">状态</th><th>匹配到的学生</th><th style="width:90px">结果</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="5" class="small">选择照片后，这里会显示匹配结果。</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+
+<script>
+const $ = id => document.getElementById(id);
+const statusEl = $('status'), tbody = $('tbody'), summary = $('summary'), bar = $('bar');
+let items = [];      // {file, url, fileName, status, studentId, candidates, result}
+let roster = [];     // all students in scope
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function setStatus(m){statusEl.textContent = m}
+function setBar(p){bar.style.width = Math.round(p*100) + '%'}
+
+$('fileInput').addEventListener('change', e => intake([...e.target.files]));
+$('uploadBtn').addEventListener('click', runUpload);
+['academicYear','className'].forEach(id => $(id).addEventListener('change', () => { if (items.length) runMatch(); }));
+
+const drop = $('drop');
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('hot') }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('hot') }));
+drop.addEventListener('drop', e => intake([...e.dataTransfer.files].filter(f => f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name))));
+
+function intake(files){
+  if (!files.length) return;
+  items.forEach(i => i.url && URL.revokeObjectURL(i.url));
+  items = files.map(f => ({ file: f, url: URL.createObjectURL(f), fileName: f.name, status: 'pending', studentId: null, candidates: [], result: null }));
+  setStatus(`已选择 ${items.length} 张照片，正在匹配…`);
+  runMatch();
+}
+
+async function runMatch(){
+  $('uploadBtn').disabled = true;
+  try{
+    const res = await fetch('/api/avatar-match', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ academicYear: $('academicYear').value, className: $('className').value, files: items.map(i => i.fileName) })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    roster = data.students || [];
+    const byName = {};
+    (data.results || []).forEach(r => { byName[r.fileName] = r });
+    items.forEach(i => {
+      const r = byName[i.fileName];
+      if (!r) return;
+      i.status = r.status; i.studentId = r.studentId || null; i.candidates = r.candidates || []; i.parsedName = r.parsedName;
+    });
+    render(data.summary);
+    setStatus(`匹配完成。名单内共 ${data.summary.studentsInScope} 人，其中 ${data.summary.studentsWithoutAvatar} 人还没有头像。`);
+  }catch(err){
+    console.error(err); setStatus(err.message || '匹配失败。');
+  }
+}
+
+function render(sum){
+  if (sum){
+    summary.innerHTML =
+      `<span class="pill g">✅ 已匹配 ${sum.matched}</span>` +
+      `<span class="pill a">⚠️ 待确认 ${sum.review}</span>` +
+      `<span class="pill a">🔀 有歧义 ${sum.ambiguous}</span>` +
+      `<span class="pill r">❌ 没找到 ${sum.unmatched}</span>` +
+      `<span class="pill">共 ${sum.total} 张</span>`;
+  }
+  const tag = s => ({matched:'<span class="tag t-ok">已匹配</span>',review:'<span class="tag t-rev">待确认</span>',ambiguous:'<span class="tag t-amb">有歧义</span>',unmatched:'<span class="tag t-no">没找到</span>'}[s] || '<span class="tag">…</span>');
+
+  tbody.innerHTML = items.map((it, idx) => {
+    const opts = ['<option value="">— 不上传这张 —</option>'].concat(
+      roster.map(s => {
+        const label = (s.name || '') + (s.nameZh ? ' / ' + s.nameZh : '') + (s.hasAvatar ? '（已有头像）' : '');
+        return `<option value="${esc(s._id)}"${s._id === it.studentId ? ' selected' : ''}>${esc(label)}</option>`;
+      })
+    ).join('');
+    let resultCell = '<span class="small">—</span>';
+    if (it.result === 'ok') resultCell = '<span class="tag t-done">已上传</span>';
+    else if (it.result === 'skip') resultCell = '<span class="tag t-rev">已跳过</span>';
+    else if (it.result) resultCell = `<span class="tag t-err" title="${esc(it.result)}">失败</span>`;
+    return `<tr>
+      <td><img class="thumb" src="${it.url}" alt=""></td>
+      <td><b>${esc(it.fileName)}</b><div class="small">解析为：${esc(it.parsedName || '')}</div></td>
+      <td>${tag(it.status)}</td>
+      <td><div class="row-actions"><select class="pick" data-idx="${idx}">${opts}</select>${it.candidates && it.candidates[0] && it.status !== 'matched' ? `<span class="small">最接近 ${Math.round(it.candidates[0].confidence*100)}%</span>` : ''}</div></td>
+      <td>${resultCell}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="small">没有照片。</td></tr>';
+
+  tbody.querySelectorAll('select.pick').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const i = Number(e.target.dataset.idx);
+      items[i].studentId = e.target.value || null;
+      items[i].status = e.target.value ? 'matched' : 'unmatched';
+      refreshButton();
+    });
+  });
+  refreshButton();
+}
+
+function refreshButton(){
+  const ready = items.filter(i => i.studentId && i.result !== 'ok').length;
+  $('uploadBtn').disabled = ready === 0;
+  $('uploadBtn').textContent = ready ? `开始上传（${ready} 张）` : '开始上传';
+}
+
+async function runUpload(){
+  const queue = items.filter(i => i.studentId && i.result !== 'ok');
+  if (!queue.length) return;
+  $('uploadBtn').disabled = true;
+  const overwrite = $('overwrite').value;
+  let done = 0, ok = 0, skipped = 0, failed = 0;
+
+  for (const it of queue){
+    setStatus(`正在上传 ${done + 1}/${queue.length}：${it.fileName}`);
+    try{
+      const fd = new FormData();
+      fd.append('photo', it.file);
+      fd.append('studentId', it.studentId);
+      fd.append('overwrite', overwrite);
+      const res = await fetch('/api/avatar-upload', { method:'POST', body: fd });
+      const data = await res.json();
+      if (data.ok){ it.result = 'ok'; ok++; }
+      else if (data.skipped){ it.result = 'skip'; skipped++; }
+      else { it.result = data.error || '失败'; failed++; }
+    }catch(err){
+      it.result = err.message || '网络错误'; failed++;
+    }
+    done++; setBar(done / queue.length); render();
+  }
+  setStatus(`完成：成功 ${ok} 张，跳过 ${skipped} 张，失败 ${failed} 张。`);
+  refreshButton();
+}
+</script>
+</body>
+</html>
