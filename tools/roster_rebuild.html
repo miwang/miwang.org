@@ -154,14 +154,17 @@ async function run(mode){
 function render(sum){
   $('summary').innerHTML =
     `<span class="pill g">✅ 可写入 ${sum.ready}</span>`+
+    `<span class="pill a">🔍 宽松匹配 ${sum.looseMatches ?? 0}</span>`+
+    `<span class="pill r">🔀 有歧义 ${sum.ambiguous ?? 0}</span>`+
     `<span class="pill a">🎂 生日待修正 ${sum.birthdaysToFix}</span>`+
     `<span class="pill a">⚠️ 待复核 ${sum.needsReview}</span>`+
     `<span class="pill r">❌ 找不到学生 ${sum.missingStudent}</span>`+
     `<span class="pill r">❌ 无联系人文档 ${sum.missingParentContact}</span>`+
     `<span class="pill">Sanity 该学年共 ${sum.cohortSizeInSanity} 人</span>`
-  const tag = s => ({ready:'<span class="tag t-ok">可写入</span>',written:'<span class="tag t-done">已写入</span>',no_student:'<span class="tag t-no">无学生</span>',no_parentcontact:'<span class="tag t-no">无文档</span>'}[s] || '')
+  const tag = s => ({ready:'<span class="tag t-ok">可写入</span>',written:'<span class="tag t-done">已写入</span>',no_student:'<span class="tag t-no">无学生</span>',no_parentcontact:'<span class="tag t-no">无文档</span>',ambiguous:'<span class="tag t-no">有歧义</span>'}[s] || '')
+  const METHOD = {exact:'', no_middle_initial:'去中间名', first_last:'名+姓', first_name_only:'仅按名'}
   $('tbody').innerHTML = rows.map(r => `<tr>
-    <td><b>${esc(r.nameEn)}</b>${r.nameZh ? `<div class="sm">${esc(r.nameZh)}</div>` : ''}</td>
+    <td><b>${esc(r.nameEn)}</b>${r.nameZh ? `<div class="sm">${esc(r.nameZh)}</div>` : ''}${r.looseMatch ? `<div class="sm" style="color:#d97706">↳ Sanity：${esc(r.sanityName)}（${esc(METHOD[r.matchMethod]||r.matchMethod)}）</div>` : ''}</td>
     <td class="sm">${esc(r.className || '')}</td>
     <td class="mono">${r.birthdayChanges ? `<span class="sm">${esc(r.oldBirthday||'—')}</span> → <b>${esc(r.newBirthday)}</b>` : esc(r.newBirthday || '—')}</td>
     <td class="mono sm">${r.oldContactCount} → <b>${r.newContactCount}</b></td>
