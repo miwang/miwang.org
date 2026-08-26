@@ -144,20 +144,69 @@ function similarity(a, b) {
 
 /* ---------- matching ---------- */
 
+/**
+ * Matching tiers, most specific first.
+ *
+ * Photo filenames in practice are not full names. The 23-24 batch arrived as
+ * bare first names ("Emma.png") with one file named after a surname
+ * ("Abdullah.png", because two students share the first name Muhammad).
+ * So each tier keeps ALL candidates and a tier that matches more than one
+ * student is reported as ambiguous rather than silently resolved.
+ */
+const TIERS = [
+  { name: 'exact',             conf: 1.00, key: s => slug(s) },
+  { name: 'no_middle_initial', conf: 0.95, key: s => dropInitials(slug(s)) },
+  { name: 'first_last',        conf: 0.92, key: s => {
+      const parts = slug(s).split('-').filter(Boolean)
+      return parts.length > 1 ? `${parts[0]}-${parts[parts.length - 1]}` : parts[0] || ''
+    } },
+  // First name before surname: photo filenames are overwhelmingly first names.
+  // With surname first, "James.png" (James Douglas Stir) would be handed to
+  // Emma James, whose SURNAME is James.
+  { name: 'first_name_only',   conf: 0.80, key: s => (slug(s).split('-')[0] || '') },
+  { name: 'last_name_only',    conf: 0.78, key: s => {
+      const parts = slug(s).split('-').filter(Boolean)
+      return parts.length ? parts[parts.length - 1] : ''
+    } },
+]
+
 export function buildIndex(students) {
-  return students.map(s => {
+  const entries = students.map(s => {
     const en = s.nameEn || s.name || ''
     const zh = s.nameZh || (hasHan(s.name) ? s.name : '')
-    const enSlug = slug(en)
-    return {
-      doc: s,
-      en,
-      zh,
-      enSlug,
-      enSlugNoInit: dropInitials(enSlug),
-      zhSlug: slug(zh),
-    }
+    return { doc: s, en, zh, enSlug: slug(en), zhSlug: slug(zh) }
   })
+
+  // one lookup map per tier, plus a Chinese-name map
+  const maps = TIERS.map(t => {
+    const m = new Map()
+    for (const e of entries) {
+      const k = t.key(e.en)
+      if (!k) continue
+      if (!m.has(k)) m.set(k, [])
+      m.get(k).push(e)
+    }
+    return m
+  })
+  const zhMap = new Map()
+  for (const e of entries) {
+    if (!e.zhSlug) continue
+    if (!zhMap.has(e.zhSlug)) zhMap.set(e.zhSlug, [])
+    zhMap.get(e.zhSlug).push(e)
+  }
+  return { entries, maps, zhMap }
+}
+
+function asCandidate(entry, confidence, method) {
+  return {
+    studentId: entry.doc._id,
+    name: entry.en,
+    nameZh: entry.zh || null,
+    className: entry.doc.className || null,
+    hasAvatar: !!entry.doc.hasAvatar,
+    confidence,
+    method,
+  }
 }
 
 export function matchOne(fileName, index) {
@@ -165,67 +214,62 @@ export function matchOne(fileName, index) {
   if (!raw) return { fileName, status: 'unmatched', reason: 'empty_name', candidates: [] }
 
   const flipped = flipCommaName(raw)
-  const forms = [slug(raw)]
-  if (flipped) forms.push(slug(flipped))
-  const formsNoInit = forms.map(dropInitials)
+  const forms = [raw]
+  if (flipped) forms.push(flipped)
 
-  const scored = []
-  for (const entry of index) {
-    let best = 0
-    let how = ''
-
-    if (entry.zhSlug && forms.includes(entry.zhSlug)) {
-      best = 1
-      how = 'chinese_exact'
-    } else if (forms.includes(entry.enSlug)) {
-      best = 1
-      how = 'exact'
-    } else if (entry.enSlugNoInit && formsNoInit.includes(entry.enSlugNoInit)) {
-      best = 0.92
-      how = 'no_middle_initial'
-    } else {
-      for (const f of forms) {
-        if (!f || hasHan(f)) continue
-        const sim = similarity(f, entry.enSlug)
-        if (sim > best) {
-          best = sim
-          how = 'fuzzy'
-        }
-      }
-      if (best < 0.72) continue
-      best = Math.min(best, 0.85)
+  // Chinese filename: exact only, never fuzzy.
+  for (const form of forms) {
+    if (!hasHan(form)) continue
+    const hits = index.zhMap.get(slug(form))
+    if (hits && hits.length === 1) {
+      return { fileName, parsedName: raw, status: 'matched',
+               studentId: hits[0].doc._id,
+               candidates: [asCandidate(hits[0], 1, 'chinese_exact')] }
     }
-
-    scored.push({
-      studentId: entry.doc._id,
-      name: entry.en,
-      nameZh: entry.zh || null,
-      className: entry.doc.className || null,
-      hasAvatar: !!entry.doc.hasAvatar,
-      confidence: Number(best.toFixed(3)),
-      method: how,
-    })
+    if (hits && hits.length > 1) {
+      return { fileName, parsedName: raw, status: 'ambiguous', reason: 'chinese_duplicate',
+               candidates: hits.map(h => asCandidate(h, 1, 'chinese_exact')) }
+    }
   }
 
-  scored.sort((a, b) => b.confidence - a.confidence)
-  const top = scored[0]
-  const second = scored[1]
+  for (let i = 0; i < TIERS.length; i++) {
+    const tier = TIERS[i]
+    for (const form of forms) {
+      if (hasHan(form)) continue
+      const hits = index.maps[i].get(tier.key(form))
+      if (!hits || !hits.length) continue
+      if (hits.length === 1) {
+        return { fileName, parsedName: raw, status: 'matched',
+                 studentId: hits[0].doc._id, matchMethod: tier.name,
+                 looseMatch: i >= 2,
+                 candidates: [asCandidate(hits[0], tier.conf, tier.name)] }
+      }
+      return { fileName, parsedName: raw, status: 'ambiguous', reason: 'multiple_students',
+               matchMethod: tier.name,
+               candidates: hits.map(h => asCandidate(h, tier.conf, tier.name)) }
+    }
+  }
 
-  if (!top) {
+  // Last resort: edit distance against full names, always needs confirmation.
+  const scored = []
+  for (const e of index.entries) {
+    let best = 0
+    for (const form of forms) {
+      if (hasHan(form)) continue
+      const sim = Math.max(
+        similarity(slug(form), e.enSlug),
+        similarity(slug(form), (e.enSlug.split('-')[0] || '')),
+      )
+      if (sim > best) best = sim
+    }
+    if (best >= 0.72) scored.push(asCandidate(e, Math.min(best, 0.85), 'fuzzy'))
+  }
+  scored.sort((a, b) => b.confidence - a.confidence)
+  if (!scored.length) {
     return { fileName, parsedName: raw, status: 'unmatched', reason: 'no_candidate', candidates: [] }
   }
-
-  // Two candidates too close together = ambiguous, make the teacher choose.
-  const ambiguous = second && top.confidence - second.confidence < 0.06
-  const status = ambiguous ? 'ambiguous' : top.confidence >= 0.9 ? 'matched' : 'review'
-
-  return {
-    fileName,
-    parsedName: raw,
-    status,
-    studentId: status === 'matched' ? top.studentId : null,
-    candidates: scored.slice(0, 5),
-  }
+  return { fileName, parsedName: raw, status: 'review', looseMatch: true,
+           matchMethod: 'fuzzy', candidates: scored.slice(0, 5) }
 }
 
 /* ---------- handler ---------- */
@@ -292,6 +336,7 @@ export async function onRequestPost(context) {
       total: results.length,
       matched: results.filter(r => r.status === 'matched').length,
       review: results.filter(r => r.status === 'review').length,
+      loose: results.filter(r => r.looseMatch).length,
       ambiguous: results.filter(r => r.status === 'ambiguous').length,
       unmatched: results.filter(r => r.status === 'unmatched').length,
       studentsInScope: students.length,
