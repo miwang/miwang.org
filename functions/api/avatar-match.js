@@ -347,7 +347,7 @@ export async function onRequestPost(context) {
       ok: true,
       summary,
       results,
-      students: index.map(e => ({
+      students: index.entries.map(e => ({
         _id: e.doc._id,
         name: e.en,
         nameZh: e.zh || null,
