@@ -19,7 +19,7 @@
         文件名请用学生的英文名或中文名，例如 <code>Adalynn E McDonald.jpg</code>、<code>McDonald, Adalynn E.jpg</code>、<code>麦雅琳.jpg</code> 都可以识别。
       </p>
       <div class="grid">
-        <div><label>学年</label><select id="academicYear"><option value="26-27">26-27</option><option value="25-26">25-26</option><option value="23-24">23-24</option><option value="27-28">27-28</option></select></div>
+        <div><label>学年</label><select id="academicYear"></select></div>
         <div><label>班级</label><select id="className"><option value="">全部班级</option><option value="elephant">🐘 大象 (15)</option><option value="tiger">🐯 老虎 (17)</option></select></div>
         <div><label>已有头像的学生</label><select id="overwrite"><option value="0">跳过，不覆盖</option><option value="1">覆盖replace</option></select></div>
         <div><button class="btn" id="uploadBtn" disabled>开始上传</button></div>
@@ -48,6 +48,47 @@
 
 <script>
 const $ = id => document.getElementById(id);
+/**
+ * Academic year options, 17-18 through next year.
+ *
+ * Previously each tool hardcoded a short list, so a newly imported cohort
+ * (24-25) simply did not appear and looked like missing data. Generating the
+ * range means no tool needs editing when a year is added, and the years that
+ * actually hold students are marked so an empty one is obvious before you
+ * upload anything.
+ */
+function academicYearOptions(counts){
+  const now = new Date();
+  const endYear = (now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1) + 1;
+  const out = [];
+  for (let y = endYear; y >= 2017; y--){
+    const v = `${String(y).slice(-2)}-${String(y + 1).slice(-2)}`;
+    out.push({ value: v, count: (counts && counts[v]) || 0 });
+  }
+  return out;
+}
+
+function fillYearSelect(sel, counts, preferred){
+  const opts = academicYearOptions(counts);
+  sel.innerHTML = opts.map(o =>
+    `<option value="${o.value}">${o.value}${o.count ? `（${o.count} 人）` : '（暂无学生）'}</option>`
+  ).join('');
+  const withStudents = opts.filter(o => o.count);
+  sel.value = (preferred && opts.some(o => o.value === preferred)) ? preferred
+            : withStudents.length ? withStudents[0].value
+            : opts[0].value;
+}
+
+async function fetchYearCounts(){
+  const q = '*[_type=="student" && defined(academicYear)]{academicYear}';
+  const url = `https://sow12t1i.apicdn.sanity.io/v2021-10-21/data/query/production?query=${encodeURIComponent(q)}`;
+  try{
+    const res = await fetch(url);
+    const rows = (await res.json()).result || [];
+    return rows.reduce((a, r) => { a[r.academicYear] = (a[r.academicYear] || 0) + 1; return a; }, {});
+  }catch(e){ return {}; }
+}
+
 const statusEl = $('status'), tbody = $('tbody'), summary = $('summary'), bar = $('bar');
 let items = [];      // {file, url, fileName, status, studentId, candidates, result}
 let roster = [];     // all students in scope
@@ -55,6 +96,8 @@ let roster = [];     // all students in scope
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function setStatus(m){statusEl.textContent = m}
 function setBar(p){bar.style.width = Math.round(p*100) + '%'}
+
+(async () => { fillYearSelect($('academicYear'), await fetchYearCounts()); })();
 
 $('fileInput').addEventListener('change', e => intake([...e.target.files]));
 $('uploadBtn').addEventListener('click', runUpload);

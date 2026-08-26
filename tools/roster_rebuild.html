@@ -41,7 +41,7 @@ td{border-top:1px solid #eef2f7;padding:8px;vertical-align:top}
       家长信息也不会写入代码仓库。确认对照表后，才把结构化结果写入 Sanity。
     </p>
     <div class="grid">
-      <div><label>学年</label><select id="year"><option value="26-27">26-27</option><option value="25-26">25-26</option><option value="27-28">27-28</option></select></div>
+      <div><label>学年</label><select id="year"></select></div>
       <div><label>同时修正学生生日</label><select id="bday"><option value="1">是（推荐）</option><option value="0">否，只写联系人</option></select></div>
       <div><button class="btn" id="previewBtn" disabled>核对（不写入）</button></div>
       <div><button class="btn warn" id="commitBtn" disabled>确认写入 Sanity</button></div>
@@ -70,11 +70,54 @@ import { extractPages, parseRoster, readHeader, audit, toContacts } from '../js/
 pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs'
 
 const $ = id => document.getElementById(id)
+/**
+ * Academic year options, 17-18 through next year.
+ *
+ * Previously each tool hardcoded a short list, so a newly imported cohort
+ * (24-25) simply did not appear and looked like missing data. Generating the
+ * range means no tool needs editing when a year is added, and the years that
+ * actually hold students are marked so an empty one is obvious before you
+ * upload anything.
+ */
+function academicYearOptions(counts){
+  const now = new Date();
+  const endYear = (now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1) + 1;
+  const out = [];
+  for (let y = endYear; y >= 2017; y--){
+    const v = `${String(y).slice(-2)}-${String(y + 1).slice(-2)}`;
+    out.push({ value: v, count: (counts && counts[v]) || 0 });
+  }
+  return out;
+}
+
+function fillYearSelect(sel, counts, preferred){
+  const opts = academicYearOptions(counts);
+  sel.innerHTML = opts.map(o =>
+    `<option value="${o.value}">${o.value}${o.count ? `（${o.count} 人）` : '（暂无学生）'}</option>`
+  ).join('');
+  const withStudents = opts.filter(o => o.count);
+  sel.value = (preferred && opts.some(o => o.value === preferred)) ? preferred
+            : withStudents.length ? withStudents[0].value
+            : opts[0].value;
+}
+
+async function fetchYearCounts(){
+  const q = '*[_type=="student" && defined(academicYear)]{academicYear}';
+  const url = `https://sow12t1i.apicdn.sanity.io/v2021-10-21/data/query/production?query=${encodeURIComponent(q)}`;
+  try{
+    const res = await fetch(url);
+    const rows = (await res.json()).result || [];
+    return rows.reduce((a, r) => { a[r.academicYear] = (a[r.academicYear] || 0) + 1; return a; }, {});
+  }catch(e){ return {}; }
+}
+
 const esc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))
 let parsed = []      // students with .contacts attached
 let rows = []        // preview rows from the server
 
 const setStatus = m => { $('status').textContent = m }
+
+;(async () => { fillYearSelect($('year'), await fetchYearCounts()) })()
 
 $('file').addEventListener('change', e => handle([...e.target.files]))
 const drop = $('drop')
