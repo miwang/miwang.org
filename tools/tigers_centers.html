@@ -182,10 +182,15 @@ window.onload = async () => {
         } else if (sanityStudents.length && !data.students.length) {
             // 新学年第一次打开：本学年 key 下还没有数据，直接按名单播种，
             // 省掉一次手动「同步名单」，也避免误以为工具坏了。
+            // 字段必须与 syncRoster() 创建的完全一致 —— renderUI() 依赖
+            // groupIndex / mathSubGroup / rank，缺一个就会抛异常。
             data.students = sanityStudents.map(ss => ({
                 id: Date.now() + Math.random(),
                 name: (ss.name || '').trim(),
-                group: 0,
+                groupIndex: 0,
+                mathSubGroup: 0,
+                rank: 9999,
+                photo: null,
                 _sanityPhoto: ss.img || null,
             }));
             data.step = 0;
@@ -199,8 +204,16 @@ window.onload = async () => {
             });
         }
 
-        renderUI();
-        showLoading(false);
+        try {
+            renderUI();
+        } catch (e) {
+            // 遮罩只在这里关闭，渲染一抛异常页面就会永远停在
+            // 「正在安全加载云端排版…」，所以必须兜住并把原因说出来。
+            console.error('renderUI 失败', e);
+            alert('排版渲染出错：' + (e && e.message ? e.message : e));
+        } finally {
+            showLoading(false);
+        }
         if (seededThisLoad) {
             seededThisLoad = false;
             commit();   // 把播种结果写回云端，避免每次打开重复播种
