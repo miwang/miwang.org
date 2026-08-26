@@ -78,6 +78,19 @@ export const student = defineType({
       description: '旧页面兼容字段；新数据请优先填写“学生中文名/学生英文名”',
     }),
     defineField({
+      name: 'gender',
+      title: '性别 (Gender)',
+      type: 'string',
+      description: '来自学校名单的 Gender 栏。用于分组、名牌与统计。',
+      options: {
+        list: [
+          { title: '男 Male', value: 'male' },
+          { title: '女 Female', value: 'female' },
+        ],
+        layout: 'radio',
+      },
+    }),
+    defineField({
       name: 'studentNumber',
       title: '座号 (Seat No.)',
       type: 'number',
