@@ -1,0 +1,48 @@
+name: 部署 Sanity Schema
+
+# Runs only when triggered by hand from the Actions tab, so it can never fire
+# on a content commit. Deploying the schema is what makes new fields visible in
+# Studio; it does not touch any document data.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只检查不部署（先跑这个确认能通过）'
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: miwang-cms
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: miwang-cms/package-lock.json
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 校验 schema 能否编译
+        run: npx tsc --noEmit -p . || npx tsc --noEmit schemaTypes/index.ts
+
+      - name: 列出当前已部署的 schema
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}
+        run: npx sanity@latest schema list || true
+
+      - name: 部署 schema
+        if: ${{ inputs.dry_run == false }}
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_DEPLOY_TOKEN }}
+        run: npx sanity@latest schema deploy
+
+      - name: 未部署说明
+        if: ${{ inputs.dry_run == true }}
+        run: echo "dry_run 为 true，未执行部署。确认上面步骤无错后，重新运行并把 dry_run 取消勾选。"
