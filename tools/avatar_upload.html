@@ -6,7 +6,7 @@
   <title>学生头像批量上传</title>
   <style>
     :root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;--shadow:0 16px 40px rgba(15,23,42,.1)}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}.wrap{max-width:1180px;margin:0 auto;padding:22px}.panel{background:var(--panel);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}h1{margin:0 0 8px;font-size:26px}.sub{color:var(--muted);font-size:14px;line-height:1.5}label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#334155}select,input{border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;width:100%}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}.btn.ghost{background:#e2e8f0;color:#334155}.btn:disabled{opacity:.5;cursor:not-allowed}.drop{border:2px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:26px;text-align:center;transition:.15s}.drop.hot{background:#dbeafe;border-color:var(--blue)}.status{font-size:14px;color:var(--muted);min-height:22px;margin-top:10px}.summary{display:flex;gap:10px;flex-wrap:wrap}.pill{display:inline-flex;gap:6px;align-items:center;background:#f1f5f9;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px}.pill.g{background:#dcfce7;color:#166534}.pill.a{background:#fef3c7;color:#92400e}.pill.r{background:#fee2e2;color:#991b1b}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #e5e7eb;padding:9px 8px;text-align:left;vertical-align:middle}th{background:#f8fafc;position:sticky;top:0;z-index:1}.thumb{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#e2e8f0;display:block}.tag{display:inline-block;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900}.t-ok{background:#dcfce7;color:#166534}.t-rev{background:#fef3c7;color:#92400e}.t-amb{background:#ffedd5;color:#9a3412}.t-no{background:#fee2e2;color:#991b1b}.t-done{background:#dbeafe;color:#1e40af}.t-err{background:#fee2e2;color:#991b1b}.small{font-size:12px;color:var(--muted)}.row-actions{display:flex;gap:6px;align-items:center}select.pick{min-width:200px;font-size:12px;padding:6px 8px}.bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px}.bar>i{display:block;height:100%;background:var(--blue);width:0;transition:.2s}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans SC","Microsoft YaHei",sans-serif}.wrap{max-width:1180px;margin:0 auto;padding:22px}.panel{background:var(--panel);border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}h1{margin:0 0 8px;font-size:26px}.sub{color:var(--muted);font-size:14px;line-height:1.5}label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px;color:#334155}select,input{border:1px solid var(--line);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;width:100%}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}.btn.ghost{background:#e2e8f0;color:#334155}.btn:disabled{opacity:.5;cursor:not-allowed}.drop{border:2px dashed #bfdbfe;background:#eff6ff;border-radius:18px;padding:26px;text-align:center;transition:.15s}.drop.hot{background:#dbeafe;border-color:var(--blue)}.status{font-size:14px;color:var(--muted);min-height:22px;margin-top:10px}.summary{display:flex;gap:10px;flex-wrap:wrap}.pill{display:inline-flex;gap:6px;align-items:center;background:#f1f5f9;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px}.pill.g{background:#dcfce7;color:#166534}.pill.a{background:#fef3c7;color:#92400e}.pill.r{background:#fee2e2;color:#991b1b}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #e5e7eb;padding:9px 8px;text-align:left;vertical-align:middle}th{background:#f8fafc;position:sticky;top:0;z-index:1}.thumb{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#e2e8f0;display:block}.tag{display:inline-block;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:900}.t-ok{background:#dcfce7;color:#166534}.t-rev{background:#fef3c7;color:#92400e}.t-amb{background:#ffedd5;color:#9a3412}.t-no{background:#fee2e2;color:#991b1b}.t-done{background:#dbeafe;color:#1e40af}.t-err{background:#fee2e2;color:#991b1b}.small{font-size:12px;color:var(--muted)}.errbox{background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:10px;color:#991b1b}.row-actions{display:flex;gap:6px;align-items:center}select.pick{min-width:200px;font-size:12px;padding:6px 8px}.bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px}.bar>i{display:block;height:100%;background:var(--blue);width:0;transition:.2s}
     @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.wrap{padding:12px}select.pick{min-width:140px}}
   </style>
 </head>
@@ -31,6 +31,7 @@
       </div>
       <div class="bar"><i id="bar"></i></div>
       <div class="status" id="status">等待选择照片。</div>
+      <div id="diag"></div>
     </section>
 
     <section class="panel">
@@ -39,7 +40,7 @@
 
     <section class="panel table-wrap">
       <table>
-        <thead><tr><th style="width:56px">预览</th><th>文件名</th><th style="width:110px">状态</th><th>匹配到的学生</th><th style="width:90px">结果</th></tr></thead>
+        <thead><tr><th style="width:56px">预览</th><th>文件名</th><th style="width:110px">状态</th><th>匹配到的学生</th><th style="width:340px">结果</th></tr></thead>
         <tbody id="tbody"><tr><td colspan="5" class="small">选择照片后，这里会显示匹配结果。</td></tr></tbody>
       </table>
     </section>
@@ -120,7 +121,7 @@ function render(sum){
     let resultCell = '<span class="small">—</span>';
     if (it.result === 'ok') resultCell = '<span class="tag t-done">已上传</span>';
     else if (it.result === 'skip') resultCell = '<span class="tag t-rev">已跳过</span>';
-    else if (it.result) resultCell = `<span class="tag t-err" title="${esc(it.result)}">失败</span>`;
+    else if (it.result) resultCell = `<span class="tag t-err">失败</span><div class="small" style="color:#dc2626;max-width:320px;white-space:normal">${esc(it.result)}</div>`;
     return `<tr>
       <td><img class="thumb" src="${it.url}" alt=""></td>
       <td><b>${esc(it.fileName)}</b><div class="small">解析为：${esc(it.parsedName || '')}</div>${it.looseMatch && METHOD[it.matchMethod] ? `<div class="small" style="color:#d97706">↳ ${esc(METHOD[it.matchMethod])}</div>` : ''}</td>
@@ -145,6 +146,26 @@ function refreshButton(){
   const ready = items.filter(i => i.studentId && i.result !== 'ok').length;
   $('uploadBtn').disabled = ready === 0;
   $('uploadBtn').textContent = ready ? `开始上传（${ready} 张）` : '开始上传';
+}
+
+async function runSelfCheck(){
+  setStatus('正在自检…');
+  try{
+    const res = await fetch('/api/avatar-upload');
+    const d = await res.json();
+    const row = (k, v) => `<div>${k}：<b>${esc(v)}</b></div>`;
+    $('diag').innerHTML = `<div class="errbox">
+      ${row('登录会话有效', d.session ? '是' : '否 —— 请先到家长通讯录页登录')}
+      ${row('CONTACTS_PASSWORD 已配置', d.hasContactsPassword ? '是' : '否')}
+      ${row('使用的 token 变量', d.tokenVar || '无')}
+      ${row('可读取 Sanity', d.canRead ? `是（学生 ${d.studentCount} 人）` : '否 —— ' + (d.readError || ''))}
+      ${row('可写入 Sanity', d.canWrite ? '是' : '否 —— ' + (d.writeError || ''))}
+    </div>`;
+    setStatus('自检完成。');
+  }catch(err){
+    $('diag').innerHTML = `<div class="errbox">自检失败：${esc(err.message)}</div>`;
+    setStatus('');
+  }
 }
 
 async function runUpload(){
@@ -172,6 +193,13 @@ async function runUpload(){
     done++; setBar(done / queue.length); render();
   }
   setStatus(`完成：成功 ${ok} 张，跳过 ${skipped} 张，失败 ${failed} 张。`);
+  if (failed){
+    const first = queue.find(i => i.result && i.result !== 'ok' && i.result !== 'skip');
+    $('diag').innerHTML = `<div class="errbox"><b>第一条失败原因：</b><br>${esc(first ? first.result : '未知')}` +
+      `<div style="margin-top:8px"><button class="btn ghost" id="selfcheck">运行服务器自检</button></div></div>`;
+    const sc = document.getElementById('selfcheck');
+    if (sc) sc.addEventListener('click', runSelfCheck);
+  }
   refreshButton();
 }
 </script>
