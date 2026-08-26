@@ -159,9 +159,18 @@ async function loadStudents(){
   const res = await fetch(`https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(q)}`);
   if(!res.ok) throw new Error('读取名单失败：' + res.status);
   ALL = (await res.json()).result || [];
-  const years = [...new Set(ALL.map(s=>s.academicYear).filter(Boolean))].sort().reverse();
-  $('year').innerHTML = years.map(y=>`<option value="${esc(y)}">${esc(y)}</option>`).join('');
-  if(years.length) $('year').value = years[0];
+  // 17-18 起的全部学年都列出来，并标注各年人数；只有存在学生的年份才会被默认选中。
+  const counts = ALL.reduce((a,s)=>{ if(s.academicYear) a[s.academicYear]=(a[s.academicYear]||0)+1; return a; },{});
+  const now = new Date();
+  const endYear = (now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear()-1) + 1;
+  const opts = [];
+  for(let y = endYear; y >= 2017; y--){
+    const v = `${String(y).slice(-2)}-${String(y+1).slice(-2)}`;
+    opts.push({ v, n: counts[v] || 0 });
+  }
+  $('year').innerHTML = opts.map(o=>`<option value="${esc(o.v)}">${esc(o.v)}${o.n?`（${o.n} 人）`:'（暂无学生）'}</option>`).join('');
+  const first = opts.find(o=>o.n);
+  if(first) $('year').value = first.v;
 }
 
 const zhOf = s => edits.has(s._id) ? edits.get(s._id) : (s.nameZh || '');
