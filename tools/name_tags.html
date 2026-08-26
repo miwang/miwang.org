@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>名牌生成 · Avery 30-up</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+<style>
+/* ---------------------------------------------------------------
+   Fonts come from the teacher's own machine via local(). KG Miss
+   Kindergarten and ARCHRISTY are licensed for personal use and cannot be
+   hosted as webfonts, but printing happens in her browser, so local() picks
+   them up with no hosting and no licence question. LXGW WenKai Lite (already
+   used site-wide) is the fallback for Chinese, and it is itself a 楷体.
+   unicode-range keeps the Chinese face off Latin letters and digits.
+   --------------------------------------------------------------- */
+@font-face{
+  font-family:"TagKai";
+  src:local("STKaiti-SC-Regular"),local("STKaiti"),local("Kaiti SC"),
+      local("BiauKai"),local("KaiTi"),local("楷体"),local("楷体_GB2312");
+  unicode-range:U+2E80-2EFF,U+3000-303F,U+3400-4DBF,U+4E00-9FFF,U+F900-FAFF,U+FF00-FFEF;
+}
+@font-face{
+  font-family:"TagHand";
+  src:local("KG Miss Kindergarten"),local("KGMissKindergarten"),
+      local("ARCHRISTY"),local("ArChristy");
+}
+:root{
+  --zh:"TagKai","LXGW WenKai Lite",serif;
+  --en:"TagHand","LXGW WenKai Lite",system-ui,sans-serif;
+  --ink:#172033;--muted:#687386;--line:#d9dee8;--blue:#2563eb;--amber:#d97706;--red:#dc2626;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:var(--ink);font-family:Arial,"LXGW WenKai Lite",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:20px}
+.panel{background:#fff;border-radius:20px;box-shadow:0 14px 36px rgba(15,23,42,.09);padding:18px;margin-bottom:14px}
+h1{margin:0 0 6px;font-size:24px}
+.sub{color:var(--muted);font-size:13.5px;line-height:1.6}
+label{display:block;font-size:11.5px;font-weight:800;margin:9px 0 4px;color:#334155}
+select,input{border:1px solid var(--line);border-radius:11px;padding:9px 10px;font:inherit;background:#fff;width:100%}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end}
+.btn{border:0;border-radius:11px;padding:10px 13px;background:var(--blue);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap;width:100%}
+.btn.ghost{background:#e2e8f0;color:#334155}.btn.go{background:#16a34a}.btn:disabled{opacity:.45;cursor:not-allowed}
+.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:8px}
+.errbox{background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:11px 13px;font-size:13px;margin-top:9px;color:#991b1b;line-height:1.6}
+.okbox{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:11px;padding:11px 13px;font-size:13px;margin-top:9px;color:#166534;line-height:1.6}
+.notebox{background:#fffbeb;border:1px solid #fde68a;border-radius:11px;padding:11px 13px;font-size:13px;margin-top:9px;line-height:1.6}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;text-align:left;padding:8px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#475569}
+td{border-top:1px solid #eef2f7;padding:6px 8px;vertical-align:middle}
+td input{padding:6px 8px;font-family:var(--zh);font-size:16px}
+td input.dirty{border-color:var(--amber);background:#fffbeb}
+.sm{font-size:11px;color:#94a3b8}
+
+/* ---- label sheet: Avery 30-up, geometry measured from the 2023-24 sheet ---- */
+#sheets{background:transparent}
+.sheet{
+  width:8.5in;height:11in;background:#fff;margin:0 auto 16px;position:relative;
+  box-shadow:0 8px 24px rgba(15,23,42,.14);
+}
+.tag{
+  position:absolute;width:2.625in;height:1in;overflow:hidden;
+  display:flex;align-items:center;gap:.04in;padding:.04in .05in;
+}
+.tag .num{
+  flex:0 0 auto;min-width:.22in;text-align:center;font-family:var(--en);
+  font-size:11pt;color:#334155;line-height:1;
+}
+.tag .names{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.01in}
+.tag .zh{font-family:var(--zh);line-height:1.02;white-space:nowrap;font-weight:600}
+.tag .en{font-family:var(--en);line-height:1.05;white-space:nowrap;color:#3f4a5a}
+.tag img{flex:0 0 auto;height:.82in;width:auto;object-fit:contain}
+.sheet.guides .tag{outline:.4pt solid #cbd5e1;outline-offset:-.2pt}
+
+@page{size:letter;margin:0}
+@media print{
+  body{background:#fff}
+  .noprint{display:none !important}
+  .wrap{max-width:none;padding:0;margin:0}
+  #sheets{margin:0}
+  .sheet{box-shadow:none;margin:0;page-break-after:always;break-after:page}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="panel noprint">
+    <h1>名牌生成 · Avery 30-up</h1>
+    <p class="sub">
+      标签几何取自 2023-24 名牌实测：<b>2.625″ × 1″，3 列 × 10 行 = 30 枚/页</b>，
+      左边距 0.1875″、上边距 0.5″。中文用你本机的楷体，英文数字用 KG&nbsp;Miss&nbsp;Kindergarten
+      —— 两者都通过 <code>local()</code> 调用，未装则回落到霞鹜文楷。
+    </p>
+    <div class="grid">
+      <div><label>学年</label><select id="year"></select></div>
+      <div><label>班级</label><select id="cls">
+        <option value="">两班（分页）</option>
+        <option value="elephant">🐘 只印大象</option>
+        <option value="tiger">🐯 只印老虎</option>
+      </select></div>
+      <div><label>英文名</label><select id="enMode">
+        <option value="first">只印名（Emma）</option>
+        <option value="full">全名（Emma Wiley）</option>
+        <option value="none">不印英文</option>
+      </select></div>
+      <div><label>校准框线</label><select id="guides">
+        <option value="0">不显示</option>
+        <option value="1">显示（白纸试打）</option>
+      </select></div>
+      <div><button class="btn go" id="printBtn">打印 / 存为 PDF</button></div>
+    </div>
+    <div class="status" id="status">正在载入名单…</div>
+    <div id="msg"></div>
+    <div class="notebox">
+      <b>打印务必设为「100% / 实际大小」</b>，不要选「适合页面」——缩放会让整版偏移。
+      首次先用「显示框线」打在白纸上，对着标签纸透光核对。
+    </div>
+  </section>
+
+  <section class="panel noprint">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div><b style="font-size:15px">中文名</b> <span class="sm">改完可存回 Sanity；也可只改本次打印不保存。</span></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost" id="revertBtn" style="width:auto">撤销未保存</button><button class="btn" id="saveBtn" style="width:auto" disabled>保存到 Sanity</button></div>
+    </div>
+    <div style="max-height:44vh;overflow:auto;margin-top:10px">
+      <table><thead><tr><th style="width:46px">座号</th><th style="width:26%">英文名</th><th style="width:22%">中文名</th><th style="width:16%">班级</th><th>说明</th></tr></thead>
+      <tbody id="tbody"><tr><td colspan="5" class="sm">载入中…</td></tr></tbody></table>
+    </div>
+  </section>
+
+  <div id="sheets"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const PROJECT='sow12t1i', DATASET='production';
+
+// measured geometry, inches
+const GEO = { labelW:2.625, labelH:1, colPitch:2.75, rowPitch:1, left:0.1875, top:0.5, cols:3, rows:10 };
+const PER = GEO.cols * GEO.rows;
+
+// Compound surnames: the school roster prints "Surname, Given", so the last
+// whitespace token is not always the surname. Without this, Malyssa files
+// under B instead of W.
+const SURNAME = {
+  'Malyssa M Warren Briddell':'Warren Briddell',
+  'Maren J Van Horn':'Van Horn',
+  'Harmony S Smallwood Williams':'Smallwood Williams',
+};
+const surnameOf = en => SURNAME[en] || String(en||'').trim().split(/\s+/).pop() || '';
+const firstOf  = en => String(en||'').trim().split(/\s+/)[0] || '';
+
+let ALL = [], edits = new Map();
+
+async function loadStudents(){
+  const q = '*[_type=="student"]|order(academicYear desc){_id,nameEn,nameZh,name,academicYear,className}';
+  const res = await fetch(`https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(q)}`);
+  if(!res.ok) throw new Error('读取名单失败：' + res.status);
+  ALL = (await res.json()).result || [];
+  const years = [...new Set(ALL.map(s=>s.academicYear).filter(Boolean))].sort().reverse();
+  $('year').innerHTML = years.map(y=>`<option value="${esc(y)}">${esc(y)}</option>`).join('');
+  if(years.length) $('year').value = years[0];
+}
+
+const zhOf = s => edits.has(s._id) ? edits.get(s._id) : (s.nameZh || '');
+
+function selected(){
+  const y = $('year').value, c = $('cls').value;
+  const groups = c ? [c] : ['elephant','tiger'];
+  return groups.map(g => ({
+    cls: g,
+    list: ALL.filter(s=>s.academicYear===y && s.className===g)
+             .sort((a,b)=> (surnameOf(a.nameEn).toLowerCase()+a.nameEn.toLowerCase())
+                          .localeCompare(surnameOf(b.nameEn).toLowerCase()+b.nameEn.toLowerCase()))
+  })).filter(g=>g.list.length);
+}
+
+/* Shrink to fit: the label is only 1in tall, so the Chinese name gets the
+   largest size that still fits the available width, then English fills what
+   is left. Measured with a canvas so it matches what the browser will print. */
+const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+function fitPt(text, family, weight, maxWidthIn, startPt, minPt){
+  const maxPx = maxWidthIn * 96;
+  for(let pt = startPt; pt > minPt; pt -= 0.5){
+    ctx.font = `${weight} ${pt * (96/72)}px ${family}`;
+    if(ctx.measureText(text).width <= maxPx) return pt;
+  }
+  return minPt;
+}
+
+function renderSheets(){
+  const enMode = $('enMode').value;
+  const guides = $('guides').value === '1';
+  const zhFam = getComputedStyle(document.documentElement).getPropertyValue('--zh').trim();
+  const enFam = getComputedStyle(document.documentElement).getPropertyValue('--en').trim();
+  let html = '';
+  for(const g of selected()){
+    const art = g.cls === 'tiger' ? '../images/tiger.png' : '../images/elephant.png';
+    for(let p = 0; p * PER < g.list.length; p++){
+      html += `<div class="sheet${guides?' guides':''}">`;
+      const page = g.list.slice(p*PER, (p+1)*PER);
+      page.forEach((s, i) => {
+        const r = Math.floor(i / GEO.cols), c = i % GEO.cols;
+        const x = GEO.left + c * GEO.colPitch, y = GEO.top + r * GEO.rowPitch;
+        const num = p * PER + i + 1;
+        const zh = zhOf(s);
+        const en = enMode === 'none' ? '' : enMode === 'full' ? s.nameEn : firstOf(s.nameEn);
+        // widths: label minus padding, number column, art, gaps
+        const textW = GEO.labelW - 0.10 - 0.26 - 0.86 - 0.08;
+        const zhPt = zh ? fitPt(zh, zhFam, 600, textW, en ? 22 : 27, 9) : 0;
+        const enPt = en ? fitPt(en, enFam, 400, textW, zh ? 12 : 20, 6) : 0;
+        html += `<div class="tag" style="left:${x}in;top:${y}in">`
+             +  `<div class="num">${num}</div><div class="names">`
+             +  (zh ? `<div class="zh" style="font-size:${zhPt}pt">${esc(zh)}</div>` : '')
+             +  (en ? `<div class="en" style="font-size:${enPt}pt">${esc(en)}</div>` : '')
+             +  `</div><img src="${art}" alt=""></div>`;
+      });
+      html += '</div>';
+    }
+  }
+  $('sheets').innerHTML = html || '<div class="panel noprint">该学年/班级没有学生。</div>';
+}
+
+function renderTable(){
+  const rows = [];
+  for(const g of selected()){
+    g.list.forEach((s, i) => {
+      const zh = zhOf(s), dirty = edits.has(s._id) && (edits.get(s._id) !== (s.nameZh||''));
+      rows.push(`<tr>
+        <td class="sm">${i+1}</td>
+        <td>${esc(s.nameEn)}<div class="sm">${esc(surnameOf(s.nameEn))}</div></td>
+        <td><input data-id="${esc(s._id)}" value="${esc(zh)}" maxlength="30" class="${dirty?'dirty':''}" /></td>
+        <td class="sm">${g.cls==='tiger'?'🐯 老虎':'🐘 大象'}</td>
+        <td class="sm">${zh?'':'未取中文名，标签只印英文'}</td>
+      </tr>`);
+    });
+  }
+  $('tbody').innerHTML = rows.join('') || '<tr><td colspan="5" class="sm">无学生</td></tr>';
+  $('tbody').querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      edits.set(e.target.dataset.id, e.target.value.trim());
+      e.target.classList.add('dirty');
+      $('saveBtn').disabled = false;
+      renderSheets();
+    });
+  });
+}
+
+function refresh(){ renderTable(); renderSheets(); }
+
+['year','cls','enMode','guides'].forEach(id => $(id).addEventListener('change', refresh));
+$('printBtn').addEventListener('click', () => window.print());
+$('revertBtn').addEventListener('click', () => { edits.clear(); $('saveBtn').disabled = true; $('msg').innerHTML=''; refresh(); });
+
+$('saveBtn').addEventListener('click', async () => {
+  const updates = [];
+  for(const [id, zh] of edits){
+    const s = ALL.find(x => x._id === id);
+    if(s && (s.nameZh||'') !== zh) updates.push({ id, nameZh: zh });
+  }
+  if(!updates.length){ $('msg').innerHTML = '<div class="notebox">没有改动需要保存。</div>'; return; }
+  if(!confirm(`将更新 ${updates.length} 个学生的中文名。确定？`)) return;
+  $('saveBtn').disabled = true;
+  $('status').textContent = '正在保存…';
+  try{
+    const res = await fetch('/api/student-name-save', {
+      method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ updates })
+    });
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error);
+    (d.changed||[]).forEach(c => { const s = ALL.find(x=>x._id===c.id); if(s) s.nameZh = c.to || ''; });
+    edits.clear();
+    $('msg').innerHTML = `<div class="okbox">已保存 ${(d.changed||[]).length} 条。</div>`;
+    $('status').textContent = '保存完成。';
+    refresh();
+  }catch(err){
+    $('msg').innerHTML = `<div class="errbox">${esc(err.message)}</div>`;
+    $('status').textContent = '';
+    $('saveBtn').disabled = false;
+  }
+});
+
+(async () => {
+  try{
+    await loadStudents();
+    refresh();
+    const n = selected().reduce((a,g)=>a+g.list.length,0);
+    $('status').textContent = `已载入 ${n} 人，共 ${$('sheets').querySelectorAll('.sheet').length} 页标签。`;
+  }catch(err){
+    $('msg').innerHTML = `<div class="errbox">${esc(err.message)}</div>`;
+    $('status').textContent = '';
+  }
+})();
+</script>
+</body>
+</html>
