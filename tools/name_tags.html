@@ -66,9 +66,9 @@ td input.dirty{border-color:var(--amber);background:#fffbeb}
   flex:0 0 auto;min-width:.30in;text-align:center;font-family:var(--en);
   font-size:17pt;font-weight:700;color:#2f3a4a;line-height:1;
 }
-.tag .names{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.01in}
-.tag .zh{font-family:var(--zh);line-height:1.02;white-space:nowrap;font-weight:600}
-.tag .en{font-family:var(--en);line-height:1.08;white-space:nowrap;color:#2f3a4a}
+.tag .names{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.01in;text-align:center}
+.tag .zh{font-family:var(--zh);line-height:1.02;white-space:nowrap;font-weight:600;text-align:center}
+.tag .en{font-family:var(--en);line-height:1.08;white-space:nowrap;color:#2f3a4a;text-align:center}
 .tag img{flex:0 0 auto;height:.78in;width:auto;object-fit:contain}
 .sheet.guides .tag{outline:.4pt solid #cbd5e1;outline-offset:-.2pt}
 
@@ -213,8 +213,8 @@ function renderSheets(){
         // widths: label minus padding, number column, art, gaps
         // label width minus padding, number column, artwork and gaps
         const textW = GEO.labelW - 0.10 - 0.34 - 0.80 - 0.06;
-        const zhPt = zh ? fitPt(zh, zhFam, 600, textW, en ? 24 : 30, 9) : 0;
-        const enPt = en ? fitPt(en, enFam, 400, textW, zh ? 16 : 24, 7) : 0;
+        const zhPt = zh ? fitPt(zh, zhFam, 600, textW, en ? 23 : 30, 9) : 0;
+        const enPt = en ? fitPt(en, enFam, 400, textW, zh ? 20 : 26, 8) : 0;
         html += `<div class="tag" style="left:${x}in;top:${y}in">`
              +  `<div class="num">${num}</div><div class="names">`
              +  (zh ? `<div class="zh" style="font-size:${zhPt}pt">${esc(zh)}</div>` : '')
