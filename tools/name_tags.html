@@ -63,13 +63,13 @@ td input.dirty{border-color:var(--amber);background:#fffbeb}
   display:flex;align-items:center;gap:.04in;padding:.04in .05in;
 }
 .tag .num{
-  flex:0 0 auto;min-width:.22in;text-align:center;font-family:var(--en);
-  font-size:11pt;color:#334155;line-height:1;
+  flex:0 0 auto;min-width:.30in;text-align:center;font-family:var(--en);
+  font-size:17pt;font-weight:700;color:#2f3a4a;line-height:1;
 }
 .tag .names{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.01in}
 .tag .zh{font-family:var(--zh);line-height:1.02;white-space:nowrap;font-weight:600}
-.tag .en{font-family:var(--en);line-height:1.05;white-space:nowrap;color:#3f4a5a}
-.tag img{flex:0 0 auto;height:.82in;width:auto;object-fit:contain}
+.tag .en{font-family:var(--en);line-height:1.08;white-space:nowrap;color:#2f3a4a}
+.tag img{flex:0 0 auto;height:.78in;width:auto;object-fit:contain}
 .sheet.guides .tag{outline:.4pt solid #cbd5e1;outline-offset:-.2pt}
 
 @page{size:letter;margin:0}
@@ -121,10 +121,10 @@ td input.dirty{border-color:var(--amber);background:#fffbeb}
   <section class="panel noprint">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
       <div><b style="font-size:15px">中文名</b> <span class="sm">改完可存回 Sanity；也可只改本次打印不保存。</span></div>
-      <div style="display:flex;gap:8px"><button class="btn ghost" id="revertBtn" style="width:auto">撤销未保存</button><button class="btn" id="saveBtn" style="width:auto" disabled>保存到 Sanity</button></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost" id="renumBtn" style="width:auto">按姓氏重新编号</button><button class="btn ghost" id="revertBtn" style="width:auto">撤销未保存</button><button class="btn" id="saveBtn" style="width:auto" disabled>保存到 Sanity</button></div>
     </div>
     <div style="max-height:44vh;overflow:auto;margin-top:10px">
-      <table><thead><tr><th style="width:46px">座号</th><th style="width:26%">英文名</th><th style="width:22%">中文名</th><th style="width:16%">班级</th><th>说明</th></tr></thead>
+      <table><thead><tr><th style="width:76px">座号</th><th style="width:26%">英文名</th><th style="width:22%">中文名</th><th style="width:16%">班级</th><th>说明</th></tr></thead>
       <tbody id="tbody"><tr><td colspan="5" class="sm">载入中…</td></tr></tbody></table>
     </div>
   </section>
@@ -152,10 +152,10 @@ const SURNAME = {
 const surnameOf = en => SURNAME[en] || String(en||'').trim().split(/\s+/).pop() || '';
 const firstOf  = en => String(en||'').trim().split(/\s+/)[0] || '';
 
-let ALL = [], edits = new Map();
+let ALL = [], edits = new Map(), numEdits = new Map();
 
 async function loadStudents(){
-  const q = '*[_type=="student"]|order(academicYear desc){_id,nameEn,nameZh,name,academicYear,className}';
+  const q = '*[_type=="student"]|order(academicYear desc){_id,nameEn,nameZh,name,academicYear,className,studentNumber}';
   const res = await fetch(`https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(q)}`);
   if(!res.ok) throw new Error('读取名单失败：' + res.status);
   ALL = (await res.json()).result || [];
@@ -165,6 +165,7 @@ async function loadStudents(){
 }
 
 const zhOf = s => edits.has(s._id) ? edits.get(s._id) : (s.nameZh || '');
+const numOf = s => numEdits.has(s._id) ? numEdits.get(s._id) : (s.studentNumber ?? null);
 
 function selected(){
   const y = $('year').value, c = $('cls').value;
@@ -204,13 +205,16 @@ function renderSheets(){
       page.forEach((s, i) => {
         const r = Math.floor(i / GEO.cols), c = i % GEO.cols;
         const x = GEO.left + c * GEO.colPitch, y = GEO.top + r * GEO.rowPitch;
-        const num = p * PER + i + 1;
+        // Prefer the seat number stored in Sanity so hand adjustments stick;
+        // fall back to position for students that have never been numbered.
+        const num = numOf(s) ?? (p * PER + i + 1);
         const zh = zhOf(s);
         const en = enMode === 'none' ? '' : enMode === 'full' ? s.nameEn : firstOf(s.nameEn);
         // widths: label minus padding, number column, art, gaps
-        const textW = GEO.labelW - 0.10 - 0.26 - 0.86 - 0.08;
-        const zhPt = zh ? fitPt(zh, zhFam, 600, textW, en ? 22 : 27, 9) : 0;
-        const enPt = en ? fitPt(en, enFam, 400, textW, zh ? 12 : 20, 6) : 0;
+        // label width minus padding, number column, artwork and gaps
+        const textW = GEO.labelW - 0.10 - 0.34 - 0.80 - 0.06;
+        const zhPt = zh ? fitPt(zh, zhFam, 600, textW, en ? 24 : 30, 9) : 0;
+        const enPt = en ? fitPt(en, enFam, 400, textW, zh ? 16 : 24, 7) : 0;
         html += `<div class="tag" style="left:${x}in;top:${y}in">`
              +  `<div class="num">${num}</div><div class="names">`
              +  (zh ? `<div class="zh" style="font-size:${zhPt}pt">${esc(zh)}</div>` : '')
@@ -229,7 +233,7 @@ function renderTable(){
     g.list.forEach((s, i) => {
       const zh = zhOf(s), dirty = edits.has(s._id) && (edits.get(s._id) !== (s.nameZh||''));
       rows.push(`<tr>
-        <td class="sm">${i+1}</td>
+        <td><input class="numin" data-id="${esc(s._id)}" value="${numOf(s) ?? ''}" inputmode="numeric" style="width:56px;text-align:center;font-family:inherit;font-size:13px" placeholder="${i+1}" /></td>
         <td>${esc(s.nameEn)}<div class="sm">${esc(surnameOf(s.nameEn))}</div></td>
         <td><input data-id="${esc(s._id)}" value="${esc(zh)}" maxlength="30" class="${dirty?'dirty':''}" /></td>
         <td class="sm">${g.cls==='tiger'?'🐯 老虎':'🐘 大象'}</td>
@@ -238,7 +242,18 @@ function renderTable(){
     });
   }
   $('tbody').innerHTML = rows.join('') || '<tr><td colspan="5" class="sm">无学生</td></tr>';
-  $('tbody').querySelectorAll('input').forEach(inp => {
+  $('tbody').querySelectorAll('input.numin').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const v = e.target.value.trim();
+      const n = v === '' ? null : Number(v);
+      if (v !== '' && (!Number.isInteger(n) || n < 1 || n > 99)) { e.target.classList.add('dirty'); return; }
+      numEdits.set(e.target.dataset.id, n);
+      e.target.classList.add('dirty');
+      $('saveBtn').disabled = false;
+      renderSheets();
+    });
+  });
+  $('tbody').querySelectorAll('input:not(.numin)').forEach(inp => {
     inp.addEventListener('input', e => {
       edits.set(e.target.dataset.id, e.target.value.trim());
       e.target.classList.add('dirty');
@@ -252,16 +267,37 @@ function refresh(){ renderTable(); renderSheets(); }
 
 ['year','cls','enMode','guides'].forEach(id => $(id).addEventListener('change', refresh));
 $('printBtn').addEventListener('click', () => window.print());
-$('revertBtn').addEventListener('click', () => { edits.clear(); $('saveBtn').disabled = true; $('msg').innerHTML=''; refresh(); });
+$('revertBtn').addEventListener('click', () => { edits.clear(); numEdits.clear(); $('saveBtn').disabled = true; $('msg').innerHTML=''; refresh(); });
+
+// Renumber every visible class from 1 by English surname — the same order the
+// printed sheet uses, so a tag's number matches the roll call.
+$('renumBtn').addEventListener('click', () => {
+  let n = 0;
+  for(const g of selected()){
+    g.list.forEach((s, i) => { if((s.studentNumber ?? null) !== i+1){ numEdits.set(s._id, i+1); n++; } });
+  }
+  $('msg').innerHTML = n
+    ? `<div class="notebox">已按姓氏重排 ${n} 个座号（未保存）。点「保存到 Sanity」写入。</div>`
+    : '<div class="notebox">座号已经是按姓氏排好的，无需改动。</div>';
+  if(n) $('saveBtn').disabled = false;
+  refresh();
+});
 
 $('saveBtn').addEventListener('click', async () => {
-  const updates = [];
+  const byId = new Map();
   for(const [id, zh] of edits){
     const s = ALL.find(x => x._id === id);
-    if(s && (s.nameZh||'') !== zh) updates.push({ id, nameZh: zh });
+    if(s && (s.nameZh||'') !== zh) byId.set(id, { id, nameZh: zh });
   }
+  for(const [id, num] of numEdits){
+    const s = ALL.find(x => x._id === id);
+    if(!s || (s.studentNumber ?? null) === num) continue;
+    if(num === null) continue;                       // blank = leave as is
+    byId.set(id, Object.assign(byId.get(id) || { id }, { studentNumber: num }));
+  }
+  const updates = [...byId.values()];
   if(!updates.length){ $('msg').innerHTML = '<div class="notebox">没有改动需要保存。</div>'; return; }
-  if(!confirm(`将更新 ${updates.length} 个学生的中文名。确定？`)) return;
+  if(!confirm(`将更新 ${updates.length} 个学生的中文名/座号。确定？`)) return;
   $('saveBtn').disabled = true;
   $('status').textContent = '正在保存…';
   try{
@@ -270,8 +306,12 @@ $('saveBtn').addEventListener('click', async () => {
     });
     const d = await res.json();
     if(!d.ok) throw new Error(d.error);
-    (d.changed||[]).forEach(c => { const s = ALL.find(x=>x._id===c.id); if(s) s.nameZh = c.to || ''; });
-    edits.clear();
+    (d.changed||[]).forEach(c => {
+      const s = ALL.find(x=>x._id===c.id); if(!s) return;
+      if(c.nameZh) s.nameZh = c.nameZh.to || '';
+      if(c.studentNumber) s.studentNumber = c.studentNumber.to;
+    });
+    edits.clear(); numEdits.clear();
     $('msg').innerHTML = `<div class="okbox">已保存 ${(d.changed||[]).length} 条。</div>`;
     $('status').textContent = '保存完成。';
     refresh();

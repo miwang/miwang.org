@@ -38,6 +38,11 @@ export const student = defineType({
       type: 'string',
       options: {
         list: [
+          // 23-24 and 24-25 were added when historical rosters were imported.
+          // Without them those documents show a validation error in Studio
+          // even though the data itself is correct.
+          { title: '2023-2024 学年', value: '23-24' },
+          { title: '2024-2025 学年', value: '24-25' },
           { title: '2025-2026 学年', value: '25-26' },
           { title: '2026-2027 学年', value: '26-27' },
           { title: '2027-2028 学年', value: '27-28' }
@@ -71,6 +76,15 @@ export const student = defineType({
       title: '兼容旧字段：学生姓名 (Legacy)',
       type: 'string',
       description: '旧页面兼容字段；新数据请优先填写“学生中文名/学生英文名”',
+    }),
+    defineField({
+      name: 'studentNumber',
+      title: '座号 (Seat No.)',
+      type: 'number',
+      description:
+        '名牌与点名用的班内序号。按英文姓氏字母序自动生成，转学或改名后可手动调整；' +
+        '不是学校学籍号。',
+      validation: Rule => Rule.integer().min(1).max(99),
     }),
     defineField({
       name: 'homeroomCode',

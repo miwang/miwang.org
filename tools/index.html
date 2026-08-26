@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>教师工具 · Mi Wang</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<style>
+:root{
+  --bg:#f6f8fb;--panel:#fff;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;
+  --c-mint:#5eb8a8;--c-slate:#7c9fd4;--c-emerald:#5fae7d;--c-amber:#d99a4e;--c-rose:#d47c8a;
+  --font-zh:"KaiTi-CJK","LXGW WenKai Lite",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+     font-family:"LXGW WenKai Lite",system-ui,-apple-system,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 20px 60px}
+.back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);text-decoration:none;
+      font-size:14px;padding:7px 13px;border-radius:999px;background:#fff;border:1px solid var(--border);
+      transition:.15s}
+.back:hover{color:var(--text);border-color:#cbd5e1}
+h1{font-size:29px;margin:18px 0 4px}
+.lede{color:var(--muted);font-size:14.5px;line-height:1.7;margin:0 0 6px;max-width:62ch}
+.group{margin-top:30px}
+.group-title{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;margin-bottom:4px}
+.group-title i{color:var(--c-slate)}
+.group-note{color:var(--muted);font-size:13px;margin:0 0 13px;line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:13px}
+.card{display:block;background:var(--panel);border:1px solid var(--border);border-top:3px solid transparent;
+      border-radius:15px;padding:15px 16px;text-decoration:none;color:inherit;position:relative;
+      transition:transform .15s,box-shadow .15s,border-top-color .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(15,23,42,.09)}
+.card::after{content:"→";position:absolute;right:15px;bottom:13px;color:#cbd5e1;transition:.15s}
+.card:hover::after{transform:translateX(4px)}
+.card.mint:hover{border-top-color:var(--c-mint)}.card.mint:hover::after{color:var(--c-mint)}
+.card.slate:hover{border-top-color:var(--c-slate)}.card.slate:hover::after{color:var(--c-slate)}
+.card.emerald:hover{border-top-color:var(--c-emerald)}.card.emerald:hover::after{color:var(--c-emerald)}
+.card.amber:hover{border-top-color:var(--c-amber)}.card.amber:hover::after{color:var(--c-amber)}
+.card-icon{font-size:20px;color:var(--c-slate);margin-bottom:8px}
+.card.mint .card-icon{color:var(--c-mint)}.card.emerald .card-icon{color:var(--c-emerald)}
+.card.amber .card-icon{color:var(--c-amber)}
+.card-title{font-weight:800;font-size:15.5px;margin-bottom:4px}
+.sub-title{font-weight:400;font-size:11.5px;color:var(--muted);margin-left:6px}
+.card-desc{font-size:12.8px;color:var(--muted);line-height:1.6;padding-right:18px}
+.legacy{opacity:.72}
+.legacy .card-title::after{content:"旧版";font-size:10px;font-weight:700;color:#b45309;
+  background:#fffbeb;border:1px solid #fde68a;border-radius:999px;padding:1px 7px;margin-left:7px;vertical-align:2px}
+.tip{background:#fffbeb;border:1px solid #fde68a;border-radius:13px;padding:12px 15px;
+     font-size:13px;line-height:1.7;margin-top:26px}
+@media(max-width:640px){.wrap{padding:18px 14px 44px}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="back" href="../teachers.html"><i class="fas fa-arrow-left"></i> 返回教师主页</a>
+  <h1>教师工具</h1>
+  <p class="lede">数据维护类工具集中在这里。日常用的家长通讯录和历届学生名单仍留在教师主页的「学生管理」下。</p>
+
+  <section class="group">
+    <div class="group-title"><i class="fas fa-id-badge"></i> 名牌与打印</div>
+    <p class="group-note">直接在浏览器排版打印，中文用本机楷体、英文用 KG Miss Kindergarten。</p>
+    <div class="cards">
+      <a href="name_tags.html" class="card mint">
+        <div class="card-icon"><i class="fas fa-id-badge"></i></div>
+        <div class="card-title">名牌生成<span class="sub-title">Avery 30-up</span></div>
+        <div class="card-desc">按班生成中英文名牌，可现场改中文名并存回 Sanity，也可重新编排座号。</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-title"><i class="fas fa-users-gear"></i> 名单与学生数据</div>
+    <p class="group-note">名单导入、家长联系人重建、亲属关系维护。写入前都会先出对照表。</p>
+    <div class="cards">
+      <a href="roster_rebuild.html" class="card slate">
+        <div class="card-icon"><i class="fas fa-user-check"></i></div>
+        <div class="card-title">名单核对重建<span class="sub-title">按栏解析</span></div>
+        <div class="card-desc">上传 Section Rosters PDF，浏览器本地解析，核对无误后写入家长联系人与生日。</div>
+      </a>
+      <a href="sibling_links.html" class="card slate">
+        <div class="card-icon"><i class="fas fa-sitemap"></i></div>
+        <div class="card-title">兄弟姐妹关联<span class="sub-title">手动指定</span></div>
+        <div class="card-desc">为旧名单手动建立兄弟姐妹关系，也可否决自动推断出的错误配对。</div>
+      </a>
+      <a href="avatar_upload.html" class="card slate">
+        <div class="card-icon"><i class="fas fa-images"></i></div>
+        <div class="card-title">头像批量上传<span class="sub-title">按文件名匹配</span></div>
+        <div class="card-desc">一次拖入全班照片，按文件名自动匹配学生，核对后批量写入。</div>
+      </a>
+      <a href="roster_import.html" class="card slate legacy">
+        <div class="card-icon"><i class="fas fa-file-import"></i></div>
+        <div class="card-title">Roster 导入</div>
+        <div class="card-desc">早期的一维文本解析版本，会把相邻栏位拼接错乱。请改用「名单核对重建」。</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-title"><i class="fas fa-clipboard-list"></i> 评估与报告</div>
+    <div class="cards">
+      <a href="report-card.html" class="card emerald">
+        <div class="card-icon"><i class="fas fa-file-signature"></i></div>
+        <div class="card-title">报告卡<span class="sub-title">Report Card</span></div>
+        <div class="card-desc">填写与查看学生学期报告卡。</div>
+      </a>
+      <a href="esgi-upload.html" class="card emerald">
+        <div class="card-icon"><i class="fas fa-chart-column"></i></div>
+        <div class="card-title">ESGI 成绩导入<span class="sub-title">测评结果</span></div>
+        <div class="card-desc">上传 ESGI 测评导出文件，写入学生测评记录。</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="tip">
+    <b>打印类工具提醒：</b>浏览器打印对话框里请把缩放设为「100% / 实际大小」，
+    不要选「适合页面」—— 缩放会让整版标签偏移。首次先用校准框线打在白纸上核对。
+  </div>
+</main>
+</body>
+</html>

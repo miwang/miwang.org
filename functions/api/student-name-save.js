@@ -85,18 +85,28 @@ export async function onRequestPost(context) {
     const clean = []
     for (const u of updates) {
       const id = String(u.id || '').trim().slice(0, 200)
-      const zh = String(u.nameZh == null ? '' : u.nameZh).trim().slice(0, 30)
+      const hasZh = Object.prototype.hasOwnProperty.call(u, 'nameZh')
+      const hasNum = Object.prototype.hasOwnProperty.call(u, 'studentNumber')
+      const zh = hasZh ? String(u.nameZh == null ? '' : u.nameZh).trim().slice(0, 30) : null
       if (!id) continue
       if (zh && !HAN.test(zh)) {
         return json({ ok: false, error: `「${zh}」不含汉字，未保存任何改动。` }, 400)
       }
-      clean.push({ id, zh })
+      let num = null
+      if (hasNum) {
+        num = Number(u.studentNumber)
+        if (!Number.isInteger(num) || num < 1 || num > 99) {
+          return json({ ok: false, error: `座号「${u.studentNumber}」必须是 1-99 的整数。` }, 400)
+        }
+      }
+      if (!hasZh && !hasNum) continue
+      clean.push({ id, zh, num, hasZh, hasNum })
     }
     if (!clean.length) return json({ ok: false, error: '没有有效的改动' }, 400)
 
     // Verify every id is a real student first, so one typo cannot create a
     // stray document via createOrReplace semantics elsewhere.
-    const q = '*[_type=="student" && _id in $ids]{_id, nameEn, name, nameZh}'
+    const q = '*[_type=="student" && _id in $ids]{_id, nameEn, name, nameZh, studentNumber}'
     const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}` +
       `?query=${encodeURIComponent(q)}&$ids=${encodeURIComponent(JSON.stringify(clean.map(c => c.id)))}`
     const res = await fetch(url, { headers: { authorization: 'Bearer ' + token } })
@@ -112,14 +122,22 @@ export async function onRequestPost(context) {
     const changed = []
     for (const c of clean) {
       const s = byId.get(c.id)
-      if ((s.nameZh || '') === c.zh) continue          // nothing to do
-      mutations.push({
-        patch: {
-          id: c.id,
-          set: { nameZh: c.zh || null, name: c.zh || s.nameEn || s.name || '' },
-        },
+      const set = {}
+      if (c.hasZh && (s.nameZh || '') !== c.zh) {
+        set.nameZh = c.zh || null
+        // `name` is the legacy display field: Chinese when there is one,
+        // English otherwise. Keeping it in step avoids pages that read `name`
+        // showing a stale value.
+        set.name = c.zh || s.nameEn || s.name || ''
+      }
+      if (c.hasNum && (s.studentNumber ?? null) !== c.num) set.studentNumber = c.num
+      if (!Object.keys(set).length) continue
+      mutations.push({ patch: { id: c.id, set } })
+      changed.push({
+        id: c.id,
+        nameZh: c.hasZh ? { from: s.nameZh || null, to: c.zh || null } : undefined,
+        studentNumber: c.hasNum ? { from: s.studentNumber ?? null, to: c.num } : undefined,
       })
-      changed.push({ id: c.id, from: s.nameZh || null, to: c.zh || null })
     }
     if (!mutations.length) return json({ ok: true, changed: [], note: '没有实际变化' })
 
