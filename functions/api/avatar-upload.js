@@ -118,7 +118,9 @@ export async function onRequestPost(context) {
     const checkRes = await fetch(checkUrl.toString(), {
       headers: { authorization: 'Bearer ' + token },
     })
-    if (!checkRes.ok) throw new Error(`Student lookup failed: ${checkRes.status}`)
+    if (!checkRes.ok) {
+      throw new Error(`[查询学生] Sanity 返回 ${checkRes.status}: ${(await checkRes.text()).slice(0, 300)}`)
+    }
     const student = (await checkRes.json()).result
     if (!student) return json({ ok: false, error: '找不到这个学生文档。', studentId }, 404)
     if (student.hasAvatar && !overwrite) {
@@ -146,13 +148,15 @@ export async function onRequestPost(context) {
       body: await file.arrayBuffer(),
     })
     if (!uploadRes.ok) {
-      throw new Error(`Asset upload failed: ${uploadRes.status} ${await uploadRes.text()}`)
+      throw new Error(`[上传图片] Sanity 返回 ${uploadRes.status}: ${(await uploadRes.text()).slice(0, 300)}`)
     }
     const uploadData = await uploadRes.json()
     const assetDoc = uploadData?.document || uploadData
     const assetId = clean(assetDoc?._id)
     const assetUrl = clean(assetDoc?.url, 500)
-    if (!assetId) throw new Error('图片上传成功但没有返回 asset id。')
+    if (!assetId) {
+      throw new Error(`[上传图片] 成功但未返回 asset id，响应：${JSON.stringify(uploadData).slice(0, 300)}`)
+    }
 
     const mutateUrl = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/mutate/${DATASET}`
     const mutationRes = await fetch(mutateUrl, {
@@ -178,7 +182,7 @@ export async function onRequestPost(context) {
       }),
     })
     if (!mutationRes.ok) {
-      throw new Error(`Student update failed: ${mutationRes.status} ${await mutationRes.text()}`)
+      throw new Error(`[写回学生] Sanity 返回 ${mutationRes.status}: ${(await mutationRes.text()).slice(0, 300)}`)
     }
 
     return json({
@@ -192,4 +196,41 @@ export async function onRequestPost(context) {
   } catch (error) {
     return json({ ok: false, error: error.message || '头像上传失败。' }, 500)
   }
+}
+
+/** GET /api/avatar-upload — self-check, so a failure can be located without
+ *  uploading anything: reports which env vars are present and whether the
+ *  token can actually read and write Sanity. Never returns any secret value. */
+export async function onRequestGet(context) {
+  const pw = context.env.CONTACTS_PASSWORD
+  const token =
+    context.env.SANITY_API_TOKEN || context.env.SANITY_WRITE_TOKEN || context.env.SANITY_TOKEN
+  const out = {
+    ok: true,
+    hasContactsPassword: !!pw,
+    tokenVar: context.env.SANITY_API_TOKEN ? 'SANITY_API_TOKEN'
+      : context.env.SANITY_WRITE_TOKEN ? 'SANITY_WRITE_TOKEN'
+      : context.env.SANITY_TOKEN ? 'SANITY_TOKEN' : null,
+    session: await isValidSession(context.request, pw),
+  }
+  if (!token) { out.ok = false; out.error = '没有可用的 Sanity token'; return json(out, 500) }
+  try {
+    const q = encodeURIComponent('count(*[_type=="student"])')
+    const r = await fetch(`https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?query=${q}`,
+      { headers: { authorization: 'Bearer ' + token } })
+    out.canRead = r.ok
+    out.studentCount = r.ok ? (await r.json()).result : null
+    if (!r.ok) out.readError = (await r.text()).slice(0, 300)
+  } catch (e) { out.canRead = false; out.readError = e.message }
+  try {
+    // dry-run mutation: valid shape, guaranteed no-op document id
+    const r = await fetch(`https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/mutate/${DATASET}?dryRun=true`, {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' },
+      body: JSON.stringify({ mutations: [{ patch: { id: '__avatar_selfcheck__', set: { _probe: 1 } } }] }),
+    })
+    out.canWrite = r.status !== 401 && r.status !== 403
+    if (!out.canWrite) out.writeError = (await r.text()).slice(0, 300)
+  } catch (e) { out.canWrite = false; out.writeError = e.message }
+  return json(out)
 }
