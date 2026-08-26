@@ -49,10 +49,37 @@ h1{font-size:29px;margin:18px 0 4px}
 .tip{background:#fffbeb;border:1px solid #fde68a;border-radius:13px;padding:12px 15px;
      font-size:13px;line-height:1.7;margin-top:26px}
 @media(max-width:640px){.wrap{padding:18px 14px 44px}h1{font-size:24px}}
+  .gate{position:fixed;inset:0;background:#f6f8fb;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .gate-card{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:0 18px 44px rgba(15,23,42,.11);
+             padding:28px 26px;max-width:390px;width:100%;text-align:center}
+  .gate-icon{font-size:26px;color:var(--c-slate);margin-bottom:10px}
+  .gate-card h2{margin:0 0 8px;font-size:21px}
+  .gate-note{color:var(--muted);font-size:13px;line-height:1.7;margin:0 0 16px}
+  .gate-card input{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 13px;font:inherit;
+                   text-align:center;margin-bottom:10px}
+  .gate-card input:focus{outline:none;border-color:var(--c-slate)}
+  .gate-btn{width:100%;border:0;border-radius:12px;padding:11px;background:var(--c-slate);color:#fff;
+            font-weight:800;font-size:15px;cursor:pointer}
+  .gate-btn:disabled{opacity:.5;cursor:not-allowed}
+  .gate-msg{font-size:13px;line-height:1.6;margin-top:10px;min-height:20px}
+  .gate-msg.err{color:#b91c1c}
 </style>
 </head>
 <body>
-<main class="wrap">
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="gate-icon"><i class="fas fa-lock"></i></div>
+    <h2>教师工具</h2>
+    <p class="gate-note">这些工具可以读取和修改学生与家长数据，需要输入教师密码。</p>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="教师密码" />
+    <button class="gate-btn" id="pwBtn">进入</button>
+    <div id="gateMsg" class="gate-msg"></div>
+    <p class="gate-note" style="margin-top:14px;font-size:12px">
+      通过后当天内访问下面各个工具都不会再要密码。
+    </p>
+  </div>
+</div>
+<main class="wrap" id="content" hidden>
   <a class="back" href="../teachers.html"><i class="fas fa-arrow-left"></i> 返回教师主页</a>
   <h1>教师工具</h1>
   <p class="lede">数据维护类工具集中在这里。日常用的家长通讯录和历届学生名单仍留在教师主页的「学生管理」下。</p>
@@ -73,6 +100,11 @@ h1{font-size:29px;margin:18px 0 4px}
     <div class="group-title"><i class="fas fa-users-gear"></i> 名单与学生数据</div>
     <p class="group-note">名单导入、家长联系人重建、亲属关系维护。写入前都会先出对照表。</p>
     <div class="cards">
+      <a href="contacts.html" class="card slate">
+        <div class="card-icon"><i class="fas fa-address-book"></i></div>
+        <div class="card-title">家长通讯录<span class="sub-title">联系方式</span></div>
+        <div class="card-desc">按班查看学生家长的电话、邮箱与住址。</div>
+      </a>
       <a href="roster_rebuild.html" class="card slate">
         <div class="card-icon"><i class="fas fa-user-check"></i></div>
         <div class="card-title">名单核对重建<span class="sub-title">按栏解析</span></div>
@@ -117,5 +149,46 @@ h1{font-size:29px;margin:18px 0 4px}
     不要选「适合页面」—— 缩放会让整版标签偏移。首次先用校准框线打在白纸上核对。
   </div>
 </main>
+<script>
+const $ = id => document.getElementById(id);
+
+function open_(){ $('gate').remove(); $('content').hidden = false; }
+
+function fail(msg){
+  const m = $('gateMsg'); m.textContent = msg; m.className = 'gate-msg err';
+  $('pwBtn').disabled = false;
+}
+
+async function submit(){
+  const pw = $('pw').value;
+  if(!pw){ fail('请输入密码。'); return; }
+  $('pwBtn').disabled = true;
+  $('gateMsg').textContent = '正在验证…';
+  $('gateMsg').className = 'gate-msg';
+  try{
+    // Reuses the existing contacts login, so the cookie it sets is the same one
+    // every tool endpoint already validates — one sign-in covers all of them.
+    const res = await fetch('/api/contacts-login', {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ password: pw })
+    });
+    if(res.ok){ open_(); return; }
+    fail(res.status === 401 ? '密码不对，再试一次。' : '登录失败（' + res.status + '）。');
+  }catch(err){ fail('网络错误：' + err.message); }
+}
+
+$('pwBtn').addEventListener('click', submit);
+$('pw').addEventListener('keydown', e => { if(e.key === 'Enter') submit(); });
+
+// Already signed in earlier today? Skip the gate entirely.
+(async () => {
+  try{
+    const res = await fetch('/api/session', { cache:'no-store' });
+    const d = await res.json();
+    if(d && d.valid){ open_(); return; }
+  }catch(e){ /* fall through to the password screen */ }
+  $('pw').focus();
+})();
+</script>
 </body>
 </html>

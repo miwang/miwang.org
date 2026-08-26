@@ -87,7 +87,21 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const CLOUD_KEY = 'ClassData_tigers';
+
+// 学年按 8 月 1 日切换：8 月及以后属于新学年。
+function currentAcademicYear() {
+    const now = new Date();
+    const startYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+    return `${String(startYear).slice(-2)}-${String(startYear + 1).slice(-2)}`;
+}
+const ACADEMIC_YEAR = currentAcademicYear();
+
+// 云端 key 必须带学年。原来是固定的 'ClassData_tigers'，
+// 于是每年打开看到的都是上一年的名单，除非手动点「同步名单」。
+// 旧数据仍在 'ClassData_tigers' 这个 key 下，未做迁移也未删除。
+// 带上学年后：新学年自动从空白开始并按 Sanity 名单播种，
+// 旧学年的分组与排版仍原样保留在各自的 key 下。
+const CLOUD_KEY = 'ClassData_tigers_' + ACADEMIC_YEAR;
 const LOCAL_KEY  = CLOUD_KEY + '_local';
 const SESSION_ID = Date.now().toString(36) + Math.random().toString(36).slice(2);
 let _localVer = 0;
@@ -95,7 +109,7 @@ let data = { students: [], step: 0, lastDateStr: "暂无记录", bgImages: [null
 
 let sanityStudents = [];
 let cloudBgs = {};
-let academicYearStr = "";
+let academicYearStr = ACADEMIC_YEAR;
 const MATH_SUBGROUP_COUNT = 3;
 
 function saveLocal() { try { localStorage.setItem(CLOUD_KEY + '_local', JSON.stringify(data)); } catch(e) {} }
@@ -130,13 +144,9 @@ window.onload = async () => {
         </div>`;
     nav.appendChild(ctrl);
 
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const startYear = currentMonth >= 7 ? currentYear : currentYear - 1;
-    academicYearStr = `${startYear.toString().slice(-2)}-${(startYear + 1).toString().slice(-2)}`;
 
     let firebaseLoaded = false;
+    let seededThisLoad = false;
     const PROJECT_ID = 'sow12t1i';
     const DATASET = 'production';
     const QUERY_STUDENTS = encodeURIComponent(`*[_type == "student" && className == "tiger" && academicYear == "${academicYearStr}"] { name, "img": avatar.asset->url }`);
@@ -169,6 +179,17 @@ window.onload = async () => {
         if (snap.exists()) {
             data = snap.val();
             if (!data.students) data.students = [];
+        } else if (sanityStudents.length && !data.students.length) {
+            // 新学年第一次打开：本学年 key 下还没有数据，直接按名单播种，
+            // 省掉一次手动「同步名单」，也避免误以为工具坏了。
+            data.students = sanityStudents.map(ss => ({
+                id: Date.now() + Math.random(),
+                name: (ss.name || '').trim(),
+                group: 0,
+                _sanityPhoto: ss.img || null,
+            }));
+            data.step = 0;
+            seededThisLoad = true;
         }
 
         if (sanityStudents.length > 0) {
@@ -180,6 +201,10 @@ window.onload = async () => {
 
         renderUI();
         showLoading(false);
+        if (seededThisLoad) {
+            seededThisLoad = false;
+            commit();   // 把播种结果写回云端，避免每次打开重复播种
+        }
     }, err => {
         showLoading(false);
         alert('无法连接云端数据库，请检查网络！');
