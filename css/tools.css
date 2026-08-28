@@ -1,0 +1,79 @@
+/* ---------------------------------------------------------------------------
+   教师工具页共享样式
+
+   为什么要有这个文件：工具是陆续加的，每个页面各自写了一套字体和头部，
+   结果同一批工具字体不一、有的连返回按钮都没有。这里只做两件事 ——
+   统一字体、统一返回栏 —— 不去覆盖各页自己的配色与布局。
+
+   字体规则（与 css/style.css 一致）：
+     中文  KaiTi-CJK（调用本机楷体）→ LXGW WenKai Lite
+     英文、数字、符号  LXGW WenKai Lite
+   KaiTi-CJK 用 unicode-range 限定在 CJK 区，所以拉丁字母与数字
+   即使写在同一个 font-family 里也会自动落到 LXGW，不需要分开标记。
+--------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体"), local("楷体_GB2312");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF;
+}
+
+:root {
+  --tool-font: "KaiTi-CJK", "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
+  --tool-bg: #f6f8fb;
+  --tool-ink: #1f2937;
+  --tool-muted: #6b7280;
+  --tool-line: #e5e7eb;
+  --tool-accent: #7c9fd4;
+}
+
+body {
+  font-family: var(--tool-font);
+}
+
+/* Numbers stay readable when they must line up (座号、生日、计数) */
+.tabular, .mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- 返回栏 ------------------------------------------------------------- */
+
+.tool-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--tool-muted);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--tool-line);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .05);
+  transition: color .15s, border-color .15s, transform .15s;
+}
+
+.tool-back:hover {
+  color: var(--tool-ink);
+  border-color: #cbd5e1;
+  transform: translateX(-2px);
+}
+
+.tool-back i {
+  font-size: 12px;
+}
+
+/* Sits above whatever the page draws, and stays clear of the content below. */
+.tool-backbar {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 20px 0;
+}
+
+@media print {
+  .tool-backbar { display: none !important; }
+}

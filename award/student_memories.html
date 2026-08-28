@@ -65,7 +65,6 @@
   <main class="main">
     <section class="hero">
       <h2 id="hero-title" class="font-zh">历届学生名单</h2>
-      <p id="hero-sub" class="font-zh">按学年与班级浏览 Yearbook 风格学生名册。</p>
     </section>
     <div id="content" class="state font-zh">正在加载…</div>
   </main>
@@ -86,9 +85,6 @@
     };
 
     document.getElementById('hero-title').textContent = LANG === 'en' ? 'Alumni Roster' : '历届学生名单';
-    document.getElementById('hero-sub').textContent = LANG === 'en'
-      ? 'Browse yearbook-style student rosters by academic year and class.'
-      : '按学年与班级浏览 Yearbook 风格学生名册。';
     document.getElementById('content').textContent = TXT.loading;
 
     function escapeHtml(str){
