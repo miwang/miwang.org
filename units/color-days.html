@@ -149,9 +149,10 @@ body{
   aspect-ratio:1/1;border:none;border-radius:1.1rem;cursor:pointer;font-family:inherit;
   background:var(--day);box-shadow:var(--shadow);color:#fff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;
-  font-size:2.6rem;
+  font-size:2.6rem;-webkit-appearance:none;appearance:none;overflow:hidden;padding:0;
 }
 .flip.open{background:var(--card);color:var(--ink)}
+.flip .emo{font-size:1.6em;line-height:1}
 .flip span.zh{font-size:.95rem;font-weight:700}
 .flip .qm{opacity:.85}
 
@@ -540,7 +541,7 @@ function actListen(){
   const opts=shuffle([d,...distract]);
 
   const q=el("div","act-q");
-  q.innerHTML='哪个是？<span class="sub">老师念颜色，学生指出来</span>';
+  q.innerHTML='哪个是？<span class="sub">老师读颜色，学生指出来</span>';
   stage.appendChild(q);
 
   const body=el("div","act-body");
@@ -590,7 +591,7 @@ function actFlip(){
       if(c.classList.contains("open")) { speak(zh); return; }
       sfxReveal(); c.classList.add("open","pop");
       c.innerHTML="";
-      c.appendChild(el("div",null,emo));
+      c.appendChild(el("div","emo",emo));
       c.appendChild(el("span","zh",zh));
       speak(zh);
     };
@@ -625,7 +626,7 @@ function actCount(){
         sfxGood();
         verdict.textContent=num+"个"+zh;
         verdict.className="verdict good pop";
-        speak(num+"个"+zh);
+        speak((num==="二"?"两":num)+"个"+zh);
         row.querySelectorAll("button").forEach(x=>x.disabled=true);
         setTimeout(renderStage,1800);
       }else{
@@ -638,11 +639,6 @@ function actCount(){
 
   body.appendChild(tray); body.appendChild(row); body.appendChild(verdict);
   stage.appendChild(body);
-
-  const note=el("div","act-foot");
-  const n2=el("div","teacher-note","量词提示：这些东西都用「个」。铅笔、蜡笔要用「支」，先不混着教。");
-  note.appendChild(n2);
-  stage.appendChild(note);
 }
 
 /* ============================================================
