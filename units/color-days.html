@@ -53,6 +53,7 @@ body{
   font-family:inherit;font-size:.82rem;font-weight:700;
   padding:.4rem .85rem;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;
   display:inline-flex;align-items:center;gap:.3rem;line-height:1.2;
+  text-decoration:none;
 }
 .chip:active{transform:translateY(1px)}
 .chip.tone{background:var(--day);color:#fff}
@@ -368,6 +369,11 @@ function renderTop(){
     const again=el("button","chip tone","↻ 再来一个");
     again.onclick=()=>{ sfxTap(); renderStage(); };
     topbar.appendChild(again);
+  }
+  if(view.name==="home"){
+    const worksheet=el("a","chip","🖨️ 打印练习纸");
+    worksheet.href="../tools/color-days-worksheet.html";
+    topbar.appendChild(worksheet);
   }
   const m=el("button","chip", muted?"🔇 静音":"🔊 有声");
   m.onclick=()=>{ muted=!muted; if(!muted) sfxTap(); renderTop(); };

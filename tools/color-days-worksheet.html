@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>颜色日练习纸 · Color Days</title>
+<style>
+  /* 楷体：优先用站上已有的霞鹜文楷，取不到就退回系统楷体 */
+  @font-face {
+    font-family: 'LXGWWenKai';
+    src: url('/fonts/LXGWWenKaiLite-Regular.woff2') format('woff2'),
+         url('/css/fonts/LXGWWenKaiLite-Regular.woff2') format('woff2');
+    font-display: swap;
+  }
+  :root { --kai: 'LXGWWenKai','KaiTi','Kaiti SC','STKaiti','楷体',serif; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eceae5; font-family: var(--kai); color: #1a1a1a; }
+
+  /* ---------- 控制面板（只在屏幕上显示） ---------- */
+  .panel {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff; border-bottom: 1px solid #d5d1c8;
+    padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end;
+  }
+  .panel h1 { font-size: 19px; margin: 0 12px 0 0; font-weight: 700; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field > span { font-size: 12px; color: #6b6459; }
+  select, button, input[type=text] {
+    font-family: inherit; font-size: 14px; padding: 6px 10px;
+    border: 1px solid #c8c3b8; border-radius: 6px; background: #fff;
+  }
+  button { cursor: pointer; }
+  button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; padding: 7px 18px; }
+  .colors { display: flex; flex-wrap: wrap; gap: 4px 10px; max-width: 560px; }
+  .colors label { font-size: 14px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+  .status { font-size: 13px; color: #6b6459; margin-left: auto; text-align: right; line-height: 1.5; }
+  .err { color: #a1301f; }
+  .paste { display: none; padding: 14px 20px; background: #fffaf2; border-bottom: 1px solid #e5d9c4; }
+  .paste.show { display: block; }
+  .paste textarea { width: 100%; height: 90px; font-family: var(--kai); font-size: 14px;
+                    padding: 8px; border: 1px solid #c8c3b8; border-radius: 6px; }
+  .paste p { margin: 0 0 8px; font-size: 13px; color: #6b6459; }
+
+  /* ---------- 练习纸 ---------- */
+  #out { padding: 24px 0 60px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .sheet {
+    width: 8.5in; height: 11in; padding: 0.5in 0.5in 0.55in; background: #fff;
+    display: flex; flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,.14);
+  }
+  .meta { font-size: 15pt; letter-spacing: .01em; }
+  .meta u { text-decoration: none; border-bottom: 1.2pt solid #000;
+            display: inline-block; width: 1.5in; }
+  .cue { font-size: 14pt; margin-top: 6pt; }
+  .cue::before { content: "✎ "; }
+
+  .name {
+    flex: 0 0 auto; text-align: center; line-height: 1;
+    margin: 2pt 0 6pt; font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 2.2px #000;
+    text-stroke: 2.2px #000;
+    white-space: nowrap;
+  }
+  .name.n3 { font-size: 1.85in; letter-spacing: .06in; text-indent: .06in; }
+  .name.n2 { font-size: 1.95in; letter-spacing: .55in; text-indent: .55in; }
+  .name.n4 { font-size: 1.42in; letter-spacing: .05in; text-indent: .05in; }
+
+  .art { display: flex; justify-content: space-around; align-items: center;
+         gap: .2in; margin: 4pt 0; }
+  .art svg { width: 2.1in; height: 2.1in; }
+  .think { font-size: 14pt; text-align: center; margin-top: 4pt; }
+  .box { flex: 1 1 auto; min-height: 1.6in; border: 1.6pt solid #000; border-radius: 3pt; margin-top: 6pt; }
+
+  @page { size: letter portrait; margin: 0; }
+  @media print {
+    body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .panel, .paste, .noprint { display: none !important; }
+    #out { padding: 0; gap: 0; }
+    .sheet { box-shadow: none; break-after: page; page-break-after: always; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="panel noprint">
+  <h1>颜色日练习纸</h1>
+
+  <label class="field"><span>学年</span>
+    <input type="text" id="year" value="26-27" size="6">
+  </label>
+
+  <label class="field"><span>班级</span>
+    <select id="cls">
+      <option value="all">全部（两个班）</option>
+    </select>
+  </label>
+
+  <div class="field"><span>颜色</span>
+    <div class="colors" id="colorList"></div>
+  </div>
+
+  <label class="field"><span>&nbsp;</span>
+    <label style="font-size:14px"><input type="checkbox" id="sample" checked> 每种颜色带一页「王老师」范例</label>
+  </label>
+
+  <div class="field"><span>&nbsp;</span>
+    <div style="display:flex;gap:8px">
+      <button id="reload">重新读名单</button>
+      <button class="primary" id="print">打印 / 存 PDF</button>
+    </div>
+  </div>
+
+  <div class="status" id="status">正在读名单…</div>
+</div>
+
+<div class="paste" id="pasteBox">
+  <p>读不到名单时，可以在这里手动粘贴：一行一个学生，格式 <code>班级,中文名</code>（例如 <code>elephant,安以萱</code>），或者只写中文名。</p>
+  <textarea id="pasteText" placeholder="elephant,安以萱&#10;elephant,白梦云&#10;tiger,安心桠"></textarea>
+  <div style="margin-top:8px"><button id="usePaste">使用这份名单</button></div>
+</div>
+
+<div id="out"></div>
+
+<script>
+/* ================= 配置 ================= */
+var SANITY_PROJECT = 'sow12t1i';
+var SANITY_DATASET = 'production';
+var CLASS_LABELS = { elephant: '大象班', tiger: '老虎班' };
+var SAMPLE_NAME  = '王老师';
+
+var ART    = {"apple": {"label": "苹果", "svg": "<path d=\"M50 33C42 22 26 22 20 35 13 50 21 71 33 82 41 90 46 86 50 86s9 4 17-4C79 71 87 50 80 35 74 22 58 22 50 33Z\"/><path d=\"M50 33C50 23 52 15 57 10\"/><path d=\"M57 13C66 4 79 8 80 17 72 25 60 23 57 13Z\"/>"}, "ladybug": {"label": "瓢虫", "svg": "<ellipse cx=\"50\" cy=\"54\" rx=\"30\" ry=\"33\"/><path d=\"M22 40Q50 26 78 40\"/><path d=\"M50 33V87\"/><circle cx=\"35\" cy=\"54\" r=\"5\" fill=\"#000\" stroke=\"none\"/><circle cx=\"65\" cy=\"54\" r=\"5\" fill=\"#000\" stroke=\"none\"/><circle cx=\"37\" cy=\"73\" r=\"4.5\" fill=\"#000\" stroke=\"none\"/><circle cx=\"63\" cy=\"73\" r=\"4.5\" fill=\"#000\" stroke=\"none\"/><path d=\"M42 23C38 15 34 12 29 10\"/><path d=\"M58 23C62 15 66 12 71 10\"/><circle cx=\"29\" cy=\"9\" r=\"3\" fill=\"#000\" stroke=\"none\"/><circle cx=\"71\" cy=\"9\" r=\"3\" fill=\"#000\" stroke=\"none\"/>"}, "watermelon": {"label": "西瓜", "svg": "<path d=\"M12 40A38 38 0 0 0 88 40Z\"/><path d=\"M20 46A30 30 0 0 0 80 46\"/><ellipse cx=\"40\" cy=\"58\" rx=\"2.6\" ry=\"4\"/><ellipse cx=\"50\" cy=\"65\" rx=\"2.6\" ry=\"4\"/><ellipse cx=\"60\" cy=\"58\" rx=\"2.6\" ry=\"4\"/>"}, "flag": {"label": "国旗", "svg": "<path d=\"M14 8V94\"/><path d=\"M16 14H84V58H16Z\"/><path d=\"M16 14H46V37H16Z\"/><path d=\"M46 21H84\"/><path d=\"M46 29H84\"/><path d=\"M46 37H84\"/><path d=\"M16 44H84\"/><path d=\"M16 51H84\"/><path d=\"M23.0 16.6L23.8 18.8L26.2 18.9L24.4 20.4L25.0 22.8L23.0 21.4L21.0 22.8L21.6 20.4L19.8 18.9L22.2 18.8Z\"/><path d=\"M31.0 16.6L31.8 18.8L34.2 18.9L32.4 20.4L33.0 22.8L31.0 21.4L29.0 22.8L29.6 20.4L27.8 18.9L30.2 18.8Z\"/><path d=\"M39.0 16.6L39.8 18.8L42.2 18.9L40.4 20.4L41.0 22.8L39.0 21.4L37.0 22.8L37.6 20.4L35.8 18.9L38.2 18.8Z\"/><path d=\"M23.0 27.6L23.8 29.8L26.2 29.9L24.4 31.4L25.0 33.8L23.0 32.4L21.0 33.8L21.6 31.4L19.8 29.9L22.2 29.8Z\"/><path d=\"M31.0 27.6L31.8 29.8L34.2 29.9L32.4 31.4L33.0 33.8L31.0 32.4L29.0 33.8L29.6 31.4L27.8 29.9L30.2 29.8Z\"/><path d=\"M39.0 27.6L39.8 29.8L42.2 29.9L40.4 31.4L41.0 33.8L39.0 32.4L37.0 33.8L37.6 31.4L35.8 29.9L38.2 29.8Z\"/>"}, "star": {"label": "星星", "svg": "<path d=\"M50.0 10.0L59.9 36.4L88.0 37.6L66.0 55.2L73.5 82.4L50.0 66.8L26.5 82.4L34.0 55.2L12.0 37.6L40.1 36.4Z\"/>"}, "firework": {"label": "烟花", "svg": "<circle cx=\"50\" cy=\"50\" r=\"7\"/><path d=\"M64.0 50.0L84.0 50.0\"/><path d=\"M59.9 59.9L74.0 74.0\"/><path d=\"M50.0 64.0L50.0 84.0\"/><path d=\"M40.1 59.9L26.0 74.0\"/><path d=\"M36.0 50.0L16.0 50.0\"/><path d=\"M40.1 40.1L26.0 26.0\"/><path d=\"M50.0 36.0L50.0 16.0\"/><path d=\"M59.9 40.1L74.0 26.0\"/><path d=\"M64.8 56.1L74.9 60.3\"/><path d=\"M56.1 64.8L60.3 74.9\"/><path d=\"M43.9 64.8L39.7 74.9\"/><path d=\"M35.2 56.1L25.1 60.3\"/><path d=\"M35.2 43.9L25.1 39.7\"/><path d=\"M43.9 35.2L39.7 25.1\"/><path d=\"M56.1 35.2L60.3 25.1\"/><path d=\"M64.8 43.9L74.9 39.7\"/><circle cx=\"88.0\" cy=\"50.0\" r=\"3.5\"/><circle cx=\"76.9\" cy=\"76.9\" r=\"3.5\"/><circle cx=\"50.0\" cy=\"88.0\" r=\"3.5\"/><circle cx=\"23.1\" cy=\"76.9\" r=\"3.5\"/><circle cx=\"12.0\" cy=\"50.0\" r=\"3.5\"/><circle cx=\"23.1\" cy=\"23.1\" r=\"3.5\"/><circle cx=\"50.0\" cy=\"12.0\" r=\"3.5\"/><circle cx=\"76.9\" cy=\"23.1\" r=\"3.5\"/>"}, "orange": {"label": "橙子", "svg": "<circle cx=\"50\" cy=\"58\" r=\"32\"/><circle cx=\"50\" cy=\"58\" r=\"24\"/><path d=\"M50.0 58.0L70.8 70.0\"/><path d=\"M50.0 58.0L50.0 82.0\"/><path d=\"M50.0 58.0L29.2 70.0\"/><path d=\"M50.0 58.0L29.2 46.0\"/><path d=\"M50.0 58.0L50.0 34.0\"/><path d=\"M50.0 58.0L70.8 46.0\"/><path d=\"M50 26V16\"/><path d=\"M52 20C61 11 74 14 76 22 68 30 55 29 52 20Z\"/>"}, "carrot": {"label": "胡萝卜", "svg": "<path d=\"M38 32C40 56 45 76 50 90 55 76 60 56 62 32Z\"/><path d=\"M42 46H58\"/><path d=\"M44 60H56\"/><path d=\"M46 72H54\"/><path d=\"M50 32C46 20 38 13 30 10 32 21 39 30 48 32\"/><path d=\"M50 32C50 18 50 12 50 6\"/><path d=\"M50 32C54 20 62 13 70 10 68 21 61 30 52 32\"/>"}, "pumpkin": {"label": "南瓜", "svg": "<ellipse cx=\"50\" cy=\"58\" rx=\"36\" ry=\"29\"/><path d=\"M36 32C29 44 29 72 36 84\"/><path d=\"M64 32C71 44 71 72 64 84\"/><path d=\"M50 29V16\"/><path d=\"M50 18C56 10 66 10 70 16\"/>"}, "sun": {"label": "太阳", "svg": "<circle cx=\"50\" cy=\"50\" r=\"24\"/><path d=\"M81.0 50.0L94.0 50.0\"/><path d=\"M76.8 65.5L88.1 72.0\"/><path d=\"M65.5 76.8L72.0 88.1\"/><path d=\"M50.0 81.0L50.0 94.0\"/><path d=\"M34.5 76.8L28.0 88.1\"/><path d=\"M23.2 65.5L11.9 72.0\"/><path d=\"M19.0 50.0L6.0 50.0\"/><path d=\"M23.2 34.5L11.9 28.0\"/><path d=\"M34.5 23.2L28.0 11.9\"/><path d=\"M50.0 19.0L50.0 6.0\"/><path d=\"M65.5 23.2L72.0 11.9\"/><path d=\"M76.8 34.5L88.1 28.0\"/><circle cx=\"42\" cy=\"45\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><circle cx=\"58\" cy=\"45\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><path d=\"M41 57Q50 65 59 57\"/>"}, "banana": {"label": "香蕉", "svg": "<path d=\"M18 36C16 64 40 86 70 82 79 81 86 75 83 68 68 77 42 68 33 44 31 38 25 34 18 36Z\"/><path d=\"M83 68C87 70 88 76 84 79\"/>"}, "duck": {"label": "小鸭子", "svg": "<ellipse cx=\"44\" cy=\"66\" rx=\"30\" ry=\"20\"/><circle cx=\"70\" cy=\"36\" r=\"16\"/><path d=\"M84 32 96 38 84 44Z\"/><circle cx=\"73\" cy=\"31\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><path d=\"M30 62C42 56 54 60 58 69\"/><path d=\"M8 90H92\"/>"}, "frog": {"label": "青蛙", "svg": "<ellipse cx=\"50\" cy=\"62\" rx=\"32\" ry=\"25\"/><circle cx=\"34\" cy=\"34\" r=\"13\"/><circle cx=\"66\" cy=\"34\" r=\"13\"/><circle cx=\"34\" cy=\"34\" r=\"4\" fill=\"#000\" stroke=\"none\"/><circle cx=\"66\" cy=\"34\" r=\"4\" fill=\"#000\" stroke=\"none\"/><path d=\"M32 64Q50 78 68 64\"/><path d=\"M20 82C12 84 10 90 14 92\"/><path d=\"M80 82C88 84 90 90 86 92\"/>"}, "leaf": {"label": "树叶", "svg": "<path d=\"M50 8C22 28 22 66 50 90 78 66 78 28 50 8Z\"/><path d=\"M50 10V92\"/><path d=\"M50 30 34 24\"/><path d=\"M50 30 66 24\"/><path d=\"M50 48 32 42\"/><path d=\"M50 48 68 42\"/><path d=\"M50 66 36 62\"/><path d=\"M50 66 64 62\"/>"}, "broccoli": {"label": "西兰花", "svg": "<path d=\"M26 60C18 52 20 40 30 38 30 26 42 20 50 26 58 18 72 24 71 38 80 42 80 54 72 60Z\"/><path d=\"M34 40A8 8 0 0 0 48 42\"/><path d=\"M54 40A8 8 0 0 0 68 44\"/><path d=\"M40 60V88\"/><path d=\"M60 60V88\"/><path d=\"M40 88Q50 94 60 88\"/><path d=\"M40 72H60\"/>"}, "whale": {"label": "鲸鱼", "svg": "<path d=\"M8 52C8 32 32 22 54 26 72 30 80 42 82 52 84 62 74 72 52 74 28 76 8 66 8 52Z\"/><path d=\"M82 51 98 30 94 52 98 74 82 58Z\"/><circle cx=\"24\" cy=\"44\" r=\"3\" fill=\"#000\" stroke=\"none\"/><path d=\"M12 60Q24 67 36 61\"/><path d=\"M40 24C40 14 46 7 53 5\"/><path d=\"M53 5C48 1 57 0 58 5\"/>"}, "umbrella": {"label": "雨伞", "svg": "<path d=\"M8 50A42 42 0 0 1 92 50Z\"/><path d=\"M8 50Q22 40 36 50Q50 40 64 50Q78 40 92 50\"/><path d=\"M50 50V80C50 88 40 90 36 84\"/>"}, "blueberry": {"label": "蓝莓", "svg": "<circle cx=\"34\" cy=\"62\" r=\"19\"/><circle cx=\"66\" cy=\"66\" r=\"16\"/><circle cx=\"54\" cy=\"34\" r=\"15\"/><path d=\"M34.0 56.0L35.5 60.0L39.7 60.1L36.4 62.8L37.5 66.9L34.0 64.5L30.5 66.9L31.6 62.8L28.3 60.1L32.5 60.0Z\"/><path d=\"M66.0 61.0L67.2 64.3L70.8 64.5L68.0 66.6L68.9 70.0L66.0 68.1L63.1 70.0L64.0 66.6L61.2 64.5L64.8 64.3Z\"/><path d=\"M54.0 29.0L55.2 32.3L58.8 32.5L56.0 34.6L56.9 38.0L54.0 36.1L51.1 38.0L52.0 34.6L49.2 32.5L52.8 32.3Z\"/>"}, "grapes": {"label": "葡萄", "svg": "<circle cx=\"50\" cy=\"40\" r=\"9\"/><circle cx=\"36\" cy=\"52\" r=\"9\"/><circle cx=\"64\" cy=\"52\" r=\"9\"/><circle cx=\"50\" cy=\"58\" r=\"9\"/><circle cx=\"28\" cy=\"68\" r=\"9\"/><circle cx=\"44\" cy=\"72\" r=\"9\"/><circle cx=\"60\" cy=\"72\" r=\"9\"/><circle cx=\"74\" cy=\"68\" r=\"9\"/><circle cx=\"50\" cy=\"86\" r=\"9\"/><path d=\"M50 31V16\"/><path d=\"M52 20C60 10 72 12 74 20 66 28 55 27 52 20Z\"/>"}, "eggplant": {"label": "茄子", "svg": "<path d=\"M58 34C74 42 80 62 70 76 60 90 38 90 30 78 22 66 32 44 50 36Z\"/><path d=\"M50 36C46 24 50 14 58 12\"/><path d=\"M46 38C38 30 40 20 48 20 54 26 54 34 51 39\"/><path d=\"M57 34C65 26 75 28 74 36 66 42 58 40 57 34Z\"/>"}, "violet": {"label": "紫罗兰", "svg": "<ellipse cx=\"50.0\" cy=\"25.0\" rx=\"11\" ry=\"14\" transform=\"rotate(0 50.0 25.0)\"/><ellipse cx=\"66.2\" cy=\"36.7\" rx=\"11\" ry=\"14\" transform=\"rotate(72 66.2 36.7)\"/><ellipse cx=\"60.0\" cy=\"55.8\" rx=\"11\" ry=\"14\" transform=\"rotate(144 60.0 55.8)\"/><ellipse cx=\"40.0\" cy=\"55.8\" rx=\"11\" ry=\"14\" transform=\"rotate(216 40.0 55.8)\"/><ellipse cx=\"33.8\" cy=\"36.7\" rx=\"11\" ry=\"14\" transform=\"rotate(288 33.8 36.7)\"/><circle cx=\"50\" cy=\"42\" r=\"6\"/><path d=\"M50 74V94\"/><path d=\"M50 82C40 76 30 80 28 88 38 92 47 88 50 82Z\"/>"}, "bear": {"label": "小熊", "svg": "<circle cx=\"50\" cy=\"56\" r=\"30\"/><circle cx=\"26\" cy=\"28\" r=\"12\"/><circle cx=\"74\" cy=\"28\" r=\"12\"/><ellipse cx=\"50\" cy=\"66\" rx=\"15\" ry=\"12\"/><path d=\"M50 60 44 66h12Z\"/><path d=\"M50 66V72\"/><path d=\"M50 72Q43 76 40 70\"/><path d=\"M50 72Q57 76 60 70\"/><circle cx=\"38\" cy=\"46\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><circle cx=\"62\" cy=\"46\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/>"}, "chocolate": {"label": "巧克力", "svg": "<path d=\"M16 26H84V76H16Z\"/><path d=\"M16 32H84\"/><path d=\"M38 32V76\"/><path d=\"M62 32V76\"/><path d=\"M16 54H84\"/>"}, "cookie": {"label": "饼干", "svg": "<circle cx=\"50\" cy=\"52\" r=\"34\"/><circle cx=\"38\" cy=\"38\" r=\"5\"/><circle cx=\"62\" cy=\"42\" r=\"5\"/><circle cx=\"44\" cy=\"62\" r=\"5\"/><circle cx=\"66\" cy=\"66\" r=\"5\"/><circle cx=\"52\" cy=\"26\" r=\"5\"/>"}, "bat": {"label": "蝙蝠", "svg": "<ellipse cx=\"50\" cy=\"52\" rx=\"13\" ry=\"16\"/><path d=\"M42 40 36 26 46 32\"/><path d=\"M58 40 64 26 54 32\"/><circle cx=\"45\" cy=\"48\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><circle cx=\"55\" cy=\"48\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><path d=\"M37 42C24 34 10 36 4 44 12 46 14 52 12 60 22 56 32 60 37 66Z\"/><path d=\"M63 42C76 34 90 36 96 44 88 46 86 52 88 60 78 56 68 60 63 66Z\"/>"}, "penguin": {"label": "企鹅", "svg": "<path d=\"M50 8C33 8 24 26 24 48s6 42 26 42 26-20 26-42S67 8 50 8Z\"/><path d=\"M50 40C40 40 36 50 36 60s4 26 14 26 14-14 14-26-4-20-14-20Z\"/><circle cx=\"43\" cy=\"26\" r=\"2.8\" fill=\"#000\" stroke=\"none\"/><circle cx=\"57\" cy=\"26\" r=\"2.8\" fill=\"#000\" stroke=\"none\"/><path d=\"M44 32 50 38 56 32Z\"/><path d=\"M24 50C14 54 12 66 16 74\"/><path d=\"M76 50C86 54 88 66 84 74\"/><path d=\"M40 90 30 96H44Z\"/><path d=\"M60 90 70 96H56Z\"/>"}, "cat": {"label": "小猫", "svg": "<circle cx=\"50\" cy=\"44\" r=\"26\"/><path d=\"M30 26 26 8 44 20\"/><path d=\"M70 26 74 8 56 20\"/><circle cx=\"40\" cy=\"40\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><circle cx=\"60\" cy=\"40\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><path d=\"M50 50 46 54h8Z\"/><path d=\"M50 54V58\"/><path d=\"M50 58Q44 62 41 57\"/><path d=\"M50 58Q56 62 59 57\"/><path d=\"M28 46 12 42\"/><path d=\"M28 52 12 54\"/><path d=\"M72 46 88 42\"/><path d=\"M72 52 88 54\"/><path d=\"M32 68C30 84 40 92 56 90 72 88 76 78 72 68\"/>"}, "cloud": {"label": "白云", "svg": "<path d=\"M26 74A18 18 0 0 1 28 39 20 20 0 0 1 64 32 17 17 0 0 1 78 74Z\"/>"}, "snowman": {"label": "雪人", "svg": "<circle cx=\"50\" cy=\"76\" r=\"20\"/><circle cx=\"50\" cy=\"46\" r=\"15\"/><circle cx=\"50\" cy=\"24\" r=\"11\"/><circle cx=\"46\" cy=\"21\" r=\"2.2\" fill=\"#000\" stroke=\"none\"/><circle cx=\"54\" cy=\"21\" r=\"2.2\" fill=\"#000\" stroke=\"none\"/><path d=\"M50 25 60 28 50 30\"/><path d=\"M36 12H64\"/><path d=\"M40 12V5H60V12\"/><path d=\"M36 44 16 34\"/><path d=\"M64 44 84 34\"/><circle cx=\"50\" cy=\"42\" r=\"3\" fill=\"#000\" stroke=\"none\"/><circle cx=\"50\" cy=\"52\" r=\"3\" fill=\"#000\" stroke=\"none\"/>"}, "snowflake": {"label": "雪花", "svg": "<path d=\"M50.0 50.0L92.0 50.0\"/><path d=\"M50.0 50.0L71.0 86.4\"/><path d=\"M50.0 50.0L29.0 86.4\"/><path d=\"M50.0 50.0L8.0 50.0\"/><path d=\"M50.0 50.0L29.0 13.6\"/><path d=\"M50.0 50.0L71.0 13.6\"/><path d=\"M66.0 50.0 74.2 42.6M66.0 50.0 74.2 57.4\"/><path d=\"M78.0 50.0 86.2 42.6M78.0 50.0 86.2 57.4\"/><path d=\"M58.0 63.9 68.5 67.3M58.0 63.9 55.7 74.6\"/><path d=\"M64.0 74.2 74.5 77.6M64.0 74.2 61.7 85.0\"/><path d=\"M42.0 63.9 44.3 74.6M42.0 63.9 31.5 67.3\"/><path d=\"M36.0 74.2 38.3 85.0M36.0 74.2 25.5 77.6\"/><path d=\"M34.0 50.0 25.8 57.4M34.0 50.0 25.8 42.6\"/><path d=\"M22.0 50.0 13.8 57.4M22.0 50.0 13.8 42.6\"/><path d=\"M42.0 36.1 31.5 32.7M42.0 36.1 44.3 25.4\"/><path d=\"M36.0 25.8 25.5 22.4M36.0 25.8 38.3 15.0\"/><path d=\"M58.0 36.1 55.7 25.4M58.0 36.1 68.5 32.7\"/><path d=\"M64.0 25.8 61.7 15.0M64.0 25.8 74.5 22.4\"/>"}, "pig": {"label": "小猪", "svg": "<circle cx=\"50\" cy=\"52\" r=\"30\"/><path d=\"M30 28 24 12 42 20Z\"/><path d=\"M70 28 76 12 58 20Z\"/><circle cx=\"38\" cy=\"46\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><circle cx=\"62\" cy=\"46\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><ellipse cx=\"50\" cy=\"64\" rx=\"14\" ry=\"10\"/><circle cx=\"45\" cy=\"64\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><circle cx=\"55\" cy=\"64\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/>"}, "flamingo": {"label": "火烈鸟", "svg": "<ellipse cx=\"38\" cy=\"66\" rx=\"25\" ry=\"17\"/><path d=\"M15 60 3 54 12 70Z\"/><path d=\"M26 60C34 54 48 56 54 64\"/><path d=\"M52 54C62 44 60 28 68 20\"/><circle cx=\"75\" cy=\"16\" r=\"9\"/><path d=\"M82 20 95 26 82 29Z\"/><circle cx=\"77\" cy=\"13\" r=\"2.4\" fill=\"#000\" stroke=\"none\"/><path d=\"M32 82V95\"/><path d=\"M46 82V95\"/><path d=\"M26 95H38\"/><path d=\"M40 95H52\"/>"}, "icecream": {"label": "冰淇淋", "svg": "<path d=\"M28 50C22 42 26 32 36 32 36 22 48 18 56 24 66 20 76 28 72 40 74 44 74 48 72 50Z\"/><path d=\"M26 50H74L50 95Z\"/><path d=\"M34 62H66\"/><path d=\"M40 74H60\"/><path d=\"M45 85H55\"/>"}, "elephant": {"label": "大象", "svg": "<circle cx=\"50\" cy=\"42\" r=\"25\"/><ellipse cx=\"18\" cy=\"42\" rx=\"14\" ry=\"19\"/><ellipse cx=\"82\" cy=\"42\" rx=\"14\" ry=\"19\"/><circle cx=\"41\" cy=\"37\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><circle cx=\"59\" cy=\"37\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><path d=\"M50 67C51 79 44 86 46 93\"/><path d=\"M34 60C30 70 30 80 33 86\"/><path d=\"M66 60C70 70 70 80 67 86\"/>"}, "mouse": {"label": "小老鼠", "svg": "<ellipse cx=\"46\" cy=\"58\" rx=\"30\" ry=\"24\"/><circle cx=\"30\" cy=\"32\" r=\"13\"/><circle cx=\"62\" cy=\"32\" r=\"13\"/><circle cx=\"38\" cy=\"50\" r=\"3\" fill=\"#000\" stroke=\"none\"/><circle cx=\"56\" cy=\"50\" r=\"3\" fill=\"#000\" stroke=\"none\"/><circle cx=\"47\" cy=\"62\" r=\"3.4\" fill=\"#000\" stroke=\"none\"/><path d=\"M44 63 24 58\"/><path d=\"M44 66 24 70\"/><path d=\"M50 63 70 58\"/><path d=\"M50 66 70 70\"/><path d=\"M76 64C90 64 92 80 82 90\"/>"}, "rock": {"label": "石头", "svg": "<path d=\"M14 76 26 40 52 28 78 40 88 70 74 84H26Z\"/><path d=\"M26 40 46 52 52 28\"/><path d=\"M46 52 78 40\"/><path d=\"M46 52 40 84\"/>"}, "rainbow": {"label": "彩虹", "svg": "<path d=\"M32 78A18 18 0 0 1 68 78\"/><path d=\"M24 78A26 26 0 0 1 76 78\"/><path d=\"M16 78A34 34 0 0 1 84 78\"/><path d=\"M8 78A42 42 0 0 1 92 78\"/><path d=\"M8 78H30\"/><path d=\"M70 78H92\"/><path d=\"M22 88A11 8 0 0 1 44 88Z\"/><path d=\"M56 88A11 8 0 0 1 78 88Z\"/>"}, "balloon": {"label": "气球", "svg": "<ellipse cx=\"30\" cy=\"34\" rx=\"18\" ry=\"22\"/><path d=\"M30 56 26 62h8Z\"/><path d=\"M30 62C30 76 40 82 46 94\"/><ellipse cx=\"70\" cy=\"44\" rx=\"16\" ry=\"20\"/><path d=\"M70 64 66 70h8Z\"/><path d=\"M70 70C70 82 58 86 50 94\"/>"}, "butterfly": {"label": "蝴蝶", "svg": "<ellipse cx=\"50\" cy=\"54\" rx=\"5\" ry=\"24\"/><path d=\"M45 40C34 20 14 16 8 26 2 36 16 46 45 50Z\"/><path d=\"M55 40C66 20 86 16 92 26 98 36 84 46 55 50Z\"/><path d=\"M45 58C36 70 20 78 14 72 8 66 22 56 45 54Z\"/><path d=\"M55 58C64 70 80 78 86 72 92 66 78 56 55 54Z\"/><path d=\"M47 32C44 22 38 14 32 10\"/><path d=\"M53 32C56 22 62 14 68 10\"/><circle cx=\"32\" cy=\"9\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/><circle cx=\"68\" cy=\"9\" r=\"2.6\" fill=\"#000\" stroke=\"none\"/>"}};
+var COLORS = [{"key": "red", "label": "红色", "items": ["apple", "ladybug", "watermelon"]}, {"key": "patriot", "label": "爱国色", "items": ["flag", "star", "firework"]}, {"key": "orange", "label": "橙色", "items": ["orange", "carrot", "pumpkin"]}, {"key": "yellow", "label": "黄色", "items": ["sun", "banana", "duck"]}, {"key": "green", "label": "绿色", "items": ["frog", "leaf", "broccoli"]}, {"key": "blue", "label": "蓝色", "items": ["whale", "umbrella", "blueberry"]}, {"key": "purple", "label": "紫色", "items": ["grapes", "eggplant", "violet"]}, {"key": "brown", "label": "棕色", "items": ["bear", "chocolate", "cookie"]}, {"key": "black", "label": "黑色", "items": ["bat", "penguin", "cat"]}, {"key": "white", "label": "白色", "items": ["cloud", "snowman", "snowflake"]}, {"key": "pink", "label": "粉色", "items": ["pig", "flamingo", "icecream"]}, {"key": "gray", "label": "灰色", "items": ["elephant", "mouse", "rock"]}, {"key": "rainbow", "label": "彩虹色", "items": ["rainbow", "balloon", "butterfly"]}];
+
+/* ================= 名单 ================= */
+var roster = [];   // [{cls, name}]
+
+function groqUrl(year) {
+  var q = '*[_type=="student" && academicYear==$y && status=="active"]' +
+          '|order(className asc, studentNumber asc)' +
+          '{"cls":className,"name":coalesce(nameZh,name),"no":studentNumber}';
+  return 'https://' + SANITY_PROJECT + '.apicdn.sanity.io/v2023-05-03/data/query/' +
+         SANITY_DATASET + '?query=' + encodeURIComponent(q) +
+         '&$y=' + encodeURIComponent(JSON.stringify(year));
+}
+
+function setStatus(msg, bad) {
+  var el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (bad ? ' err' : '');
+}
+
+function loadRoster() {
+  var year = document.getElementById('year').value.trim();
+  setStatus('正在读 ' + year + ' 名单…');
+  fetch(groqUrl(year))
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (d) {
+      var rows = (d.result || []).filter(function (s) { return s.name; });
+      if (!rows.length) throw new Error('这个学年没有查到学生');
+      roster = rows.map(function (s) { return { cls: s.cls || 'other', name: s.name }; });
+      document.getElementById('pasteBox').classList.remove('show');
+      afterRoster();
+    })
+    .catch(function (e) {
+      setStatus('读名单失败（' + e.message + '）。可以在下面手动粘贴。', true);
+      document.getElementById('pasteBox').classList.add('show');
+    });
+}
+
+function usePasted() {
+  var lines = document.getElementById('pasteText').value.split('\n');
+  roster = [];
+  lines.forEach(function (ln) {
+    ln = ln.trim(); if (!ln) return;
+    var p = ln.split(/[,，\t]/);
+    if (p.length > 1) roster.push({ cls: p[0].trim(), name: p[1].trim() });
+    else roster.push({ cls: 'other', name: p[0].trim() });
+  });
+  if (roster.length) { document.getElementById('pasteBox').classList.remove('show'); afterRoster(); }
+}
+
+function afterRoster() {
+  var sel = document.getElementById('cls');
+  var seen = [];
+  roster.forEach(function (s) { if (seen.indexOf(s.cls) < 0) seen.push(s.cls); });
+  sel.innerHTML = '<option value="all">全部（' + seen.length + ' 个班）</option>';
+  seen.forEach(function (c) {
+    var n = roster.filter(function (s) { return s.cls === c; }).length;
+    sel.innerHTML += '<option value="' + c + '">' + (CLASS_LABELS[c] || c) + '（' + n + ' 人）</option>';
+  });
+  render();
+}
+
+/* ================= 渲染 ================= */
+function nameClass(n) { return 'name n' + Math.min(4, Math.max(2, n.length)); }
+
+function sheet(name, color) {
+  var d = document.createElement('div');
+  d.className = 'sheet';
+  var art = color.items.map(function (k) {
+    return '<svg viewBox="0 0 100 100" fill="none" stroke="#000" stroke-width="2.6" ' +
+           'stroke-linecap="round" stroke-linejoin="round">' + ART[k].svg + '</svg>';
+  }).join('');
+  d.innerHTML =
+    '<div class="meta">名字：<u></u>　学号：<u></u></div>' +
+    '<div class="cue">写一写</div>' +
+    '<div class="' + nameClass(name) + '">' + name + '</div>' +
+    '<div class="cue">画一画' + color.label + '。</div>' +
+    '<div class="art">' + art + '</div>' +
+    '<div class="think">想一想，还有什么是' + color.label + '？</div>' +
+    '<div class="box"></div>';
+  return d;
+}
+
+function render() {
+  var out = document.getElementById('out');
+  out.innerHTML = '';
+  var cls = document.getElementById('cls').value;
+  var withSample = document.getElementById('sample').checked;
+  var chosen = COLORS.filter(function (c) {
+    var b = document.querySelector('input[data-color="' + c.key + '"]');
+    return b && b.checked;
+  });
+  var people = roster.filter(function (s) { return cls === 'all' || s.cls === cls; });
+
+  var groups = [];
+  if (cls === 'all') {
+    var seen = [];
+    people.forEach(function (s) { if (seen.indexOf(s.cls) < 0) seen.push(s.cls); });
+    seen.forEach(function (c) { groups.push(people.filter(function (s) { return s.cls === c; })); });
+  } else {
+    groups.push(people);
+  }
+
+  var n = 0;
+  chosen.forEach(function (color) {
+    groups.forEach(function (g) {
+      if (withSample) { out.appendChild(sheet(SAMPLE_NAME, color)); n++; }
+      g.forEach(function (s) { out.appendChild(sheet(s.name, color)); n++; });
+    });
+  });
+
+  setStatus(people.length + ' 名学生 × ' + chosen.length + ' 种颜色 ＝ ' + n + ' 页');
+}
+
+/* ================= 启动 ================= */
+(function init() {
+  var list = document.getElementById('colorList');
+  COLORS.forEach(function (c, i) {
+    var id = 'c_' + c.key;
+    list.insertAdjacentHTML('beforeend',
+      '<label><input type="checkbox" data-color="' + c.key + '" id="' + id + '"' +
+      (i === 0 ? ' checked' : '') + '> ' + c.label + '</label>');
+  });
+  list.insertAdjacentHTML('beforeend',
+    '<label style="color:#6b6459"><a href="#" id="allOn">全选</a>　<a href="#" id="allOff">全不选</a></label>');
+
+  document.getElementById('allOn').onclick = function (e) {
+    e.preventDefault();
+    document.querySelectorAll('[data-color]').forEach(function (b) { b.checked = true; });
+    render();
+  };
+  document.getElementById('allOff').onclick = function (e) {
+    e.preventDefault();
+    document.querySelectorAll('[data-color]').forEach(function (b) { b.checked = false; });
+    render();
+  };
+
+  list.addEventListener('change', render);
+  document.getElementById('cls').addEventListener('change', render);
+  document.getElementById('sample').addEventListener('change', render);
+  document.getElementById('reload').onclick = loadRoster;
+  document.getElementById('usePaste').onclick = usePasted;
+  document.getElementById('print').onclick = function () { window.print(); };
+
+  loadRoster();
+})();
+</script>
+</body>
+</html>
