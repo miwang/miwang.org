@@ -85,7 +85,7 @@ function fillYearSelect(sel, counts, preferred){
 
 async function fetchYearCounts(){
   const q = '*[_type=="student" && defined(academicYear)]{academicYear}';
-  const url = `https://sow12t1i.apicdn.sanity.io/v2021-10-21/data/query/production?query=${encodeURIComponent(q)}`;
+  const url = `https://sow12t1i.apicdn.sanity.io/v2021-10-21/data/query/production?perspective=published&query=${encodeURIComponent(q)}`;
   try{
     const res = await fetch(url);
     const rows = (await res.json()).result || [];

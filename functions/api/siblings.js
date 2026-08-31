@@ -20,6 +20,9 @@
  * A single shared personal phone is not enough on its own.
  */
 
+// Read published content only. Without this, Sanity's default perspective can
+// include drafts, so an unpublished edit in Studio would leak onto the site and
+// existence checks could match a document that is not actually live.
 const PROJECT_ID = 'sow12t1i'
 const DATASET = 'production'
 const API_VERSION = '2021-10-21'
@@ -65,7 +68,7 @@ export async function onRequestGet(context) {
         _id, "a": a._ref, "b": b._ref, relation, note, rejected
       }
     }`
-    const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?query=${encodeURIComponent(groq)}`
+    const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?perspective=published&query=${encodeURIComponent(groq)}`
     const res = await fetch(url, { headers: { authorization: 'Bearer ' + token } })
     if (!res.ok) throw new Error(`Sanity query failed: ${res.status}`)
     const payload = (await res.json()).result || {}
