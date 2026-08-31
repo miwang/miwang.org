@@ -63,6 +63,26 @@ body{
 .home-head{text-align:center;flex:0 0 auto;padding:.2rem 0 .9rem}
 .home-head h1{margin:0;font-size:2.1rem;letter-spacing:.06em}
 .home-head p{margin:.25rem 0 0;color:var(--ink-soft);font-size:.85rem}
+.song-row{flex:0 0 auto;display:flex;justify-content:center;gap:.6rem;padding-bottom:.7rem}
+.song-btn{
+  border:none;background:var(--card);color:var(--ink);cursor:pointer;
+  font-family:inherit;font-size:.85rem;font-weight:700;
+  padding:.5rem 1.1rem;border-radius:999px;box-shadow:var(--shadow);
+}
+.song-btn:active{transform:translateY(1px)}
+.video-modal{
+  position:fixed;inset:0;background:rgba(20,16,12,.82);z-index:50;
+  display:none;align-items:center;justify-content:center;padding:2rem;
+}
+.video-modal.open{display:flex}
+.video-modal-inner{position:relative;width:min(92vw,64rem)}
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:1rem;overflow:hidden;box-shadow:0 1rem 3rem rgba(0,0,0,.4)}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.video-close{
+  position:absolute;top:-2.6rem;right:0;border:none;cursor:pointer;
+  background:#fff;color:var(--ink);border-radius:999px;width:2.4rem;height:2.4rem;
+  font-size:1.1rem;box-shadow:var(--shadow);
+}
 .grid-days{
   flex:1 1 auto;min-height:0;overflow-y:auto;
   display:grid;grid-template-columns:repeat(auto-fill,minmax(7.4rem,1fr));
@@ -196,6 +216,7 @@ body{
 .mix-answer .dot{width:2.4rem;height:2.4rem;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
 
 /* ---------- 投票表 ---------- */
+.vote-figure{flex:0 0 auto;display:flex;justify-content:center;padding:.1rem 0 .3rem}
 .chart{
   flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:flex-end;justify-content:center;
   gap:.4rem;padding:.4rem .2rem 0;
@@ -224,6 +245,13 @@ body{
 <div id="app">
   <div class="topbar" id="topbar"></div>
   <div class="stage" id="stage"></div>
+</div>
+
+<div id="videoModal" class="video-modal">
+  <div class="video-modal-inner">
+    <button class="video-close" id="videoCloseBtn">✕</button>
+    <div class="video-frame"><iframe id="videoFrame" src="" title="颜色歌" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0"></iframe></div>
+  </div>
 </div>
 
 <script>
@@ -285,6 +313,11 @@ const STATIONS = [
   { id:"sort",   ico:"🧺", zh:"分一分",       sub:"把是今天颜色的拖进筐里。" },
   { id:"mix",    ico:"🎨", zh:"调一调",       sub:"两个圆圈叠起来，看看变成什么色。" },
   { id:"vote",   ico:"📊", zh:"今天穿了吗",   sub:"数今天穿这个颜色的人，点一下长一格。" }
+];
+
+const SONGS = [
+  { zh:"颜色歌 1", id:"ebQUaCALcuE" },
+  { zh:"颜色歌 2", id:"KUyWkXSL3MQ" }
 ];
 
 /* ---------------- 状态 ---------------- */
@@ -443,6 +476,15 @@ function renderHome(){
   const head=el("div","home-head");
   head.innerHTML='<h1>颜色日</h1><p>Color Days · 点一个颜色开始</p>';
   stage.appendChild(head);
+
+  const songs=el("div","song-row");
+  SONGS.forEach(s=>{
+    const b=el("button","song-btn","🎵 "+s.zh);
+    b.onclick=()=>{ sfxTap(); openVideo(s.id); };
+    songs.appendChild(b);
+  });
+  stage.appendChild(songs);
+
   const grid=el("div","grid-days");
   DAYS.forEach((d,i)=>{
     const t=el("button","daytile");
@@ -809,10 +851,25 @@ function actMix(){
 /* ============================================================
    活动 7 · 今天穿了吗（跨天累积柱状图）
    ============================================================ */
+function personIcon(hex){
+  return '<svg viewBox="0 0 100 140" width="72" height="100">'
+    + '<circle cx="50" cy="24" r="18" fill="#FBD8B0" stroke="#2E2A28" stroke-width="3"/>'
+    + '<path d="M32 40 Q50 34 68 40 L74 92 Q50 100 26 92 Z" fill="'+hex+'" stroke="#2E2A28" stroke-width="3" stroke-linejoin="round"/>'
+    + '<path d="M32 44 L14 70" fill="none" stroke="#2E2A28" stroke-width="3" stroke-linecap="round"/>'
+    + '<path d="M68 44 L86 70" fill="none" stroke="#2E2A28" stroke-width="3" stroke-linecap="round"/>'
+    + '<path d="M38 92 L34 132" fill="none" stroke="#2E2A28" stroke-width="4" stroke-linecap="round"/>'
+    + '<path d="M62 92 L66 132" fill="none" stroke="#2E2A28" stroke-width="4" stroke-linecap="round"/>'
+    + '</svg>';
+}
+
 function actVote(){
   const q=el("div","act-q");
   q.innerHTML='今天穿'+day().zh+'的有几个人？<span class="sub">点柱子加一个人，长按减一个</span>';
   stage.appendChild(q);
+
+  const figure=el("div","vote-figure");
+  figure.innerHTML=personIcon(day().hex);
+  stage.appendChild(figure);
 
   const chart=el("div","chart");
   const max=()=>Math.max(5,...DAYS.map(d=>votes[d.zh]||0));
@@ -883,8 +940,23 @@ function renderStage(){
   ACTS[view.station]();
 }
 
+/* ---------------- 颜色歌弹窗 ---------------- */
+const videoModal=document.getElementById("videoModal");
+const videoFrame=document.getElementById("videoFrame");
+function openVideo(id){
+  videoFrame.src="https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0";
+  videoModal.classList.add("open");
+}
+function closeVideo(){
+  videoModal.classList.remove("open");
+  videoFrame.src="";
+}
+document.getElementById("videoCloseBtn").onclick=closeVideo;
+videoModal.addEventListener("click",e=>{ if(e.target===videoModal) closeVideo(); });
+
 /* 键盘：← 返回，空格 下一个 */
 document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&videoModal.classList.contains("open")){ closeVideo(); return; }
   if(e.key==="Escape"||e.key==="ArrowLeft"){
     if(view.name==="station") go("day",view.day);
     else if(view.name==="day") go("home");
