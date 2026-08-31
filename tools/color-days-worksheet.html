@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>颜色日练习纸 · Color Days</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
 <style>
-  /* 楷体：优先用站上已有的霞鹜文楷，取不到就退回系统楷体 */
+  /* 楷体：优先用本机系统楷体，取不到就退回霞鹜文楷（本身就是楷体风格） */
   @font-face {
-    font-family: 'LXGWWenKai';
-    src: url('/fonts/LXGWWenKaiLite-Regular.woff2') format('woff2'),
-         url('/css/fonts/LXGWWenKaiLite-Regular.woff2') format('woff2');
-    font-display: swap;
+    font-family: "WorksheetKai";
+    src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+         local("BiauKai"), local("KaiTi"), local("楷体"), local("楷体_GB2312");
+    unicode-range: U+2E80-2EFF, U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
   }
-  :root { --kai: 'LXGWWenKai','KaiTi','Kaiti SC','STKaiti','楷体',serif; }
+  :root { --kai: "WorksheetKai", "LXGW WenKai Lite", serif; }
 
   * { box-sizing: border-box; }
   body { margin: 0; background: #eceae5; font-family: var(--kai); color: #1a1a1a; }
@@ -86,10 +87,15 @@
 <body>
 
 <div class="panel noprint">
+  <a href="../units/color-days.html" style="text-decoration:none"><button type="button">← 返回颜色日</button></a>
   <h1>颜色日练习纸</h1>
 
   <label class="field"><span>学年</span>
-    <input type="text" id="year" value="26-27" size="6">
+    <select id="year">
+      <option value="25-26">2025-2026</option>
+      <option value="26-27" selected>2026-2027</option>
+      <option value="27-28">2027-2028</option>
+    </select>
   </label>
 
   <label class="field"><span>班级</span>
@@ -206,7 +212,7 @@ function sheet(name, color) {
   }).join('');
   d.innerHTML =
     '<div class="meta">名字：<u></u>　学号：<u></u></div>' +
-    '<div class="cue">写一写</div>' +
+    '<div class="cue">写一写。</div>' +
     '<div class="' + nameClass(name) + '">' + name + '</div>' +
     '<div class="cue">画一画' + color.label + '。</div>' +
     '<div class="art">' + art + '</div>' +
@@ -270,6 +276,7 @@ function render() {
   };
 
   list.addEventListener('change', render);
+  document.getElementById('year').addEventListener('change', loadRoster);
   document.getElementById('cls').addEventListener('change', render);
   document.getElementById('sample').addEventListener('change', render);
   document.getElementById('reload').onclick = loadRoster;

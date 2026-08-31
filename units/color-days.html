@@ -322,10 +322,55 @@ const sfxGood    = ()=>{ tone(660,.14,"sine",.16,0); tone(880,.14,"sine",.16,.09
 const sfxRetry   = ()=>{ tone(320,.16,"sine",.12,0); tone(250,.20,"sine",.10,.11); };
 const sfxReveal  = ()=>{ tone(740,.10,"triangle",.13,0); tone(990,.14,"triangle",.11,.07); };
 
-/* 中文朗读（有中文语音就读，没有就静默跳过） */
-function speak(text){
+/* ---------------- 中文朗读（跟四会字页面同一套发音引擎） ---------------- */
+/* 优先级：Sanity 生字库录音 → 本地 mp3 → Azure 神经网络语音 → 浏览器内置语音（兜底） */
+const SANITY_PROJECT_ID = 'sow12t1i';
+const SANITY_DATASET = 'production';
+const SANITY_WORD_QUERY = encodeURIComponent('*[_type == "word"] | order(_createdAt asc) {char, "audioUrl": audio.asset->url}');
+const SANITY_WORD_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_WORD_QUERY}`;
+
+let sanityAudioMap = {};
+(async function loadSanityAudioMap(){
   try{
-    if(muted || !window.speechSynthesis) return;
+    const r = await fetch(SANITY_WORD_API);
+    const d = await r.json();
+    (d.result||[]).forEach(w=>{ if(w.char && w.audioUrl) sanityAudioMap[w.char]=w.audioUrl; });
+  }catch(e){}
+})();
+
+let globalAudio = new Audio();
+
+async function speak(text){
+  if(muted || !text) return;
+  globalAudio.pause();
+  const sanityAudioUrl = sanityAudioMap[text];
+
+  if(sanityAudioUrl){
+    globalAudio.src = sanityAudioUrl;
+    await globalAudio.play().catch(e=>console.warn("Sanity音频播放失败", e));
+    return;
+  }
+
+  const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+  const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+  try{
+    const localRes = await fetch(localPath, { method:"HEAD" }).catch(()=>null);
+    if(localRes && localRes.ok && localRes.headers.get("content-type") && localRes.headers.get("content-type").includes("audio")){
+      globalAudio.src = localPath; await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    const azureRes = await fetch(azureUrl).catch(()=>null);
+    if(azureRes && azureRes.ok && azureRes.headers.get("content-type") && azureRes.headers.get("content-type").includes("audio")){
+      const audioBlob = await azureRes.blob();
+      globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    if(!window.speechSynthesis) return;
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
     u.lang="zh-CN"; u.rate=.75;
@@ -359,7 +404,11 @@ function setTheme(hex){
 /* ---------------- 顶栏 ---------------- */
 function renderTop(){
   topbar.innerHTML="";
-  if(view.name!=="home"){
+  if(view.name==="home"){
+    const back=el("a","chip","← 教师工具台");
+    back.href="../teachers.html";
+    topbar.appendChild(back);
+  }else{
     const back=el("button","chip",view.name==="day" ? "← 所有颜色" : "← "+day().zh+"日");
     back.onclick=()=>{ sfxTap(); view.name==="day" ? go("home") : go("day",view.day); };
     topbar.appendChild(back);
