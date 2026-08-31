@@ -93,15 +93,30 @@
             padding-top: 35px; 
         }
 
-        /* 区块隐藏动画 */
         .tool-section { transition: opacity 0.3s ease; }
+        .tool-section.collapsed > .grid,
+        .tool-section.collapsed > .unit-list { display: none; }
 
         .section-title {
             font-size: 1.3rem; font-weight: bold; color: var(--text); 
             border-left: 6px solid var(--c-slate); 
             padding-left: 14px; margin-bottom: 18px;
             letter-spacing: 1px; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; user-select: none; justify-content: space-between;
         }
+        .section-title:focus-visible {
+            outline: 3px solid rgba(68, 184, 142, 0.3);
+            outline-offset: 4px;
+            border-radius: 10px;
+        }
+        .section-title-main { display: inline-flex; align-items: center; gap: 12px; }
+        .section-chevron {
+            font-size: 1rem; color: var(--text-muted); flex-shrink: 0; margin-left: 12px;
+            transition: transform 0.25s ease, color 0.25s ease;
+        }
+        .tool-section.collapsed .section-chevron { transform: rotate(-90deg); }
+        .section-title:hover .section-chevron,
+        .section-title:focus-visible .section-chevron { color: var(--c-slate); }
         
         .title-icon {
             width: 32px; height: 32px;
@@ -303,14 +318,17 @@
     <div class="container">
 
         <div class="tool-section" id="tool-awards">
-            <div class="section-title" style="border-left-color: var(--c-lime);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="8" r="6"></circle>
-                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
-                    </svg>
-                </div>
-                <span>奖励和荣誉</span>
+            <div class="section-title" style="border-left-color: var(--c-lime);" role="button" tabindex="0" aria-expanded="false">
+                <span class="section-title-main">
+                    <div class="title-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="6"></circle>
+                            <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
+                        </svg>
+                    </div>
+                    <span>奖励和荣誉</span>
+                </span>
+                <span class="section-chevron" aria-hidden="true">▼</span>
             </div>
             <div class="grid">
                 <a href="award/hall_of_fame.html?role=teachers" class="card emerald-hover">
@@ -327,14 +345,17 @@
         </div>
 
         <div class="tool-section" id="tool-tools">
-            <div class="section-title" style="border-left-color: var(--c-emerald);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                </div>
-                <span>课堂教学工具</span>
+            <div class="section-title" style="border-left-color: var(--c-emerald);" role="button" tabindex="0" aria-expanded="false">
+                <span class="section-title-main">
+                    <div class="title-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                    </div>
+                    <span>课堂教学工具</span>
+                </span>
+                <span class="section-chevron" aria-hidden="true">▼</span>
             </div>
             <div class="grid">
                 <a href="work/morning_work.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-book"></i></div><div class="card-title">早作业<span class="sub-title">晨间综合练习</span></div><div class="card-desc">每日配置四会字、数字与句子。</div></a>
@@ -351,15 +372,18 @@
         </div>
 
         <div class="tool-section" id="tool-units">
-            <div class="section-title" style="border-left-color: var(--c-navy);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                        <path d="M9 7h6M9 11h6"></path>
-                    </svg>
-                </div>
-                <span>教学单元</span>
+            <div class="section-title" style="border-left-color: var(--c-navy);" role="button" tabindex="0" aria-expanded="false">
+                <span class="section-title-main">
+                    <div class="title-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            <path d="M9 7h6M9 11h6"></path>
+                        </svg>
+                    </div>
+                    <span>教学单元</span>
+                </span>
+                <span class="section-chevron" aria-hidden="true">▼</span>
             </div>
             <div class="unit-list">
                 <a href="units/color-days.html" class="unit-item">
@@ -374,14 +398,17 @@
         </div>
 
         <div class="tool-section" id="tool-games">
-            <div class="section-title" style="border-left-color: var(--c-mint);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                        <path d="M6 12h4M8 10v4M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path>
-                    </svg>
-                </div>
-                <span>课堂互动游戏</span>
+            <div class="section-title" style="border-left-color: var(--c-mint);" role="button" tabindex="0" aria-expanded="false">
+                <span class="section-title-main">
+                    <div class="title-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                            <path d="M6 12h4M8 10v4M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path>
+                        </svg>
+                    </div>
+                    <span>课堂互动游戏</span>
+                </span>
+                <span class="section-chevron" aria-hidden="true">▼</span>
             </div>
             <div class="grid">
                 <a href="games/word_puzzle.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-shapes"></i></div><div class="card-title">四会字拼拼乐<span class="sub-title">认读拼图</span></div><div class="card-desc">先听读所有字卡，再进行拼图配对。</div></a>
@@ -400,16 +427,19 @@
         </div>
 
         <div class="tool-section" id="tool-groups">
-            <div class="section-title" style="border-left-color: var(--c-slate);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-slate)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                </div>
-                <span>分组与轮换工具</span>
+            <div class="section-title" style="border-left-color: var(--c-slate);" role="button" tabindex="0" aria-expanded="false">
+                <span class="section-title-main">
+                    <div class="title-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-slate)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <span>分组与轮换工具</span>
+                </span>
+                <span class="section-chevron" aria-hidden="true">▼</span>
             </div>
             <div class="grid">
                 <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_milk_cookie.html')" role="button" tabindex="0">
@@ -444,16 +474,19 @@
         </div>
 
         <div class="tool-section" id="tool-students">
-            <div class="section-title" style="border-left-color: var(--c-lime);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                </div>
-                <span>学生管理</span>
+            <div class="section-title" style="border-left-color: var(--c-lime);" role="button" tabindex="0" aria-expanded="false">
+                <span class="section-title-main">
+                    <div class="title-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <span>学生管理</span>
+                </span>
+                <span class="section-chevron" aria-hidden="true">▼</span>
             </div>
             <div class="grid">
                 <a href="award/student_memories.html?role=teachers" class="card emerald-hover">
@@ -508,6 +541,25 @@
 
         document.getElementById('modal-overlay').addEventListener('click', function(e) {
             if (e.target === this) this.style.display = 'none';
+        });
+
+        function toggleSection(section) {
+            const isCollapsed = section.classList.toggle('collapsed');
+            const title = section.querySelector('.section-title');
+            if (title) title.setAttribute('aria-expanded', String(!isCollapsed));
+        }
+
+        document.querySelectorAll('.tool-section').forEach(section => {
+            section.classList.add('collapsed');
+            const title = section.querySelector('.section-title');
+            if (!title) return;
+            title.addEventListener('click', () => toggleSection(section));
+            title.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggleSection(section);
+                }
+            });
         });
 
         // 🌟 保留原有的页面滚动位置记忆逻辑

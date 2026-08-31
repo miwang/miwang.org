@@ -63,7 +63,7 @@ html,body{height:100%;font-family:var(--fen);color:var(--dark);background:var(--
 
 .card-body{display:flex;flex-direction:column;gap:7px;flex:1;min-height:0;overflow:hidden;transition:opacity .2s;}
 .card.off .card-body{opacity:.3;pointer-events:none;}
-.month-tabs{display:flex;gap:5px;flex-shrink:0;}
+.month-tabs{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;}
 .m-tab{padding:4px 12px;border-radius:16px;border:2px solid var(--red);background:white;color:var(--red);cursor:pointer;font-family:var(--fzh);font-size:.8rem;transition:.15s;}
 .m-tab.active{background:var(--red);color:white;}
 .words-scroll{display:flex;flex-wrap:wrap;gap:8px;overflow-y:auto;flex:1;padding:4px;}
@@ -311,7 +311,8 @@ async function init(){
 
   const cur=getCurMonth(now),prev=prevM(cur);
   const te=document.getElementById('monthTabs');
-  [prev,cur].forEach((m,i)=>{const b=document.createElement('button');b.className='m-tab'+(i===1?' active':'');b.textContent=MCN[m];b.onclick=()=>{te.querySelectorAll('.m-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderWords(m);};te.appendChild(b);});
+  const monthTabs=prev===cur?[cur]:[prev,cur];
+  monthTabs.forEach((m,i)=>{const b=document.createElement('button');b.className='m-tab'+(i===monthTabs.length-1?' active':'');b.textContent=MCN[m];b.onclick=()=>{te.querySelectorAll('.m-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderWords(m);};te.appendChild(b);});
   renderWords(cur);
   const rg=document.getElementById('rangeGrid');
   NRANGES.forEach(r=>{const b=document.createElement('button');b.className='r-btn';b.textContent=r.lbl;b.onclick=()=>selectRange(r,b);rg.appendChild(b);});
@@ -410,7 +411,7 @@ function buildWords(panel){
     panel.appendChild(wrap);
 }
 
-function buildNums(panel){if(!selRange){addEmpty(panel,'未选择数字范围');return;}const ns=[];for(let i=selRange.max;i>=selRange.min;i--)ns.push(i);const disp=numDir==='down'?ns:[...ns].reverse();const wrap=document.createElement('div');wrap.className='pn-wrap';const n=disp.length;const fs=n<=11?'clamp(1.6rem,3.5vw,4rem)':'clamp(1.1rem,2.5vw,3rem)';const pad=n<=11?'10px 14px':'7px 10px';disp.forEach(num=>{const d=document.createElement('div');d.className='n-chip';d.textContent=num;d.style.cssText=`font-size:${fs};padding:${pad};`;d.onclick=()=>showOv(String(num));wrap.appendChild(d);});panel.appendChild(wrap);}
+function buildNums(panel){if(!selRange){addEmpty(panel,'未选择数字范围');return;}const ns=[];for(let i=selRange.max;i>=selRange.min;i--)ns.push(i);const disp=numDir==='down'?ns:[...ns].reverse();const wrap=document.createElement('div');wrap.className='pn-wrap';const n=disp.length;const activeCount=Object.values(mods).filter(Boolean).length;const isSolo=activeCount===1;if(isSolo)wrap.style.gap='clamp(14px,2vw,28px)';const fs=isSolo?(n<=11?'clamp(4rem,10vw,10rem)':'clamp(3.2rem,8vw,6.8rem)'):(n<=11?'clamp(2.2rem,4.8vw,5.4rem)':'clamp(1.5rem,3.4vw,3.8rem)');const pad=isSolo?(n<=11?'18px 26px':'14px 18px'):(n<=11?'12px 16px':'9px 12px');disp.forEach(num=>{const d=document.createElement('div');d.className='n-chip';d.textContent=num;d.style.cssText=`font-size:${fs};padding:${pad};`;d.onclick=()=>showOv(String(num));wrap.appendChild(d);});panel.appendChild(wrap);}
 
 function buildMath(panel){
     if(!curEqs.length){addEmpty(panel,'未选择数学题型');return;}
