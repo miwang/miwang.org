@@ -82,7 +82,7 @@ const label = s => `${s.nameZh ? s.nameZh + ' ' : ''}${s.nameEn || s.name || ''}
 
 async function loadStudents(){
   const q = '*[_type=="student"]|order(academicYear desc, className asc, nameEn asc){_id,nameEn,nameZh,name,academicYear,className}'
-  const url = `https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(q)}`
+  const url = `https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?perspective=published&query=${encodeURIComponent(q)}`
   const res = await fetch(url)
   const data = await res.json()
   STUDENTS = data.result || []

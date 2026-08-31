@@ -15,6 +15,9 @@
  *   SANITY_API_TOKEN   — Sanity token with write access
  */
 
+// Read published content only. Without this, Sanity's default perspective can
+// include drafts, so an unpublished edit in Studio would leak onto the site and
+// existence checks could match a document that is not actually live.
 const PROJECT_ID = 'sow12t1i'
 const DATASET = 'production'
 const API_VERSION = '2021-10-21'
@@ -113,6 +116,7 @@ export async function onRequestPost(context) {
     const checkUrl = new URL(
       `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}`,
     )
+    checkUrl.searchParams.set('perspective', 'published')
     checkUrl.searchParams.set('query', checkQuery)
     checkUrl.searchParams.set('$id', JSON.stringify(studentId))
     const checkRes = await fetch(checkUrl.toString(), {
@@ -216,7 +220,7 @@ export async function onRequestGet(context) {
   if (!token) { out.ok = false; out.error = '没有可用的 Sanity token'; return json(out, 500) }
   try {
     const q = encodeURIComponent('count(*[_type=="student"])')
-    const r = await fetch(`https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?query=${q}`,
+    const r = await fetch(`https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?perspective=published&query=${q}`,
       { headers: { authorization: 'Bearer ' + token } })
     out.canRead = r.ok
     out.studentCount = r.ok ? (await r.json()).result : null

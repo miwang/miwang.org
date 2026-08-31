@@ -15,6 +15,9 @@
  */
 
 const COOKIE_NAME = 'contacts_session'
+// Read published content only. Without this, Sanity's default perspective can
+// include drafts, so an unpublished edit in Studio would leak onto the site and
+// existence checks could match a document that is not actually live.
 const PROJECT_ID = 'sow12t1i'
 const DATASET = 'production'
 const API_VER = 'v2023-05-03'
@@ -103,7 +106,7 @@ export async function onRequestGet(context) {
   }`
 
   try {
-    const apiUrl = `https://${PROJECT_ID}.api.sanity.io/${API_VER}/data/query/${DATASET}?query=${encodeURIComponent(groq)}`
+    const apiUrl = `https://${PROJECT_ID}.api.sanity.io/${API_VER}/data/query/${DATASET}?perspective=published&query=${encodeURIComponent(groq)}`
     const resp = await fetch(apiUrl, {
       headers: {Authorization: `Bearer ${sanityToken}`},
     })

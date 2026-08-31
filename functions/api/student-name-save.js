@@ -108,7 +108,7 @@ export async function onRequestPost(context) {
     // stray document via createOrReplace semantics elsewhere.
     const q = '*[_type=="student" && _id in $ids]{_id, nameEn, name, nameZh, studentNumber}'
     const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}` +
-      `?query=${encodeURIComponent(q)}&$ids=${encodeURIComponent(JSON.stringify(clean.map(c => c.id)))}`
+      `?perspective=published&query=${encodeURIComponent(q)}&$ids=${encodeURIComponent(JSON.stringify(clean.map(c => c.id)))}`
     const res = await fetch(url, { headers: { authorization: 'Bearer ' + token } })
     if (!res.ok) throw new Error(`[查询学生] Sanity 返回 ${res.status}`)
     const found = (res.json ? await res.json() : {}).result || []

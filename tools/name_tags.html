@@ -159,7 +159,7 @@ let ALL = [], edits = new Map(), numEdits = new Map();
 
 async function loadStudents(){
   const q = '*[_type=="student"]|order(academicYear desc){_id,nameEn,nameZh,name,academicYear,className,studentNumber}';
-  const res = await fetch(`https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?query=${encodeURIComponent(q)}`);
+  const res = await fetch(`https://${PROJECT}.apicdn.sanity.io/v2021-10-21/data/query/${DATASET}?perspective=published&query=${encodeURIComponent(q)}`);
   if(!res.ok) throw new Error('读取名单失败：' + res.status);
   ALL = (await res.json()).result || [];
   // 17-18 起的全部学年都列出来，并标注各年人数；只有存在学生的年份才会被默认选中。

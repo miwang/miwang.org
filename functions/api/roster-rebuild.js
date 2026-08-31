@@ -19,6 +19,9 @@
  *   SANITY_API_TOKEN   — Sanity token with write access
  */
 
+// Read published content only. Without this, Sanity's default perspective can
+// include drafts, so an unpublished edit in Studio would leak onto the site and
+// existence checks could match a document that is not actually live.
 const PROJECT_ID = 'sow12t1i'
 const DATASET = 'production'
 const API_VERSION = '2021-10-21'
@@ -129,7 +132,7 @@ async function sanity(path, token, init) {
 async function query(token, groq, params = {}) {
   const u = new URLSearchParams({ query: groq })
   for (const [k, v] of Object.entries(params)) u.set('$' + k, JSON.stringify(v))
-  const data = await sanity(`/data/query/${DATASET}?${u}`, token)
+  const data = await sanity(`/data/query/${DATASET}?perspective=published&${u}`, token)
   return data.result
 }
 

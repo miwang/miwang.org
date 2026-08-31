@@ -1,7 +1,9 @@
 const PROJECT_ID = 'sow12t1i'
 const DATASET = 'production'
 const API_VERSION = '2025-05-22'
-const QUERY_URL = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}`
+// perspective=published：只读已发布内容。不加的话 Sanity 默认可能带出草稿，
+// Studio 里未发布的修改会提前出现在站上，存在性校验也可能命中并未上线的文档。
+const QUERY_URL = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?perspective=published`
 const MUTATE_URL = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/mutate/${DATASET}`
 
 function jsonResponse(body, status = 200) {
