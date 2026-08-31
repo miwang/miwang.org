@@ -64,10 +64,36 @@ async function isValidSession(request, pw) {
 
 const clean = (v, n = 120) => String(v == null ? '' : v).trim().slice(0, n)
 
-/** Stable id from the sorted pair, so linking A→B and B→A is the same doc. */
-function linkId(a, b) {
+// Sanity rejects document ids longer than 128 chars, and the draft copy adds a
+// "drafts." prefix, so the real budget is 121. Two long roster ids joined with
+// "__" blow past that easily — every pairing of long names in the roster does.
+const MAX_ID = 121
+const ID_PREFIX = 'siblingLink-'
+
+/** Short, stable, collision-resistant digest of a string. */
+async function shortHash(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(buf)).slice(0, 8)
+    .map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * Stable id from the sorted pair, so linking A→B and B→A is the same document.
+ *
+ * Plain truncation is not an option: two different long pairs would collapse
+ * onto one id and silently merge two families. When the readable form does not
+ * fit, keep a readable head and append a hash of the FULL key, which stays
+ * unique and still reproduces the same id next time.
+ */
+async function linkId(a, b) {
   const key = [a, b].sort().join('__')
-  return 'siblingLink-' + key.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 160)
+  const safe = key.replace(/[^a-zA-Z0-9_-]/g, '-')
+  const plain = ID_PREFIX + safe
+  if (plain.length <= MAX_ID) return plain
+
+  const digest = await shortHash(key)
+  const head = safe.slice(0, MAX_ID - ID_PREFIX.length - digest.length - 2)
+  return `${ID_PREFIX}${head}__${digest}`
 }
 
 async function sanity(path, token, init) {
@@ -115,7 +141,7 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: '有学生 id 不存在，未做任何改动。', found: found.map(f => f._id) }, 404)
     }
 
-    const id = linkId(a, b)
+    const id = await linkId(a, b)
 
     if (action === 'remove') {
       await sanity(`/data/mutate/${DATASET}`, token, {
