@@ -1,508 +1,1659 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="../favicon.png">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>早作业</title>
-<style>
-@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
-/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>早作业</title>
+    <style>
+      @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+      /* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
    so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
-@font-face {
-  font-family: "KaiTi-CJK";
-  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
-       local("BiauKai"), local("KaiTi"), local("楷体");
-  unicode-range:
-    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
-    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
-    U+FF00-FFEF, U+20000-2A6DF;
-}
-:root {
-  --teal:#598586;--gold:#f3b236;--dark:#1a2740;--bg:#f0f3f7;
-  --red:#e8613a;--blue:#2b96d4;--green:#4aaa6a;--purple:#9b6bbf;
-  --orange:#f07030;--pink:#d46090;--teal2:#30a8aa;--khaki:#c49010;
-  --fzh:"KaiTi-CJK","LXGW WenKai Lite",sans-serif;
-  --fen:"LXGW WenKai Lite",sans-serif;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:var(--fen);color:var(--dark);background:var(--bg);}
-#setupView{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+      @font-face {
+        font-family: 'KaiTi-CJK';
+        src:
+          local('STKaiti-SC-Regular'), local('STKaiti'), local('Kaiti SC'), local('BiauKai'),
+          local('KaiTi'), local('楷体');
+        unicode-range:
+          U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF, U+3200-32FF, U+3400-4DBF,
+          U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF, U+20000-2A6DF;
+      }
+      :root {
+        --teal: #598586;
+        --gold: #f3b236;
+        --dark: #1a2740;
+        --bg: #f0f3f7;
+        --red: #e8613a;
+        --blue: #2b96d4;
+        --green: #4aaa6a;
+        --purple: #9b6bbf;
+        --orange: #f07030;
+        --pink: #d46090;
+        --teal2: #30a8aa;
+        --khaki: #c49010;
+        --fzh: 'KaiTi-CJK', 'LXGW WenKai Lite', sans-serif;
+        --fen: 'LXGW WenKai Lite', sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+        font-family: var(--fen);
+        color: var(--dark);
+        background: var(--bg);
+      }
+      #setupView {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
 
-.s-nav{background:var(--teal);border-bottom:4px solid var(--gold);height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;padding:0 16px;}
-.s-nav-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:15px;color:white;white-space:nowrap;}
-.s-nav-title{font-size:1.1rem;font-family:var(--fzh);font-weight:bold;letter-spacing:2px;}
-.s-nav-date{font-size:1.1rem;font-family:var(--fzh);letter-spacing:1px;opacity:0.9;}
-.s-nav-back{display:flex;align-items:center;gap:6px;color:white;text-decoration:none;font-size:.95rem;font-weight:bold;font-family:var(--fzh);opacity:.9;transition:opacity .2s;}
-.s-nav-back:hover{opacity:.65;}
-.s-nav-back svg{width:22px;height:22px;flex-shrink:0;}
-.nav-launch-btn{background:var(--gold);color:var(--dark);border:none;border-radius:8px;padding:6px 14px;font-size:0.9rem;font-family:var(--fzh);font-weight:bold;cursor:pointer;transition:0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.1);display:flex;align-items:center;gap:4px;}
-.nav-launch-btn:hover{background:#ffc45d;transform:translateY(-1px);}
-.nav-launch-btn:active{transform:scale(0.95);}
+      .s-nav {
+        background: var(--teal);
+        border-bottom: 4px solid var(--gold);
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        position: relative;
+        padding: 0 16px;
+      }
+      .s-nav-center {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: white;
+        white-space: nowrap;
+      }
+      .s-nav-title {
+        font-size: 1.1rem;
+        font-family: var(--fzh);
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+      .s-nav-date {
+        font-size: 1.1rem;
+        font-family: var(--fzh);
+        letter-spacing: 1px;
+        opacity: 0.9;
+      }
+      .s-nav-back {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: white;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: bold;
+        font-family: var(--fzh);
+        opacity: 0.9;
+        transition: opacity 0.2s;
+      }
+      .s-nav-back:hover {
+        opacity: 0.65;
+      }
+      .s-nav-back svg {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+      }
+      .nav-launch-btn {
+        background: var(--gold);
+        color: var(--dark);
+        border: none;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 0.9rem;
+        font-family: var(--fzh);
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .nav-launch-btn:hover {
+        background: #ffc45d;
+        transform: translateY(-1px);
+      }
+      .nav-launch-btn:active {
+        transform: scale(0.95);
+      }
 
-.s-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;padding:15px;min-height:0;}
-.card{background:white;border-radius:14px;padding:clamp(7px,1.4vh,12px) 14px;border:2px solid #e0e8ee;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden;}
-.card-hdr{display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:2px solid #f0f3f7;flex-shrink:0;}
-.c-icon{font-size:1.1rem;}
-.c-title{flex:1;font-size:clamp(1.3rem,3.2vh,1.95rem);font-weight:bold;font-family:var(--fzh);}
-.card.words .c-title{color:var(--red);}
-.card.numbers .c-title{color:var(--purple);}
-.card.math .c-title{color:var(--blue);}
-.card.sentence .c-title{color:var(--green);}
-.tog-wrap{display:flex;align-items:center;gap:5px;}
-.tog-lbl{font-size:.72rem;color:#bbb;min-width:26px;text-align:right;}
-.tog{position:relative;width:38px;height:21px;flex-shrink:0;}
-.tog input{opacity:0;width:0;height:0;}
-.tog-sl{position:absolute;inset:0;background:#ddd;border-radius:21px;cursor:pointer;transition:.2s;}
-.tog-sl::before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s;}
-.tog input:checked ~ .tog-sl{background:var(--teal);}
-.tog input:checked ~ .tog-sl::before{transform:translateX(17px);}
+      .s-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 10px;
+        padding: 15px;
+        min-height: 0;
+      }
+      .card {
+        background: white;
+        border-radius: 14px;
+        padding: clamp(7px, 1.4vh, 12px) 14px;
+        border: 2px solid #e0e8ee;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .card-hdr {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f0f3f7;
+        flex-shrink: 0;
+      }
+      .c-icon {
+        font-size: 1.1rem;
+      }
+      .c-title {
+        flex: 1;
+        font-size: clamp(1.3rem, 3.2vh, 1.95rem);
+        font-weight: bold;
+        font-family: var(--fzh);
+      }
+      .card.words .c-title {
+        color: var(--red);
+      }
+      .card.numbers .c-title {
+        color: var(--purple);
+      }
+      .card.math .c-title {
+        color: var(--blue);
+      }
+      .card.sentence .c-title {
+        color: var(--green);
+      }
+      .tog-wrap {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .tog-lbl {
+        font-size: 0.72rem;
+        color: #bbb;
+        min-width: 26px;
+        text-align: right;
+      }
+      .tog {
+        position: relative;
+        width: 38px;
+        height: 21px;
+        flex-shrink: 0;
+      }
+      .tog input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .tog-sl {
+        position: absolute;
+        inset: 0;
+        background: #ddd;
+        border-radius: 21px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .tog-sl::before {
+        content: '';
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        left: 3px;
+        top: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.2s;
+      }
+      .tog input:checked ~ .tog-sl {
+        background: var(--teal);
+      }
+      .tog input:checked ~ .tog-sl::before {
+        transform: translateX(17px);
+      }
 
-.math-hdr-ctrl{display:flex;align-items:center;gap:10px;}
-.math-tip{font-size:0.7rem;color:#aaa;font-family:var(--fzh);white-space:nowrap;}
+      .math-hdr-ctrl {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .math-tip {
+        font-size: 0.7rem;
+        color: #aaa;
+        font-family: var(--fzh);
+        white-space: nowrap;
+      }
 
-.card-body{display:flex;flex-direction:column;gap:7px;flex:1;min-height:0;overflow:hidden;transition:opacity .2s;}
-.card.off .card-body{opacity:.3;pointer-events:none;}
-.month-tabs{display:flex;gap:5px;flex-shrink:0;}
-.m-tab{padding:4px 12px;border-radius:16px;border:2px solid var(--red);background:white;color:var(--red);cursor:pointer;font-family:var(--fzh);font-size:.8rem;transition:.15s;}
-.m-tab.active{background:var(--red);color:white;}
-.words-scroll{display:flex;flex-wrap:wrap;gap:8px;overflow-y:auto;flex:1;padding:4px;}
-.wchip{width:clamp(48px,7.5vh,64px);height:clamp(48px,7.5vh,64px);border-radius:50%;border:2px solid #fde0d8;background:#fff5f2;cursor:pointer;font-size:clamp(1.8rem,4.5vh,2.5rem);font-family:var(--fzh);transition:.15s;user-select:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.wchip:hover{background:#fdd0c0;border-color:var(--red);}
-.wchip.sel{background:var(--red);color:white;border-color:var(--red);transform:scale(1.07);box-shadow:0 3px 8px rgba(232,97,58,.3);}
-.word-prev{font-size:.8rem;color:#bbb;font-family:var(--fzh);flex-shrink:0;min-height:20px;}
-.word-prev .pc{color:var(--red);font-size:1.2rem;margin-right:3px;}
-.range-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;flex-shrink:0;}
-.r-btn{padding:7px 3px;border-radius:9px;border:2px solid #f0e8ff;background:#f8f2ff;cursor:pointer;font-family:var(--fen);font-size:clamp(1.1rem,2.5vh,1.75rem);font-weight:bold;color:var(--purple);text-align:center;transition:.15s;}
-.r-btn:hover{background:#e8d8ff;}
-.r-btn.active{background:var(--purple);color:white;border-color:var(--purple);}
-.dir-row{display:flex;gap:6px;flex-shrink:0;}
-.dir-btn{flex:1;padding:6px;border-radius:8px;border:2px solid #ddd;background:transparent;cursor:pointer;font-family:var(--fzh);font-size:clamp(1.1rem,2.5vh,1.78rem);color:#999;text-align:center;transition:.15s;}
-.dir-btn:hover{border-color:var(--purple);color:var(--purple);}
-.dir-btn.active{background:var(--purple);color:white;border-color:var(--purple);}
-.range-prev{background:#f8f2ff;border-radius:8px;padding:7px 8px;text-align:center;font-size:clamp(1.2rem,2.8vh,1.85rem);font-weight:bold;color:var(--purple);letter-spacing:3px;word-break:break-all;line-height:1.6;flex:1;overflow-y:auto;}
-.math-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
-.math-btn{padding:8px 6px;border-radius:8px;border:2px solid #e0f0fb;background:#eef8ff;cursor:pointer;font-family:var(--fzh);font-size:clamp(1rem,2.3vh,1.5rem);color:var(--blue);text-align:center;line-height:1.3;transition:.15s;}
-.math-btn:hover{background:#d0eeff;}
-.math-btn.active{background:var(--blue);color:white;border-color:var(--blue);font-weight:bold;}
-.math-prev{background:#eef8ff;border-radius:8px;padding:8px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;flex:1;min-height: 40px;}
-.math-eq-pre{font-size:1.1rem;font-weight:bold;color:var(--blue);font-family:var(--fen);letter-spacing:1px;}
-.refresh-btn{background:none;border:1.5px solid var(--blue);color:var(--blue);border-radius:6px;padding:2px 8px;cursor:pointer;font-size:.75rem;font-family:var(--fen);transition:.15s;font-weight:bold;display:flex;align-items:center;gap:3px;}
-.refresh-btn:hover{background:var(--blue);color:white;}
-.sent-ctrl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;}
-select{border:2px solid #e0f2e8;border-radius:7px;padding:4px 7px;font-family:var(--fzh);font-size:.82rem;background:white;color:var(--dark);outline:none;cursor:pointer;}
-.rand-btn{padding:4px 11px;background:var(--green);color:white;border:none;border-radius:7px;cursor:pointer;font-family:var(--fzh);font-size:.8rem;transition:.15s;}
-.rand-btn:hover{background:#3a8a5a;}
-.sent-disp{background:#edfff5;border-radius:9px;padding:10px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--fzh);font-size:clamp(2.2rem,5.2vh,4.2rem);color:var(--dark);text-align:center;flex-direction:column;gap:4px;overflow:hidden;}
-.s-tag{font-size:.65rem;color:var(--green);font-family:var(--fen);}
+      .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        transition: opacity 0.2s;
+      }
+      .card.off .card-body {
+        opacity: 0.3;
+        pointer-events: none;
+      }
+      .month-tabs {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .m-tab {
+        padding: 4px 12px;
+        border-radius: 16px;
+        border: 2px solid var(--red);
+        background: white;
+        color: var(--red);
+        cursor: pointer;
+        font-family: var(--fzh);
+        font-size: 0.8rem;
+        transition: 0.15s;
+      }
+      .m-tab.active {
+        background: var(--red);
+        color: white;
+      }
+      .words-scroll {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        overflow-y: auto;
+        flex: 1;
+        padding: 4px;
+      }
+      .wchip {
+        width: clamp(48px, 7.5vh, 64px);
+        height: clamp(48px, 7.5vh, 64px);
+        border-radius: 50%;
+        border: 2px solid #fde0d8;
+        background: #fff5f2;
+        cursor: pointer;
+        font-size: clamp(1.8rem, 4.5vh, 2.5rem);
+        font-family: var(--fzh);
+        transition: 0.15s;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .wchip:hover {
+        background: #fdd0c0;
+        border-color: var(--red);
+      }
+      .wchip.sel {
+        background: var(--red);
+        color: white;
+        border-color: var(--red);
+        transform: scale(1.07);
+        box-shadow: 0 3px 8px rgba(232, 97, 58, 0.3);
+      }
+      .word-prev {
+        font-size: 0.8rem;
+        color: #bbb;
+        font-family: var(--fzh);
+        flex-shrink: 0;
+        min-height: 20px;
+      }
+      .word-prev .pc {
+        color: var(--red);
+        font-size: 1.2rem;
+        margin-right: 3px;
+      }
+      .range-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .r-btn {
+        padding: 7px 3px;
+        border-radius: 9px;
+        border: 2px solid #f0e8ff;
+        background: #f8f2ff;
+        cursor: pointer;
+        font-family: var(--fen);
+        font-size: clamp(1.1rem, 2.5vh, 1.75rem);
+        font-weight: bold;
+        color: var(--purple);
+        text-align: center;
+        transition: 0.15s;
+      }
+      .r-btn:hover {
+        background: #e8d8ff;
+      }
+      .r-btn.active {
+        background: var(--purple);
+        color: white;
+        border-color: var(--purple);
+      }
+      .dir-row {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .dir-btn {
+        flex: 1;
+        padding: 6px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        background: transparent;
+        cursor: pointer;
+        font-family: var(--fzh);
+        font-size: clamp(1.1rem, 2.5vh, 1.78rem);
+        color: #999;
+        text-align: center;
+        transition: 0.15s;
+      }
+      .dir-btn:hover {
+        border-color: var(--purple);
+        color: var(--purple);
+      }
+      .dir-btn.active {
+        background: var(--purple);
+        color: white;
+        border-color: var(--purple);
+      }
+      .range-prev {
+        background: #f8f2ff;
+        border-radius: 8px;
+        padding: 7px 8px;
+        text-align: center;
+        font-size: clamp(1.2rem, 2.8vh, 1.85rem);
+        font-weight: bold;
+        color: var(--purple);
+        letter-spacing: 3px;
+        word-break: break-all;
+        line-height: 1.6;
+        flex: 1;
+        overflow-y: auto;
+      }
+      .math-type-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .math-btn {
+        padding: 8px 6px;
+        border-radius: 8px;
+        border: 2px solid #e0f0fb;
+        background: #eef8ff;
+        cursor: pointer;
+        font-family: var(--fzh);
+        font-size: clamp(1rem, 2.3vh, 1.5rem);
+        color: var(--blue);
+        text-align: center;
+        line-height: 1.3;
+        transition: 0.15s;
+      }
+      .math-btn:hover {
+        background: #d0eeff;
+      }
+      .math-btn.active {
+        background: var(--blue);
+        color: white;
+        border-color: var(--blue);
+        font-weight: bold;
+      }
+      .math-prev {
+        background: #eef8ff;
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex: 1;
+        min-height: 40px;
+      }
+      .math-eq-pre {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--blue);
+        font-family: var(--fen);
+        letter-spacing: 1px;
+      }
+      .refresh-btn {
+        background: none;
+        border: 1.5px solid var(--blue);
+        color: var(--blue);
+        border-radius: 6px;
+        padding: 2px 8px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        font-family: var(--fen);
+        transition: 0.15s;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .refresh-btn:hover {
+        background: var(--blue);
+        color: white;
+      }
+      .sent-ctrl {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+      }
+      select {
+        border: 2px solid #e0f2e8;
+        border-radius: 7px;
+        padding: 4px 7px;
+        font-family: var(--fzh);
+        font-size: 0.82rem;
+        background: white;
+        color: var(--dark);
+        outline: none;
+        cursor: pointer;
+      }
+      .rand-btn {
+        padding: 4px 11px;
+        background: var(--green);
+        color: white;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+        font-family: var(--fzh);
+        font-size: 0.8rem;
+        transition: 0.15s;
+      }
+      .rand-btn:hover {
+        background: #3a8a5a;
+      }
+      .sent-disp {
+        background: #edfff5;
+        border-radius: 9px;
+        padding: 10px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--fzh);
+        font-size: clamp(2.2rem, 5.2vh, 4.2rem);
+        color: var(--dark);
+        text-align: center;
+        flex-direction: column;
+        gap: 4px;
+        overflow: hidden;
+      }
+      .s-tag {
+        font-size: 0.65rem;
+        color: var(--green);
+        font-family: var(--fen);
+      }
 
-#displayView{display:none;position:fixed;inset:0;background:rgba(10, 20, 40, 1);align-items:center;justify-content:center;z-index:200;}
-#displayView.show{display:flex;}
-.d-frame{width:1280px;height:720px;background:var(--bg);display:flex;flex-direction:column;transform-origin:center center;flex-shrink:0;overflow:hidden;}
-.d-hdr{background:var(--teal);border-bottom:5px solid var(--gold);height:160px;display:flex;align-items:center;justify-content:center;padding:0 22px;flex-shrink:0;position:relative;cursor:pointer;}
-.d-hdr::after{content:'点击顶部退出';position:absolute;bottom:5px;font-size:0.7rem;color:rgba(255,255,255,0.3);letter-spacing:1px;}
-.d-date{font-size:3.5rem;font-family:var(--fzh);color:white;letter-spacing:8px;font-weight:bold;text-align:center;}
-.d-btn-back{position:absolute;left:22px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;border-radius:7px;padding:5px 13px;font-family:var(--fzh);font-size:.8rem;cursor:pointer;transition:background .15s,opacity .3s;white-space:nowrap;}
-.d-btn-back:hover{background:rgba(255,255,255,.32);}
-.d-btn-back.fs-hide{opacity:0;pointer-events:none;}
-.d-btn-fs{position:absolute;right:22px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;border-radius:7px;padding:5px 13px;font-family:var(--fzh);font-size:.8rem;cursor:pointer;transition:background .15s,opacity .3s;white-space:nowrap;}
-.d-btn-fs:hover{background:rgba(255,255,255,.32);}
-.d-btn-fs.fs-hide{opacity:0;pointer-events:none;}
-.d-grid{flex:1;display:grid;gap:7px;padding:7px 10px 9px;min-height:0;overflow:hidden;}
-.d-grid.g1{grid-template-columns:1fr;grid-template-rows:1fr;}
-.d-grid.g2{grid-template-columns:1fr 1fr;grid-template-rows:1fr;}
-.d-grid.g3{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;}
-.d-grid.g3 .panel:nth-child(1){grid-column:1 / span 2;}
-.d-grid.g4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;}
-.panel{background:white;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden;position:relative;min-height:0;}
-.p-lbl{position:absolute;top:7px;left:12px;font-size:clamp(.55rem,.8vw,.75rem);color:#ccc;font-family:var(--fzh);}
-.p-words{border-top:5px solid var(--red);}
-.p-numbers{border-top:5px solid var(--purple);}
-.p-math{border-top:5px solid var(--blue);}
-.p-sentence{border-top:5px solid var(--green);}
-.p-empty{color:#ddd;font-size:clamp(.85rem,1.5vw,1.1rem);text-align:center;}
-.pw-wrap{display:flex;flex-wrap:wrap;gap:clamp(6px,1.2vw,14px);justify-content:center;align-items:center;width:100%;padding:4px;}
-.w-big{font-family:var(--fzh);font-weight:bold;color:white;border-radius:13px;cursor:pointer;user-select:none;transition:transform .12s;text-align:center;display:flex;align-items:center;justify-content:center;text-shadow:0 2px 6px rgba(0,0,0,.2);}
-.w-big:active{transform:scale(1.18);}
-.wc0{background:var(--red)}.wc1{background:var(--blue)}.wc2{background:var(--green)}
-.wc3{background:var(--khaki)}.wc4{background:var(--purple)}.wc5{background:var(--orange)}
-.wc6{background:var(--teal2)}.wc7{background:var(--pink)}
-.pn-wrap{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:clamp(4px,.8vw,10px);width:100%;padding:4px;}
-.n-chip{font-family:var(--fen);font-weight:bold;color:var(--purple);background:#f8f2ff;border-radius:9px;border:2px solid #e8d8ff;cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;justify-content:center;}
-.n-chip:active{background:var(--purple);color:white;transform:scale(1.12);}
-.pm-wrap{display:flex;flex-direction:column;gap:clamp(5px,1vh,12px);align-items:center;width:100%;}
-.m-eq{font-family:var(--fen);font-weight:bold;color:var(--blue);background:#eef8ff;border-radius:12px;text-align:center;letter-spacing:2px;width:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.15s;}
-.m-eq:hover{background:#d0eeff;transform:scale(1.02);}
-.m-eq:active{transform:scale(0.98);}
-.m-blank{display:inline-block;min-width:.9em;border-bottom:3px solid var(--blue);margin:0 3px;vertical-align:middle;}
-.ps-wrap{font-family:var(--fzh);text-align:center;line-height:1.5;letter-spacing:5px;color:var(--dark);width:100%;}
-.s-wd{display:inline-block;cursor:pointer;border-radius:7px;padding:2px 3px;transition:all .12s;}
-.s-wd:active{background:#e0ffe8;color:var(--green);transform:scale(1.1);}
+      #displayView {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 20, 40, 1);
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+      }
+      #displayView.show {
+        display: flex;
+      }
+      .d-frame {
+        width: 1280px;
+        height: 720px;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        transform-origin: center center;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+      .d-hdr {
+        background: var(--teal);
+        border-bottom: 5px solid var(--gold);
+        height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 22px;
+        flex-shrink: 0;
+        position: relative;
+        cursor: pointer;
+      }
+      .d-hdr::after {
+        content: '点击顶部退出';
+        position: absolute;
+        bottom: 5px;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 1px;
+      }
+      .d-date {
+        font-size: 3.5rem;
+        font-family: var(--fzh);
+        color: white;
+        letter-spacing: 8px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .d-btn-back {
+        position: absolute;
+        left: 22px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1.5px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        border-radius: 7px;
+        padding: 5px 13px;
+        font-family: var(--fzh);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          opacity 0.3s;
+        white-space: nowrap;
+      }
+      .d-btn-back:hover {
+        background: rgba(255, 255, 255, 0.32);
+      }
+      .d-btn-back.fs-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .d-btn-fs {
+        position: absolute;
+        right: 22px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1.5px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        border-radius: 7px;
+        padding: 5px 13px;
+        font-family: var(--fzh);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          opacity 0.3s;
+        white-space: nowrap;
+      }
+      .d-btn-fs:hover {
+        background: rgba(255, 255, 255, 0.32);
+      }
+      .d-btn-fs.fs-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .d-grid {
+        flex: 1;
+        display: grid;
+        gap: 7px;
+        padding: 7px 10px 9px;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .d-grid.g1 {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+      }
+      .d-grid.g2 {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+      }
+      .d-grid.g3 {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+      .d-grid.g3 .panel:nth-child(1) {
+        grid-column: 1 / span 2;
+      }
+      .d-grid.g4 {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+      .panel {
+        background: white;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+        position: relative;
+        min-height: 0;
+      }
+      .p-lbl {
+        position: absolute;
+        top: 7px;
+        left: 12px;
+        font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+        color: #ccc;
+        font-family: var(--fzh);
+      }
+      .p-words {
+        border-top: 5px solid var(--red);
+      }
+      .p-numbers {
+        border-top: 5px solid var(--purple);
+      }
+      .p-math {
+        border-top: 5px solid var(--blue);
+      }
+      .p-sentence {
+        border-top: 5px solid var(--green);
+      }
+      .p-empty {
+        color: #ddd;
+        font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+        text-align: center;
+      }
+      .pw-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: clamp(6px, 1.2vw, 14px);
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        padding: 4px;
+      }
+      .w-big {
+        font-family: var(--fzh);
+        font-weight: bold;
+        color: white;
+        border-radius: 13px;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.12s;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .w-big:active {
+        transform: scale(1.18);
+      }
+      .wc0 {
+        background: var(--red);
+      }
+      .wc1 {
+        background: var(--blue);
+      }
+      .wc2 {
+        background: var(--green);
+      }
+      .wc3 {
+        background: var(--khaki);
+      }
+      .wc4 {
+        background: var(--purple);
+      }
+      .wc5 {
+        background: var(--orange);
+      }
+      .wc6 {
+        background: var(--teal2);
+      }
+      .wc7 {
+        background: var(--pink);
+      }
+      .pn-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(4px, 0.8vw, 10px);
+        width: 100%;
+        padding: 4px;
+      }
+      .n-chip {
+        font-family: var(--fen);
+        font-weight: bold;
+        color: var(--purple);
+        background: #f8f2ff;
+        border-radius: 9px;
+        border: 2px solid #e8d8ff;
+        cursor: pointer;
+        transition: all 0.12s;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .n-chip:active {
+        background: var(--purple);
+        color: white;
+        transform: scale(1.12);
+      }
+      .pm-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(5px, 1vh, 12px);
+        align-items: center;
+        width: 100%;
+      }
+      .m-eq {
+        font-family: var(--fen);
+        font-weight: bold;
+        color: var(--blue);
+        background: #eef8ff;
+        border-radius: 12px;
+        text-align: center;
+        letter-spacing: 2px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.15s;
+      }
+      .m-eq:hover {
+        background: #d0eeff;
+        transform: scale(1.02);
+      }
+      .m-eq:active {
+        transform: scale(0.98);
+      }
+      .m-blank {
+        display: inline-block;
+        min-width: 0.9em;
+        border-bottom: 3px solid var(--blue);
+        margin: 0 3px;
+        vertical-align: middle;
+      }
+      .ps-wrap {
+        font-family: var(--fzh);
+        text-align: center;
+        line-height: 1.5;
+        letter-spacing: 5px;
+        color: var(--dark);
+        width: 100%;
+      }
+      .s-wd {
+        display: inline-block;
+        cursor: pointer;
+        border-radius: 7px;
+        padding: 2px 3px;
+        transition: all 0.12s;
+      }
+      .s-wd:active {
+        background: #e0ffe8;
+        color: var(--green);
+        transform: scale(1.1);
+      }
 
-.overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.9);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;cursor:pointer;}
-.overlay.show{display:flex;}
-.ov-img{max-width:85vw;max-height:45vh;object-fit:contain;border-radius:20px;box-shadow:0 15px 40px rgba(0,0,0,0.4);margin-bottom:10px;display:none;background:#fff;border:4px solid #fff;}
-.ov-char{font-family:var(--fzh);color:white;font-size:clamp(6rem,22vw,18rem);line-height:1.2;text-shadow:0 8px 40px rgba(255,255,255,.12);text-align:center;white-space:nowrap;transition:0.3s;}
-.ov-char.has-img{font-size:clamp(4rem,12vw,10rem) !important;margin-top:10px;}
-.ov-hint{color:rgba(255,255,255,.3);font-size:clamp(.8rem,1.4vw,1.1rem); pointer-events:none;}
-.ov-char .m-blank { border-color: white; border-width: clamp(4px, 1vw, 8px); margin: 0 1.5vw; min-width: 1.2em; }
-</style>
-<script src="../js/config.js"></script> 
-</head>
-<body>
-<div id="setupView">
-  <nav class="s-nav">
-    <a class="s-nav-back" href="../teachers.html">
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="5"/>
-        <path d="M65 50 H35 M45 35 L35 50 L45 65" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>返回工具台</span>
-    </a>
-    <div class="s-nav-center">
-      <span class="s-nav-title">🌟 早作业设置 </span>
-      <span class="s-nav-date" id="sDate">加载中...</span>
-    </div>
-    <button class="nav-launch-btn" onclick="showDisplay()">🚀 全屏展示</button>
-  </nav>
-
-  <div class="s-grid">
-    <div class="card words" id="card-words">
-      <div class="card-hdr">
-        <span class="c-icon">✍️</span><span class="c-title">四会字</span>
-        <div class="tog-wrap"><span class="tog-lbl" id="lbl-words">开启</span><label class="tog"><input type="checkbox" id="tog-words" checked onchange="togCard('words',this.checked)"><span class="tog-sl"></span></label></div>
-      </div>
-      <div class="card-body" id="body-words">
-        <div class="month-tabs" id="monthTabs"></div>
-        <div class="words-scroll" id="wordsGrid"></div>
-        <div class="word-prev" id="wordPrev">点击上方字选择（可多选）</div>
-      </div>
-    </div>
-    <div class="card numbers" id="card-numbers">
-      <div class="card-hdr">
-        <span class="c-icon">🔢</span><span class="c-title">数字练习</span>
-        <div class="tog-wrap"><span class="tog-lbl" id="lbl-numbers">开启</span><label class="tog"><input type="checkbox" id="tog-numbers" checked onchange="togCard('numbers',this.checked)"><span class="tog-sl"></span></label></div>
-      </div>
-      <div class="card-body" id="body-numbers">
-        <div class="range-grid" id="rangeGrid"></div>
-        <div class="dir-row">
-          <button class="dir-btn active" id="dir-down" onclick="setDir('down')">从大到小 ↓</button>
-          <button class="dir-btn" id="dir-up" onclick="setDir('up')">从小到大 ↑</button>
+      .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 20, 40, 0.9);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 14px;
+        cursor: pointer;
+      }
+      .overlay.show {
+        display: flex;
+      }
+      .ov-img {
+        max-width: 85vw;
+        max-height: 45vh;
+        object-fit: contain;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        margin-bottom: 10px;
+        display: none;
+        background: #fff;
+        border: 4px solid #fff;
+      }
+      .ov-char {
+        font-family: var(--fzh);
+        color: white;
+        font-size: clamp(6rem, 22vw, 18rem);
+        line-height: 1.2;
+        text-shadow: 0 8px 40px rgba(255, 255, 255, 0.12);
+        text-align: center;
+        white-space: nowrap;
+        transition: 0.3s;
+      }
+      .ov-char.has-img {
+        font-size: clamp(4rem, 12vw, 10rem) !important;
+        margin-top: 10px;
+      }
+      .ov-hint {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: clamp(0.8rem, 1.4vw, 1.1rem);
+        pointer-events: none;
+      }
+      .ov-char .m-blank {
+        border-color: white;
+        border-width: clamp(4px, 1vw, 8px);
+        margin: 0 1.5vw;
+        min-width: 1.2em;
+      }
+    </style>
+    <script src="../js/config.js"></script>
+  </head>
+  <body>
+    <div id="setupView">
+      <nav class="s-nav">
+        <a class="s-nav-back" href="../teachers.html">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="5" />
+            <path
+              d="M65 50 H35 M45 35 L35 50 L45 65"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>返回工具台</span>
+        </a>
+        <div class="s-nav-center">
+          <span class="s-nav-title">🌟 早作业设置 </span>
+          <span class="s-nav-date" id="sDate">加载中...</span>
         </div>
-        <div class="range-prev" id="rangePrev">请选择数字范围</div>
-      </div>
-    </div>
-    
-    <div class="card math" id="card-math">
-      <div class="card-hdr">
-        <span class="c-icon">➕</span>
-        <span class="c-title">数学题</span>
-        <div class="math-hdr-ctrl">
-            <span class="math-tip">（最多选4种）</span>
-            <button class="refresh-btn" onclick="generateMath()">🔄 换一组</button>
+        <button class="nav-launch-btn" onclick="showDisplay()">🚀 全屏展示</button>
+      </nav>
+
+      <div class="s-grid">
+        <div class="card words" id="card-words">
+          <div class="card-hdr">
+            <span class="c-icon">✍️</span><span class="c-title">四会字</span>
+            <div class="tog-wrap">
+              <span class="tog-lbl" id="lbl-words">开启</span
+              ><label class="tog"
+                ><input
+                  type="checkbox"
+                  id="tog-words"
+                  checked
+                  onchange="togCard('words', this.checked)" /><span class="tog-sl"></span
+              ></label>
+            </div>
+          </div>
+          <div class="card-body" id="body-words">
+            <div class="month-tabs" id="monthTabs"></div>
+            <div class="words-scroll" id="wordsGrid"></div>
+            <div class="word-prev" id="wordPrev">点击上方字选择（可多选）</div>
+          </div>
         </div>
-        <div class="tog-wrap"><span class="tog-lbl" id="lbl-math">开启</span><label class="tog"><input type="checkbox" id="tog-math" checked onchange="togCard('math',this.checked)"><span class="tog-sl"></span></label></div>
-      </div>
-      <div class="card-body" id="body-math">
-        <div class="math-type-grid" id="mathTypeGrid"></div>
-        <div class="math-prev" id="mathPrev"><span style="color:#ccc;font-size:.82rem">选择题型后预览</span></div>
-      </div>
-    </div>
-
-    <div class="card sentence" id="card-sentence">
-      <div class="card-hdr">
-        <span class="c-icon">📖</span><span class="c-title">今日句子</span>
-        <div class="tog-wrap"><span class="tog-lbl" id="lbl-sentence">开启</span><label class="tog"><input type="checkbox" id="tog-sentence" checked onchange="togCard('sentence',this.checked)"><span class="tog-sl"></span></label></div>
-      </div>
-      <div class="card-body" id="body-sentence">
-        <div class="sent-ctrl">
-          <select id="tagFilter" onchange="filterSents()"></select>
-          <button class="rand-btn" onclick="pickSent()">🎲 随机换一句</button>
+        <div class="card numbers" id="card-numbers">
+          <div class="card-hdr">
+            <span class="c-icon">🔢</span><span class="c-title">数字练习</span>
+            <div class="tog-wrap">
+              <span class="tog-lbl" id="lbl-numbers">开启</span
+              ><label class="tog"
+                ><input
+                  type="checkbox"
+                  id="tog-numbers"
+                  checked
+                  onchange="togCard('numbers', this.checked)" /><span class="tog-sl"></span
+              ></label>
+            </div>
+          </div>
+          <div class="card-body" id="body-numbers">
+            <div class="range-grid" id="rangeGrid"></div>
+            <div class="dir-row">
+              <button class="dir-btn active" id="dir-down" onclick="setDir('down')">
+                从大到小 ↓
+              </button>
+              <button class="dir-btn" id="dir-up" onclick="setDir('up')">从小到大 ↑</button>
+            </div>
+            <div class="range-prev" id="rangePrev">请选择数字范围</div>
+          </div>
         </div>
-        <div class="sent-disp" id="sentDisp"><span style="color:#ccc">加载中...</span></div>
+
+        <div class="card math" id="card-math">
+          <div class="card-hdr">
+            <span class="c-icon">➕</span>
+            <span class="c-title">数学题</span>
+            <div class="math-hdr-ctrl">
+              <span class="math-tip">（最多选4种）</span>
+              <button class="refresh-btn" onclick="generateMath()">🔄 换一组</button>
+            </div>
+            <div class="tog-wrap">
+              <span class="tog-lbl" id="lbl-math">开启</span
+              ><label class="tog"
+                ><input
+                  type="checkbox"
+                  id="tog-math"
+                  checked
+                  onchange="togCard('math', this.checked)" /><span class="tog-sl"></span
+              ></label>
+            </div>
+          </div>
+          <div class="card-body" id="body-math">
+            <div class="math-type-grid" id="mathTypeGrid"></div>
+            <div class="math-prev" id="mathPrev">
+              <span style="color: #ccc; font-size: 0.82rem">选择题型后预览</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card sentence" id="card-sentence">
+          <div class="card-hdr">
+            <span class="c-icon">📖</span><span class="c-title">今日句子</span>
+            <div class="tog-wrap">
+              <span class="tog-lbl" id="lbl-sentence">开启</span
+              ><label class="tog"
+                ><input
+                  type="checkbox"
+                  id="tog-sentence"
+                  checked
+                  onchange="togCard('sentence', this.checked)" /><span class="tog-sl"></span
+              ></label>
+            </div>
+          </div>
+          <div class="card-body" id="body-sentence">
+            <div class="sent-ctrl">
+              <select id="tagFilter" onchange="filterSents()"></select>
+              <button class="rand-btn" onclick="pickSent()">🎲 随机换一句</button>
+            </div>
+            <div class="sent-disp" id="sentDisp"><span style="color: #ccc">加载中...</span></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div id="displayView">
-  <div class="d-frame" id="dFrame">
-    <div class="d-hdr" id="dHdr" onclick="hideDisplay()">
-      <button class="d-btn-back" id="dBtnBack">← 返回设置</button>
-      <div class="d-date" id="dDate"></div>
-      <button class="d-btn-fs" id="dBtnFs" onclick="event.stopPropagation(); goFS();">⛶ 全屏</button>
+    <div id="displayView">
+      <div class="d-frame" id="dFrame">
+        <div class="d-hdr" id="dHdr" onclick="hideDisplay()">
+          <button class="d-btn-back" id="dBtnBack">← 返回设置</button>
+          <div class="d-date" id="dDate"></div>
+          <button
+            class="d-btn-fs"
+            id="dBtnFs"
+            onclick="
+              event.stopPropagation()
+              goFS()
+            "
+          >
+            ⛶ 全屏
+          </button>
+        </div>
+        <div class="d-grid" id="dGrid"></div>
+      </div>
     </div>
-    <div class="d-grid" id="dGrid"></div>
-  </div>
-</div>
 
-<div class="overlay" id="overlay">
-  <img id="ovImg" class="ov-img" src="">
-  <div class="ov-char" id="ovChar"></div>
-  <div class="ov-hint">点击背景关闭 • 点击内容重读</div>
-</div>
+    <div class="overlay" id="overlay">
+      <img id="ovImg" class="ov-img" src="" />
+      <div class="ov-char" id="ovChar"></div>
+      <div class="ov-hint">点击背景关闭 • 点击内容重读</div>
+    </div>
 
-<script>
-const MONTHS=["September","October","November","December","January","February","March","April","May"];
-const MCN={"September":"九月","October":"十月","November":"十一月","December":"十二月","January":"一月","February":"二月","March":"三月","April":"四月","May":"五月"};
-const WDAYS=['星期天','星期一','星期二','星期三','星期四','星期五','星期六'];
-const MNAMES=['一','二','三','四','五','六','七','八','九','十','十一','十二'];
-const MTYPES=[{id:'add10',lbl:'十以内加法'},{id:'sub10',lbl:'十以内减法'},{id:'add20',lbl:'二十以内加法'},{id:'sub20',lbl:'二十以内减法'},{id:'missing',lbl:'未知加数 □+?=10'},{id:'compose',lbl:'十几的组成'}];
-const NRANGES=[{lbl:'1–10',min:1,max:10},{lbl:'11–20',min:11,max:20},{lbl:'21–30',min:21,max:30},{lbl:'31–40',min:31,max:40},{lbl:'41–50',min:41,max:50},{lbl:'51–60',min:51,max:60},{lbl:'61–70',min:61,max:70},{lbl:'71–80',min:71,max:80},{lbl:'81–90',min:81,max:90},{lbl:'91–100',min:91,max:100}];
-const WCS=['wc0','wc1','wc2','wc3','wc4','wc5','wc6','wc7'];
+    <script>
+      const MONTHS = [
+        'September',
+        'October',
+        'November',
+        'December',
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+      ]
+      const MCN = {
+        September: '九月',
+        October: '十月',
+        November: '十一月',
+        December: '十二月',
+        January: '一月',
+        February: '二月',
+        March: '三月',
+        April: '四月',
+        May: '五月',
+      }
+      const WDAYS = ['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      const MNAMES = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二']
+      const MTYPES = [
+        {id: 'add10', lbl: '十以内加法'},
+        {id: 'sub10', lbl: '十以内减法'},
+        {id: 'add20', lbl: '二十以内加法'},
+        {id: 'sub20', lbl: '二十以内减法'},
+        {id: 'missing', lbl: '未知加数 □+?=10'},
+        {id: 'compose', lbl: '十几的组成'},
+      ]
+      const NRANGES = [
+        {lbl: '1–10', min: 1, max: 10},
+        {lbl: '11–20', min: 11, max: 20},
+        {lbl: '21–30', min: 21, max: 30},
+        {lbl: '31–40', min: 31, max: 40},
+        {lbl: '41–50', min: 41, max: 50},
+        {lbl: '51–60', min: 51, max: 60},
+        {lbl: '61–70', min: 61, max: 70},
+        {lbl: '71–80', min: 71, max: 80},
+        {lbl: '81–90', min: 81, max: 90},
+        {lbl: '91–100', min: 91, max: 100},
+      ]
+      const WCS = ['wc0', 'wc1', 'wc2', 'wc3', 'wc4', 'wc5', 'wc6', 'wc7']
 
-let SENTS = [];
-let SW = [];
-let selWords=[],selMath=[],curEqs=[],curSent=null,filtSents=[],selRange=null,numDir='down';
-let mods={words:true,numbers:true,math:true,sentence:true},isFull=false;
-const CN_DIGITS=['零','一','二','三','四','五','六','七','八','九','十'];
+      let SENTS = []
+      let SW = []
+      let selWords = [],
+        selMath = [],
+        curEqs = [],
+        curSent = null,
+        filtSents = [],
+        selRange = null,
+        numDir = 'down'
+      let mods = {words: true, numbers: true, math: true, sentence: true},
+        isFull = false
+      const CN_DIGITS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
-let IMAGE_MAP = {};
-let AUDIO_MAP = {}; 
+      let IMAGE_MAP = {}
+      let AUDIO_MAP = {}
 
-function dayToCN(n){if(n<=10)return CN_DIGITS[n];if(n<20)return'十'+CN_DIGITS[n-10];if(n===20)return'二十';if(n<30)return'二十'+CN_DIGITS[n-20];if(n===30)return'三十';return'三十'+CN_DIGITS[n-30];}
+      function dayToCN(n) {
+        if (n <= 10) return CN_DIGITS[n]
+        if (n < 20) return '十' + CN_DIGITS[n - 10]
+        if (n === 20) return '二十'
+        if (n < 30) return '二十' + CN_DIGITS[n - 20]
+        if (n === 30) return '三十'
+        return '三十' + CN_DIGITS[n - 30]
+      }
 
-async function init(){
-  const now=new Date();
-  const ds=`${MNAMES[now.getMonth()]}月${dayToCN(now.getDate())}日　${WDAYS[now.getDay()]}`;
-  document.getElementById('sDate').textContent=ds;
-  document.getElementById('dDate').textContent=ds;
-  
-  const PROJECT_ID = 'sow12t1i';
-  const DATASET = 'production';
-  const Q_SENTS = encodeURIComponent('*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url, "audio": audio.asset->url}');
-  const Q_WORDS = encodeURIComponent('*[_type == "word"]{char, month, "image": image.asset->url, "audio": audio.asset->url, "phrase_list": phrase_list[]{text, "image": image.asset->url, "audio": audio.asset->url}}');
-  
-  try {
-      const [resS, resW] = await Promise.all([
-          fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${Q_SENTS}`).then(r=>r.json()),
-          fetch(`https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${Q_WORDS}`).then(r=>r.json())
-      ]);
-      
-      SENTS = (resS.result || []).map(item => ({
-          words: item.words || "", 
-          p: item.punctuation || "",
-          tags: item.tags || "",
-          img: item.image || "",
-          audio: item.audio || "" 
-      }));
+      async function init() {
+        const now = new Date()
+        const ds = `${MNAMES[now.getMonth()]}月${dayToCN(now.getDate())}日　${WDAYS[now.getDay()]}`
+        document.getElementById('sDate').textContent = ds
+        document.getElementById('dDate').textContent = ds
 
-      SW = (resW.result || []).map(item => {
-          const c = (item.char || "?").trim();
-          if (item.image) IMAGE_MAP[c] = item.image;
-          if (item.audio) AUDIO_MAP[c] = item.audio;
+        const PROJECT_ID = 'sow12t1i'
+        const DATASET = 'production'
+        const Q_SENTS = encodeURIComponent(
+          '*[_type == "sentence"]{words, punctuation, tags, "image": image.asset->url, "audio": audio.asset->url}',
+        )
+        const Q_WORDS = encodeURIComponent(
+          '*[_type == "word"]{char, month, "image": image.asset->url, "audio": audio.asset->url, "phrase_list": phrase_list[]{text, "image": image.asset->url, "audio": audio.asset->url}}',
+        )
 
-          if (item.phrase_list) {
-              item.phrase_list.forEach(p => {
-                  if (p.text) {
-                      const txt = p.text.trim();
-                      if (p.image) IMAGE_MAP[txt] = p.image;
-                      if (p.audio) AUDIO_MAP[txt] = p.audio;
-                  }
-              });
+        try {
+          const [resS, resW] = await Promise.all([
+            fetch(
+              `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${Q_SENTS}`,
+            ).then((r) => r.json()),
+            fetch(
+              `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${Q_WORDS}`,
+            ).then((r) => r.json()),
+          ])
+
+          SENTS = (resS.result || []).map((item) => ({
+            words: item.words || '',
+            p: item.punctuation || '',
+            tags: item.tags || '',
+            img: item.image || '',
+            audio: item.audio || '',
+          }))
+
+          SW = (resW.result || []).map((item) => {
+            const c = (item.char || '?').trim()
+            if (item.image) IMAGE_MAP[c] = item.image
+            if (item.audio) AUDIO_MAP[c] = item.audio
+
+            if (item.phrase_list) {
+              item.phrase_list.forEach((p) => {
+                if (p.text) {
+                  const txt = p.text.trim()
+                  if (p.image) IMAGE_MAP[txt] = p.image
+                  if (p.audio) AUDIO_MAP[txt] = p.audio
+                }
+              })
+            }
+            return {c: c, w: item.month || 'September'}
+          })
+        } catch (err) {
+          console.error('加载云端数据失败', err)
+          document.getElementById('sentDisp').innerHTML =
+            '<span style="color:#e74c3c">网络错误，加载失败</span>'
+          document.getElementById('wordsGrid').innerHTML =
+            '<span style="color:#e74c3c;padding:10px;">四会字加载失败</span>'
+        }
+
+        const cur = getCurMonth(now),
+          prev = prevM(cur)
+        const te = document.getElementById('monthTabs')
+        const monthTabs = prev === cur ? [cur] : [prev, cur]
+        monthTabs.forEach((m, i) => {
+          const b = document.createElement('button')
+          b.className = 'm-tab' + (i === monthTabs.length - 1 ? ' active' : '')
+          b.textContent = MCN[m]
+          b.onclick = () => {
+            te.querySelectorAll('.m-tab').forEach((x) => x.classList.remove('active'))
+            b.classList.add('active')
+            renderWords(m)
           }
-          return { c: c, w: item.month || "September" };
-      });
-  } catch (err) {
-      console.error("加载云端数据失败", err);
-      document.getElementById('sentDisp').innerHTML = '<span style="color:#e74c3c">网络错误，加载失败</span>';
-      document.getElementById('wordsGrid').innerHTML = '<span style="color:#e74c3c;padding:10px;">四会字加载失败</span>';
-  }
+          te.appendChild(b)
+        })
+        renderWords(cur)
+        const rg = document.getElementById('rangeGrid')
+        NRANGES.forEach((r) => {
+          const b = document.createElement('button')
+          b.className = 'r-btn'
+          b.textContent = r.lbl
+          b.onclick = () => selectRange(r, b)
+          rg.appendChild(b)
+        })
+        const mg = document.getElementById('mathTypeGrid')
+        MTYPES.forEach((mt) => {
+          const b = document.createElement('button')
+          b.className = 'math-btn'
+          b.textContent = mt.lbl
+          b.dataset.id = mt.id
+          b.onclick = () => togMath(mt.id, b)
+          mg.appendChild(b)
+        })
 
-  const cur=getCurMonth(now),prev=prevM(cur);
-  const te=document.getElementById('monthTabs');
-  [prev,cur].forEach((m,i)=>{const b=document.createElement('button');b.className='m-tab'+(i===1?' active':'');b.textContent=MCN[m];b.onclick=()=>{te.querySelectorAll('.m-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderWords(m);};te.appendChild(b);});
-  renderWords(cur);
-  const rg=document.getElementById('rangeGrid');
-  NRANGES.forEach(r=>{const b=document.createElement('button');b.className='r-btn';b.textContent=r.lbl;b.onclick=()=>selectRange(r,b);rg.appendChild(b);});
-  const mg=document.getElementById('mathTypeGrid');
-  MTYPES.forEach(mt=>{const b=document.createElement('button');b.className='math-btn';b.textContent=mt.lbl;b.dataset.id=mt.id;b.onclick=()=>togMath(mt.id,b);mg.appendChild(b);});
+        filtSents = [...SENTS]
+        const tags = new Set()
+        SENTS.forEach((s) =>
+          s.tags.split(/[,，、\s]+/).forEach((t) => {
+            if (t.trim()) tags.add(t.trim())
+          }),
+        )
+        const sel = document.getElementById('tagFilter')
+        addOpt(sel, '', '全部句子')
+        ;[...tags].sort().forEach((t) => addOpt(sel, t, t))
+        pickSent()
+      }
 
-  filtSents=[...SENTS];
-  const tags=new Set();SENTS.forEach(s=>s.tags.split(/[,，、\s]+/).forEach(t=> { if(t.trim()) tags.add(t.trim()); }));
-  const sel=document.getElementById('tagFilter');addOpt(sel,'','全部句子');[...tags].sort().forEach(t=>addOpt(sel,t,t));
-  pickSent();
-}
-
-function addOpt(sel,v,txt){const o=document.createElement('option');o.value=v;o.textContent=txt;sel.appendChild(o);}
-function getCurMonth(now){const n=['January','February','March','April','May','June','July','August','September','October','November','December'][now.getMonth()];return MONTHS.includes(n)?n:MONTHS[MONTHS.length-1];}
-function prevM(m){const i=MONTHS.indexOf(m);return i>0?MONTHS[i-1]:MONTHS[0];}
-function togCard(name,checked){mods[name]=checked;document.getElementById('card-'+name).classList.toggle('off',!checked);document.getElementById('lbl-'+name).textContent=checked?'开启':'关闭';}
-function renderWords(month){const g=document.getElementById('wordsGrid');g.innerHTML='';SW.filter(x=>x.w===month).forEach(x=>{const c=document.createElement('div');c.className='wchip'+(selWords.includes(x.c)?' sel':'');c.textContent=x.c;c.onclick=()=>togWord(x.c,c);g.appendChild(c);});}
-function togWord(ch,chip){if(selWords.includes(ch)){selWords=selWords.filter(c=>c!==ch);chip.classList.remove('sel');}else{selWords.push(ch);chip.classList.add('sel');}const p=document.getElementById('wordPrev');p.innerHTML=selWords.length?'已选：'+selWords.map(c=>`<span class="pc">${c}</span>`).join(''):'点击上方字选择（可多选）';}
-function selectRange(r,btn){selRange=r;document.querySelectorAll('.r-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateRangePrev();}
-function setDir(d){numDir=d;['dir-down','dir-up'].forEach(id=>{const el=document.getElementById(id);el.className=el.id==='dir-'+d?'dir-btn active':'dir-btn';});updateRangePrev();}
-function updateRangePrev(){const el=document.getElementById('rangePrev');if(!selRange){el.textContent='请选择数字范围';return;}const ns=[];for(let i=selRange.max;i>=selRange.min;i--)ns.push(i);el.textContent=(numDir==='down'?ns:[...ns].reverse()).join('　');}
-
-function togMath(id,btn){
-    if(selMath.includes(id)){
-        selMath=selMath.filter(x=>x!==id);
-        btn.classList.remove('active');
-    }else{
-        if(selMath.length >= 4) return;
-        selMath.push(id);
-        btn.classList.add('active');
-    }
-    generateMath();
-}
-
-function generateMath(){const p=document.getElementById('mathPrev');if(!selMath.length){p.innerHTML='<span style="color:#ccc;font-size:.82rem">选择题型后预览</span>';curEqs=[];return;}curEqs=selMath.slice(0,4).map(genEq);p.innerHTML=curEqs.map(e=>`<span class="math-eq-pre">${fmtPreview(e)}</span>`).join('');}
-function genEq(t){const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;let eq={type:t};switch(t){case 'add10':{const a=r(1,9),b=r(1,9-a);eq={...eq,op:'+',a,b,sum:a+b};break;}case 'sub10':{const a=r(2,10),b=r(1,a-1);eq={...eq,op:'-',a,b,sum:a-b};break;}case 'add20':{const a=r(5,19),b=r(1,20-a);eq={...eq,op:'+',a,b,sum:a+b};break;}case 'sub20':{const a=r(5,20),b=r(1,a-1);eq={...eq,op:'-',a,b,sum:a-b};break;}case 'missing':{const sum=r(6,10),a=r(1,sum-1),b=sum-a;eq={...eq,op:'+',a,b,sum,forceMissing:true};break;}case 'compose':{const n=r(11,19);eq={...eq,op:'+',a:10,b:n-10,sum:n};break;}}if(eq.forceMissing){eq.hide='b';}else if(eq.op==='-'){eq.hide='answer';}else{const opts=['answer','a','b'];eq.hide=opts[r(0,opts.length-1)];}return eq;}
-function fmtEqStr(eq){const op=eq.op==='+'?'＋':'－';return`${eq.a}${op}${eq.b}＝${eq.sum}`;}
-function fmtPreview(eq){return fmtEqStr(eq);}
-function renderEqHTML(eq){const op=eq.op==='+'?'＋':'－';const blank=`<span class="m-blank">&nbsp;&nbsp;&nbsp;</span>`;const a=eq.hide==='a'?blank:eq.a,b=eq.hide==='b'?blank:eq.b,s=eq.hide==='answer'?blank:eq.sum;return`${a}${op}${b}＝${s}`;}
-function filterSents(){const tag=document.getElementById('tagFilter').value;filtSents=tag?SENTS.filter(s=>s.tags.includes(tag)):[...SENTS];pickSent();}
-function pickSent(){if(!filtSents.length)return;curSent=filtSents[Math.floor(Math.random()*filtSents.length)];const text=curSent.words.replace(/[,，、\s]+/g, '　')+curSent.p;const tags=curSent.tags.split(/[,，、\s]+/).filter(t=>t.trim()).map(t=>`#${t.trim()}`).join(' ');document.getElementById('sentDisp').innerHTML=`<div>${text}</div><div class="s-tag">${tags}</div>`;}
-
-function scaleFrame(){const f=document.getElementById('dFrame');const displayView=document.getElementById('displayView');if(!f)return;if(!displayView.classList.contains('show')){f.style.transform='none';return;}const scale=Math.min(window.innerWidth/1280,window.innerHeight/720);f.style.transform=`scale(${scale})`;}
-function showDisplay(){buildGrid();document.getElementById('displayView').classList.add('show');if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>scaleFrame());}else{scaleFrame();}}
-
-// 🌟 修复：退出全屏/隐藏大屏时，顺手彻底清理弹窗和残留语音
-function hideDisplay(){
-    if(document.fullscreenElement){document.exitFullscreen();}
-    const displayView=document.getElementById('displayView');
-    const dFrame=document.getElementById('dFrame');
-    displayView.classList.remove('show');
-    dFrame.style.transform='none';
-    
-    const overlay = document.getElementById('overlay');
-    if (overlay) overlay.classList.remove('show');
-    if (window.MECC_AUDIO && MECC_AUDIO.globalAudio) MECC_AUDIO.globalAudio.pause();
-    
-    setTimeout(()=>{dFrame.style.transform='none';window.dispatchEvent(new Event('resize'));},150);
-}
-
-function buildGrid(){
-    const g=document.getElementById('dGrid');
-    g.innerHTML='';
-    const allDefs=[{key:'words',cls:'p-words',lbl:'四会字',fn:buildWords},{key:'numbers',cls:'p-numbers',lbl:'数字练习',fn:buildNums},{key:'math',cls:'p-math',lbl:'数学题',fn:buildMath},{key:'sentence',cls:'p-sentence',lbl:'今日句子',fn:buildSent}];
-    const defs=allDefs.filter(def=>mods[def.key]);
-    g.className='d-grid g'+Math.max(defs.length,1);
-    if(!defs.length){
-        const panel=document.createElement('div');panel.className='panel';
-        addEmpty(panel,'未开启任何模块');
-        g.appendChild(panel);
-        return;
-    }
-    defs.forEach(def=>{
-        const panel=document.createElement('div');
-        panel.className=`panel ${def.cls}`;
-        const lbl=document.createElement('div');lbl.className='p-lbl';lbl.textContent=def.lbl;panel.appendChild(lbl);
-        def.fn(panel);
-        g.appendChild(panel);
-    });
-}
-
-function buildWords(panel){
-    if(!selWords.length){addEmpty(panel,'未选择四会字');return;}
-    const wrap=document.createElement('div');wrap.className='pw-wrap';
-    const n=selWords.length;
-    const fs=n<=3?'clamp(3rem,7vw,7rem)':n<=6?'clamp(2rem,5vw,5.5rem)':'clamp(1.5rem,3.5vw,4.2rem)';
-    const pad=n<=3?'14px 20px':n<=6?'10px 16px':'8px 12px';
-    selWords.forEach((w,i)=>{
-        const d=document.createElement('div');
-        d.className='w-big '+WCS[i%WCS.length];
-        d.textContent=w;
-        d.style.cssText=`font-size:${fs};padding:${pad};`;
-        d.onclick=()=>showOv(w, false, IMAGE_MAP[w.trim()]); 
-        wrap.appendChild(d);
-    });
-    panel.appendChild(wrap);
-}
-
-function buildNums(panel){if(!selRange){addEmpty(panel,'未选择数字范围');return;}const ns=[];for(let i=selRange.max;i>=selRange.min;i--)ns.push(i);const disp=numDir==='down'?ns:[...ns].reverse();const wrap=document.createElement('div');wrap.className='pn-wrap';const n=disp.length;const fs=n<=11?'clamp(1.6rem,3.5vw,4rem)':'clamp(1.1rem,2.5vw,3rem)';const pad=n<=11?'10px 14px':'7px 10px';disp.forEach(num=>{const d=document.createElement('div');d.className='n-chip';d.textContent=num;d.style.cssText=`font-size:${fs};padding:${pad};`;d.onclick=()=>showOv(String(num));wrap.appendChild(d);});panel.appendChild(wrap);}
-
-function buildMath(panel){
-    if(!curEqs.length){addEmpty(panel,'未选择数学题型');return;}
-    const wrap=document.createElement('div');wrap.className='pm-wrap';
-    const n=curEqs.length;
-    const fs=n<=2?'clamp(1.5rem,3.2vw,4rem)':n===3?'clamp(1.2rem,2.6vw,3.2rem)':'clamp(1rem,2.2vw,2.8rem)';
-    const pad=n<=2?'10px 16px':n===3?'8px 12px':'6px 10px';
-    curEqs.forEach(eq=>{
-        const d=document.createElement('div');
-        d.className='m-eq';
-        d.innerHTML=renderEqHTML(eq);
-        d.style.cssText=`font-size:${fs};padding:${pad};`;
-        d.onclick = () => showOv(renderEqHTML(eq), true); 
-        wrap.appendChild(d);
-    });
-    panel.appendChild(wrap);
-}
-
-function buildSent(panel){
-    if(!curSent){addEmpty(panel,'未选择句子');return;}
-    const words=curSent.words.split(/[,，、\s]+/);
-    const total=words.join('').length+1;
-    const fs=total<=7?'clamp(2.2rem,5vw,6rem)':total<=11?'clamp(1.8rem,4vw,5rem)':'clamp(1.4rem,3vw,4rem)';
-    const wrap=document.createElement('div');wrap.className='ps-wrap';wrap.style.fontSize=fs;
-    words.forEach(w=>{
-        const cleanW = w.trim();
-        const sp=document.createElement('span');
-        sp.className='s-wd';
-        sp.textContent=cleanW;
-        sp.onclick=()=>showOv(cleanW, false, IMAGE_MAP[cleanW] || curSent.img); 
-        wrap.appendChild(sp);
-    });
-    const punc=document.createElement('span');punc.textContent=curSent.p;punc.style.color='#aaa';wrap.appendChild(punc);
-    panel.appendChild(wrap);
-}
-function addEmpty(panel,msg){const e=document.createElement('div');e.className='p-empty';e.textContent=msg;panel.appendChild(e);}
-
-function showOv(ch, isHTML=false, imgUrl=null){
-    const el = document.getElementById('ovChar');
-    const imgEl = document.getElementById('ovImg');
-    const overlay = document.getElementById('overlay');
-    
-    if (isHTML) el.innerHTML = ch; else el.textContent = ch;
-    
-    if (imgUrl) {
-        imgEl.src = imgUrl;
-        imgEl.style.display = 'block';
-        el.classList.add('has-img');
-    } else {
-        imgEl.style.display = 'none';
-        imgEl.src = '';
-        el.classList.remove('has-img');
-    }
-
-    if (isHTML || ch.length > 5) el.style.fontSize = 'clamp(4rem, 14vw, 12rem)';
-    else if (!imgUrl) el.style.fontSize = ''; 
-    
-    overlay.classList.add('show');
-
-    const plainText = isHTML ? ch.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, '').trim() : ch.trim();
-    if (window.MECC_AUDIO) MECC_AUDIO.readText(plainText, AUDIO_MAP[plainText] || null);
-
-    overlay.onclick = (e) => {
-        if (e.target === overlay) {
-            overlay.classList.remove('show');
-            if (window.MECC_AUDIO && MECC_AUDIO.globalAudio) MECC_AUDIO.globalAudio.pause();
+      function addOpt(sel, v, txt) {
+        const o = document.createElement('option')
+        o.value = v
+        o.textContent = txt
+        sel.appendChild(o)
+      }
+      function getCurMonth(now) {
+        const n = [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December',
+        ][now.getMonth()]
+        return MONTHS.includes(n) ? n : MONTHS[MONTHS.length - 1]
+      }
+      function prevM(m) {
+        const i = MONTHS.indexOf(m)
+        return i > 0 ? MONTHS[i - 1] : MONTHS[0]
+      }
+      function togCard(name, checked) {
+        mods[name] = checked
+        document.getElementById('card-' + name).classList.toggle('off', !checked)
+        document.getElementById('lbl-' + name).textContent = checked ? '开启' : '关闭'
+      }
+      function renderWords(month) {
+        const g = document.getElementById('wordsGrid')
+        g.innerHTML = ''
+        SW.filter((x) => x.w === month).forEach((x) => {
+          const c = document.createElement('div')
+          c.className = 'wchip' + (selWords.includes(x.c) ? ' sel' : '')
+          c.textContent = x.c
+          c.onclick = () => togWord(x.c, c)
+          g.appendChild(c)
+        })
+      }
+      function togWord(ch, chip) {
+        if (selWords.includes(ch)) {
+          selWords = selWords.filter((c) => c !== ch)
+          chip.classList.remove('sel')
         } else {
-            if (window.MECC_AUDIO) MECC_AUDIO.readText(plainText, AUDIO_MAP[plainText] || null);
+          selWords.push(ch)
+          chip.classList.add('sel')
         }
-    };
-}
+        const p = document.getElementById('wordPrev')
+        p.innerHTML = selWords.length
+          ? '已选：' + selWords.map((c) => `<span class="pc">${c}</span>`).join('')
+          : '点击上方字选择（可多选）'
+      }
+      function selectRange(r, btn) {
+        selRange = r
+        document.querySelectorAll('.r-btn').forEach((b) => b.classList.remove('active'))
+        btn.classList.add('active')
+        updateRangePrev()
+      }
+      function setDir(d) {
+        numDir = d
+        ;['dir-down', 'dir-up'].forEach((id) => {
+          const el = document.getElementById(id)
+          el.className = el.id === 'dir-' + d ? 'dir-btn active' : 'dir-btn'
+        })
+        updateRangePrev()
+      }
+      function updateRangePrev() {
+        const el = document.getElementById('rangePrev')
+        if (!selRange) {
+          el.textContent = '请选择数字范围'
+          return
+        }
+        const ns = []
+        for (let i = selRange.max; i >= selRange.min; i--) ns.push(i)
+        el.textContent = (numDir === 'down' ? ns : [...ns].reverse()).join('　')
+      }
 
-function goFS(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();}
-
-document.addEventListener('fullscreenchange',()=>{isFull=!!document.fullscreenElement;document.getElementById('dBtnFs').classList.toggle('fs-hide',isFull);document.getElementById('dBtnBack').classList.toggle('fs-hide',isFull);if(isFull){scaleFrame();}else{hideDisplay();}setTimeout(scaleFrame,100);});
-window.addEventListener('resize',scaleFrame);
-
-// 🌟 修复：无论如何，按 ESC 必须强制清理掉可能残留的 Overlay 和声音
-document.addEventListener('keydown', e => {
-    if(e.key === 'Escape'){
-        const overlay = document.getElementById('overlay');
-        if(overlay && overlay.classList.contains('show')){
-            overlay.classList.remove('show');
-            if (window.MECC_AUDIO && MECC_AUDIO.globalAudio) MECC_AUDIO.globalAudio.pause();
+      function togMath(id, btn) {
+        if (selMath.includes(id)) {
+          selMath = selMath.filter((x) => x !== id)
+          btn.classList.remove('active')
         } else {
-            hideDisplay();
+          if (selMath.length >= 4) return
+          selMath.push(id)
+          btn.classList.add('active')
         }
-    }
-    if((e.key==='f'||e.key==='F')&& (!document.getElementById('overlay') || !document.getElementById('overlay').classList.contains('show'))) goFS();
-});
+        generateMath()
+      }
 
-init();
-</script>
-</body>
+      function generateMath() {
+        const p = document.getElementById('mathPrev')
+        if (!selMath.length) {
+          p.innerHTML = '<span style="color:#ccc;font-size:.82rem">选择题型后预览</span>'
+          curEqs = []
+          return
+        }
+        curEqs = selMath.slice(0, 4).map(genEq)
+        p.innerHTML = curEqs
+          .map((e) => `<span class="math-eq-pre">${fmtPreview(e)}</span>`)
+          .join('')
+      }
+      function genEq(t) {
+        const r = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a
+        let eq = {type: t}
+        switch (t) {
+          case 'add10': {
+            const a = r(1, 9),
+              b = r(1, 9 - a)
+            eq = {...eq, op: '+', a, b, sum: a + b}
+            break
+          }
+          case 'sub10': {
+            const a = r(2, 10),
+              b = r(1, a - 1)
+            eq = {...eq, op: '-', a, b, sum: a - b}
+            break
+          }
+          case 'add20': {
+            const a = r(5, 19),
+              b = r(1, 20 - a)
+            eq = {...eq, op: '+', a, b, sum: a + b}
+            break
+          }
+          case 'sub20': {
+            const a = r(5, 20),
+              b = r(1, a - 1)
+            eq = {...eq, op: '-', a, b, sum: a - b}
+            break
+          }
+          case 'missing': {
+            const sum = r(6, 10),
+              a = r(1, sum - 1),
+              b = sum - a
+            eq = {...eq, op: '+', a, b, sum, forceMissing: true}
+            break
+          }
+          case 'compose': {
+            const n = r(11, 19)
+            eq = {...eq, op: '+', a: 10, b: n - 10, sum: n}
+            break
+          }
+        }
+        if (eq.forceMissing) {
+          eq.hide = 'b'
+        } else if (eq.op === '-') {
+          eq.hide = 'answer'
+        } else {
+          const opts = ['answer', 'a', 'b']
+          eq.hide = opts[r(0, opts.length - 1)]
+        }
+        return eq
+      }
+      function fmtEqStr(eq) {
+        const op = eq.op === '+' ? '＋' : '－'
+        return `${eq.a}${op}${eq.b}＝${eq.sum}`
+      }
+      function fmtPreview(eq) {
+        return fmtEqStr(eq)
+      }
+      function renderEqHTML(eq) {
+        const op = eq.op === '+' ? '＋' : '－'
+        const blank = `<span class="m-blank">&nbsp;&nbsp;&nbsp;</span>`
+        const a = eq.hide === 'a' ? blank : eq.a,
+          b = eq.hide === 'b' ? blank : eq.b,
+          s = eq.hide === 'answer' ? blank : eq.sum
+        return `${a}${op}${b}＝${s}`
+      }
+      function filterSents() {
+        const tag = document.getElementById('tagFilter').value
+        filtSents = tag ? SENTS.filter((s) => s.tags.includes(tag)) : [...SENTS]
+        pickSent()
+      }
+      function pickSent() {
+        if (!filtSents.length) return
+        curSent = filtSents[Math.floor(Math.random() * filtSents.length)]
+        const text = curSent.words.replace(/[,，、\s]+/g, '　') + curSent.p
+        const tags = curSent.tags
+          .split(/[,，、\s]+/)
+          .filter((t) => t.trim())
+          .map((t) => `#${t.trim()}`)
+          .join(' ')
+        document.getElementById('sentDisp').innerHTML =
+          `<div>${text}</div><div class="s-tag">${tags}</div>`
+      }
+
+      function scaleFrame() {
+        const f = document.getElementById('dFrame')
+        const displayView = document.getElementById('displayView')
+        if (!f) return
+        if (!displayView.classList.contains('show')) {
+          f.style.transform = 'none'
+          return
+        }
+        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720)
+        f.style.transform = `scale(${scale})`
+      }
+      function showDisplay() {
+        buildGrid()
+        document.getElementById('displayView').classList.add('show')
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => scaleFrame())
+        } else {
+          scaleFrame()
+        }
+      }
+
+      // 🌟 修复：退出全屏/隐藏大屏时，顺手彻底清理弹窗和残留语音
+      function hideDisplay() {
+        if (document.fullscreenElement) {
+          document.exitFullscreen()
+        }
+        const displayView = document.getElementById('displayView')
+        const dFrame = document.getElementById('dFrame')
+        displayView.classList.remove('show')
+        dFrame.style.transform = 'none'
+
+        const overlay = document.getElementById('overlay')
+        if (overlay) overlay.classList.remove('show')
+        if (window.MECC_AUDIO && MECC_AUDIO.globalAudio) MECC_AUDIO.globalAudio.pause()
+
+        setTimeout(() => {
+          dFrame.style.transform = 'none'
+          window.dispatchEvent(new Event('resize'))
+        }, 150)
+      }
+
+      function buildGrid() {
+        const g = document.getElementById('dGrid')
+        g.innerHTML = ''
+        const allDefs = [
+          {key: 'words', cls: 'p-words', lbl: '四会字', fn: buildWords},
+          {key: 'numbers', cls: 'p-numbers', lbl: '数字练习', fn: buildNums},
+          {key: 'math', cls: 'p-math', lbl: '数学题', fn: buildMath},
+          {key: 'sentence', cls: 'p-sentence', lbl: '今日句子', fn: buildSent},
+        ]
+        const defs = allDefs.filter((def) => mods[def.key])
+        g.className = 'd-grid g' + Math.max(defs.length, 1)
+        if (!defs.length) {
+          const panel = document.createElement('div')
+          panel.className = 'panel'
+          addEmpty(panel, '未开启任何模块')
+          g.appendChild(panel)
+          return
+        }
+        defs.forEach((def) => {
+          const panel = document.createElement('div')
+          panel.className = `panel ${def.cls}`
+          const lbl = document.createElement('div')
+          lbl.className = 'p-lbl'
+          lbl.textContent = def.lbl
+          panel.appendChild(lbl)
+          def.fn(panel)
+          g.appendChild(panel)
+        })
+      }
+
+      function buildWords(panel) {
+        if (!selWords.length) {
+          addEmpty(panel, '未选择四会字')
+          return
+        }
+        const wrap = document.createElement('div')
+        wrap.className = 'pw-wrap'
+        const n = selWords.length
+        const fs =
+          n <= 3
+            ? 'clamp(3rem,7vw,7rem)'
+            : n <= 6
+              ? 'clamp(2rem,5vw,5.5rem)'
+              : 'clamp(1.5rem,3.5vw,4.2rem)'
+        const pad = n <= 3 ? '14px 20px' : n <= 6 ? '10px 16px' : '8px 12px'
+        selWords.forEach((w, i) => {
+          const d = document.createElement('div')
+          d.className = 'w-big ' + WCS[i % WCS.length]
+          d.textContent = w
+          d.style.cssText = `font-size:${fs};padding:${pad};`
+          d.onclick = () => showOv(w, false, IMAGE_MAP[w.trim()])
+          wrap.appendChild(d)
+        })
+        panel.appendChild(wrap)
+      }
+
+      function buildNums(panel) {
+        if (!selRange) {
+          addEmpty(panel, '未选择数字范围')
+          return
+        }
+        const ns = []
+        for (let i = selRange.max; i >= selRange.min; i--) ns.push(i)
+        const disp = numDir === 'down' ? ns : [...ns].reverse()
+        const wrap = document.createElement('div')
+        wrap.className = 'pn-wrap'
+        const n = disp.length
+        const activeCount = Object.values(mods).filter(Boolean).length
+        const isSolo = activeCount === 1
+        if (isSolo) wrap.style.gap = 'clamp(14px,2vw,28px)'
+        const fs = isSolo
+          ? n <= 11
+            ? 'clamp(4rem,10vw,10rem)'
+            : 'clamp(3.2rem,8vw,6.8rem)'
+          : n <= 11
+            ? 'clamp(2.2rem,4.8vw,5.4rem)'
+            : 'clamp(1.5rem,3.4vw,3.8rem)'
+        const pad = isSolo
+          ? n <= 11
+            ? '18px 26px'
+            : '14px 18px'
+          : n <= 11
+            ? '12px 16px'
+            : '9px 12px'
+        disp.forEach((num) => {
+          const d = document.createElement('div')
+          d.className = 'n-chip'
+          d.textContent = num
+          d.style.cssText = `font-size:${fs};padding:${pad};`
+          d.onclick = () => showOv(String(num))
+          wrap.appendChild(d)
+        })
+        panel.appendChild(wrap)
+      }
+
+      function buildMath(panel) {
+        if (!curEqs.length) {
+          addEmpty(panel, '未选择数学题型')
+          return
+        }
+        const wrap = document.createElement('div')
+        wrap.className = 'pm-wrap'
+        const n = curEqs.length
+        const fs =
+          n <= 2
+            ? 'clamp(1.5rem,3.2vw,4rem)'
+            : n === 3
+              ? 'clamp(1.2rem,2.6vw,3.2rem)'
+              : 'clamp(1rem,2.2vw,2.8rem)'
+        const pad = n <= 2 ? '10px 16px' : n === 3 ? '8px 12px' : '6px 10px'
+        curEqs.forEach((eq) => {
+          const d = document.createElement('div')
+          d.className = 'm-eq'
+          d.innerHTML = renderEqHTML(eq)
+          d.style.cssText = `font-size:${fs};padding:${pad};`
+          d.onclick = () => showOv(renderEqHTML(eq), true)
+          wrap.appendChild(d)
+        })
+        panel.appendChild(wrap)
+      }
+
+      function buildSent(panel) {
+        if (!curSent) {
+          addEmpty(panel, '未选择句子')
+          return
+        }
+        const words = curSent.words.split(/[,，、\s]+/)
+        const total = words.join('').length + 1
+        const fs =
+          total <= 7
+            ? 'clamp(2.2rem,5vw,6rem)'
+            : total <= 11
+              ? 'clamp(1.8rem,4vw,5rem)'
+              : 'clamp(1.4rem,3vw,4rem)'
+        const wrap = document.createElement('div')
+        wrap.className = 'ps-wrap'
+        wrap.style.fontSize = fs
+        words.forEach((w) => {
+          const cleanW = w.trim()
+          const sp = document.createElement('span')
+          sp.className = 's-wd'
+          sp.textContent = cleanW
+          sp.onclick = () => showOv(cleanW, false, IMAGE_MAP[cleanW] || curSent.img)
+          wrap.appendChild(sp)
+        })
+        const punc = document.createElement('span')
+        punc.textContent = curSent.p
+        punc.style.color = '#aaa'
+        wrap.appendChild(punc)
+        panel.appendChild(wrap)
+      }
+      function addEmpty(panel, msg) {
+        const e = document.createElement('div')
+        e.className = 'p-empty'
+        e.textContent = msg
+        panel.appendChild(e)
+      }
+
+      function showOv(ch, isHTML = false, imgUrl = null) {
+        const el = document.getElementById('ovChar')
+        const imgEl = document.getElementById('ovImg')
+        const overlay = document.getElementById('overlay')
+
+        if (isHTML) el.innerHTML = ch
+        else el.textContent = ch
+
+        if (imgUrl) {
+          imgEl.src = imgUrl
+          imgEl.style.display = 'block'
+          el.classList.add('has-img')
+        } else {
+          imgEl.style.display = 'none'
+          imgEl.src = ''
+          el.classList.remove('has-img')
+        }
+
+        if (isHTML || ch.length > 5) el.style.fontSize = 'clamp(4rem, 14vw, 12rem)'
+        else if (!imgUrl) el.style.fontSize = ''
+
+        overlay.classList.add('show')
+
+        const plainText = isHTML
+          ? ch
+              .replace(/<[^>]+>/g, '')
+              .replace(/&nbsp;/g, '')
+              .trim()
+          : ch.trim()
+        if (window.MECC_AUDIO) MECC_AUDIO.readText(plainText, AUDIO_MAP[plainText] || null)
+
+        overlay.onclick = (e) => {
+          if (e.target === overlay) {
+            overlay.classList.remove('show')
+            if (window.MECC_AUDIO && MECC_AUDIO.globalAudio) MECC_AUDIO.globalAudio.pause()
+          } else {
+            if (window.MECC_AUDIO) MECC_AUDIO.readText(plainText, AUDIO_MAP[plainText] || null)
+          }
+        }
+      }
+
+      function goFS() {
+        if (!document.fullscreenElement)
+          document.documentElement.requestFullscreen().catch(() => {})
+        else document.exitFullscreen()
+      }
+
+      document.addEventListener('fullscreenchange', () => {
+        isFull = !!document.fullscreenElement
+        document.getElementById('dBtnFs').classList.toggle('fs-hide', isFull)
+        document.getElementById('dBtnBack').classList.toggle('fs-hide', isFull)
+        if (isFull) {
+          scaleFrame()
+        } else {
+          hideDisplay()
+        }
+        setTimeout(scaleFrame, 100)
+      })
+      window.addEventListener('resize', scaleFrame)
+
+      // 🌟 修复：无论如何，按 ESC 必须强制清理掉可能残留的 Overlay 和声音
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const overlay = document.getElementById('overlay')
+          if (overlay && overlay.classList.contains('show')) {
+            overlay.classList.remove('show')
+            if (window.MECC_AUDIO && MECC_AUDIO.globalAudio) MECC_AUDIO.globalAudio.pause()
+          } else {
+            hideDisplay()
+          }
+        }
+        if (
+          (e.key === 'f' || e.key === 'F') &&
+          (!document.getElementById('overlay') ||
+            !document.getElementById('overlay').classList.contains('show'))
+        )
+          goFS()
+      })
+
+      init()
+    </script>
+  </body>
 </html>

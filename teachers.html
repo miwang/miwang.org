@@ -1,536 +1,1207 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>教师工具台 — 王老师的教学空间</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
     <style>
-        @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
-        :root {
-            /* 🌿 高级森系 SaaS 配色 */
-            --c-lime: #c3d94e;    
-            --c-emerald: #44b88e; 
-            --c-slate: #1e565c;   
-            --c-navy: #183042;    
-            --c-teal: #217273;    
-            --c-mint: #63cbb2;    
-            
-            --bg: #f0f4f8;          
-            --card-bg: #ffffff;     
-            --text: #334155;        
-            --text-muted: #64748b;  
-            --border: #e2e8f0;      
-            
-            --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
-            --radius: 16px;        
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
-        }
+      @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
+      :root {
+        /* 🌿 高级森系 SaaS 配色 */
+        --c-lime: #c3d94e;
+        --c-emerald: #44b88e;
+        --c-slate: #1e565c;
+        --c-navy: #183042;
+        --c-teal: #217273;
+        --c-mint: #63cbb2;
 
-        .font-en { font-family: "LXGW WenKai Lite", system-ui, sans-serif !important; }
+        --bg: #f0f4f8;
+        --card-bg: #ffffff;
+        --text: #334155;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        --font-zh: 'KaiTi-CJK', 'LXGW WenKai Lite', serif;
+        --radius: 16px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
 
-        body {
-            font-family: var(--font-zh);
-            background: var(--bg);
-            color: var(--text);
-            -webkit-font-smoothing: antialiased;
-        }
+      .font-en {
+        font-family: 'LXGW WenKai Lite', system-ui, sans-serif !important;
+      }
 
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-zh);
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .site-header {
+        background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-slate) 100%);
+        min-height: 85px;
+        padding: 16px 24px;
+        position: relative;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .site-header h1::after {
+        content: '';
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        background: var(--c-emerald);
+        margin-left: 10px;
+        opacity: 0.9;
+        vertical-align: middle;
+        transform: rotate(45deg);
+      }
+
+      .site-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--c-navy), var(--c-lime), var(--c-navy));
+      }
+
+      .site-header .back-link {
+        position: absolute;
+        left: 24px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #f8fafc;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.05rem;
+        line-height: 1;
+        transition: opacity 0.2s ease;
+        z-index: 2;
+        white-space: nowrap;
+      }
+      .site-header .back-link:hover {
+        opacity: 0.75;
+      }
+      .circle-arrow-icon {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+      }
+
+      .site-header h1 {
+        font-size: 1.9rem;
+        color: #fff;
+        letter-spacing: 2px;
+        line-height: 1.2;
+        z-index: 2;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .container {
+        width: 94%;
+        max-width: 1080px;
+        margin: 0 auto 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 35px;
+        position: relative;
+        z-index: 2;
+        /* 🌟 核心修改：补偿删掉搜索栏后失去的顶部空间 */
+        padding-top: 35px;
+      }
+
+      .tool-section {
+        transition: opacity 0.3s ease;
+      }
+      .tool-section.collapsed > .grid,
+      .tool-section.collapsed > .unit-list {
+        display: none;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: var(--text);
+        border-left: 6px solid var(--c-slate);
+        padding-left: 14px;
+        margin-bottom: 18px;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        user-select: none;
+        justify-content: space-between;
+      }
+      .section-title:focus-visible {
+        outline: 3px solid rgba(68, 184, 142, 0.3);
+        outline-offset: 4px;
+        border-radius: 10px;
+      }
+      .section-title-main {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .section-chevron {
+        font-size: 1rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        margin-left: 12px;
+        transition:
+          transform 0.25s ease,
+          color 0.25s ease;
+      }
+      .tool-section.collapsed .section-chevron {
+        transform: rotate(-90deg);
+      }
+      .section-title:hover .section-chevron,
+      .section-title:focus-visible .section-chevron {
+        color: var(--c-slate);
+      }
+
+      .title-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+      .title-icon svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .unit-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .unit-item {
+        background-color: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        text-decoration: none;
+        color: var(--text);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--border);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .unit-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 16px 35px rgba(0, 0, 0, 0.06);
+        border-left-color: var(--c-navy);
+      }
+      .unit-icon {
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        color: #64748b;
+        transition: all 0.3s ease;
+      }
+      .unit-item:hover .unit-icon {
+        background: var(--c-navy);
+        color: #fff;
+        border-color: var(--c-navy);
+      }
+      .unit-text {
+        flex: 1;
+        min-width: 0;
+      }
+      .unit-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .unit-title .sub-title {
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+      }
+      .unit-desc {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-top: 4px;
+      }
+      .unit-arrow {
+        font-size: 2rem;
+        color: #cbd5e1;
+        font-weight: 300;
+        transition:
+          transform 0.3s ease,
+          color 0.3s ease;
+        flex-shrink: 0;
+      }
+      .unit-item:hover .unit-arrow {
+        transform: translateX(5px);
+        color: var(--c-navy);
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 20px 18px;
+        text-decoration: none;
+        color: var(--text);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        border-top: 4px solid var(--border);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 10px 16px;
+        align-items: center;
+        min-height: 115px;
+      }
+
+      /* 🐯 老虎异形卡片 */
+      .card.tiger-shape {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04));
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        background-size: 100% 100%;
+        padding: 44px 16px 14px 16px !important;
+      }
+      .card.tiger-shape:hover {
+        filter: drop-shadow(0 12px 24px rgba(30, 86, 92, 0.15));
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        transform: translateY(-5px);
+      }
+
+      /* 🐘 大象异形卡片 */
+      .card.elephant-shape {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04));
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 90 25 L 275 25 C 286 25 295 34 295 45 L 295 110 C 295 121 286 130 275 130 L 45 130 C 45 110 45 95 45 90 C 35 90 30 100 30 110 C 30 125 12 125 15 105 C 18 80 25 60 30 55 C 33 48 33 52 35 40 C 40 20 60 20 90 25 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 35 C 100 25 125 60 115 100 C 105 130 65 120 60 95 C 55 75 55 45 60 35 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 45 90 Q 10 102 2 82 Q 20 78 42 80 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 42 45 Q 47 42 52 45' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        background-size: 100% 100%;
+        padding: 24px 24px 18px 80px !important;
+      }
+      .card.elephant-shape:hover {
+        filter: drop-shadow(0 12px 24px rgba(30, 86, 92, 0.15));
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 90 25 L 275 25 C 286 25 295 34 295 45 L 295 110 C 295 121 286 130 275 130 L 45 130 C 45 110 45 95 45 90 C 35 90 30 100 30 110 C 30 125 12 125 15 105 C 18 80 25 60 30 55 C 33 48 33 52 35 40 C 40 20 60 20 90 25 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 35 C 100 25 125 60 115 100 C 105 130 65 120 60 95 C 55 75 55 45 60 35 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 45 90 Q 10 102 2 82 Q 20 78 42 80 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 42 45 Q 47 42 52 45' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        transform: translateY(-5px);
+      }
+
+      .card::after {
+        content: '›';
+        grid-row: 1 / 3;
+        grid-column: 3;
+        font-size: 2.2rem;
+        color: #cbd5e1;
+        font-family: 'LXGW WenKai Lite', system-ui, sans-serif;
+        font-weight: 300;
+        margin-left: 4px;
+        transition:
+          transform 0.3s ease,
+          color 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 35px rgba(0, 0, 0, 0.06);
+        z-index: 10;
+      }
+
+      .card.slate-hover:hover {
+        border-top-color: var(--c-slate);
+      }
+      .card.emerald-hover:hover {
+        border-top-color: var(--c-emerald);
+      }
+      .card.mint-hover:hover {
+        border-top-color: var(--c-mint);
+      }
+
+      .card.slate-hover:hover::after {
+        transform: translateX(5px);
+        color: var(--c-slate);
+      }
+      .card.emerald-hover:hover::after {
+        transform: translateX(5px);
+        color: var(--c-emerald);
+      }
+      .card.mint-hover:hover::after {
+        transform: translateX(5px);
+        color: var(--c-mint);
+      }
+
+      .lock-badge {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: 2px solid var(--border);
+        color: #64748b;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+        z-index: 3;
+      }
+      .tiger-shape .lock-badge,
+      .elephant-shape .lock-badge {
+        top: -2px;
+        right: -2px;
+      }
+      .lock-badge svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+      }
+      .locked-card:hover .lock-badge {
+        transform: scale(1.15) rotate(8deg);
+        background: #fff;
+        border-color: var(--c-slate);
+        color: var(--c-slate);
+      }
+
+      .lock-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.6);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 2;
+        border-radius: inherit;
+      }
+      .lock-hint {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 100px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        background: var(--c-slate);
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+      }
+      .locked-card:hover .lock-overlay {
+        opacity: 1;
+      }
+      .locked-card:hover .lock-hint {
+        transform: translateY(0);
+      }
+
+      .card-icon {
+        grid-row: 1 / 3;
+        grid-column: 1;
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin: 0;
+        flex-shrink: 0;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #64748b;
+        z-index: 1;
+      }
+
+      .card-icon svg.icon-dress {
+        width: 1.8rem;
+        height: 1.8rem;
+      }
+
+      .slate-hover:hover .card-icon {
+        background: var(--c-slate);
+        color: white;
+        border-color: var(--c-slate);
+        transform: translateY(-2px) rotate(-4deg);
+      }
+      .emerald-hover:hover .card-icon {
+        background: var(--c-emerald);
+        color: white;
+        border-color: var(--c-emerald);
+        transform: translateY(-2px) rotate(-4deg);
+      }
+      .mint-hover:hover .card-icon {
+        background: var(--c-mint);
+        color: white;
+        border-color: var(--c-mint);
+        transform: translateY(-2px) rotate(-4deg);
+      }
+
+      .card-title {
+        grid-row: 1;
+        grid-column: 2;
+        font-size: 1.15rem;
+        font-weight: bold;
+        line-height: 1.2;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        text-align: left;
+        align-self: end;
+      }
+      .card-title .sub-title {
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.5px;
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+      }
+
+      .slate-hover:hover .card-title .sub-title {
+        color: var(--c-slate);
+        background: rgba(30, 86, 92, 0.08);
+        border-color: rgba(30, 86, 92, 0.15);
+      }
+      .emerald-hover:hover .card-title .sub-title {
+        color: var(--c-emerald);
+        background: rgba(68, 184, 142, 0.08);
+        border-color: rgba(68, 184, 142, 0.15);
+      }
+      .mint-hover:hover .card-title .sub-title {
+        color: var(--c-mint);
+        background: rgba(99, 203, 178, 0.08);
+        border-color: rgba(99, 203, 178, 0.15);
+      }
+
+      .card-desc {
+        grid-row: 2;
+        grid-column: 2;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin: 0;
+        text-align: left;
+        align-self: start;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* 模态框 */
+      #modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(24, 48, 66, 0.85);
+        z-index: 1000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+      }
+      .lock-box {
+        background: #fff;
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border);
+        border-top: 6px solid var(--c-slate);
+      }
+
+      .password-input {
+        font-family: 'LXGW WenKai Lite', monospace;
+        font-size: 2rem;
+        padding: 12px;
+        width: 180px;
+        text-align: center;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        letter-spacing: 5px;
+        background: #fff;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .password-input:focus {
+        border-color: var(--c-slate);
+      }
+      .submit-btn {
+        margin-top: 24px;
+        padding: 12px 40px;
+        background: var(--c-slate);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        transition: all 0.2s ease;
+      }
+      .submit-btn:hover {
+        background: #164044;
+      }
+
+      @media (max-width: 768px) {
         .site-header {
-            background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-slate) 100%); 
-            min-height: 85px; 
-            padding: 16px 24px;
-            position: relative;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+          min-height: 90px;
+          padding: 50px 16px 14px;
         }
-
-        .site-header h1::after {
-            content: '';
-            display: inline-block;
-            width: 10px; height: 10px;
-            border-radius: 2px; background: var(--c-emerald);
-            margin-left: 10px; opacity: 0.9;
-            vertical-align: middle; transform: rotate(45deg);
-        }
-
-        .site-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, var(--c-navy), var(--c-lime), var(--c-navy));
-        }
-
         .site-header .back-link {
-            position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
-            display: inline-flex; align-items: center; gap: 6px;
-            color: #f8fafc; text-decoration: none; font-weight: bold; font-size: 1.05rem;
-            line-height: 1; transition: opacity 0.2s ease; z-index: 2;
-            white-space: nowrap;
+          left: 50%;
+          top: 12px;
+          transform: translateX(-50%);
         }
-        .site-header .back-link:hover { opacity: 0.75; }
-        .circle-arrow-icon { width: 22px; height: 22px; flex-shrink: 0; }
-
         .site-header h1 {
-            font-size: 1.9rem;
-            color: #fff; letter-spacing: 2px; 
-            line-height: 1.2; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          font-size: 1.6rem;
         }
-
-        .container {
-            width: 94%; max-width: 1080px; margin: 0 auto 50px;
-            display: flex; flex-direction: column; gap: 35px;
-            position: relative; z-index: 2; 
-            /* 🌟 核心修改：补偿删掉搜索栏后失去的顶部空间 */
-            padding-top: 35px; 
-        }
-
-        /* 区块隐藏动画 */
-        .tool-section { transition: opacity 0.3s ease; }
-
-        .section-title {
-            font-size: 1.3rem; font-weight: bold; color: var(--text); 
-            border-left: 6px solid var(--c-slate); 
-            padding-left: 14px; margin-bottom: 18px;
-            letter-spacing: 1px; display: flex; align-items: center; gap: 12px;
-        }
-        
-        .title-icon {
-            width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .title-icon svg { width: 20px; height: 20px; }
-
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+          grid-template-columns: 1fr;
         }
-
-        .unit-list { display: flex; flex-direction: column; gap: 14px; }
-        .unit-item {
-            background-color: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            text-decoration: none;
-            color: var(--text);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .unit-item:hover { transform: translateX(4px); box-shadow: 0 16px 35px rgba(0, 0, 0, 0.06); border-left-color: var(--c-navy); }
-        .unit-icon {
-            width: 50px; height: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; color: #64748b;
-            transition: all 0.3s ease;
-        }
-        .unit-item:hover .unit-icon { background: var(--c-navy); color: #fff; border-color: var(--c-navy); }
-        .unit-text { flex: 1; min-width: 0; }
-        .unit-title { font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        .unit-title .sub-title { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-        .unit-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-top: 4px; }
-        .unit-arrow { font-size: 2rem; color: #cbd5e1; font-weight: 300; transition: transform 0.3s ease, color 0.3s ease; flex-shrink: 0; }
-        .unit-item:hover .unit-arrow { transform: translateX(5px); color: var(--c-navy); }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px 18px;
-            text-decoration: none;
-            color: var(--text);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            border-top: 4px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            grid-template-rows: auto auto;
-            gap: 10px 16px;
-            align-items: center;
-            min-height: 115px;
-        }
-
-        /* 🐯 老虎异形卡片 */
         .card.tiger-shape {
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
-            background-size: 100% 100%;
-            padding: 44px 16px 14px 16px !important; 
+          padding: 36px 14px 14px 14px !important;
         }
-        .card.tiger-shape:hover {
-            filter: drop-shadow(0 12px 24px rgba(30, 86, 92, 0.15));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 25 40 L 70 40 C 75 10 100 10 105 40 L 195 40 C 200 10 225 10 230 40 L 275 40 C 286 40 295 49 295 60 L 295 110 C 295 121 286 130 275 130 L 25 130 C 14 130 5 121 5 110 L 5 60 C 5 49 14 40 25 40 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 150 40 L 150 5 M 135 5 L 165 5 M 140 20 L 160 20' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 5 70 L 25 75 M 5 90 L 20 85 M 295 70 L 275 75 M 295 90 L 280 85' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 80 35 C 85 20 90 20 95 35 M 205 35 C 210 20 215 20 220 35' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
-            transform: translateY(-5px);
-        }
-
-        /* 🐘 大象异形卡片 */
         .card.elephant-shape {
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.04));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 90 25 L 275 25 C 286 25 295 34 295 45 L 295 110 C 295 121 286 130 275 130 L 45 130 C 45 110 45 95 45 90 C 35 90 30 100 30 110 C 30 125 12 125 15 105 C 18 80 25 60 30 55 C 33 48 33 52 35 40 C 40 20 60 20 90 25 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 35 C 100 25 125 60 115 100 C 105 130 65 120 60 95 C 55 75 55 45 60 35 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 45 90 Q 10 102 2 82 Q 20 78 42 80 Z' fill='%23FFFFFF' stroke='%23e2e8f0' stroke-width='2' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 42 45 Q 47 42 52 45' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
-            background-size: 100% 100%;
-            padding: 24px 24px 18px 80px !important; 
+          padding: 16px 14px 16px 70px !important;
         }
-        .card.elephant-shape:hover {
-            filter: drop-shadow(0 12px 24px rgba(30, 86, 92, 0.15));
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 130' preserveAspectRatio='none'%3E%3Cpath d='M 90 25 L 275 25 C 286 25 295 34 295 45 L 295 110 C 295 121 286 130 275 130 L 45 130 C 45 110 45 95 45 90 C 35 90 30 100 30 110 C 30 125 12 125 15 105 C 18 80 25 60 30 55 C 33 48 33 52 35 40 C 40 20 60 20 90 25 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 60 35 C 100 25 125 60 115 100 C 105 130 65 120 60 95 C 55 75 55 45 60 35 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 45 90 Q 10 102 2 82 Q 20 78 42 80 Z' fill='%23FFFFFF' stroke='%231e565c' stroke-width='3' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M 42 45 Q 47 42 52 45' fill='none' stroke='%231e565c' stroke-width='3' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
-            transform: translateY(-5px);
-        }
-
-        .card::after {
-            content: '›';
-            grid-row: 1 / 3; grid-column: 3;
-            font-size: 2.2rem; color: #cbd5e1; font-family: "LXGW WenKai Lite", system-ui, sans-serif;
-            font-weight: 300; margin-left: 4px; transition: transform 0.3s ease, color 0.3s ease;
-        }
-
-        .card:hover { transform: translateY(-5px); box-shadow: 0 16px 35px rgba(0, 0, 0, 0.06); z-index: 10; }
-        
-        .card.slate-hover:hover { border-top-color: var(--c-slate); }
-        .card.emerald-hover:hover { border-top-color: var(--c-emerald); }
-        .card.mint-hover:hover { border-top-color: var(--c-mint); }
-
-        .card.slate-hover:hover::after { transform: translateX(5px); color: var(--c-slate); }
-        .card.emerald-hover:hover::after { transform: translateX(5px); color: var(--c-emerald); }
-        .card.mint-hover:hover::after { transform: translateX(5px); color: var(--c-mint); }
-
-        .lock-badge {
-            position: absolute; top: -12px; right: -12px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
-            background: #f8fafc; border: 2px solid var(--border); color: #64748b;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; z-index: 3;
-        }
-        .tiger-shape .lock-badge, .elephant-shape .lock-badge { top: -2px; right: -2px; }
-        .lock-badge svg { width: 14px; height: 14px; stroke: currentColor; }
-        .locked-card:hover .lock-badge { transform: scale(1.15) rotate(8deg); background: #fff; border-color: var(--c-slate); color: var(--c-slate); }
-
-        .lock-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.6); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 2; border-radius: inherit; }
-        .lock-hint { display: inline-flex; align-items: center; justify-content: center; min-width: 100px; padding: 6px 14px; border-radius: 6px; background: var(--c-slate); color: #fff; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; white-space: nowrap; transform: translateY(10px); transition: all 0.3s ease; }
-        .locked-card:hover .lock-overlay { opacity: 1; }
-        .locked-card:hover .lock-hint { transform: translateY(0); }
-
-        .card-icon {
-            grid-row: 1 / 3; grid-column: 1;
-            width: 58px; height: 58px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; margin: 0; flex-shrink: 0; 
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            color: #64748b; z-index: 1;
-        }
-        
-        .card-icon svg.icon-dress { width: 1.8rem; height: 1.8rem; }
-
-        .slate-hover:hover .card-icon { background: var(--c-slate); color: white; border-color: var(--c-slate); transform: translateY(-2px) rotate(-4deg); }
-        .emerald-hover:hover .card-icon { background: var(--c-emerald); color: white; border-color: var(--c-emerald); transform: translateY(-2px) rotate(-4deg); }
-        .mint-hover:hover .card-icon { background: var(--c-mint); color: white; border-color: var(--c-mint); transform: translateY(-2px) rotate(-4deg); }
-
-        .card-title { 
-            grid-row: 1; grid-column: 2;
-            font-size: 1.15rem; font-weight: bold; line-height: 1.2; margin: 0; 
-            display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; align-self: end;
-        }
-        .card-title .sub-title { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
-        
-        .slate-hover:hover .card-title .sub-title { color: var(--c-slate); background: rgba(30, 86, 92, 0.08); border-color: rgba(30, 86, 92, 0.15); }
-        .emerald-hover:hover .card-title .sub-title { color: var(--c-emerald); background: rgba(68, 184, 142, 0.08); border-color: rgba(68, 184, 142, 0.15); }
-        .mint-hover:hover .card-title .sub-title { color: var(--c-mint); background: rgba(99, 203, 178, 0.08); border-color: rgba(99, 203, 178, 0.15); }
-
-        .card-desc { 
-            grid-row: 2; grid-column: 2;
-            font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin: 0; text-align: left; 
-            align-self: start; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-        }
-
-        /* 模态框 */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(24, 48, 66, 0.85); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-        .lock-box { background: #fff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--border); border-top: 6px solid var(--c-slate); }
-        
-        .password-input { font-family: "LXGW WenKai Lite", monospace; font-size: 2rem; padding: 12px; width: 180px; text-align: center; border: 2px solid var(--border); border-radius: 8px; letter-spacing: 5px; background: #fff; color: var(--text); outline: none; transition: border-color 0.2s; }
-        .password-input:focus { border-color: var(--c-slate); }
-        .submit-btn { margin-top: 24px; padding: 12px 40px; background: var(--c-slate); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem; letter-spacing: 2px; transition: all 0.2s ease; }
-        .submit-btn:hover { background: #164044; }
-
-        @media (max-width: 768px) {
-            .site-header { min-height: 90px; padding: 50px 16px 14px; }
-            .site-header .back-link { left: 50%; top: 12px; transform: translateX(-50%); }
-            .site-header h1 { font-size: 1.6rem; }
-            .grid { grid-template-columns: 1fr; }
-            .card.tiger-shape { padding: 36px 14px 14px 14px !important; }
-            .card.elephant-shape { padding: 16px 14px 16px 70px !important; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- SVG symbol definitions (reusable icon shapes) -->
-    <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-        <symbol id="icon-dress" viewBox="0 0 24 24">
-            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 3 Q12 4 15 3 L17 5 L16 10.5 L20 21 L4 21 L8 10.5 L7 5 Z"/>
-            <path fill="currentColor" d="M12 10.5 Q9.4 9.6 10.3 8.4 Q11.5 10 12 10.5 Q12.5 10 13.7 8.4 Q14.6 9.6 12 10.5 Z"/>
-        </symbol>
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none" aria-hidden="true">
+      <symbol id="icon-dress" viewBox="0 0 24 24">
+        <path
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M9 3 Q12 4 15 3 L17 5 L16 10.5 L20 21 L4 21 L8 10.5 L7 5 Z"
+        />
+        <path
+          fill="currentColor"
+          d="M12 10.5 Q9.4 9.6 10.3 8.4 Q11.5 10 12 10.5 Q12.5 10 13.7 8.4 Q14.6 9.6 12 10.5 Z"
+        />
+      </symbol>
     </svg>
     <header class="site-header">
-        <a href="index.html" class="back-link">
-            <svg class="circle-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle><line x1="16" y1="12" x2="8" y2="12"></line><polyline points="12 8 8 12 12 16"></polyline>
-            </svg>
-            <span>返回主页</span>
-        </a>
-        <h1>王老师的教学工具台</h1>
+      <a href="index.html" class="back-link">
+        <svg
+          class="circle-arrow-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="16" y1="12" x2="8" y2="12"></line>
+          <polyline points="12 8 8 12 12 16"></polyline>
+        </svg>
+        <span>返回主页</span>
+      </a>
+      <h1>王老师的教学工具台</h1>
     </header>
 
     <div class="container">
-
-        <div class="tool-section" id="tool-awards">
-            <div class="section-title" style="border-left-color: var(--c-lime);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="8" r="6"></circle>
-                        <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
-                    </svg>
-                </div>
-                <span>奖励和荣誉</span>
+      <div class="tool-section" id="tool-awards">
+        <div
+          class="section-title"
+          style="border-left-color: var(--c-lime)"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-lime)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="8" r="6"></circle>
+                <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
+              </svg>
             </div>
-            <div class="grid">
-                <a href="award/hall_of_fame.html?role=teachers" class="card emerald-hover">
-                    <div class="card-icon"><i class="fas fa-landmark"></i></div>
-                    <div class="card-title">荣誉殿堂<span class="sub-title font-en">Hall of Fame</span></div>
-                    <div class="card-desc">展示本月荣誉上榜学生及获奖徽章。</div>
-                </a>
-                <a href="cla/work_showcase.html?role=teachers" class="card emerald-hover">
-                    <div class="card-icon"><i class="fas fa-award"></i></div>
-                    <div class="card-title">学生作品展<span class="sub-title font-en">Showcase</span></div>
-                    <div class="card-desc">集中展示与浏览孩子们的优秀作业及创意作品。</div>
-                </a>
-            </div>
+            <span>奖励和荣誉</span>
+          </span>
+          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
-
-        <div class="tool-section" id="tool-tools">
-            <div class="section-title" style="border-left-color: var(--c-emerald);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-emerald)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                </div>
-                <span>课堂教学工具</span>
+        <div class="grid">
+          <a href="award/hall_of_fame.html?role=teachers" class="card emerald-hover">
+            <div class="card-icon"><i class="fas fa-landmark"></i></div>
+            <div class="card-title">
+              荣誉殿堂<span class="sub-title font-en">Hall of Fame</span>
             </div>
-            <div class="grid">
-                <a href="work/morning_work.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-book"></i></div><div class="card-title">早作业<span class="sub-title">晨间综合练习</span></div><div class="card-desc">每日配置四会字、数字与句子。</div></a>
-                <a href="cla/words_and_phrases.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-pen"></i></div><div class="card-title">四会字学习索引<span class="sub-title">笔顺动画</span></div><div class="card-desc">核心生字库，包含发音及示范。</div></a>
-                <a href="cla/sentence_builder.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-puzzle-piece"></i></div><div class="card-title">组句子<span class="sub-title">拼搭造句练习</span></div><div class="card-desc">拖拽词块组合句子，锻炼语法与表达。</div></a>
-                <a href="cla/sentence_maze.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-border-all"></i></div><div class="card-title">句子迷宫<span class="sub-title">找字组句游戏</span></div><div class="card-desc">按图找字走迷宫，按顺序点出词语组成句子。</div></a>
-                <a href="cla/library.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-book-open"></i></div><div class="card-title">分级绘本馆<span class="sub-title">绘本检索</span></div><div class="card-desc">按难度分类的阅读库。</div></a>
-                <a href="cla/focus_wall.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-chalkboard"></i></div><div class="card-title">单元主题墙<span class="sub-title font-en">Focus Wall</span></div><div class="card-desc">核心知识与习作展示。</div></a>
-                <a href="cla/songs.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-microphone"></i></div><div class="card-title">我们来唱歌<span class="sub-title">儿歌点读</span></div><div class="card-desc">随点随唱互动教学。</div></a>
-                <a href="cla/poems.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-scroll"></i></div><div class="card-title">古诗与童谣<span class="sub-title">国学启蒙</span></div><div class="card-desc">经典诗词展示。</div></a>
-                <a href="cla/picture_talk.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-image"></i></div><div class="card-title">看图说话<span class="sub-title">随机图片创句</span></div><div class="card-desc">随机展示趣味图片，引导学生口语造句表达。</div></a>
-                <a href="math/mecc_daily_practices.html" class="card emerald-hover"><div class="card-icon"><i class="fas fa-calendar-day"></i></div><div class="card-title">数学早会<span class="sub-title">日历天气</span></div><div class="card-desc">每日晨会数学互动。</div></a>
-            </div>
+            <div class="card-desc">展示本月荣誉上榜学生及获奖徽章。</div>
+          </a>
+          <a href="cla/work_showcase.html?role=teachers" class="card emerald-hover">
+            <div class="card-icon"><i class="fas fa-award"></i></div>
+            <div class="card-title">学生作品展<span class="sub-title font-en">Showcase</span></div>
+            <div class="card-desc">集中展示与浏览孩子们的优秀作业及创意作品。</div>
+          </a>
         </div>
+      </div>
 
-        <div class="tool-section" id="tool-units">
-            <div class="section-title" style="border-left-color: var(--c-navy);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                        <path d="M9 7h6M9 11h6"></path>
-                    </svg>
-                </div>
-                <span>教学单元</span>
+      <div class="tool-section" id="tool-tools">
+        <div
+          class="section-title"
+          style="border-left-color: var(--c-emerald)"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-emerald)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
             </div>
-            <div class="unit-list">
-                <a href="units/color-days.html" class="unit-item">
-                    <div class="unit-icon"><i class="fas fa-palette"></i></div>
-                    <div class="unit-text">
-                        <div class="unit-title">颜色日<span class="sub-title font-en">Color Days</span></div>
-                        <div class="unit-desc">13 个颜色日课件：听一听、翻一翻、数一数等 7 个课堂活动，附可打印练习纸。</div>
-                    </div>
-                    <div class="unit-arrow">›</div>
-                </a>
-                <a href="units/whats-your-name.html" class="unit-item">
-                    <div class="unit-icon"><i class="fas fa-comments"></i></div>
-                    <div class="unit-text">
-                        <div class="unit-title">你叫什么名字<span class="sub-title font-en">What's Your Name</span></div>
-                        <div class="unit-desc">打招呼与自我介绍：说你好、问答对话、拼句子等课堂活动，问答对话自动抽取本学年真实同学的名字和头像，外加内圈外圈问名字的教室游戏工具。</div>
-                    </div>
-                    <div class="unit-arrow">›</div>
-                </a>
-            </div>
+            <span>课堂教学工具</span>
+          </span>
+          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
+        <div class="grid">
+          <a href="work/morning_work.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-book"></i></div>
+            <div class="card-title">早作业<span class="sub-title">晨间综合练习</span></div>
+            <div class="card-desc">每日配置四会字、数字与句子。</div></a
+          >
+          <a href="cla/words_and_phrases.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-pen"></i></div>
+            <div class="card-title">四会字学习索引<span class="sub-title">笔顺动画</span></div>
+            <div class="card-desc">核心生字库，包含发音及示范。</div></a
+          >
+          <a href="cla/sentence_builder.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="card-title">组句子<span class="sub-title">拼搭造句练习</span></div>
+            <div class="card-desc">拖拽词块组合句子，锻炼语法与表达。</div></a
+          >
+          <a href="cla/sentence_maze.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-border-all"></i></div>
+            <div class="card-title">句子迷宫<span class="sub-title">找字组句游戏</span></div>
+            <div class="card-desc">按图找字走迷宫，按顺序点出词语组成句子。</div></a
+          >
+          <a href="cla/library.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-book-open"></i></div>
+            <div class="card-title">分级绘本馆<span class="sub-title">绘本检索</span></div>
+            <div class="card-desc">按难度分类的阅读库。</div></a
+          >
+          <a href="cla/focus_wall.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-chalkboard"></i></div>
+            <div class="card-title">
+              单元主题墙<span class="sub-title font-en">Focus Wall</span>
+            </div>
+            <div class="card-desc">核心知识与习作展示。</div></a
+          >
+          <a href="cla/songs.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-microphone"></i></div>
+            <div class="card-title">我们来唱歌<span class="sub-title">儿歌点读</span></div>
+            <div class="card-desc">随点随唱互动教学。</div></a
+          >
+          <a href="cla/poems.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-scroll"></i></div>
+            <div class="card-title">古诗与童谣<span class="sub-title">国学启蒙</span></div>
+            <div class="card-desc">经典诗词展示。</div></a
+          >
+          <a href="cla/picture_talk.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-image"></i></div>
+            <div class="card-title">看图说话<span class="sub-title">随机图片创句</span></div>
+            <div class="card-desc">随机展示趣味图片，引导学生口语造句表达。</div></a
+          >
+          <a href="math/mecc_daily_practices.html" class="card emerald-hover"
+            ><div class="card-icon"><i class="fas fa-calendar-day"></i></div>
+            <div class="card-title">数学早会<span class="sub-title">日历天气</span></div>
+            <div class="card-desc">每日晨会数学互动。</div></a
+          >
+        </div>
+      </div>
 
-        <div class="tool-section" id="tool-games">
-            <div class="section-title" style="border-left-color: var(--c-mint);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                        <path d="M6 12h4M8 10v4M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"></path>
-                    </svg>
-                </div>
-                <span>课堂互动游戏</span>
+      <div class="tool-section" id="tool-units">
+        <div
+          class="section-title"
+          style="border-left-color: var(--c-navy)"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-navy)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <path d="M9 7h6M9 11h6"></path>
+              </svg>
             </div>
-            <div class="grid">
-                <a href="games/word_puzzle.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-shapes"></i></div><div class="card-title">四会字拼拼乐<span class="sub-title">认读拼图</span></div><div class="card-desc">先听读所有字卡，再进行拼图配对。</div></a>
-                <a href="games/knockknock.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-door-closed"></i></div><div class="card-title">这是谁？<span class="sub-title">家庭成员识字</span></div><div class="card-desc">通过猜测敲门者认读成员。</div></a>
-                <a href="games/cat_game.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-cat"></i></div><div class="card-title">小猫在哪里？<span class="sub-title">认读躲猫猫</span></div><div class="card-desc">在生字后面寻找可爱小猫。</div></a>
-                <a href="games/connect_5.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-chess-board"></i></div><div class="card-title">自由五子棋<span class="sub-title">牛奶对战饼干</span></div><div class="card-desc">以汉字为棋子的博弈游戏。</div></a>
-                <a href="games/orchard_game.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-basket-shopping"></i></div><div class="card-title">果园摘水果<span class="sub-title">接水果识字</span></div><div class="card-desc">接住带有正确生字的水果。</div></a>
-                <a href="games/magic_train.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-train"></i></div><div class="card-title">魔法小火车<span class="sub-title">听音辨字</span></div><div class="card-desc">匹配语音将生字拖入车厢。</div></a>
-                <a href="games/memory_match.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-clone"></i></div><div class="card-title">汉字连连看<span class="sub-title">记忆翻牌</span></div><div class="card-desc">翻牌匹配相同汉字。</div></a>
-                <a href="cla/sentence_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-border-all"></i></div><div class="card-title">句子迷宫<span class="sub-title">找字组句游戏</span></div><div class="card-desc">按图找字走迷宫，按顺序点出词语组成句子。</div></a>
-                <a href="math/ten_dresses.html" class="card mint-hover"><div class="card-icon"><svg class="icon-dress" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-dress"/></svg></div><div class="card-title">十个裙子<span class="sub-title">Ten Dresses</span></div><div class="card-desc">用十格框直观练习10的分解与合成。</div></a>
-                <a href="math/make_ten_pairs.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-equals"></i></div><div class="card-title">凑十法<span class="sub-title">找搭子游戏</span></div><div class="card-desc">点击正确的数字，找到和它合成10的好搭子。</div></a>
-                <a href="math/addition_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-plus-circle"></i></div><div class="card-title">加法迷宫<span class="sub-title">数学挑战</span></div><div class="card-desc">解答算式走出迷宫。</div></a>
-                <a href="math/subtraction_maze.html" class="card mint-hover"><div class="card-icon"><i class="fas fa-minus-circle"></i></div><div class="card-title">减法迷宫<span class="sub-title">数学挑战</span></div><div class="card-desc">解答算式走出迷宫。</div></a>
-            </div>
+            <span>教学单元</span>
+          </span>
+          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
+        <div class="unit-list">
+          <a href="units/color-days.html" class="unit-item">
+            <div class="unit-icon"><i class="fas fa-palette"></i></div>
+            <div class="unit-text">
+              <div class="unit-title">颜色日<span class="sub-title font-en">Color Days</span></div>
+              <div class="unit-desc">
+                13 个颜色日课件：听一听、翻一翻、数一数等 7 个课堂活动，附可打印练习纸。
+              </div>
+            </div>
+            <div class="unit-arrow">›</div>
+          </a>
+          <a href="units/whats-your-name.html" class="unit-item">
+            <div class="unit-icon"><i class="fas fa-comments"></i></div>
+            <div class="unit-text">
+              <div class="unit-title">你叫什么名字<span class="sub-title font-en">What's Your Name</span></div>
+              <div class="unit-desc">
+                打招呼与自我介绍：说你好、问答对话、拼句子等课堂活动，问答对话自动抽取本学年真实同学的名字和头像，外加内圈外圈问名字的教室游戏工具。
+              </div>
+            </div>
+            <div class="unit-arrow">›</div>
+          </a>
+        </div>
+      </div>
 
-        <div class="tool-section" id="tool-groups">
-            <div class="section-title" style="border-left-color: var(--c-slate);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-slate)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                </div>
-                <span>分组与轮换工具</span>
+      <div class="tool-section" id="tool-games">
+        <div
+          class="section-title"
+          style="border-left-color: var(--c-mint)"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-mint)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                <path
+                  d="M6 12h4M8 10v4M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+                ></path>
+              </svg>
             </div>
-            <div class="grid">
-                <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_milk_cookie.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-comments"></i></div>
-                    <div class="card-title">大象班找搭子<span class="sub-title font-en">Turn & Talk</span></div>
-                    <div class="card-desc">随机配对。</div>
-                </div>
-                <div class="card locked-card tiger-shape slate-hover" onclick="requirePassword('tools/tigers_milk_cookie.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-comments"></i></div>
-                    <div class="card-title">老虎班找搭子<span class="sub-title font-en">Turn & Talk</span></div>
-                    <div class="card-desc">随机配对。</div>
-                </div>
-                <div class="card locked-card elephant-shape slate-hover" onclick="requirePassword('tools/elephants_centers.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <div class="card-title">大象班轮换 <span class="sub-title">小组管理</span></div>
-                    <div class="card-desc">管理小组分组。</div>
-                </div>
-                <div class="card locked-card tiger-shape slate-hover" onclick="requirePassword('tools/tigers_centers.html')" role="button" tabindex="0">
-                    <div class="lock-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
-                    <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
-                    <div class="card-title">老虎班轮换<span class="sub-title">小组管理</span></div>
-                    <div class="card-desc">管理小组分组。</div>
-                </div>
-            </div>
+            <span>课堂互动游戏</span>
+          </span>
+          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
+        <div class="grid">
+          <a href="games/word_puzzle.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-shapes"></i></div>
+            <div class="card-title">四会字拼拼乐<span class="sub-title">认读拼图</span></div>
+            <div class="card-desc">先听读所有字卡，再进行拼图配对。</div></a
+          >
+          <a href="games/knockknock.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-door-closed"></i></div>
+            <div class="card-title">这是谁？<span class="sub-title">家庭成员识字</span></div>
+            <div class="card-desc">通过猜测敲门者认读成员。</div></a
+          >
+          <a href="games/cat_game.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-cat"></i></div>
+            <div class="card-title">小猫在哪里？<span class="sub-title">认读躲猫猫</span></div>
+            <div class="card-desc">在生字后面寻找可爱小猫。</div></a
+          >
+          <a href="games/connect_5.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-chess-board"></i></div>
+            <div class="card-title">自由五子棋<span class="sub-title">牛奶对战饼干</span></div>
+            <div class="card-desc">以汉字为棋子的博弈游戏。</div></a
+          >
+          <a href="games/orchard_game.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-basket-shopping"></i></div>
+            <div class="card-title">果园摘水果<span class="sub-title">接水果识字</span></div>
+            <div class="card-desc">接住带有正确生字的水果。</div></a
+          >
+          <a href="games/magic_train.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-train"></i></div>
+            <div class="card-title">魔法小火车<span class="sub-title">听音辨字</span></div>
+            <div class="card-desc">匹配语音将生字拖入车厢。</div></a
+          >
+          <a href="games/memory_match.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-clone"></i></div>
+            <div class="card-title">汉字连连看<span class="sub-title">记忆翻牌</span></div>
+            <div class="card-desc">翻牌匹配相同汉字。</div></a
+          >
+          <a href="cla/sentence_maze.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-border-all"></i></div>
+            <div class="card-title">句子迷宫<span class="sub-title">找字组句游戏</span></div>
+            <div class="card-desc">按图找字走迷宫，按顺序点出词语组成句子。</div></a
+          >
+          <a href="math/ten_dresses.html" class="card mint-hover"
+            ><div class="card-icon">
+              <svg class="icon-dress" aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#icon-dress" />
+              </svg>
+            </div>
+            <div class="card-title">十个裙子<span class="sub-title">Ten Dresses</span></div>
+            <div class="card-desc">用十格框直观练习10的分解与合成。</div></a
+          >
+          <a href="math/make_ten_pairs.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-equals"></i></div>
+            <div class="card-title">凑十法<span class="sub-title">找搭子游戏</span></div>
+            <div class="card-desc">点击正确的数字，找到和它合成10的好搭子。</div></a
+          >
+          <a href="math/addition_maze.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-plus-circle"></i></div>
+            <div class="card-title">加法迷宫<span class="sub-title">数学挑战</span></div>
+            <div class="card-desc">解答算式走出迷宫。</div></a
+          >
+          <a href="math/subtraction_maze.html" class="card mint-hover"
+            ><div class="card-icon"><i class="fas fa-minus-circle"></i></div>
+            <div class="card-title">减法迷宫<span class="sub-title">数学挑战</span></div>
+            <div class="card-desc">解答算式走出迷宫。</div></a
+          >
+        </div>
+      </div>
 
-        <div class="tool-section" id="tool-students">
-            <div class="section-title" style="border-left-color: var(--c-lime);">
-                <div class="title-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                </div>
-                <span>学生管理</span>
+      <div class="tool-section" id="tool-groups">
+        <div
+          class="section-title"
+          style="border-left-color: var(--c-slate)"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-slate)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
             </div>
-            <div class="grid">
-                <a href="award/student_memories.html?role=teachers" class="card emerald-hover">
-                    <div class="card-icon"><i class="fas fa-camera-retro"></i></div>
-                    <div class="card-title">历届学生名单<span class="sub-title font-en">Alumni Roster</span></div>
-                    <div class="card-desc">按学年与班级查看 yearbook 风格学生名册。</div>
-                </a>
-                <a href="tools/index.html" class="card slate-hover">
-                    <div class="card-icon"><i class="fas fa-toolbox"></i></div>
-                    <div class="card-title">教师工具<span class="sub-title">名牌 · 名单 · 评估</span></div>
-                    <div class="card-desc">名牌生成、名单重建、兄弟姐妹关联、头像上传、报告卡与 ESGI 导入。</div>
-                </a>
-            </div>
+            <span>分组与轮换工具</span>
+          </span>
+          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
+        <div class="grid">
+          <div
+            class="card locked-card elephant-shape slate-hover"
+            onclick="requirePassword('tools/elephants_milk_cookie.html')"
+            role="button"
+            tabindex="0"
+          >
+            <div class="lock-badge">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+              </svg>
+            </div>
+            <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+            <div class="card-icon"><i class="fas fa-comments"></i></div>
+            <div class="card-title">
+              大象班找搭子<span class="sub-title font-en">Turn & Talk</span>
+            </div>
+            <div class="card-desc">随机配对。</div>
+          </div>
+          <div
+            class="card locked-card tiger-shape slate-hover"
+            onclick="requirePassword('tools/tigers_milk_cookie.html')"
+            role="button"
+            tabindex="0"
+          >
+            <div class="lock-badge">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+              </svg>
+            </div>
+            <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+            <div class="card-icon"><i class="fas fa-comments"></i></div>
+            <div class="card-title">
+              老虎班找搭子<span class="sub-title font-en">Turn & Talk</span>
+            </div>
+            <div class="card-desc">随机配对。</div>
+          </div>
+          <div
+            class="card locked-card elephant-shape slate-hover"
+            onclick="requirePassword('tools/elephants_centers.html')"
+            role="button"
+            tabindex="0"
+          >
+            <div class="lock-badge">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+              </svg>
+            </div>
+            <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+            <div class="card-icon"><i class="fas fa-users"></i></div>
+            <div class="card-title">大象班轮换 <span class="sub-title">小组管理</span></div>
+            <div class="card-desc">管理小组分组。</div>
+          </div>
+          <div
+            class="card locked-card tiger-shape slate-hover"
+            onclick="requirePassword('tools/tigers_centers.html')"
+            role="button"
+            tabindex="0"
+          >
+            <div class="lock-badge">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+              </svg>
+            </div>
+            <div class="lock-overlay"><div class="lock-hint">需密码进入</div></div>
+            <div class="card-icon"><i class="fas fa-users"></i></div>
+            <div class="card-title">老虎班轮换<span class="sub-title">小组管理</span></div>
+            <div class="card-desc">管理小组分组。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-section" id="tool-students">
+        <div
+          class="section-title"
+          style="border-left-color: var(--c-lime)"
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-lime)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <span>学生管理</span>
+          </span>
+          <span class="section-chevron" aria-hidden="true">▼</span>
+        </div>
+        <div class="grid">
+          <a href="award/student_memories.html?role=teachers" class="card emerald-hover">
+            <div class="card-icon"><i class="fas fa-camera-retro"></i></div>
+            <div class="card-title">
+              历届学生名单<span class="sub-title font-en">Alumni Roster</span>
+            </div>
+            <div class="card-desc">按学年与班级查看 yearbook 风格学生名册。</div>
+          </a>
+          <a href="tools/index.html" class="card slate-hover">
+            <div class="card-icon"><i class="fas fa-toolbox"></i></div>
+            <div class="card-title">教师工具<span class="sub-title">名牌 · 名单 · 评估</span></div>
+            <div class="card-desc">
+              名牌生成、名单重建、兄弟姐妹关联、头像上传、报告卡与 ESGI 导入。
+            </div>
+          </a>
+        </div>
+      </div>
     </div>
 
     <div id="modal-overlay">
-        <div class="lock-box">
-            <div style="font-size:1.4rem; margin-bottom:20px; color:var(--c-slate); font-weight:bold;">请输入专属密码</div>
-            <input type="password" id="pwd" class="password-input font-en" maxlength="4" onkeydown="if(event.key === 'Enter') checkPassword()">
-            <br><button class="submit-btn" onclick="checkPassword()">验证</button>
+      <div class="lock-box">
+        <div
+          style="font-size: 1.4rem; margin-bottom: 20px; color: var(--c-slate); font-weight: bold"
+        >
+          请输入专属密码
         </div>
+        <input
+          type="password"
+          id="pwd"
+          class="password-input font-en"
+          maxlength="4"
+          onkeydown="if (event.key === 'Enter') checkPassword()"
+        />
+        <br /><button class="submit-btn" onclick="checkPassword()">验证</button>
+      </div>
     </div>
 
     <script>
-        // 密码功能
-        const CORRECT_PASSWORD = "5683";
-        let targetUrl = "";
+      // 密码功能
+      const CORRECT_PASSWORD = '5683'
+      let targetUrl = ''
 
-        function requirePassword(url) {
-            const today = new Date().toDateString();
-            if (localStorage.getItem('mecc_auth_date') === today) {
-                window.location.href = url;
-                return;
-            }
-            targetUrl = url;
-            document.getElementById('modal-overlay').style.display = 'flex';
-            document.getElementById('pwd').focus();
+      function requirePassword(url) {
+        const today = new Date().toDateString()
+        if (localStorage.getItem('mecc_auth_date') === today) {
+          window.location.href = url
+          return
         }
+        targetUrl = url
+        document.getElementById('modal-overlay').style.display = 'flex'
+        document.getElementById('pwd').focus()
+      }
 
-        function checkPassword() {
-            if (document.getElementById('pwd').value === CORRECT_PASSWORD) {
-                const today = new Date().toDateString();
-                localStorage.setItem('mecc_auth_date', today);
-                window.location.href = targetUrl;
-            } else {
-                alert("密码错误！");
-                document.getElementById('pwd').value = "";
-                document.getElementById('pwd').focus();
-            }
+      function checkPassword() {
+        if (document.getElementById('pwd').value === CORRECT_PASSWORD) {
+          const today = new Date().toDateString()
+          localStorage.setItem('mecc_auth_date', today)
+          window.location.href = targetUrl
+        } else {
+          alert('密码错误！')
+          document.getElementById('pwd').value = ''
+          document.getElementById('pwd').focus()
         }
+      }
 
-        document.getElementById('modal-overlay').addEventListener('click', function(e) {
-            if (e.target === this) this.style.display = 'none';
-        });
+      document.getElementById('modal-overlay').addEventListener('click', function (e) {
+        if (e.target === this) this.style.display = 'none'
+      })
 
-        // 🌟 保留原有的页面滚动位置记忆逻辑
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.card')) {
-                sessionStorage.setItem('teachers_scroll_pos', window.scrollY);
-            }
-        });
+      function toggleSection(section) {
+        const isCollapsed = section.classList.toggle('collapsed')
+        const title = section.querySelector('.section-title')
+        if (title) title.setAttribute('aria-expanded', String(!isCollapsed))
+      }
 
-        window.addEventListener('pageshow', () => {
-            const saved = sessionStorage.getItem('teachers_scroll_pos');
-            if (saved) {
-                window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' });
-            }
-        });
+      document.querySelectorAll('.tool-section').forEach((section) => {
+        section.classList.add('collapsed')
+        const title = section.querySelector('.section-title')
+        if (!title) return
+        title.addEventListener('click', () => toggleSection(section))
+        title.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            toggleSection(section)
+          }
+        })
+      })
+
+      // 🌟 保留原有的页面滚动位置记忆逻辑
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.card')) {
+          sessionStorage.setItem('teachers_scroll_pos', window.scrollY)
+        }
+      })
+
+      window.addEventListener('pageshow', () => {
+        const saved = sessionStorage.getItem('teachers_scroll_pos')
+        if (saved) {
+          window.scrollTo({top: parseInt(saved, 10), behavior: 'instant'})
+        }
+      })
     </script>
-</body>
+  </body>
 </html>
