@@ -139,12 +139,72 @@
         padding-top: 35px;
       }
 
-      .tool-section {
-        transition: opacity 0.3s ease;
+      /* 🧭 顶部分类导航 */
+      .tab-nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(255, 248, 236, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--border);
       }
-      .tool-section.collapsed > .grid,
-      .tool-section.collapsed > .unit-list {
+      .tab-nav-inner {
+        width: 94%;
+        max-width: 1080px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 10px 0;
+      }
+      .tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        padding: 9px 18px;
+        border-radius: 999px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-family: var(--font-zh);
+        font-size: 0.95rem;
+        font-weight: bold;
+        cursor: pointer;
+        white-space: nowrap;
+        transition:
+          background 0.2s ease,
+          color 0.2s ease;
+      }
+      .tab-btn svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      .tab-btn:hover {
+        background: var(--surface);
+        color: var(--text);
+      }
+      .tab-btn.active {
+        background: var(--tab-color, var(--c-emerald));
+        color: #fff;
+      }
+      .tab-btn[hidden] {
         display: none;
+      }
+
+      .tool-section {
+        display: none;
+      }
+      .tool-section.active {
+        display: block;
+      }
+      .container.search-mode .tool-section {
+        display: none;
+      }
+      .container.search-mode .tool-section:not(.no-match) {
+        display: block;
       }
 
       .section-title {
@@ -158,35 +218,11 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        cursor: pointer;
-        user-select: none;
-        justify-content: space-between;
-      }
-      .section-title:focus-visible {
-        outline: 3px solid rgba(68, 184, 142, 0.3);
-        outline-offset: 4px;
-        border-radius: 10px;
       }
       .section-title-main {
         display: inline-flex;
         align-items: center;
         gap: 12px;
-      }
-      .section-chevron {
-        font-size: 1rem;
-        color: var(--text-muted);
-        flex-shrink: 0;
-        margin-left: 12px;
-        transition:
-          transform 0.25s ease,
-          color 0.25s ease;
-      }
-      .tool-section.collapsed .section-chevron {
-        transform: rotate(-90deg);
-      }
-      .section-title:hover .section-chevron,
-      .section-title:focus-visible .section-chevron {
-        color: var(--c-slate);
       }
 
       .title-icon {
@@ -208,6 +244,93 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
+      }
+
+      /* 🗂️ 选项卡样式（参考图标方块 + 居中文字 + 轻微悬浮变亮） */
+      .grid.tile-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+      }
+      .card.tile-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        padding: 16px 14px;
+        min-height: 0;
+      }
+      .card.tile-card::after {
+        content: none;
+      }
+      .card.tile-card .card-icon {
+        grid-row: auto;
+        grid-column: auto;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        border-radius: 14px;
+        font-size: 2rem;
+        transform: none;
+        transition:
+          background 0.3s ease,
+          color 0.3s ease,
+          filter 0.3s ease;
+      }
+      .card.tile-card .card-title {
+        grid-row: auto;
+        grid-column: auto;
+        align-self: center;
+        align-items: center;
+        text-align: center;
+      }
+      .card.tile-card .card-desc {
+        grid-row: auto;
+        grid-column: auto;
+        align-self: auto;
+        text-align: center;
+      }
+      .card.tile-card.emerald-hover .card-icon {
+        background: rgba(53, 208, 186, 0.14);
+        color: var(--c-emerald);
+        border-color: transparent;
+      }
+      .card.tile-card.mint-hover .card-icon {
+        background: rgba(255, 111, 165, 0.14);
+        color: var(--c-mint);
+        border-color: transparent;
+      }
+      .card.tile-card.slate-hover .card-icon {
+        background: rgba(53, 64, 90, 0.08);
+        color: var(--c-slate);
+        border-color: transparent;
+      }
+      .card.tile-card.emerald-hover:hover .card-icon {
+        background: rgba(53, 208, 186, 0.24);
+        color: var(--c-emerald);
+        transform: none;
+        filter: brightness(1.05);
+      }
+      .card.tile-card.mint-hover:hover .card-icon {
+        background: rgba(255, 111, 165, 0.24);
+        color: var(--c-mint);
+        transform: none;
+        filter: brightness(1.05);
+      }
+      .card.tile-card.slate-hover:hover .card-icon {
+        background: rgba(53, 64, 90, 0.16);
+        color: var(--c-slate);
+        transform: none;
+        filter: brightness(1.05);
+      }
+      .card.tile-card.emerald-hover:hover .card-title {
+        color: var(--c-emerald);
+      }
+      .card.tile-card.mint-hover:hover .card-title {
+        color: var(--c-mint);
+      }
+      .card.tile-card.slate-hover:hover .card-title {
+        color: var(--c-slate);
       }
 
       .unit-list {
@@ -600,12 +723,6 @@
       }
 
       /* ⭐ 常用工具 */
-      #tool-favorites .section-title {
-        cursor: default;
-      }
-      #tool-favorites .section-chevron {
-        display: none;
-      }
       .fav-pin {
         position: absolute;
         top: -10px;
@@ -719,6 +836,10 @@
         .grid {
           grid-template-columns: 1fr;
         }
+        .grid.tile-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
         .card.tiger-shape {
           padding: 36px 14px 14px 14px !important;
         }
@@ -766,6 +887,153 @@
       <h1>王老师的教学工具台</h1>
     </header>
 
+    <nav class="tab-nav" aria-label="工具分类">
+      <div class="tab-nav-inner">
+        <button
+          type="button"
+          class="tab-btn"
+          data-target="tool-favorites"
+          style="--tab-color: var(--c-lime)"
+          hidden
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+            ></polygon>
+          </svg>
+          <span>常用工具</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          data-target="tool-awards"
+          style="--tab-color: var(--c-lime)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="8" r="6"></circle>
+            <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
+          </svg>
+          <span>奖励和荣誉</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn active"
+          data-target="tool-tools"
+          style="--tab-color: var(--c-emerald)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>课堂教学工具</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          data-target="tool-units"
+          style="--tab-color: var(--c-navy)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            <path d="M9 7h6M9 11h6"></path>
+          </svg>
+          <span>教学单元</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          data-target="tool-games"
+          style="--tab-color: var(--c-mint)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+            <path
+              d="M6 12h4M8 10v4M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+            ></path>
+          </svg>
+          <span>课堂互动游戏</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          data-target="tool-groups"
+          style="--tab-color: var(--c-slate)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>分组与轮换工具</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          data-target="tool-students"
+          style="--tab-color: var(--c-lime)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>学生管理</span>
+        </button>
+      </div>
+    </nav>
+
     <div class="container">
       <div class="tool-search-wrap">
         <input
@@ -804,9 +1072,6 @@
         <div
           class="section-title"
           style="border-left-color: var(--c-lime)"
-          role="button"
-          tabindex="0"
-          aria-expanded="false"
         >
           <span class="section-title-main">
             <div class="title-icon">
@@ -824,17 +1089,16 @@
             </div>
             <span>奖励和荣誉</span>
           </span>
-          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
-        <div class="grid">
-          <a href="award/hall_of_fame.html?role=teachers" class="card emerald-hover">
+        <div class="grid tile-grid">
+          <a href="award/hall_of_fame.html?role=teachers" class="card tile-card emerald-hover">
             <div class="card-icon"><i class="fas fa-landmark"></i></div>
             <div class="card-title">
               荣誉殿堂<span class="sub-title font-en">Hall of Fame</span>
             </div>
             <div class="card-desc">展示本月荣誉上榜学生及获奖徽章。</div>
           </a>
-          <a href="cla/work_showcase.html?role=teachers" class="card emerald-hover">
+          <a href="cla/work_showcase.html?role=teachers" class="card tile-card emerald-hover">
             <div class="card-icon"><i class="fas fa-award"></i></div>
             <div class="card-title">学生作品展<span class="sub-title font-en">Showcase</span></div>
             <div class="card-desc">集中展示与浏览孩子们的优秀作业及创意作品。</div>
@@ -846,9 +1110,6 @@
         <div
           class="section-title"
           style="border-left-color: var(--c-emerald)"
-          role="button"
-          tabindex="0"
-          aria-expanded="false"
         >
           <span class="section-title-main">
             <div class="title-icon">
@@ -866,62 +1127,61 @@
             </div>
             <span>课堂教学工具</span>
           </span>
-          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
-        <div class="grid">
-          <a href="work/morning_work.html" class="card emerald-hover"
+        <div class="grid tile-grid">
+          <a href="work/morning_work.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-book"></i></div>
             <div class="card-title">早作业<span class="sub-title">晨间综合练习</span></div>
             <div class="card-desc">每日配置四会字、数字与句子。</div></a
           >
-          <a href="cla/words_and_phrases.html" class="card emerald-hover"
+          <a href="cla/words_and_phrases.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-pen"></i></div>
             <div class="card-title">四会字学习索引<span class="sub-title">笔顺动画</span></div>
             <div class="card-desc">核心生字库，包含发音及示范。</div></a
           >
-          <a href="cla/sentence_builder.html" class="card emerald-hover"
+          <a href="cla/sentence_builder.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-puzzle-piece"></i></div>
             <div class="card-title">组句子<span class="sub-title">拼搭造句练习</span></div>
             <div class="card-desc">拖拽词块组合句子，锻炼语法与表达。</div></a
           >
-          <a href="cla/sentence_maze.html" class="card emerald-hover"
+          <a href="cla/sentence_maze.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-border-all"></i></div>
             <div class="card-title">句子迷宫<span class="sub-title">找字组句游戏</span></div>
             <div class="card-desc">按图找字走迷宫，按顺序点出词语组成句子。</div></a
           >
-          <a href="cla/library.html" class="card emerald-hover"
+          <a href="cla/library.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-book-open"></i></div>
             <div class="card-title">分级绘本馆<span class="sub-title">绘本检索</span></div>
             <div class="card-desc">按难度分类的阅读库。</div></a
           >
-          <a href="cla/focus_wall.html" class="card emerald-hover"
+          <a href="cla/focus_wall.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-chalkboard"></i></div>
             <div class="card-title">
               单元主题墙<span class="sub-title font-en">Focus Wall</span>
             </div>
             <div class="card-desc">核心知识与习作展示。</div></a
           >
-          <a href="cla/songs.html" class="card emerald-hover"
+          <a href="cla/songs.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-microphone"></i></div>
             <div class="card-title">我们来唱歌<span class="sub-title">儿歌点读</span></div>
             <div class="card-desc">随点随唱互动教学。</div></a
           >
-          <a href="cla/poems.html" class="card emerald-hover"
+          <a href="cla/poems.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-scroll"></i></div>
             <div class="card-title">古诗与童谣<span class="sub-title">国学启蒙</span></div>
             <div class="card-desc">经典诗词展示。</div></a
           >
-          <a href="cla/picture_talk.html" class="card emerald-hover"
+          <a href="cla/picture_talk.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-image"></i></div>
             <div class="card-title">看图说话<span class="sub-title">随机图片创句</span></div>
             <div class="card-desc">随机展示趣味图片，引导学生口语造句表达。</div></a
           >
-          <a href="cla/writing_helper.html" class="card emerald-hover"
+          <a href="cla/writing_helper.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-pen-nib"></i></div>
             <div class="card-title">写作帮手<span class="sub-title">看图识词墙</span></div>
             <div class="card-desc">家人、情绪、天气、颜色、动物等分类词墙，写话时查词配图。</div></a
           >
-          <a href="math/mecc_daily_practices.html" class="card emerald-hover"
+          <a href="math/mecc_daily_practices.html" class="card tile-card emerald-hover"
             ><div class="card-icon"><i class="fas fa-calendar-day"></i></div>
             <div class="card-title">数学早会<span class="sub-title">日历天气</span></div>
             <div class="card-desc">每日晨会数学互动。</div></a
@@ -933,9 +1193,6 @@
         <div
           class="section-title"
           style="border-left-color: var(--c-navy)"
-          role="button"
-          tabindex="0"
-          aria-expanded="false"
         >
           <span class="section-title-main">
             <div class="title-icon">
@@ -954,7 +1211,6 @@
             </div>
             <span>教学单元</span>
           </span>
-          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
         <div class="unit-list">
           <a href="units/color-days.html" class="unit-item">
@@ -984,9 +1240,6 @@
         <div
           class="section-title"
           style="border-left-color: var(--c-mint)"
-          role="button"
-          tabindex="0"
-          aria-expanded="false"
         >
           <span class="section-title-main">
             <div class="title-icon">
@@ -1006,50 +1259,49 @@
             </div>
             <span>课堂互动游戏</span>
           </span>
-          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
-        <div class="grid">
-          <a href="games/word_puzzle.html" class="card mint-hover"
+        <div class="grid tile-grid">
+          <a href="games/word_puzzle.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-shapes"></i></div>
             <div class="card-title">四会字拼拼乐<span class="sub-title">认读拼图</span></div>
             <div class="card-desc">先听读所有字卡，再进行拼图配对。</div></a
           >
-          <a href="games/knockknock.html" class="card mint-hover"
+          <a href="games/knockknock.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-door-closed"></i></div>
             <div class="card-title">这是谁？<span class="sub-title">家庭成员识字</span></div>
             <div class="card-desc">通过猜测敲门者认读成员。</div></a
           >
-          <a href="games/cat_game.html" class="card mint-hover"
+          <a href="games/cat_game.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-cat"></i></div>
             <div class="card-title">小猫在哪里？<span class="sub-title">认读躲猫猫</span></div>
             <div class="card-desc">在生字后面寻找可爱小猫。</div></a
           >
-          <a href="games/connect_5.html" class="card mint-hover"
+          <a href="games/connect_5.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-chess-board"></i></div>
             <div class="card-title">自由五子棋<span class="sub-title">牛奶对战饼干</span></div>
             <div class="card-desc">以汉字为棋子的博弈游戏。</div></a
           >
-          <a href="games/orchard_game.html" class="card mint-hover"
+          <a href="games/orchard_game.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-basket-shopping"></i></div>
             <div class="card-title">果园摘水果<span class="sub-title">接水果识字</span></div>
             <div class="card-desc">接住带有正确生字的水果。</div></a
           >
-          <a href="games/magic_train.html" class="card mint-hover"
+          <a href="games/magic_train.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-train"></i></div>
             <div class="card-title">魔法小火车<span class="sub-title">听音辨字</span></div>
             <div class="card-desc">匹配语音将生字拖入车厢。</div></a
           >
-          <a href="games/memory_match.html" class="card mint-hover"
+          <a href="games/memory_match.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-clone"></i></div>
             <div class="card-title">汉字连连看<span class="sub-title">记忆翻牌</span></div>
             <div class="card-desc">翻牌匹配相同汉字。</div></a
           >
-          <a href="cla/sentence_maze.html" class="card mint-hover"
+          <a href="cla/sentence_maze.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-border-all"></i></div>
             <div class="card-title">句子迷宫<span class="sub-title">找字组句游戏</span></div>
             <div class="card-desc">按图找字走迷宫，按顺序点出词语组成句子。</div></a
           >
-          <a href="math/ten_dresses.html" class="card mint-hover"
+          <a href="math/ten_dresses.html" class="card tile-card mint-hover"
             ><div class="card-icon">
               <svg class="icon-dress" aria-hidden="true" viewBox="0 0 24 24">
                 <use href="#icon-dress" />
@@ -1058,17 +1310,17 @@
             <div class="card-title">十个裙子<span class="sub-title">Ten Dresses</span></div>
             <div class="card-desc">用十格框直观练习10的分解与合成。</div></a
           >
-          <a href="math/make_ten_pairs.html" class="card mint-hover"
+          <a href="math/make_ten_pairs.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-equals"></i></div>
             <div class="card-title">凑十法<span class="sub-title">找搭子游戏</span></div>
             <div class="card-desc">点击正确的数字，找到和它合成10的好搭子。</div></a
           >
-          <a href="math/addition_maze.html" class="card mint-hover"
+          <a href="math/addition_maze.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-plus-circle"></i></div>
             <div class="card-title">加法迷宫<span class="sub-title">数学挑战</span></div>
             <div class="card-desc">解答算式走出迷宫。</div></a
           >
-          <a href="math/subtraction_maze.html" class="card mint-hover"
+          <a href="math/subtraction_maze.html" class="card tile-card mint-hover"
             ><div class="card-icon"><i class="fas fa-minus-circle"></i></div>
             <div class="card-title">减法迷宫<span class="sub-title">数学挑战</span></div>
             <div class="card-desc">解答算式走出迷宫。</div></a
@@ -1080,9 +1332,6 @@
         <div
           class="section-title"
           style="border-left-color: var(--c-slate)"
-          role="button"
-          tabindex="0"
-          aria-expanded="false"
         >
           <span class="section-title-main">
             <div class="title-icon">
@@ -1102,7 +1351,6 @@
             </div>
             <span>分组与轮换工具</span>
           </span>
-          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
         <div class="grid">
           <div
@@ -1208,9 +1456,6 @@
         <div
           class="section-title"
           style="border-left-color: var(--c-lime)"
-          role="button"
-          tabindex="0"
-          aria-expanded="false"
         >
           <span class="section-title-main">
             <div class="title-icon">
@@ -1230,17 +1475,16 @@
             </div>
             <span>学生管理</span>
           </span>
-          <span class="section-chevron" aria-hidden="true">▼</span>
         </div>
-        <div class="grid">
-          <a href="award/student_memories.html?role=teachers" class="card emerald-hover">
+        <div class="grid tile-grid">
+          <a href="award/student_memories.html?role=teachers" class="card tile-card emerald-hover">
             <div class="card-icon"><i class="fas fa-camera-retro"></i></div>
             <div class="card-title">
               历届学生名单<span class="sub-title font-en">Alumni Roster</span>
             </div>
             <div class="card-desc">按学年与班级查看 yearbook 风格学生名册。</div>
           </a>
-          <a href="tools/index.html" class="card slate-hover">
+          <a href="tools/index.html" class="card tile-card slate-hover">
             <div class="card-icon"><i class="fas fa-toolbox"></i></div>
             <div class="card-title">教师工具<span class="sub-title">名牌 · 名单 · 评估</span></div>
             <div class="card-desc">
@@ -1301,24 +1545,35 @@
         if (e.target === this) this.style.display = 'none'
       })
 
-      function toggleSection(section) {
-        const isCollapsed = section.classList.toggle('collapsed')
-        const title = section.querySelector('.section-title')
-        if (title) title.setAttribute('aria-expanded', String(!isCollapsed))
+      // 🧭 顶部导航：点击后在下方展示对应分类内容
+      const DEFAULT_TAB = 'tool-tools'
+      const tabButtons = document.querySelectorAll('.tab-btn')
+      const allSections = document.querySelectorAll('.tool-section')
+
+      function activateSection(id) {
+        allSections.forEach((s) => s.classList.toggle('active', s.id === id))
+        tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.target === id))
+        try {
+          sessionStorage.setItem('teachers_active_tab', id)
+        } catch (err) {}
       }
 
-      document.querySelectorAll('.tool-section:not(#tool-favorites)').forEach((section) => {
-        section.classList.add('collapsed')
-        const title = section.querySelector('.section-title')
-        if (!title) return
-        title.addEventListener('click', () => toggleSection(section))
-        title.addEventListener('keydown', (event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            toggleSection(section)
+      tabButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activateSection(btn.dataset.target)
+          if (searchInput.value) {
+            searchInput.value = ''
+            applySearch('')
           }
         })
       })
+
+      let initialTab = DEFAULT_TAB
+      try {
+        const saved = sessionStorage.getItem('teachers_active_tab')
+        if (saved && document.getElementById(saved)) initialTab = saved
+      } catch (err) {}
+      activateSection(initialTab)
 
       // ⭐ 常用工具：点星标钉在最上面，记在本机浏览器里
       const FAV_KEY = 'teachers_favorites_v1'
@@ -1390,12 +1645,16 @@
       function renderFavSection() {
         const section = document.getElementById('tool-favorites')
         const grid = section.querySelector('.fav-grid')
+        const favBtn = document.querySelector('.tab-btn[data-target="tool-favorites"]')
         grid.innerHTML = ''
         if (!favs.length) {
           section.style.display = 'none'
+          if (favBtn) favBtn.hidden = true
+          if (section.classList.contains('active')) activateSection(DEFAULT_TAB)
           return
         }
         section.style.display = ''
+        if (favBtn) favBtn.hidden = false
         const items = favorableItems()
         favs.forEach((key) => {
           const src = items.find((item) => keyOf(item) === key)
@@ -1409,29 +1668,21 @@
       injectPins()
       renderFavSection()
 
-      // 🔍 搜索：按标题/描述实时过滤，自动展开有结果的分类
+      // 🔍 搜索：按标题/描述实时过滤，暂时打破分类切换，展示所有匹配分类
       const searchInput = document.getElementById('toolSearch')
-      let savedCollapse = null
+      const toolContainer = document.querySelector('.container')
       function applySearch(raw) {
         const q = raw.trim().toLowerCase()
         const sections = document.querySelectorAll('.tool-section:not(#tool-favorites)')
         const favSection = document.getElementById('tool-favorites')
         if (!q) {
-          if (savedCollapse) {
-            sections.forEach((s) => {
-              s.classList.toggle('collapsed', savedCollapse.get(s.id))
-              s.classList.remove('no-match')
-            })
-            savedCollapse = null
-          }
+          toolContainer.classList.remove('search-mode')
+          sections.forEach((s) => s.classList.remove('no-match'))
           document.querySelectorAll('.search-hide').forEach((el) => el.classList.remove('search-hide'))
           renderFavSection()
           return
         }
-        if (!savedCollapse) {
-          savedCollapse = new Map()
-          sections.forEach((s) => savedCollapse.set(s.id, s.classList.contains('collapsed')))
-        }
+        toolContainer.classList.add('search-mode')
         favSection.style.display = 'none'
         sections.forEach((section) => {
           let any = false
@@ -1440,7 +1691,6 @@
             item.classList.toggle('search-hide', !match)
             if (match) any = true
           })
-          section.classList.toggle('collapsed', !any)
           section.classList.toggle('no-match', !any)
         })
       }
