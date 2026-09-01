@@ -74,27 +74,11 @@ body{
 .home-head p{margin:.3rem 0 0;color:var(--ink-soft);font-size:.85rem}
 .song-btn{
   flex:0 0 auto;border:none;background:var(--card);color:var(--ink);cursor:pointer;
-  font-family:inherit;font-size:.85rem;font-weight:700;
+  font-family:inherit;font-size:.85rem;font-weight:700;text-decoration:none;
   padding:.5rem 1.1rem;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:.3rem;
 }
 .song-btn:active{transform:translateY(1px)}
-.modal{
-  position:fixed;inset:0;background:rgba(20,16,12,.82);z-index:50;
-  display:none;align-items:center;justify-content:center;padding:2rem;
-}
-.modal.open{display:flex}
-.modal-inner{position:relative;width:min(92vw,32rem)}
-.modal-close{
-  position:absolute;top:-2.6rem;right:0;border:none;cursor:pointer;
-  background:#fff;color:var(--ink);border-radius:999px;width:2.4rem;height:2.4rem;
-  font-size:1.1rem;box-shadow:var(--shadow);
-}
-.song-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:1.6rem;display:flex;flex-direction:column;gap:1rem;align-items:center;text-align:center}
-.song-card .title{font-size:1.3rem;font-weight:700}
-.song-lines{display:flex;flex-direction:column;gap:.4rem;width:100%}
-.song-line{font-size:1.1rem;padding:.4rem;border-radius:.7rem;transition:background .2s,color .2s;color:var(--ink-soft)}
-.song-line.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
 
 .grid-stations{
   flex:1 1 auto;min-height:0;overflow-y:auto;
@@ -117,6 +101,7 @@ body{
 .act-q{flex:0 0 auto;text-align:center;font-size:1.5rem;font-weight:700;line-height:1.25}
 .act-q .sub{display:block;font-size:.72rem;font-weight:400;color:var(--ink-soft);letter-spacing:.08em;margin-top:.2rem}
 .act-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;overflow:hidden}
+.act-body.scroll{overflow-y:auto;justify-content:flex-start;padding:.15rem .15rem .6rem}
 .act-foot{flex:0 0 auto;display:flex;justify-content:center;gap:.5rem;padding-bottom:.2rem}
 
 .verdict{font-size:1.5rem;font-weight:700;min-height:2rem;text-align:center}
@@ -166,6 +151,12 @@ body{
 .turn-card small{color:var(--ink-soft);font-size:.75rem;line-height:1.5}
 
 /* ---------- 问答对话 ---------- */
+.class-filter{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.class-chip{
+  border:none;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;
+  padding:.35rem .8rem;border-radius:999px;background:var(--card);color:var(--ink-soft);box-shadow:var(--shadow);
+}
+.class-chip.on{background:var(--accent);color:#fff}
 .dialog-wrap{display:flex;flex-direction:column;gap:.9rem;width:min(100%,30rem)}
 .dialog-line{
   display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:var(--radius);
@@ -236,17 +227,6 @@ body{
   <div class="stage" id="stage"></div>
 </div>
 
-<div id="songModal" class="modal">
-  <div class="modal-inner">
-    <button class="modal-close" id="songCloseBtn">✕</button>
-    <div class="song-card">
-      <div class="title">🎵 你好儿歌</div>
-      <div class="song-lines" id="songLines"></div>
-      <button class="chip tone" id="songPlayBtn">🔊 跟着念一念</button>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ============================================================
    你叫什么名字 · What's Your Name
@@ -267,12 +247,10 @@ const NAMES = ["罗大韦","陈小美","王强强","李丽丽","张明明","刘�
 
 const GREET_HEXES = ["#4FC3F7","#FF7A63","#35D0BA","#B18CF0","#FFC94D","#F0663C"];
 
-const CHANT = [
-  "你好你好，你好呀！",
-  "你好你好，你好呀！",
-  "你叫什么名字？你叫什么名字？",
-  "我叫我叫，我的名字是……",
-  "你好你好，我们做朋友！"
+/* 两首歌，来自老师课件里用的原版视频 */
+const SONGS = [
+  { zh:"你好歌",   id:"m_rDIzj6DRE" },
+  { zh:"你叫什么名字", id:"hP1NrkNMybo" }
 ];
 
 const STATIONS = [
@@ -332,7 +310,7 @@ function currentAcademicYear(){
   return `${String(startYear).slice(-2)}-${String(startYear+1).slice(-2)}`;
 }
 const ACADEMIC_YEAR = currentAcademicYear();
-const SANITY_ROSTER_QUERY = encodeURIComponent(`*[_type == "student" && className in ["elephant","tiger"] && academicYear == "${ACADEMIC_YEAR}"]{name, "img": avatar.asset->url}`);
+const SANITY_ROSTER_QUERY = encodeURIComponent(`*[_type == "student" && className in ["elephant","tiger"] && academicYear == "${ACADEMIC_YEAR}"]{name, className, "img": avatar.asset->url}`);
 const SANITY_ROSTER_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_ROSTER_QUERY}`;
 
 let roster = [];
@@ -343,10 +321,49 @@ let roster = [];
     roster = (d.result||[]).filter(s=>s.name);
   }catch(e){}
 })();
+
+/* 当前选的班级：all / elephant / tiger，记在本机浏览器里 */
+let classFilter = "all";
+try{ classFilter = localStorage.getItem("wyn.classFilter") || "all"; }catch(e){}
+function setClassFilter(f){
+  classFilter = f;
+  try{ localStorage.setItem("wyn.classFilter", f); }catch(e){}
+}
+function studentsForFilter(filter){
+  if(filter==="all") return roster;
+  return roster.filter(s=>s.className===filter);
+}
+
+/* 当天抽过的同学记一笔，全部抽完一轮之后才重新循环
+   （存在本机浏览器里，跨活动共用同一份"今天抽过谁"的名单） */
+const PICK_STATE_KEY = "wyn.pickState.v2";
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function loadPickState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(PICK_STATE_KEY));
+    if(s && s.date===todayStr()) return s;
+  }catch(e){}
+  return { date: todayStr(), pools:{} };
+}
+function savePickState(s){ try{ localStorage.setItem(PICK_STATE_KEY, JSON.stringify(s)); }catch(e){} }
+
 /* 名单没读到（离线/新学年还没录入）时，退回到这几个通用示例名字 */
-function pickStudent(){
-  if(roster.length) return pick(roster);
-  return { name: pick(NAMES), img:null };
+function pickStudent(filter){
+  filter = filter || classFilter;
+  const pool = studentsForFilter(filter);
+  if(!pool.length) return { name: pick(NAMES), img:null };
+
+  const state = loadPickState();
+  if(!state.pools[filter]) state.pools[filter] = [];
+  let used = state.pools[filter];
+  let remaining = pool.filter(s=>!used.includes(s.name));
+  if(!remaining.length){ used = []; remaining = pool; }
+
+  const chosen = pick(remaining);
+  used.push(chosen.name);
+  state.pools[filter] = used;
+  savePickState(state);
+  return chosen;
 }
 
 let globalAudio = new Audio();
@@ -396,7 +413,6 @@ const el=(t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(t
 const rnd=n=>Math.floor(Math.random()*n);
 const pick=a=>a[rnd(a.length)];
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function otherWords(target){ return WORDS.filter(w=>w!==target); }
 
 /* 内圈外圈游戏的转圈提示音计时器，离开页面/切活动时必须清掉，避免残留 */
@@ -433,16 +449,27 @@ function go(name,station){
   stage.scrollTop=0;
 }
 
+/* 两首歌是老师课件里用的原版视频，YouTube 上作者都关了嵌入播放权限，
+   所以这里直接跳转到 YouTube 本尊页面，而不是站内弹窗播放 */
+function songLink(song){
+  const a=el("a","song-btn","🎵 "+song.zh);
+  a.href="https://www.youtube.com/watch?v="+song.id;
+  a.target="_blank"; a.rel="noopener";
+  a.onclick=()=>sfxTap();
+  return a;
+}
+
 /* ============================================================
    首页 = 活动菜单（这个单元只有一个主题，不用先选"天"）
    ============================================================ */
 function renderHome(){
   const head=el("div","home-head");
   const titleRow=el("div","home-title-row");
-  const songBtn=el("button","song-btn","🎵 你好儿歌");
-  songBtn.onclick=()=>{ sfxTap(); openSong(); };
-  titleRow.appendChild(songBtn);
+  const leftSong=songLink(SONGS[0]);
+  const rightSong=songLink(SONGS[1]);
+  titleRow.appendChild(leftSong);
   titleRow.appendChild(el("h1",null,"你叫什么名字？"));
+  titleRow.appendChild(rightSong);
   head.appendChild(titleRow);
   head.appendChild(el("p",null,"What's Your Name? · 点一个活动开始"));
   stage.appendChild(head);
@@ -541,6 +568,12 @@ function avatarNode(student, fallbackEmoji){
   return el("div","who",fallbackEmoji||"🙋");
 }
 
+const CLASS_OPTIONS = [
+  { id:"all",      label:"全部" },
+  { id:"elephant", label:"🐘 大象班" },
+  { id:"tiger",    label:"🐯 老虎班" }
+];
+
 function actAsk(){
   const Q = "你好，你叫什么名字？";
   let student = pickStudent();
@@ -549,7 +582,25 @@ function actAsk(){
   q.innerHTML='问答对话<span class="sub">点一下气泡，听听怎么问、怎么答，还能再听一遍</span>';
   stage.appendChild(q);
 
-  const body=el("div","act-body");
+  const body=el("div","act-body scroll");
+
+  const filterRow=el("div","class-filter");
+  const filterBtns={};
+  CLASS_OPTIONS.forEach(opt=>{
+    const b=el("button","class-chip"+(classFilter===opt.id?" on":""),opt.label);
+    b.onclick=()=>{
+      sfxTap();
+      setClassFilter(opt.id);
+      CLASS_OPTIONS.forEach(o=>filterBtns[o.id].classList.toggle("on", o.id===opt.id));
+      student = pickStudent();
+      renderA();
+      speak("你好，我叫"+student.name);
+    };
+    filterBtns[opt.id]=b;
+    filterRow.appendChild(b);
+  });
+  body.appendChild(filterRow);
+
   const wrap=el("div","dialog-wrap");
 
   const qLine=el("div","dialog-line q");
@@ -571,10 +622,7 @@ function actAsk(){
   const swap=el("button","chip","🔄 换个同学再听听");
   swap.onclick=()=>{
     sfxTap();
-    for(let i=0;i<6;i++){
-      const next=pickStudent();
-      if(next.name!==student.name){ student=next; break; }
-    }
+    student = pickStudent();
     renderA();
     speak("你好，我叫"+student.name);
   };
@@ -734,7 +782,7 @@ function actCircle(){
   q.innerHTML='内圈外圈问名字<span class="sub">教室游戏 · 音乐停，就问好</span>';
   stage.appendChild(q);
 
-  const body=el("div","act-body");
+  const body=el("div","act-body scroll");
 
   const steps=el("div","circle-steps");
   steps.innerHTML =
@@ -805,42 +853,8 @@ function renderStage(){
   ACTS[view.station]();
 }
 
-/* ---------------- 你好儿歌弹窗 ---------------- */
-const songModal=document.getElementById("songModal");
-const songLines=document.getElementById("songLines");
-const songCloseBtn=document.getElementById("songCloseBtn");
-const songPlayBtn=document.getElementById("songPlayBtn");
-let songPlaying=false;
-
-function openSong(){
-  songLines.innerHTML="";
-  CHANT.forEach(line=>songLines.appendChild(el("div","song-line",line)));
-  songModal.classList.add("open");
-}
-function closeSong(){
-  songModal.classList.remove("open");
-  songPlaying=false;
-}
-async function playChant(){
-  if(songPlaying) return;
-  songPlaying=true;
-  const lines=[...songLines.children];
-  for(let i=0;i<lines.length && songPlaying;i++){
-    lines.forEach(l=>l.classList.remove("active"));
-    lines[i].classList.add("active");
-    speak(CHANT[i]);
-    await sleep(900 + CHANT[i].length*160);
-  }
-  lines.forEach(l=>l.classList.remove("active"));
-  songPlaying=false;
-}
-songCloseBtn.onclick=()=>{ sfxTap(); closeSong(); };
-songPlayBtn.onclick=()=>{ sfxTap(); playChant(); };
-songModal.addEventListener("click",e=>{ if(e.target===songModal) closeSong(); });
-
-/* 键盘：Esc 返回 / 关弹窗，空格 换一个 */
+/* 键盘：Esc / ← 返回，空格 换一个 */
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"&&songModal.classList.contains("open")){ closeSong(); return; }
   if(e.key==="Escape"||e.key==="ArrowLeft"){
     if(view.name==="station") go("home");
   }
