@@ -164,6 +164,7 @@
     gap:12px;
   }
   .word-card{
+    position:relative;
     background:var(--c-card);
     border:1px solid var(--border);
     border-radius:16px;
@@ -174,14 +175,41 @@
     gap:6px;
     text-align:center;
     box-shadow:0 3px 10px rgba(53,64,90,0.05);
+    cursor:pointer;
     transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease;
   }
   .word-card:hover{
     transform:translateY(-4px);
     box-shadow:0 10px 22px rgba(53,64,90,0.10);
   }
+  .word-card:hover .speak-icon{
+    opacity:1;
+    transform:scale(1);
+  }
   .word-card.hide{display:none;}
   .category.no-match{display:none;}
+
+  .speak-icon{
+    position:absolute;
+    top:-8px;
+    right:-8px;
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--c-sky);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.68rem;
+    box-shadow:0 3px 8px rgba(53,64,90,0.2);
+    opacity:0;
+    transform:scale(0.7);
+    transition:all .2s ease;
+    pointer-events:none;
+  }
+  .word-card.speaking .speak-icon{
+    opacity:1;
+    transform:scale(1.15);
+    background:var(--c-coral);
+  }
 
   .badge{
     width:46px;height:46px;
@@ -338,11 +366,135 @@
 
   body.hide-en .word-en{display:none;}
 
+  /* 🎓 封面（仅打印时显示） */
+  .cover-page{
+    display:none;
+  }
+
   @media print{
+    @page{ size:auto; margin:0.9in 0.55in 0.55in 1.2in; }
+
     .mecc-global-nav, .quicknav, .search-wrap, .fab-group, .intro{display:none !important;}
-    body{padding-top:0;}
-    .word-card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
-    .category{break-inside:avoid;margin-bottom:24px;}
+    body{padding-top:0;padding-bottom:0;}
+
+    .cover-page{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:space-between;
+      min-height:9.2in;
+      break-after:page;
+      text-align:center;
+      padding:0.3in 0.2in;
+    }
+    .cover-top{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:18px;
+      margin-top:0.4in;
+    }
+    .cover-badge-row{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background:linear-gradient(120deg, var(--c-sky), var(--c-mint));
+      color:#fff;
+      padding:10px 26px;
+      border-radius:999px;
+      font-family:var(--font-en);
+      font-weight:800;
+      font-size:1.3rem;
+      letter-spacing:1px;
+      box-shadow:0 6px 18px rgba(53,64,90,0.2);
+    }
+    .cover-title{
+      font-family:var(--font-zh);
+      font-size:4.2rem;
+      font-weight:bold;
+      color:var(--c-ink);
+      letter-spacing:6px;
+      margin:6px 0 0;
+    }
+    .cover-subtitle{
+      font-family:var(--font-en);
+      font-size:1.3rem;
+      color:var(--c-ink-soft);
+      letter-spacing:2px;
+    }
+    .cover-illustration{
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      gap:6px;
+      margin:0.35in 0;
+    }
+    .cover-illustration .badge.fam{
+      width:110px;height:110px;
+    }
+    .cover-illustration .badge.fam svg{width:88px;height:100px;}
+    .cover-categories{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:10px;
+      max-width:6.4in;
+      margin:0 auto;
+    }
+    .cover-categories span{
+      font-family:var(--font-zh);
+      font-size:0.95rem;
+      color:var(--c-ink);
+      background:#FBF1E4;
+      border:1px solid var(--border);
+      padding:5px 14px;
+      border-radius:999px;
+    }
+    .cover-bottom{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0.55in;
+      margin-bottom:0.2in;
+    }
+    .cover-avatar{
+      width:1.15in;height:1.15in;
+      border-radius:50%;
+      object-fit:cover;
+      border:4px solid #fff;
+      box-shadow:0 4px 14px rgba(53,64,90,0.2);
+    }
+    .cover-seal{ width:1.3in; height:1.3in; }
+    .cover-credit{
+      font-family:var(--font-zh);
+      font-size:0.85rem;
+      color:var(--c-ink-soft);
+      margin-top:6px;
+    }
+
+    .category{
+      padding-top:0.35in;
+    }
+    .category + .category{
+      break-before:page;
+    }
+    .cat-head{margin-bottom:0.3in;}
+    .cat-zh{font-size:2.1rem;}
+    .cat-en{font-size:1rem;}
+    .cat-badge{width:50px;height:50px;font-size:1.5rem;}
+    .cat-count{display:none;}
+
+    .word-grid{grid-template-columns:repeat(auto-fill, minmax(170px, 1fr));gap:0.3in;}
+    .word-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;padding:18px 10px 14px;}
+    .speak-icon{display:none !important;}
+    .badge{width:72px;height:72px;}
+    .badge svg{width:54px;height:54px;}
+    .badge.fam{width:80px;height:80px;}
+    .badge.fam svg{width:64px;height:70px;}
+    .badge.ill{width:78px;height:78px;}
+    .badge.ill svg{width:60px;height:60px;}
+    .word-zh{font-size:1.9rem;margin-top:4px;}
+    .word-en{font-size:1rem;}
   }
 
   @media (max-width:600px){
@@ -353,6 +505,38 @@
 </style>
 </head>
 <body>
+
+<div class="cover-page" aria-hidden="true">
+  <div class="cover-top">
+    <div class="cover-badge-row">✏️ I ❤ WRITING</div>
+    <div class="cover-title">写作帮手</div>
+    <div class="cover-subtitle">WRITING HELPER</div>
+  </div>
+  <div class="cover-illustration" id="coverIllustration"></div>
+  <div class="cover-categories" id="coverCategories"></div>
+  <div class="cover-bottom">
+    <img class="cover-avatar" src="../favicon.png" alt="王老师">
+    <svg class="cover-seal" viewBox="0 0 200 200">
+      <defs>
+        <path id="sealTopArc" d="M 14 108 A 86 86 0 0 1 186 108" fill="none"/>
+        <path id="sealBotArc" d="M 38 152 A 84 84 0 0 0 162 152" fill="none"/>
+      </defs>
+      <circle cx="100" cy="100" r="96" fill="#1E3A6E" stroke="#12233F" stroke-width="3"/>
+      <circle cx="100" cy="100" r="78" fill="#F4C430" stroke="#12233F" stroke-width="2"/>
+      <circle cx="100" cy="100" r="72" fill="none" stroke="#fff" stroke-width="1.4" opacity="0.6"/>
+      <text font-size="9" font-weight="bold" fill="#fff" letter-spacing="0.6">
+        <textPath href="#sealTopArc" startOffset="50%" text-anchor="middle">CAESAR RODNEY SCHOOL DISTRICT</textPath>
+      </text>
+      <text font-size="10" font-weight="bold" fill="#fff" letter-spacing="1.6">
+        <textPath href="#sealBotArc" startOffset="50%" text-anchor="middle">EST. 1919</textPath>
+      </text>
+      <g transform="translate(58,58) scale(1.75)" fill="#1E3A6E" stroke="#12233F" stroke-width="0.8">
+        <path d="M24 6 L28.5 18.5 L42 18.8 L31 27 L34.8 40 L24 32.3 L13.2 40 L17 27 L6 18.8 L19.5 18.5 Z"/>
+      </g>
+    </svg>
+  </div>
+  <div class="cover-credit">王老师的教学空间 · miwang.org</div>
+</div>
 
 <nav class="mecc-global-nav">
     <a href="../teachers.html" class="mecc-nav-back font-zh">
@@ -797,7 +981,7 @@ const CATEGORIES = [
   {
     id:'animal', zh:'动物', en:'Animals', icon:'fa-solid fa-paw', accent:'var(--cat-animal)',
     words:[
-      emo('猫','cat','🐱'), emo('小鸟','bird','🐦'), emo('鱼','fish','🐟'),
+      emo('猫','cat','🐱'), emo('鸟','bird','🐦'), emo('鱼','fish','🐟'),
       emo('鲨鱼','shark','🦈'), emo('猎豹','cheetah','🐆'), emo('鳄鱼','crocodile','🐊'),
       emo('火烈鸟','flamingo','🦩'), emo('企鹅','penguin','🐧'), emo('大象','elephant','🐘'),
       emo('乌龟','turtle','🐢'),
@@ -891,7 +1075,8 @@ function render(){
     section.style.setProperty('--accent', cat.accent);
 
     const cards = cat.words.map(w=>`
-      <div class="word-card" data-zh="${w.zh}" data-en="${w.en.toLowerCase()}">
+      <div class="word-card" data-zh="${w.zh}" data-en="${w.en.toLowerCase()}" role="button" tabindex="0" title="点击听发音">
+        <span class="speak-icon"><i class="fas fa-volume-high"></i></span>
         ${badgeHtml(w.icon, cat.accent)}
         <div class="word-zh">${w.zh}</div>
         <div class="word-en font-en">${w.en}</div>
@@ -913,6 +1098,74 @@ function render(){
   });
 }
 render();
+
+/* ───────────────────── 封面：填充人物插画与分类清单 ───────────────────── */
+(function renderCover(){
+  const illu = document.getElementById('coverIllustration');
+  ['teacher','mom','dad','sisterSmall','brotherSmall'].forEach(key=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'badge fam';
+    wrap.innerHTML = famSvg(key);
+    illu.appendChild(wrap);
+  });
+  const catsWrap = document.getElementById('coverCategories');
+  CATEGORIES.forEach(cat=>{
+    const span = document.createElement('span');
+    span.textContent = cat.zh;
+    catsWrap.appendChild(span);
+  });
+})();
+
+/* ───────────────────── 点击词卡朗读发音 ───────────────────── */
+let ttsAudio = new Audio();
+function speakWord(text, cardEl){
+  if(!text) return;
+  if(cardEl){
+    document.querySelectorAll('.word-card.speaking').forEach(c=>c.classList.remove('speaking'));
+    cardEl.classList.add('speaking');
+    setTimeout(()=>cardEl.classList.remove('speaking'), 1200);
+  }
+
+  ttsAudio.pause();
+  ttsAudio.src = 'data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+  ttsAudio.play().catch(()=>{});
+
+  const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+  const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+  fetch(localPath, {method:'HEAD'}).then(res=>{
+    if(res && res.ok && (res.headers.get('content-type')||'').includes('audio')){
+      ttsAudio.src = localPath;
+      return ttsAudio.play();
+    }
+    return fetch(azureUrl).then(azureRes=>{
+      if(azureRes && azureRes.ok && (azureRes.headers.get('content-type')||'').includes('audio')){
+        return azureRes.blob().then(blob=>{
+          ttsAudio.src = URL.createObjectURL(blob);
+          return ttsAudio.play();
+        });
+      }
+      throw new Error('no audio');
+    });
+  }).catch(()=>{
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'zh-CN'; msg.rate = 0.85; msg.pitch = 1.1;
+    window.speechSynthesis.speak(msg);
+  });
+}
+document.getElementById('categories').addEventListener('click', e=>{
+  const card = e.target.closest('.word-card');
+  if(!card) return;
+  speakWord(card.dataset.zh, card);
+});
+document.getElementById('categories').addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('.word-card');
+  if(!card) return;
+  e.preventDefault();
+  speakWord(card.dataset.zh, card);
+});
 
 /* ───────────────────── 搜索过滤 ───────────────────── */
 const searchInput = document.getElementById('wordSearch');
