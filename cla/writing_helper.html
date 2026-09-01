@@ -374,6 +374,13 @@
   @media print{
     @page{ size:auto; margin:0.9in 0.55in 0.55in 1.2in; }
 
+    /* 强制打印出背景色，否则颜色卡/图标底色会变成空白 */
+    *{
+      -webkit-print-color-adjust:exact !important;
+      print-color-adjust:exact !important;
+      color-adjust:exact !important;
+    }
+
     .mecc-global-nav, .quicknav, .search-wrap, .fab-group, .intro{display:none !important;}
     body{padding-top:0;padding-bottom:0;}
 
@@ -425,14 +432,14 @@
     .cover-illustration{
       display:flex;
       justify-content:center;
-      align-items:flex-end;
-      gap:6px;
-      margin:0.35in 0;
+      margin:0.3in 0;
+      width:100%;
     }
-    .cover-illustration .badge.fam{
-      width:110px;height:110px;
+    .cover-banner-svg{
+      width:6.5in;
+      max-width:100%;
+      height:auto;
     }
-    .cover-illustration .badge.fam svg{width:88px;height:100px;}
     .cover-categories{
       display:flex;
       flex-wrap:wrap;
@@ -464,7 +471,7 @@
       border:4px solid #fff;
       box-shadow:0 4px 14px rgba(53,64,90,0.2);
     }
-    .cover-seal{ width:1.3in; height:1.3in; }
+    .cover-seal{ width:1.3in; height:1.3in; object-fit:contain; }
     .cover-credit{
       font-family:var(--font-zh);
       font-size:0.85rem;
@@ -473,28 +480,42 @@
     }
 
     .category{
-      padding-top:0.35in;
+      padding-top:0.26in;
+      break-inside:avoid;
+      display:flex;
+      flex-direction:column;
     }
     .category + .category{
       break-before:page;
     }
-    .cat-head{margin-bottom:0.3in;}
-    .cat-zh{font-size:2.1rem;}
-    .cat-en{font-size:1rem;}
-    .cat-badge{width:50px;height:50px;font-size:1.5rem;}
+    .cat-head{margin-bottom:0.22in;flex-shrink:0;}
+    .cat-zh{font-size:2rem;}
+    .cat-en{font-size:0.95rem;}
+    .cat-badge{width:48px;height:48px;font-size:1.4rem;}
     .cat-count{display:none;}
 
-    .word-grid{grid-template-columns:repeat(auto-fill, minmax(170px, 1fr));gap:0.3in;}
-    .word-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;padding:18px 10px 14px;}
+    /* 按每个主题的词数分三档，保证一页放得下、不跨页：
+       词数越多列数越多、格子越小；词数少的主题格子可以更大更醒目 */
+    .word-grid{
+      grid-template-columns:repeat(var(--pcols, 4), 1fr);
+      gap:0.16in;
+      break-inside:avoid;
+    }
+    .category.tier-p4{ --pcols:4; --pbadge:96px; --psvg:70px; --pfamw:104px; --pfamsvgw:82px; --pfamsvgh:92px; --pzh:1.7rem; --pen:0.95rem; --pemoji:2.8rem; }
+    .category.tier-p5{ --pcols:5; --pbadge:84px; --psvg:60px; --pfamw:92px; --pfamsvgw:72px; --pfamsvgh:80px; --pzh:1.45rem; --pen:0.85rem; --pemoji:2.4rem; }
+    .category.tier-p6{ --pcols:6; --pbadge:70px; --psvg:50px; --pfamw:78px; --pfamsvgw:60px; --pfamsvgh:68px; --pzh:1.2rem; --pen:0.72rem; --pemoji:2rem; }
+
+    .word-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid;padding:16px 8px 12px;}
     .speak-icon{display:none !important;}
-    .badge{width:72px;height:72px;}
-    .badge svg{width:54px;height:54px;}
-    .badge.fam{width:80px;height:80px;}
-    .badge.fam svg{width:64px;height:70px;}
-    .badge.ill{width:78px;height:78px;}
-    .badge.ill svg{width:60px;height:60px;}
-    .word-zh{font-size:1.9rem;margin-top:4px;}
-    .word-en{font-size:1rem;}
+    .badge{width:var(--pbadge,72px);height:var(--pbadge,72px);}
+    .badge svg{width:var(--psvg,54px);height:var(--psvg,54px);}
+    .badge.fam{width:var(--pfamw,80px);height:var(--pfamw,80px);}
+    .badge.fam svg{width:var(--pfamsvgw,64px);height:var(--pfamsvgh,70px);}
+    .badge.ill{width:calc(var(--pbadge,72px) + 4px);height:calc(var(--pbadge,72px) + 4px);}
+    .badge.ill svg{width:var(--psvg,54px);height:var(--psvg,54px);}
+    .badge.emoji{font-size:var(--pemoji,2rem);}
+    .word-zh{font-size:var(--pzh,1.6rem);margin-top:4px;}
+    .word-en{font-size:var(--pen,0.85rem);}
   }
 
   @media (max-width:600px){
@@ -512,28 +533,45 @@
     <div class="cover-title">写作帮手</div>
     <div class="cover-subtitle">WRITING HELPER</div>
   </div>
-  <div class="cover-illustration" id="coverIllustration"></div>
+  <div class="cover-illustration">
+    <svg viewBox="0 0 640 190" class="cover-banner-svg">
+      <rect x="4" y="4" width="632" height="182" rx="26" fill="#E4F2E8" stroke="#12233F" stroke-width="2"/>
+      <!-- 铅笔 -->
+      <g transform="translate(50,95) rotate(-35)">
+        <rect x="-18" y="-95" width="36" height="112" rx="6" fill="#FFC94D" stroke="#12233F" stroke-width="2.4"/>
+        <rect x="-18" y="-105" width="36" height="14" rx="4" fill="#FF8FA8" stroke="#12233F" stroke-width="2.2"/>
+        <rect x="-18" y="-83" width="36" height="7" fill="#F3EFE4"/>
+        <path d="M-18 17 L0 48 L18 17 Z" fill="#D9A066" stroke="#12233F" stroke-width="2.2" stroke-linejoin="round"/>
+        <circle cx="0" cy="45" r="3" fill="#12233F"/>
+      </g>
+      <!-- 笔画练习：竖 / 曲线 / 撇 -->
+      <g stroke="#1E5757" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M225 35 L225 140"/>
+        <path d="M215 128 L225 140 L235 128"/>
+        <path d="M275 40 Q245 90 275 140"/>
+        <path d="M266 128 L275 140 L286 132"/>
+        <path d="M320 140 L350 35"/>
+        <path d="M338 42 L350 35 L354 49"/>
+      </g>
+      <!-- 苹果，果身写“中文” -->
+      <g transform="translate(430,95)">
+        <path d="M0 -45 Q10 -58 20 -46" fill="none" stroke="#4CAF7D" stroke-width="6" stroke-linecap="round"/>
+        <path d="M0 -38 C-46 -38 -50 20 -22 45 C-10 56 10 56 22 45 C50 20 46 -38 0 -38 Z" fill="#E8544A" stroke="#12233F" stroke-width="2.4"/>
+        <text x="0" y="10" font-size="24" font-weight="bold" fill="#fff" text-anchor="middle" font-family="inherit">中文</text>
+      </g>
+      <!-- 动物排排站 -->
+      <text x="555" y="70" font-size="34" text-anchor="middle">🦒</text>
+      <text x="595" y="105" font-size="30" text-anchor="middle">🐘</text>
+      <text x="555" y="150" font-size="30" text-anchor="middle">🦁</text>
+      <text x="500" y="165" font-size="26" text-anchor="middle">🐻</text>
+      <text x="120" y="160" font-size="26" text-anchor="middle">🦓</text>
+      <text x="165" y="30" font-size="24" text-anchor="middle">🐰</text>
+    </svg>
+  </div>
   <div class="cover-categories" id="coverCategories"></div>
   <div class="cover-bottom">
     <img class="cover-avatar" src="../favicon.png" alt="王老师">
-    <svg class="cover-seal" viewBox="0 0 200 200">
-      <defs>
-        <path id="sealTopArc" d="M 14 108 A 86 86 0 0 1 186 108" fill="none"/>
-        <path id="sealBotArc" d="M 38 152 A 84 84 0 0 0 162 152" fill="none"/>
-      </defs>
-      <circle cx="100" cy="100" r="96" fill="#1E3A6E" stroke="#12233F" stroke-width="3"/>
-      <circle cx="100" cy="100" r="78" fill="#F4C430" stroke="#12233F" stroke-width="2"/>
-      <circle cx="100" cy="100" r="72" fill="none" stroke="#fff" stroke-width="1.4" opacity="0.6"/>
-      <text font-size="9" font-weight="bold" fill="#fff" letter-spacing="0.6">
-        <textPath href="#sealTopArc" startOffset="50%" text-anchor="middle">CAESAR RODNEY SCHOOL DISTRICT</textPath>
-      </text>
-      <text font-size="10" font-weight="bold" fill="#fff" letter-spacing="1.6">
-        <textPath href="#sealBotArc" startOffset="50%" text-anchor="middle">EST. 1919</textPath>
-      </text>
-      <g transform="translate(58,58) scale(1.75)" fill="#1E3A6E" stroke="#12233F" stroke-width="0.8">
-        <path d="M24 6 L28.5 18.5 L42 18.8 L31 27 L34.8 40 L24 32.3 L13.2 40 L17 27 L6 18.8 L19.5 18.5 Z"/>
-      </g>
-    </svg>
+    <img class="cover-seal" src="https://resources.finalsite.net/images/f_auto,q_auto,t_image_size_2/v1784748488/crk12org/nyxnfw1g270gnhbog3ub/CRSDbadgegold_blue.png" alt="Caesar Rodney School District">
   </div>
   <div class="cover-credit">王老师的教学空间 · miwang.org</div>
 </div>
@@ -1070,7 +1108,8 @@ function render(){
     nav.appendChild(chip);
 
     const section = document.createElement('section');
-    section.className = 'category';
+    const tier = cat.words.length <= 11 ? 'tier-p4' : cat.words.length <= 17 ? 'tier-p5' : 'tier-p6';
+    section.className = `category ${tier}`;
     section.id = cat.id;
     section.style.setProperty('--accent', cat.accent);
 
@@ -1099,15 +1138,8 @@ function render(){
 }
 render();
 
-/* ───────────────────── 封面：填充人物插画与分类清单 ───────────────────── */
+/* ───────────────────── 封面：填充分类清单 ───────────────────── */
 (function renderCover(){
-  const illu = document.getElementById('coverIllustration');
-  ['teacher','mom','dad','sisterSmall','brotherSmall'].forEach(key=>{
-    const wrap = document.createElement('div');
-    wrap.className = 'badge fam';
-    wrap.innerHTML = famSvg(key);
-    illu.appendChild(wrap);
-  });
   const catsWrap = document.getElementById('coverCategories');
   CATEGORIES.forEach(cat=>{
     const span = document.createElement('span');
