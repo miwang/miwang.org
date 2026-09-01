@@ -6,6 +6,17 @@
 <title>颜色日 · Color Days</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
 <style>
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF, U+20000-2A6DF;
+}
 :root{
   font-size:18px;
   --ink:#2E2A28;
@@ -17,6 +28,7 @@
   --day-soft:#E23B2E22;
   --shadow:0 .35rem 1.1rem rgba(46,42,40,.13);
   --radius:1.1rem;
+  --font-zh:"KaiTi-CJK","LXGW WenKai Lite","LXGW WenKai",serif;
 }
 @media (min-width:900px){ :root{ font-size:20px; } }
 @media (min-width:1300px){ :root{ font-size:23px; } }
@@ -25,7 +37,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
 body{
-  font-family:"LXGW WenKai Lite","LXGW WenKai","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-family:var(--font-zh);
   color:var(--ink);
   background:
     radial-gradient(60rem 40rem at 12% -10%, #FFF3D6 0%, transparent 60%),

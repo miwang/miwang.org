@@ -13,23 +13,24 @@
     <style>
       @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
       :root {
-        /* 🌿 高级森系 SaaS 配色 */
-        --c-lime: #c3d94e;
-        --c-emerald: #44b88e;
-        --c-slate: #1e565c;
-        --c-navy: #183042;
-        --c-teal: #217273;
-        --c-mint: #63cbb2;
+        /* 🍬 糖果暖色板 — 跟全站 css/style.css 保持一致（沿用旧变量名，只换掉偏冷的取值） */
+        --c-lime: #ffc94d; /* 阳光金 · 奖励/学生管理 */
+        --c-emerald: #35d0ba; /* 薄荷绿 · 课堂教学工具 */
+        --c-slate: #35405a; /* 暖墨色 · 分组工具 + 密码锁 UI */
+        --c-navy: #4fc3f7; /* 天空蓝 · 教学单元 */
+        --c-mint: #ff6fa5; /* 覆盆子粉 · 课堂互动游戏 */
 
-        --bg: #f0f4f8;
+        --bg: #fff8ec;
         --card-bg: #ffffff;
-        --text: #334155;
-        --text-muted: #64748b;
-        --border: #e2e8f0;
+        --text: #35405a;
+        --text-muted: #6b7690;
+        --border: rgba(53, 64, 90, 0.12);
+        --surface: #fff3dc;
+        --arrow: #e3d5be;
 
         --font-zh: 'KaiTi-CJK', 'LXGW WenKai Lite', serif;
         --radius: 16px;
-        --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        --shadow: 0 4px 14px rgba(53, 64, 90, 0.08);
       }
 
       .font-en {
@@ -46,13 +47,16 @@
 
       body {
         font-family: var(--font-zh);
-        background: var(--bg);
+        background:
+          radial-gradient(60rem 40rem at 8% -8%, rgba(255, 201, 77, 0.14) 0%, transparent 55%),
+          radial-gradient(50rem 40rem at 96% 6%, rgba(79, 195, 247, 0.12) 0%, transparent 55%),
+          var(--bg);
         color: var(--text);
         -webkit-font-smoothing: antialiased;
       }
 
       .site-header {
-        background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-slate) 100%);
+        background: linear-gradient(135deg, #ff7a63 0%, #ffc94d 100%);
         min-height: 85px;
         padding: 16px 24px;
         position: relative;
@@ -70,7 +74,7 @@
         width: 10px;
         height: 10px;
         border-radius: 2px;
-        background: var(--c-emerald);
+        background: #fff;
         margin-left: 10px;
         opacity: 0.9;
         vertical-align: middle;
@@ -95,7 +99,6 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        color: #f8fafc;
         text-decoration: none;
         font-weight: bold;
         font-size: 1.05rem;
@@ -103,6 +106,7 @@
         transition: opacity 0.2s ease;
         z-index: 2;
         white-space: nowrap;
+        color: #fff;
       }
       .site-header .back-link:hover {
         opacity: 0.75;
@@ -212,6 +216,7 @@
         gap: 14px;
       }
       .unit-item {
+        position: relative;
         background-color: var(--card-bg);
         border-radius: var(--radius);
         padding: 18px 20px;
@@ -239,10 +244,10 @@
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background: var(--surface);
+        border: 1px solid var(--border);
         border-radius: 12px;
-        color: #64748b;
+        color: var(--text-muted);
         transition: all 0.3s ease;
       }
       .unit-item:hover .unit-icon {
@@ -266,9 +271,9 @@
         font-weight: bold;
         padding: 3px 8px;
         border-radius: 6px;
-        background: #f1f5f9;
-        color: #64748b;
-        border: 1px solid #e2e8f0;
+        background: var(--surface);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
       }
       .unit-desc {
         font-size: 0.85rem;
@@ -278,7 +283,7 @@
       }
       .unit-arrow {
         font-size: 2rem;
-        color: #cbd5e1;
+        color: var(--arrow);
         font-weight: 300;
         transition:
           transform 0.3s ease,
@@ -347,7 +352,7 @@
         grid-row: 1 / 3;
         grid-column: 3;
         font-size: 2.2rem;
-        color: #cbd5e1;
+        color: var(--arrow);
         font-family: 'LXGW WenKai Lite', system-ui, sans-serif;
         font-weight: 300;
         margin-left: 4px;
@@ -395,10 +400,10 @@
         align-items: center;
         justify-content: center;
         border-radius: 50%;
-        background: #f8fafc;
+        background: var(--surface);
         border: 2px solid var(--border);
-        color: #64748b;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        color: var(--text-muted);
+        box-shadow: 0 4px 10px rgba(53, 64, 90, 0.06);
         transition: all 0.3s ease;
         z-index: 3;
       }
@@ -466,11 +471,11 @@
         font-size: 1.8rem;
         margin: 0;
         flex-shrink: 0;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background: var(--surface);
+        border: 1px solid var(--border);
         border-radius: 14px;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        color: #64748b;
+        color: var(--text-muted);
         z-index: 1;
       }
 
@@ -518,9 +523,9 @@
         padding: 3px 8px;
         border-radius: 6px;
         letter-spacing: 0.5px;
-        background: #f1f5f9;
-        color: #64748b;
-        border: 1px solid #e2e8f0;
+        background: var(--surface);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
         transition: all 0.3s ease;
       }
 
@@ -555,11 +560,99 @@
         overflow: hidden;
       }
 
+      /* 🔍 搜索框 */
+      .tool-search-wrap {
+        margin-top: -12px;
+      }
+      .tool-search {
+        width: 100%;
+        padding: 14px 22px;
+        border-radius: 999px;
+        border: 2px solid var(--border);
+        background: var(--card-bg);
+        font-family: var(--font-zh);
+        font-size: 1rem;
+        color: var(--text);
+        box-shadow: var(--shadow);
+        outline: none;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .tool-search::placeholder {
+        color: var(--text-muted);
+      }
+      .tool-search:focus {
+        border-color: var(--c-navy);
+        box-shadow: 0 0 0 4px rgba(79, 195, 247, 0.18);
+      }
+      .search-hide {
+        display: none !important;
+      }
+      .tool-section.no-match {
+        display: none;
+      }
+      .search-empty {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        padding: 30px 0;
+      }
+
+      /* ⭐ 常用工具 */
+      #tool-favorites .section-title {
+        cursor: default;
+      }
+      #tool-favorites .section-chevron {
+        display: none;
+      }
+      .fav-pin {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        background: var(--card-bg);
+        box-shadow: 0 3px 8px rgba(53, 64, 90, 0.18);
+        font-size: 1rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--arrow);
+        z-index: 5;
+        transition:
+          transform 0.2s ease,
+          color 0.2s ease,
+          background 0.2s ease;
+      }
+      .fav-pin:hover {
+        transform: scale(1.15) rotate(-8deg);
+      }
+      .fav-pin.on {
+        color: #fff;
+        background: var(--c-lime);
+        border-color: #fff;
+      }
+      #tool-favorites .card.tiger-shape,
+      #tool-favorites .card.elephant-shape {
+        background-image: none !important;
+        filter: none !important;
+        background-color: var(--card-bg) !important;
+        border: 1px solid var(--border) !important;
+        border-top: 4px solid var(--border) !important;
+        box-shadow: var(--shadow) !important;
+        padding: 20px 18px !important;
+      }
+
       /* 模态框 */
       #modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(24, 48, 66, 0.85);
+        background: rgba(53, 64, 90, 0.85);
         z-index: 1000;
         display: none;
         justify-content: center;
@@ -607,7 +700,7 @@
         transition: all 0.2s ease;
       }
       .submit-btn:hover {
-        background: #164044;
+        background: #262e42;
       }
 
       @media (max-width: 768px) {
@@ -674,6 +767,39 @@
     </header>
 
     <div class="container">
+      <div class="tool-search-wrap">
+        <input
+          type="search"
+          id="toolSearch"
+          class="tool-search"
+          placeholder="🔍 搜索工具名称…"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="tool-section" id="tool-favorites" style="display: none">
+        <div class="section-title" style="border-left-color: var(--c-lime)">
+          <span class="section-title-main">
+            <div class="title-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--c-lime)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                ></polygon>
+              </svg>
+            </div>
+            <span>常用工具</span>
+          </span>
+        </div>
+        <div class="grid fav-grid"></div>
+      </div>
+
       <div class="tool-section" id="tool-awards">
         <div
           class="section-title"
@@ -1176,7 +1302,7 @@
         if (title) title.setAttribute('aria-expanded', String(!isCollapsed))
       }
 
-      document.querySelectorAll('.tool-section').forEach((section) => {
+      document.querySelectorAll('.tool-section:not(#tool-favorites)').forEach((section) => {
         section.classList.add('collapsed')
         const title = section.querySelector('.section-title')
         if (!title) return
@@ -1189,15 +1315,146 @@
         })
       })
 
+      // ⭐ 常用工具：点星标钉在最上面，记在本机浏览器里
+      const FAV_KEY = 'teachers_favorites_v1'
+      function loadFavs() {
+        try {
+          return JSON.parse(localStorage.getItem(FAV_KEY)) || []
+        } catch (e) {
+          return []
+        }
+      }
+      function saveFavs(list) {
+        try {
+          localStorage.setItem(FAV_KEY, JSON.stringify(list))
+        } catch (e) {}
+      }
+      let favs = loadFavs()
+
+      function favorableItems() {
+        return Array.from(
+          document.querySelectorAll('#tool-favorites ~ .tool-section .card, #tool-favorites ~ .tool-section .unit-item')
+        )
+      }
+      function keyOf(item) {
+        const href = item.getAttribute('href')
+        if (href) return href
+        const m = (item.getAttribute('onclick') || '').match(/requirePassword\('([^']+)'\)/)
+        return m ? m[1] : null
+      }
+      function makePin(on, onToggle) {
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'fav-pin' + (on ? ' on' : '')
+        btn.title = on ? '取消常用' : '标为常用'
+        btn.setAttribute('aria-label', btn.title)
+        btn.textContent = on ? '★' : '☆'
+        btn.addEventListener('click', (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onToggle()
+        })
+        return btn
+      }
+      function injectPins() {
+        favorableItems().forEach((item) => {
+          const key = keyOf(item)
+          if (!key || item.querySelector('.fav-pin')) return
+          item.appendChild(makePin(favs.includes(key), () => toggleFav(key)))
+        })
+      }
+      function syncPinVisuals() {
+        favorableItems().forEach((item) => {
+          const key = keyOf(item)
+          const btn = item.querySelector('.fav-pin')
+          if (!key || !btn) return
+          const on = favs.includes(key)
+          btn.classList.toggle('on', on)
+          btn.textContent = on ? '★' : '☆'
+          btn.title = on ? '取消常用' : '标为常用'
+        })
+      }
+      function toggleFav(key) {
+        const i = favs.indexOf(key)
+        if (i >= 0) favs.splice(i, 1)
+        else favs.push(key)
+        saveFavs(favs)
+        syncPinVisuals()
+        renderFavSection()
+      }
+      function renderFavSection() {
+        const section = document.getElementById('tool-favorites')
+        const grid = section.querySelector('.fav-grid')
+        grid.innerHTML = ''
+        if (!favs.length) {
+          section.style.display = 'none'
+          return
+        }
+        section.style.display = ''
+        const items = favorableItems()
+        favs.forEach((key) => {
+          const src = items.find((item) => keyOf(item) === key)
+          if (!src) return
+          const clone = src.cloneNode(true)
+          clone.querySelectorAll('.fav-pin').forEach((b) => b.remove())
+          clone.appendChild(makePin(true, () => toggleFav(key)))
+          grid.appendChild(clone)
+        })
+      }
+      injectPins()
+      renderFavSection()
+
+      // 🔍 搜索：按标题/描述实时过滤，自动展开有结果的分类
+      const searchInput = document.getElementById('toolSearch')
+      let savedCollapse = null
+      function applySearch(raw) {
+        const q = raw.trim().toLowerCase()
+        const sections = document.querySelectorAll('.tool-section:not(#tool-favorites)')
+        const favSection = document.getElementById('tool-favorites')
+        if (!q) {
+          if (savedCollapse) {
+            sections.forEach((s) => {
+              s.classList.toggle('collapsed', savedCollapse.get(s.id))
+              s.classList.remove('no-match')
+            })
+            savedCollapse = null
+          }
+          document.querySelectorAll('.search-hide').forEach((el) => el.classList.remove('search-hide'))
+          renderFavSection()
+          return
+        }
+        if (!savedCollapse) {
+          savedCollapse = new Map()
+          sections.forEach((s) => savedCollapse.set(s.id, s.classList.contains('collapsed')))
+        }
+        favSection.style.display = 'none'
+        sections.forEach((section) => {
+          let any = false
+          section.querySelectorAll('.card, .unit-item').forEach((item) => {
+            const match = item.textContent.toLowerCase().includes(q)
+            item.classList.toggle('search-hide', !match)
+            if (match) any = true
+          })
+          section.classList.toggle('collapsed', !any)
+          section.classList.toggle('no-match', !any)
+        })
+      }
+      searchInput.addEventListener('input', () => applySearch(searchInput.value))
+
       // 🌟 保留原有的页面滚动位置记忆逻辑
       document.addEventListener('click', (e) => {
         if (e.target.closest('.card')) {
-          sessionStorage.setItem('teachers_scroll_pos', window.scrollY)
+          try {
+            sessionStorage.setItem('teachers_scroll_pos', window.scrollY)
+          } catch (err) {}
         }
       })
 
       window.addEventListener('pageshow', () => {
-        const saved = sessionStorage.getItem('teachers_scroll_pos')
+        let saved = null
+        try {
+          saved = sessionStorage.getItem('teachers_scroll_pos')
+        } catch (err) {}
         if (saved) {
           window.scrollTo({top: parseInt(saved, 10), behavior: 'instant'})
         }
