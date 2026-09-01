@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>你叫什么名字 · What's Your Name</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
+<style>
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF, U+20000-2A6DF;
+}
+:root{
+  font-size:18px;
+  --ink:#2E2A28;
+  --ink-soft:#6B625C;
+  --paper:#FFFDF7;
+  --card:#FFFFFF;
+  --line:rgba(46,42,40,.14);
+  --accent:#F0663C;
+  --accent-soft:#F0663C22;
+  --shadow:0 .35rem 1.1rem rgba(46,42,40,.13);
+  --radius:1.1rem;
+  --font-zh:"KaiTi-CJK","LXGW WenKai Lite","LXGW WenKai",serif;
+}
+@media (min-width:900px){ :root{ font-size:20px; } }
+@media (min-width:1300px){ :root{ font-size:23px; } }
+@media (min-width:1700px){ :root{ font-size:27px; } }
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--font-zh);
+  color:var(--ink);
+  background:
+    radial-gradient(60rem 40rem at 12% -10%, #FFF3D6 0%, transparent 60%),
+    radial-gradient(50rem 36rem at 95% 8%, #E8F4FF 0%, transparent 62%),
+    radial-gradient(48rem 40rem at 50% 115%, #FFE9F2 0%, transparent 60%),
+    linear-gradient(#FFFDF7,#FDF6EA);
+  overflow:hidden;
+  user-select:none;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(3.2rem);opacity:.5;pointer-events:none;z-index:0}
+.blob.a{width:22rem;height:22rem;left:-7rem;top:-6rem;background:#FFD9A8}
+.blob.b{width:20rem;height:20rem;right:-6rem;bottom:-7rem;background:#BFE3FF}
+
+/* ---------- shell ---------- */
+#app{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  width:min(96vw,72rem);max-height:100vh;margin:0 auto;padding:1.1rem .8rem .8rem}
+.topbar{display:flex;align-items:center;gap:.5rem;flex:0 0 auto;padding:.15rem 0 .5rem}
+.topbar .spacer{flex:1}
+.chip{
+  border:none;background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:.82rem;font-weight:700;
+  padding:.4rem .85rem;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;
+  display:inline-flex;align-items:center;gap:.3rem;line-height:1.2;
+  text-decoration:none;
+}
+.chip:active{transform:translateY(1px)}
+.chip.tone{background:var(--accent);color:#fff}
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---------- home ---------- */
+.home-head{text-align:center;flex:0 0 auto;padding:.2rem 0 .8rem}
+.home-title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1.1rem}
+.home-title-row h1{margin:0;font-size:2rem;letter-spacing:.04em}
+.home-head p{margin:.3rem 0 0;color:var(--ink-soft);font-size:.85rem}
+.song-btn{
+  flex:0 0 auto;border:none;background:var(--card);color:var(--ink);cursor:pointer;
+  font-family:inherit;font-size:.85rem;font-weight:700;
+  padding:.5rem 1.1rem;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;
+}
+.song-btn:active{transform:translateY(1px)}
+.modal{
+  position:fixed;inset:0;background:rgba(20,16,12,.82);z-index:50;
+  display:none;align-items:center;justify-content:center;padding:2rem;
+}
+.modal.open{display:flex}
+.modal-inner{position:relative;width:min(92vw,32rem)}
+.modal-close{
+  position:absolute;top:-2.6rem;right:0;border:none;cursor:pointer;
+  background:#fff;color:var(--ink);border-radius:999px;width:2.4rem;height:2.4rem;
+  font-size:1.1rem;box-shadow:var(--shadow);
+}
+.song-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1.6rem;display:flex;flex-direction:column;gap:1rem;align-items:center;text-align:center}
+.song-card .title{font-size:1.3rem;font-weight:700}
+.song-lines{display:flex;flex-direction:column;gap:.4rem;width:100%}
+.song-line{font-size:1.1rem;padding:.4rem;border-radius:.7rem;transition:background .2s,color .2s;color:var(--ink-soft)}
+.song-line.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
+
+.grid-stations{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));
+  gap:.7rem;padding:.2rem .2rem 1rem;align-content:start;
+}
+.station{
+  border:none;cursor:pointer;font-family:inherit;color:inherit;text-align:left;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem .85rem;display:flex;flex-direction:column;gap:.3rem;
+  border-top:.28rem solid var(--accent);
+}
+.station:active{transform:translateY(2px)}
+.station .ico{font-size:1.7rem;line-height:1}
+.station b{font-size:1rem}
+.station small{color:var(--ink-soft);font-size:.72rem;line-height:1.4}
+
+/* ---------- generic activity frame ---------- */
+.act{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:.6rem}
+.act-q{flex:0 0 auto;text-align:center;font-size:1.5rem;font-weight:700;line-height:1.25}
+.act-q .sub{display:block;font-size:.72rem;font-weight:400;color:var(--ink-soft);letter-spacing:.08em;margin-top:.2rem}
+.act-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;overflow:hidden}
+.act-foot{flex:0 0 auto;display:flex;justify-content:center;gap:.5rem;padding-bottom:.2rem}
+
+.verdict{font-size:1.5rem;font-weight:700;min-height:2rem;text-align:center}
+.verdict.good{color:#1E7A46}
+.verdict.retry{color:#B4562C}
+@keyframes popIn{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.pop{animation:popIn .34s cubic-bezier(.22,1.2,.4,1)}
+
+/* ---------- 听一听 ---------- */
+.choice-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
+.choice-btn{
+  width:7.5rem;height:7.5rem;border-radius:1.4rem;border:none;cursor:pointer;
+  background:var(--card);box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08);
+  font-size:3.2rem;display:flex;align-items:center;justify-content:center;
+}
+.choice-btn:active{transform:scale(.96)}
+.choice-btn.wrong{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-.5rem)}75%{transform:translateX(.5rem)}}
+.prompt-word{font-size:3rem;font-weight:700;letter-spacing:.08em}
+
+/* ---------- 翻牌 ---------- */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:min(100%,32rem)}
+.flip{
+  aspect-ratio:1/1;border:none;border-radius:1.1rem;cursor:pointer;font-family:inherit;
+  background:var(--accent);box-shadow:var(--shadow);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;
+  font-size:2.4rem;-webkit-appearance:none;appearance:none;overflow:hidden;padding:0;
+}
+.flip.open{background:var(--card);color:var(--ink)}
+.flip .emo{font-size:1.5em;line-height:1}
+.flip span.zh{font-size:.85rem;font-weight:700}
+.flip .qm{opacity:.85}
+
+/* ---------- 说你好 ---------- */
+.greet-row{display:flex;gap:2.4rem;align-items:flex-end;justify-content:center}
+.avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:.5rem;cursor:pointer;border:none;background:none;font-family:inherit}
+.avatar-wrap .bubble{background:var(--card);padding:.4rem 1rem;border-radius:999px;box-shadow:var(--shadow);font-weight:700;font-size:1.05rem}
+.avatar-wrap svg{transform-origin:50% 15%}
+.avatar-wrap.wave svg{animation:wave .5s ease}
+@keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+.turn-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1rem 1.4rem;text-align:center;display:flex;flex-direction:column;gap:.3rem;align-items:center;max-width:26rem;
+}
+.turn-card .big{font-size:2.2rem}
+.turn-card b{font-size:1.05rem}
+.turn-card small{color:var(--ink-soft);font-size:.75rem;line-height:1.5}
+
+/* ---------- 问答对话 ---------- */
+.dialog-wrap{display:flex;flex-direction:column;gap:.9rem;width:min(100%,30rem)}
+.dialog-line{
+  display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:.8rem 1rem;cursor:pointer;
+}
+.dialog-line .who{font-size:1.8rem;flex:0 0 auto}
+.dialog-line .who-photo{width:2.3rem;height:2.3rem;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:0 0 0 2px #fff,inset 0 0 0 1px rgba(0,0,0,.08)}
+.dialog-line .txt{font-size:1.15rem;font-weight:700;flex:1 1 auto}
+.dialog-line.q{border-left:.3rem solid var(--accent)}
+.dialog-line.a{border-left:.3rem solid #4FC3F7}
+
+/* ---------- 拼句子 ---------- */
+.sentence-built{font-size:1.9rem;font-weight:700;min-height:2.6rem;letter-spacing:.05em;text-align:center}
+.sentence-built .blank{color:var(--ink-soft)}
+.tile-row{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:30rem}
+.tile{
+  border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow);border-radius:.8rem;padding:.6rem 1rem;font-size:1.3rem;font-weight:700;
+}
+.tile:active{transform:translateY(2px)}
+.tile.used{opacity:.25;pointer-events:none}
+.tile.wrong{animation:shake .4s}
+
+/* ---------- 内圈外圈问名字 ---------- */
+.circle-steps{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.8rem 1.1rem;max-width:32rem;font-size:.8rem;line-height:1.7;color:var(--ink-soft);
+}
+.circle-steps b{color:var(--ink)}
+.circle-stage{position:relative;width:16rem;height:16rem;flex:0 0 auto}
+.ring{position:absolute;inset:0}
+.ring.outer{animation:none}
+.ring.outer.spin{animation:ringspin var(--dur,5.5s) linear infinite}
+.ring.outer.spin.rev{animation-direction:reverse}
+@keyframes ringspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.ring-dot{
+  position:absolute;left:50%;top:50%;width:2.3rem;height:2.3rem;margin:-1.15rem;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08);
+}
+.ring-dot.in{background:#FFE3CE}
+.ring-dot.out{background:#DFF4FF}
+.circle-hub{
+  position:absolute;left:50%;top:50%;width:2.6rem;height:2.6rem;margin:-1.3rem;border-radius:50%;
+  background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+}
+.circle-status{font-size:1.15rem;font-weight:700;text-align:center;min-height:1.8rem}
+.circle-controls{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
+.round-badge{
+  background:var(--card);border-radius:999px;box-shadow:var(--shadow);padding:.35rem .85rem;
+  font-size:.78rem;font-weight:700;color:var(--ink-soft);
+}
+
+.hint{text-align:center;color:var(--ink-soft);font-size:.72rem;line-height:1.5;padding:0 1rem}
+.teacher-note{
+  background:#FFF6DA;border-radius:.8rem;padding:.6rem .9rem;font-size:.72rem;color:#6A5A2E;
+  line-height:1.5;max-width:34rem;text-align:center;
+}
+::-webkit-scrollbar{width:.5rem;height:.5rem}
+::-webkit-scrollbar-thumb{background:rgba(46,42,40,.2);border-radius:99px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="blob a"></div><div class="blob b"></div>
+<div id="app">
+  <div class="topbar" id="topbar"></div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<div id="songModal" class="modal">
+  <div class="modal-inner">
+    <button class="modal-close" id="songCloseBtn">✕</button>
+    <div class="song-card">
+      <div class="title">🎵 你好儿歌</div>
+      <div class="song-lines" id="songLines"></div>
+      <button class="chip tone" id="songPlayBtn">🔊 跟着念一念</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   你叫什么名字 · What's Your Name
+   打招呼 / 自我介绍单元。单文件，无外部依赖（字体除外）。
+   7 个课堂活动 + 1 个"内圈外圈问名字"教室游戏工具。
+   ============================================================ */
+
+const WORDS = [
+  { zh:"你好", en:"Hello", emo:"👋" },
+  { zh:"你",   en:"You",   emo:"🫵" },
+  { zh:"我",   en:"Me",    emo:"🙋" },
+  { zh:"叫",   en:"named", emo:"🏷️" },
+  { zh:"什么", en:"what",  emo:"❓" },
+  { zh:"名字", en:"name",  emo:"📛" }
+];
+
+const NAMES = ["罗大韦","陈小美","王强强","李丽丽","张明明","刘娜娜","高安安","黄乐乐"];
+
+const GREET_HEXES = ["#4FC3F7","#FF7A63","#35D0BA","#B18CF0","#FFC94D","#F0663C"];
+
+const CHANT = [
+  "你好你好，你好呀！",
+  "你好你好，你好呀！",
+  "你叫什么名字？你叫什么名字？",
+  "我叫我叫，我的名字是……",
+  "你好你好，我们做朋友！"
+];
+
+const STATIONS = [
+  { id:"greet",    ico:"👋", zh:"说你好",          sub:"看人物打招呼，跟着说一说" },
+  { id:"ask",      ico:"💬", zh:"你叫什么名字",    sub:"听问答，再和同桌试一试" },
+  { id:"listen",   ico:"👂", zh:"听一听，指一指",  sub:"听到哪个词，就指出来" },
+  { id:"flip",     ico:"🃏", zh:"翻一翻认词卡",    sub:"翻开卡片，认一认这个词" },
+  { id:"sentence", ico:"🧩", zh:"拼一拼句子",      sub:"把词语按顺序拼成一句话" },
+  { id:"circle",   ico:"⭕", zh:"内圈外圈问名字",  sub:"教室游戏：转圈圈，问名字" }
+];
+
+/* ---------------- 状态 ---------------- */
+let view = { name:"home", station:null };
+let muted = false;
+const stage = document.getElementById("stage");
+const topbar = document.getElementById("topbar");
+
+/* ---------------- 声音 ---------------- */
+let ac=null;
+function actx(){ if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ac; }
+function tone(freq,dur,type,vol,delay){
+  if(muted) return; const c=actx(); if(!c) return;
+  const t=c.currentTime+(delay||0);
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||"sine"; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol||.16,t+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.02);
+}
+const sfxTap     = ()=> tone(520,.07,"triangle",.11);
+const sfxGood    = ()=>{ tone(660,.14,"sine",.16,0); tone(880,.14,"sine",.16,.09); tone(1180,.24,"sine",.14,.18); };
+const sfxRetry   = ()=>{ tone(320,.16,"sine",.12,0); tone(250,.20,"sine",.10,.11); };
+const sfxReveal  = ()=>{ tone(740,.10,"triangle",.13,0); tone(990,.14,"triangle",.11,.07); };
+const sfxTick    = ()=> tone(880,.045,"square",.05);
+const sfxBell    = ()=>{ tone(1046,.16,"sine",.15,0); tone(1568,.22,"sine",.12,.1); };
+
+/* ---------------- 中文朗读（跟四会字页面同一套发音引擎） ---------------- */
+const SANITY_PROJECT_ID = 'sow12t1i';
+const SANITY_DATASET = 'production';
+const SANITY_WORD_QUERY = encodeURIComponent('*[_type == "word"] | order(_createdAt asc) {char, "audioUrl": audio.asset->url}');
+const SANITY_WORD_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_WORD_QUERY}`;
+
+let sanityAudioMap = {};
+(async function loadSanityAudioMap(){
+  try{
+    const r = await fetch(SANITY_WORD_API);
+    const d = await r.json();
+    (d.result||[]).forEach(w=>{ if(w.char && w.audioUrl) sanityAudioMap[w.char]=w.audioUrl; });
+  }catch(e){}
+})();
+
+/* ---------------- 本学年真实学生名单（大象班 + 老虎班），带头像 ---------------- */
+function currentAcademicYear(){
+  const now = new Date();
+  const startYear = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1;
+  return `${String(startYear).slice(-2)}-${String(startYear+1).slice(-2)}`;
+}
+const ACADEMIC_YEAR = currentAcademicYear();
+const SANITY_ROSTER_QUERY = encodeURIComponent(`*[_type == "student" && className in ["elephant","tiger"] && academicYear == "${ACADEMIC_YEAR}"]{name, "img": avatar.asset->url}`);
+const SANITY_ROSTER_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_ROSTER_QUERY}`;
+
+let roster = [];
+(async function loadRoster(){
+  try{
+    const r = await fetch(SANITY_ROSTER_API);
+    const d = await r.json();
+    roster = (d.result||[]).filter(s=>s.name);
+  }catch(e){}
+})();
+/* 名单没读到（离线/新学年还没录入）时，退回到这几个通用示例名字 */
+function pickStudent(){
+  if(roster.length) return pick(roster);
+  return { name: pick(NAMES), img:null };
+}
+
+let globalAudio = new Audio();
+
+async function speak(text){
+  if(muted || !text) return;
+  globalAudio.pause();
+  const sanityAudioUrl = sanityAudioMap[text];
+
+  if(sanityAudioUrl){
+    globalAudio.src = sanityAudioUrl;
+    await globalAudio.play().catch(e=>console.warn("Sanity音频播放失败", e));
+    return;
+  }
+
+  const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+  const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+  try{
+    const localRes = await fetch(localPath, { method:"HEAD" }).catch(()=>null);
+    if(localRes && localRes.ok && localRes.headers.get("content-type") && localRes.headers.get("content-type").includes("audio")){
+      globalAudio.src = localPath; await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    const azureRes = await fetch(azureUrl).catch(()=>null);
+    if(azureRes && azureRes.ok && azureRes.headers.get("content-type") && azureRes.headers.get("content-type").includes("audio")){
+      const audioBlob = await azureRes.blob();
+      globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="zh-CN"; u.rate=.75;
+    const v=speechSynthesis.getVoices().find(v=>/zh|Chinese/i.test(v.lang+v.name));
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------------- 小工具 ---------------- */
+const el=(t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function otherWords(target){ return WORDS.filter(w=>w!==target); }
+
+/* 内圈外圈游戏的转圈提示音计时器，离开页面/切活动时必须清掉，避免残留 */
+let circleTicker=null;
+function stopCircleTicker(){ if(circleTicker){ clearInterval(circleTicker); circleTicker=null; } }
+
+/* ---------------- 顶栏 ---------------- */
+function renderTop(){
+  topbar.innerHTML="";
+  if(view.name==="home"){
+    const back=el("a","chip","← 教师工具台");
+    back.href="../teachers.html";
+    topbar.appendChild(back);
+  }else{
+    const back=el("button","chip","← 你叫什么名字");
+    back.onclick=()=>{ sfxTap(); go("home"); };
+    topbar.appendChild(back);
+  }
+  topbar.appendChild(el("div","spacer"));
+  if(view.name==="station"){
+    const again=el("button","chip tone","↻ 再来一个");
+    again.onclick=()=>{ sfxTap(); renderStage(); };
+    topbar.appendChild(again);
+  }
+  const m=el("button","chip", muted?"🔇 静音":"🔊 有声");
+  m.onclick=()=>{ muted=!muted; if(!muted) sfxTap(); renderTop(); };
+  topbar.appendChild(m);
+}
+
+function go(name,station){
+  stopCircleTicker();
+  view={name, station: station||null};
+  renderTop(); renderStage();
+  stage.scrollTop=0;
+}
+
+/* ============================================================
+   首页 = 活动菜单（这个单元只有一个主题，不用先选"天"）
+   ============================================================ */
+function renderHome(){
+  const head=el("div","home-head");
+  const titleRow=el("div","home-title-row");
+  const songBtn=el("button","song-btn","🎵 你好儿歌");
+  songBtn.onclick=()=>{ sfxTap(); openSong(); };
+  titleRow.appendChild(songBtn);
+  titleRow.appendChild(el("h1",null,"你叫什么名字？"));
+  head.appendChild(titleRow);
+  head.appendChild(el("p",null,"What's Your Name? · 点一个活动开始"));
+  stage.appendChild(head);
+
+  const grid=el("div","grid-stations");
+  STATIONS.forEach(s=>{
+    const b=el("button","station");
+    b.appendChild(el("div","ico",s.ico));
+    b.appendChild(el("b",null,s.zh));
+    b.appendChild(el("small",null,s.sub));
+    b.onclick=()=>{ sfxTap(); go("station",s.id); };
+    grid.appendChild(b);
+  });
+  stage.appendChild(grid);
+}
+
+/* ============================================================
+   人物 SVG（自绘，男女孩形象跟颜色日页面同一套画法，换个配色）
+   ============================================================ */
+function personSvg(hex, girl){
+  if(girl){
+    return '<svg viewBox="0 0 100 140" width="86" height="120">'
+      + '<rect x="39" y="104" width="10" height="24" rx="5" fill="#FBD8B0"/>'
+      + '<rect x="51" y="104" width="10" height="24" rx="5" fill="#FBD8B0"/>'
+      + '<ellipse cx="43" cy="130" rx="8" ry="5" fill="#C0447A"/>'
+      + '<ellipse cx="57" cy="130" rx="8" ry="5" fill="#C0447A"/>'
+      + '<ellipse cx="24" cy="78" rx="7" ry="17" fill="#FBD8B0" stroke="#2E2A28" stroke-width="2.5" transform="rotate(-12 24 78)"/>'
+      + '<ellipse cx="76" cy="78" rx="7" ry="17" fill="#FBD8B0" stroke="#2E2A28" stroke-width="2.5" transform="rotate(12 76 78)"/>'
+      + '<path d="M32 64 Q50 56 68 64 L78 106 Q50 118 22 106 Z" fill="'+hex+'" stroke="#2E2A28" stroke-width="3" stroke-linejoin="round"/>'
+      + '<circle cx="50" cy="38" r="24" fill="#FBD8B0" stroke="#2E2A28" stroke-width="3"/>'
+      + '<circle cx="19" cy="42" r="9" fill="#5A3320" stroke="#2E2A28" stroke-width="2"/>'
+      + '<circle cx="81" cy="42" r="9" fill="#5A3320" stroke="#2E2A28" stroke-width="2"/>'
+      + '<path d="M27 30 Q30 10 50 10 Q70 10 73 30 Q64 18 50 18 Q36 18 27 30Z" fill="#5A3320" stroke="#2E2A28" stroke-width="2" stroke-linejoin="round"/>'
+      + '<circle cx="41" cy="40" r="2.8" fill="#2E2A28"/><circle cx="59" cy="40" r="2.8" fill="#2E2A28"/>'
+      + '<circle cx="35" cy="47" r="4" fill="#F4A9A0" opacity=".6"/><circle cx="65" cy="47" r="4" fill="#F4A9A0" opacity=".6"/>'
+      + '<path d="M41 51 Q50 58 59 51" fill="none" stroke="#2E2A28" stroke-width="2.4" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+  return '<svg viewBox="0 0 100 140" width="86" height="120">'
+    + '<rect x="34" y="98" width="12" height="32" rx="6" fill="#3a3a3a"/>'
+    + '<rect x="54" y="98" width="12" height="32" rx="6" fill="#3a3a3a"/>'
+    + '<ellipse cx="40" cy="132" rx="9" ry="5" fill="#2E2A28"/><ellipse cx="60" cy="132" rx="9" ry="5" fill="#2E2A28"/>'
+    + '<ellipse cx="22" cy="80" rx="8" ry="18" fill="#FBD8B0" stroke="#2E2A28" stroke-width="2.5" transform="rotate(-15 22 80)"/>'
+    + '<ellipse cx="78" cy="80" rx="8" ry="18" fill="#FBD8B0" stroke="#2E2A28" stroke-width="2.5" transform="rotate(15 78 80)"/>'
+    + '<path d="M30 66 Q50 58 70 66 L74 102 Q50 110 26 102 Z" fill="'+hex+'" stroke="#2E2A28" stroke-width="3" stroke-linejoin="round"/>'
+    + '<circle cx="50" cy="38" r="24" fill="#FBD8B0" stroke="#2E2A28" stroke-width="3"/>'
+    + '<path d="M26 32 Q28 10 50 10 Q72 10 74 32 Q66 20 50 20 Q34 20 26 32Z" fill="#4A3524" stroke="#2E2A28" stroke-width="2" stroke-linejoin="round"/>'
+    + '<circle cx="41" cy="40" r="2.8" fill="#2E2A28"/><circle cx="59" cy="40" r="2.8" fill="#2E2A28"/>'
+    + '<circle cx="35" cy="47" r="4" fill="#F4A9A0" opacity=".6"/><circle cx="65" cy="47" r="4" fill="#F4A9A0" opacity=".6"/>'
+    + '<path d="M41 51 Q50 58 59 51" fill="none" stroke="#2E2A28" stroke-width="2.4" stroke-linecap="round"/>'
+    + '</svg>';
+}
+
+/* ============================================================
+   活动 1 · 说你好
+   ============================================================ */
+function actGreet(){
+  const hexes = shuffle(GREET_HEXES).slice(0,2);
+
+  const q=el("div","act-q");
+  q.innerHTML='打个招呼吧<span class="sub">点一下人物，听他说"你好"</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const row=el("div","greet-row");
+
+  [["girl",hexes[0]],["boy",hexes[1]]].forEach(([kind,hex])=>{
+    const wrap=el("button","avatar-wrap");
+    wrap.innerHTML=personSvg(hex, kind==="girl") + '<div class="bubble">你好！</div>';
+    wrap.onclick=()=>{
+      sfxTap(); speak("你好");
+      wrap.classList.remove("wave"); void wrap.offsetWidth; wrap.classList.add("wave");
+    };
+    row.appendChild(wrap);
+  });
+  body.appendChild(row);
+
+  const turn=el("div","turn-card");
+  turn.appendChild(el("div","big","🤝"));
+  turn.appendChild(el("b",null,"轮到你啦！"));
+  turn.appendChild(el("small",null,"转身跟旁边的同学挥挥手，说一句「你好」。"));
+  body.appendChild(turn);
+
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 2 · 你叫什么名字（问答对话）
+   ============================================================ */
+function avatarNode(student, fallbackEmoji){
+  if(student && student.img){
+    const img=document.createElement("img");
+    img.className="who-photo"; img.src=student.img; img.alt=student.name;
+    return img;
+  }
+  return el("div","who",fallbackEmoji||"🙋");
+}
+
+function actAsk(){
+  const Q = "你好，你叫什么名字？";
+  let student = pickStudent();
+
+  const q=el("div","act-q");
+  q.innerHTML='问答对话<span class="sub">点一下气泡，听听怎么问、怎么答，还能再听一遍</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const wrap=el("div","dialog-wrap");
+
+  const qLine=el("div","dialog-line q");
+  qLine.appendChild(el("div","who","🙋"));
+  qLine.appendChild(el("div","txt",Q));
+  qLine.onclick=()=>{ sfxTap(); speak(Q); };
+  wrap.appendChild(qLine);
+
+  const aLine=el("div","dialog-line a");
+  function renderA(){
+    aLine.innerHTML="";
+    aLine.appendChild(avatarNode(student,"🙋‍♀️"));
+    aLine.appendChild(el("div","txt","你好，我叫"+student.name+"。"));
+  }
+  renderA();
+  aLine.onclick=()=>{ sfxTap(); speak("你好，我叫"+student.name); };
+  wrap.appendChild(aLine);
+
+  const swap=el("button","chip","🔄 换个同学再听听");
+  swap.onclick=()=>{
+    sfxTap();
+    for(let i=0;i<6;i++){
+      const next=pickStudent();
+      if(next.name!==student.name){ student=next; break; }
+    }
+    renderA();
+    speak("你好，我叫"+student.name);
+  };
+
+  body.appendChild(wrap);
+  body.appendChild(swap);
+
+  const turn=el("div","turn-card");
+  turn.appendChild(el("div","big","🎤"));
+  turn.appendChild(el("b",null,"该你啦！"));
+  turn.appendChild(el("small",null,"转身问问同桌：「你叫什么名字？」，再回答他/她。"));
+  body.appendChild(turn);
+
+  stage.appendChild(body);
+  speak(Q);
+}
+
+/* ============================================================
+   活动 3 · 听一听，指一指
+   ============================================================ */
+function actListen(){
+  const target = pick(WORDS);
+  const distract = shuffle(otherWords(target)).slice(0,3);
+  const opts = shuffle([target, ...distract]);
+
+  const q=el("div","act-q");
+  q.innerHTML='哪个是？<span class="sub">老师读词语，学生指出来</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const word=el("div","prompt-word",target.zh);
+  const say=el("button","chip tone","🔊 再说一遍");
+  say.onclick=()=>speak(target.zh);
+  const row=el("div","choice-row");
+  const verdict=el("div","verdict");
+
+  opts.forEach(o=>{
+    const b=el("button","choice-btn",o.emo);
+    b.onclick=()=>{
+      if(o===target){
+        sfxGood(); verdict.textContent="对了！"+target.zh; verdict.className="verdict good pop";
+        row.querySelectorAll("button").forEach(x=>x.disabled=true);
+        setTimeout(renderStage,1400);
+      }else{
+        sfxRetry(); b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
+        verdict.textContent="再试试"; verdict.className="verdict retry";
+      }
+    };
+    row.appendChild(b);
+  });
+
+  body.appendChild(word); body.appendChild(say); body.appendChild(row); body.appendChild(verdict);
+  stage.appendChild(body);
+  speak(target.zh);
+}
+
+/* ============================================================
+   活动 4 · 翻一翻认词卡
+   ============================================================ */
+function actFlip(){
+  const q=el("div","act-q");
+  q.innerHTML='翻一翻，认一认<span class="sub">点开卡片，一起读出这个词</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const grid=el("div","card-grid");
+  WORDS.forEach(w=>{
+    const c=el("button","flip");
+    c.innerHTML='<div class="qm">？</div>';
+    c.onclick=()=>{
+      if(c.classList.contains("open")){ speak(w.zh); return; }
+      sfxReveal(); c.classList.add("open","pop");
+      c.innerHTML="";
+      c.appendChild(el("div","emo",w.emo));
+      c.appendChild(el("span","zh",w.zh));
+      speak(w.zh);
+    };
+    grid.appendChild(c);
+  });
+  body.appendChild(grid);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 5 · 拼一拼句子
+   ============================================================ */
+function actSentence(){
+  const mode = Math.random()<.5 ? "q" : "a";
+  const tokens = mode==="q" ? ["你","叫","什么","名字","？"] : ["我","叫",pickStudent().name,"。"];
+  const shuffled = shuffle(tokens);
+
+  const q=el("div","act-q");
+  q.innerHTML='拼一拼句子<span class="sub">按正确的顺序，点出一句话</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const built=el("div","sentence-built");
+  const blanks = ()=> "".padStart(tokens.length,"▢");
+  built.innerHTML = '<span class="blank">'+blanks()+'</span>';
+
+  const row=el("div","tile-row");
+  const verdict=el("div","verdict");
+  let next=0, doneStr="";
+
+  shuffled.forEach(word=>{
+    const t=el("button","tile",word);
+    t.onclick=()=>{
+      if(word===tokens[next]){
+        sfxTap();
+        doneStr+=word; next++;
+        t.classList.add("used");
+        const remain = tokens.length-next;
+        built.innerHTML = doneStr + '<span class="blank">'+"".padStart(remain,"▢")+'</span>';
+        if(next===tokens.length){
+          sfxGood();
+          speak(doneStr);
+          verdict.textContent="对啦！"+doneStr;
+          verdict.className="verdict good pop";
+          row.querySelectorAll("button").forEach(x=>x.disabled=true);
+          setTimeout(renderStage,1900);
+        }
+      }else{
+        sfxRetry();
+        t.classList.remove("wrong"); void t.offsetWidth; t.classList.add("wrong");
+        verdict.textContent="再想想，下一个词是什么"; verdict.className="verdict retry";
+      }
+    };
+    row.appendChild(t);
+  });
+
+  body.appendChild(built); body.appendChild(row); body.appendChild(verdict);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 6 · 内圈外圈问名字（教室游戏工具）
+   老师带全班坐成内外两个同心圆，外圈边唱边走，音乐一停，
+   面对面的两人互相问名字。这里提供一个可视化的转圈 + 计时小工具。
+   ============================================================ */
+function buildRing(cls, n, radius, emoji){
+  const ring=el("div","ring "+cls);
+  for(let i=0;i<n;i++){
+    const ang = (360/n)*i - 90;
+    const rad = ang*Math.PI/180;
+    const x = Math.cos(rad)*radius, y = Math.sin(rad)*radius;
+    const dot=el("div","ring-dot "+(cls==="outer"?"out":"in"), emoji);
+    dot.style.transform = `translate(${x}rem, ${y}rem)`;
+    ring.appendChild(dot);
+  }
+  return ring;
+}
+
+function actCircle(){
+  const state = { spinning:false, round:0, dir:1 };
+
+  const q=el("div","act-q");
+  q.innerHTML='内圈外圈问名字<span class="sub">教室游戏 · 音乐停，就问好</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+
+  const steps=el("div","circle-steps");
+  steps.innerHTML =
+    "<b>1.</b> 全班坐成内外两个同心圆——内圈朝外坐，外圈朝内坐，正好两两面对面。<br>"+
+    "<b>2.</b> 点「开始转圈」，外圈的同学一起边唱边慢慢挪动，内圈的同学不动。<br>"+
+    "<b>3.</b> 点「停下问好」，正对面的两人互相问："+
+    "<b>你叫什么名字？</b> —— <b>我叫……</b><br>"+
+    "<b>4.</b> 再点一次「开始」，继续下一轮，方向也会换一换。";
+  body.appendChild(steps);
+
+  const ringWrap=el("div","circle-stage");
+  const inner = buildRing("inner", 6, 3.3, "🧒");
+  const outer = buildRing("outer", 6, 6.2, "🧑");
+  const hub = el("div","circle-hub","🎵");
+  ringWrap.appendChild(inner); ringWrap.appendChild(outer); ringWrap.appendChild(hub);
+  body.appendChild(ringWrap);
+
+  const status=el("div","circle-status","准备好了就点「开始转圈」吧");
+  body.appendChild(status);
+
+  const controls=el("div","circle-controls");
+  const btn=el("button","chip tone","▶️ 开始转圈");
+  const roundBadge=el("div","round-badge","第 0 轮");
+  controls.appendChild(btn); controls.appendChild(roundBadge);
+  body.appendChild(controls);
+
+  btn.onclick=()=>{
+    if(!state.spinning){
+      sfxTap();
+      state.spinning=true;
+      outer.classList.add("spin");
+      outer.classList.toggle("rev", state.dir<0);
+      status.textContent="🚶 走走走，一起唱着走～";
+      btn.textContent="🔔 停下问好";
+      stopCircleTicker();
+      circleTicker=setInterval(sfxTick,450);
+    }else{
+      stopCircleTicker();
+      state.spinning=false;
+      state.round++; state.dir*=-1;
+      outer.classList.remove("spin","rev");
+      sfxBell();
+      status.textContent="🔔 停！问一问：你叫什么名字？";
+      status.classList.remove("pop"); void status.offsetWidth; status.classList.add("pop");
+      btn.textContent="▶️ 开始转圈";
+      roundBadge.textContent="第 "+state.round+" 轮";
+    }
+  };
+
+  stage.appendChild(body);
+
+  const foot=el("div","act-foot");
+  const note=el("div","teacher-note",
+    "小贴士：熟练之后可以升级——两人问完名字，要跟对方击个掌，或者说一遍对方的名字，才能坐下等下一轮。");
+  foot.appendChild(note);
+  stage.appendChild(foot);
+}
+
+/* ============================================================
+   渲染分发
+   ============================================================ */
+const ACTS={ greet:actGreet, ask:actAsk, listen:actListen, flip:actFlip, sentence:actSentence, circle:actCircle };
+
+function renderStage(){
+  stopCircleTicker();
+  stage.innerHTML="";
+  if(view.name==="home") return renderHome();
+  ACTS[view.station]();
+}
+
+/* ---------------- 你好儿歌弹窗 ---------------- */
+const songModal=document.getElementById("songModal");
+const songLines=document.getElementById("songLines");
+const songCloseBtn=document.getElementById("songCloseBtn");
+const songPlayBtn=document.getElementById("songPlayBtn");
+let songPlaying=false;
+
+function openSong(){
+  songLines.innerHTML="";
+  CHANT.forEach(line=>songLines.appendChild(el("div","song-line",line)));
+  songModal.classList.add("open");
+}
+function closeSong(){
+  songModal.classList.remove("open");
+  songPlaying=false;
+}
+async function playChant(){
+  if(songPlaying) return;
+  songPlaying=true;
+  const lines=[...songLines.children];
+  for(let i=0;i<lines.length && songPlaying;i++){
+    lines.forEach(l=>l.classList.remove("active"));
+    lines[i].classList.add("active");
+    speak(CHANT[i]);
+    await sleep(900 + CHANT[i].length*160);
+  }
+  lines.forEach(l=>l.classList.remove("active"));
+  songPlaying=false;
+}
+songCloseBtn.onclick=()=>{ sfxTap(); closeSong(); };
+songPlayBtn.onclick=()=>{ sfxTap(); playChant(); };
+songModal.addEventListener("click",e=>{ if(e.target===songModal) closeSong(); });
+
+/* 键盘：Esc 返回 / 关弹窗，空格 换一个 */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&songModal.classList.contains("open")){ closeSong(); return; }
+  if(e.key==="Escape"||e.key==="ArrowLeft"){
+    if(view.name==="station") go("home");
+  }
+  if(e.key===" "&&view.name==="station"){ e.preventDefault(); renderStage(); }
+});
+
+if(window.speechSynthesis) speechSynthesis.getVoices();
+go("home");
+</script>
+</body>
+</html>
