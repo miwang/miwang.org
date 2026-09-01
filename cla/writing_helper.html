@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="../favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>写作帮手 — Writing Helper</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/common_nav.css">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  :root{
+    --cat-family:#FF7A63;
+    --cat-feel:#FF6FA5;
+    --cat-weather:#4FC3F7;
+    --cat-class:#35D0BA;
+    --cat-color:#B18CF0;
+    --cat-food:#FFC94D;
+    --cat-animal:#6FBF73;
+    --cat-zodiac:#D79A3A;
+    --cat-verb:#4F8FE0;
+    --cat-body:#C97BD1;
+    --cat-shape:#5B8C8C;
+    --border: rgba(53,64,90,0.12);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{
+    padding-top:64px;
+    padding-bottom:60px;
+    min-height:100vh;
+  }
+  .page{
+    max-width:1240px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+  .intro{
+    text-align:center;
+    margin:28px auto 8px;
+    max-width:720px;
+  }
+  .intro h2{
+    font-family:var(--font-zh);
+    font-size:1.5rem;
+    color:var(--c-ink);
+    margin-bottom:8px;
+  }
+  .intro p{
+    color:var(--c-ink-soft);
+    font-size:0.92rem;
+    line-height:1.6;
+  }
+
+  /* 🔍 搜索 */
+  .search-wrap{
+    max-width:420px;
+    margin:18px auto 6px;
+  }
+  .search-box{
+    width:100%;
+    padding:12px 20px;
+    border-radius:999px;
+    border:2px solid var(--border);
+    background:var(--c-card);
+    font-family:var(--font-zh);
+    font-size:1rem;
+    color:var(--c-ink);
+    box-shadow:var(--shadow-soft);
+    outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .search-box:focus{
+    border-color:var(--c-sky);
+    box-shadow:0 0 0 4px rgba(79,195,247,0.18);
+  }
+
+  /* 🧭 分类速览条 */
+  .quicknav{
+    position:sticky;
+    top:60px;
+    z-index:50;
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:12px 4px;
+    margin:10px 0 24px;
+    background:linear-gradient(180deg, var(--c-cream) 70%, rgba(255,248,236,0));
+    scrollbar-width:thin;
+  }
+  .quicknav::-webkit-scrollbar{height:6px;}
+  .quicknav::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+  .qn-chip{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 16px;
+    border-radius:999px;
+    background:var(--c-card);
+    border:1.5px solid var(--border);
+    color:var(--c-ink);
+    font-family:var(--font-zh);
+    font-size:0.88rem;
+    font-weight:bold;
+    text-decoration:none;
+    box-shadow:0 2px 6px rgba(53,64,90,0.05);
+    transition:transform .2s ease, box-shadow .2s ease;
+    white-space:nowrap;
+  }
+  .qn-chip:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(53,64,90,0.10);}
+  .qn-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+  /* 📚 分类区块 */
+  .category{
+    margin-bottom:44px;
+    scroll-margin-top:130px;
+  }
+  .cat-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding-left:16px;
+    border-left:6px solid var(--accent, var(--c-coral));
+    margin-bottom:18px;
+  }
+  .cat-badge{
+    width:38px;height:38px;
+    border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--accent, var(--c-coral));
+    color:#fff;
+    font-size:1.1rem;
+    flex-shrink:0;
+    box-shadow:0 3px 8px rgba(0,0,0,0.12);
+  }
+  .cat-titles{display:flex;flex-direction:column;gap:2px;}
+  .cat-zh{
+    font-family:var(--font-zh);
+    font-size:1.25rem;
+    font-weight:bold;
+    color:var(--c-ink);
+  }
+  .cat-en{
+    font-family:var(--font-en);
+    font-size:0.72rem;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--c-ink-soft);
+  }
+  .cat-count{
+    margin-left:auto;
+    font-family:var(--font-en);
+    font-size:0.75rem;
+    color:var(--c-ink-soft);
+    background:rgba(53,64,90,0.06);
+    padding:3px 10px;
+    border-radius:999px;
+    flex-shrink:0;
+  }
+
+  .word-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(108px, 1fr));
+    gap:12px;
+  }
+  .word-card{
+    background:var(--c-card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:14px 8px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    text-align:center;
+    box-shadow:0 3px 10px rgba(53,64,90,0.05);
+    transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease;
+  }
+  .word-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 10px 22px rgba(53,64,90,0.10);
+  }
+  .word-card.hide{display:none;}
+  .category.no-match{display:none;}
+
+  .badge{
+    width:46px;height:46px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.25rem;
+    flex-shrink:0;
+    position:relative;
+  }
+  .badge svg{width:30px;height:30px;}
+  .badge.fam{
+    background:#FBF1E4;
+    border:1px solid var(--border);
+    width:52px;height:52px;
+  }
+  .badge.fam svg{width:42px;height:48px;}
+  .badge.shape{
+    background:#FBF1E4;
+    border:1px solid var(--border);
+  }
+  .badge.ill{
+    background:#FBF1E4;
+    border:1px solid var(--border);
+    width:50px;height:50px;
+  }
+  .badge.ill svg{width:38px;height:38px;}
+  .badge.ill-neg{
+    background:#F5F3EF;
+    border:2px dashed var(--border);
+  }
+  .badge.ill-neg svg{filter:grayscale(1) opacity(0.55);}
+  .badge.ill-neg::after{
+    content:'';
+    position:absolute;
+    width:68%;height:2.5px;
+    background:#d9534f;
+    border-radius:2px;
+    transform:rotate(-45deg);
+  }
+  .badge.emoji{
+    background:rgba(53,64,90,0.05);
+    font-size:1.6rem;
+  }
+  .badge.swatch{
+    border:3px solid #fff;
+    box-shadow:0 0 0 1.5px var(--border), 0 3px 8px rgba(53,64,90,0.12);
+  }
+  .badge.fa-pos{
+    background:var(--accent);
+    color:#fff;
+  }
+  .badge.fa-neg{
+    background:#fff;
+    border:2px dashed var(--border);
+    color:var(--c-ink-soft);
+  }
+  .badge.fa-neg::after{
+    content:'';
+    position:absolute;
+    width:64%;height:2.5px;
+    background:#d9534f;
+    border-radius:2px;
+    transform:rotate(-45deg);
+  }
+  .badge.fa-plain{
+    background:rgba(53,64,90,0.06);
+    color:var(--accent);
+  }
+
+  .word-zh{
+    font-family:var(--font-zh);
+    font-size:1.15rem;
+    font-weight:bold;
+    color:var(--c-ink);
+    line-height:1.2;
+  }
+  .word-en{
+    font-family:var(--font-en);
+    font-size:0.62rem;
+    color:var(--c-ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+
+  .empty-msg{
+    text-align:center;
+    color:var(--c-ink-soft);
+    padding:40px 0;
+    font-family:var(--font-zh);
+  }
+
+  .fab-group{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:12px;
+    z-index:60;
+  }
+  .en-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--c-card);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:7px 14px 7px 16px;
+    box-shadow:0 6px 16px rgba(53,64,90,0.14);
+    cursor:pointer;
+    user-select:none;
+  }
+  .en-toggle span.txt{
+    font-family:var(--font-zh);
+    font-size:0.82rem;
+    font-weight:bold;
+    color:var(--c-ink);
+    white-space:nowrap;
+  }
+  .en-toggle input{display:none;}
+  .en-toggle .track{
+    width:36px;height:20px;
+    border-radius:999px;
+    background:var(--border);
+    position:relative;
+    flex-shrink:0;
+    transition:background .2s ease;
+  }
+  .en-toggle .thumb{
+    position:absolute;
+    top:2px;left:2px;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
+    transition:transform .2s ease;
+  }
+  .en-toggle input:checked + .track{background:var(--c-sky);}
+  .en-toggle input:checked + .track .thumb{transform:translateX(16px);}
+
+  .print-btn{
+    width:52px;height:52px;
+    border-radius:50%;
+    background:var(--c-ink);
+    color:#fff;
+    border:none;
+    box-shadow:0 8px 20px rgba(53,64,90,0.28);
+    font-size:1.25rem;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .print-btn:hover{transform:scale(1.08);}
+
+  body.hide-en .word-en{display:none;}
+
+  @media print{
+    .mecc-global-nav, .quicknav, .search-wrap, .fab-group, .intro{display:none !important;}
+    body{padding-top:0;}
+    .word-card{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+    .category{break-inside:avoid;margin-bottom:24px;}
+  }
+
+  @media (max-width:600px){
+    .word-grid{grid-template-columns:repeat(auto-fill, minmax(88px, 1fr));}
+    .badge{width:40px;height:40px;}
+    .word-zh{font-size:1rem;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="mecc-global-nav">
+    <a href="../teachers.html" class="mecc-nav-back font-zh">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        <span>返回主页</span>
+    </a>
+    <h1 class="mecc-nav-title font-zh">写作帮手</h1>
+</nav>
+
+<div class="page">
+  <div class="intro">
+    <h2>写作帮手 · Writing Helper</h2>
+    <p>按主题分类的看图识词墙：家人、情绪、天气、教室、颜色、食物、动物、生肖、动作、身体、图形。写话时对照找词，帮助孩子把想法变成句子。</p>
+  </div>
+
+  <div class="search-wrap">
+    <input type="search" id="wordSearch" class="search-box font-zh" placeholder="🔍 搜索词语…" autocomplete="off">
+  </div>
+
+  <div class="quicknav" id="quicknav"></div>
+
+  <div id="categories"></div>
+
+  <div class="empty-msg" id="emptyMsg" style="display:none">没有找到相关词语，换个词试试吧～</div>
+</div>
+
+<div class="fab-group">
+  <label class="en-toggle font-zh" title="显示/隐藏英文">
+    <span class="txt">英文</span>
+    <input type="checkbox" id="enToggle" checked>
+    <span class="track"><span class="thumb"></span></span>
+  </label>
+  <button class="print-btn" id="printBtn" title="打印词墙" aria-label="打印词墙"><i class="fas fa-print"></i></button>
+</div>
+
+<script>
+/* ───────────────────── 家人系列：统一风格的彩色卡通人物头像 ─────────────────────
+   每个角色都用同一套"配方"拼出来：同样的肤色、同样的描边色、同一支笔画头身比例，
+   只换发型/配饰/衣服颜色 —— 这样才能做到"一看就是一家人"，而不是抽象线条图标。 */
+const SKIN = '#FFDCB8';
+const OUTLINE = '#4A3B2E';
+const HAIR_MAIN = '#5C3A21';
+const HAIR_GRAY = '#C9C9C9';
+
+function hairShort(cx,cy,r,c){
+  return `<path d="M${cx-r*0.95},${cy-r*0.05} Q${cx-r},${cy-r*1.35} ${cx},${cy-r*1.3} Q${cx+r},${cy-r*1.35} ${cx+r*0.95},${cy-r*0.05} Q${cx+r*0.55},${cy-r*0.35} ${cx},${cy-r*0.3} Q${cx-r*0.55},${cy-r*0.35} ${cx-r*0.95},${cy-r*0.05} Z" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/>`;
+}
+function hairSpiky(cx,cy,r,c){
+  const d = `M${cx-r*0.9},${cy-r*0.1} L${cx-r*0.68},${cy-r*1.15} L${cx-r*0.34},${cy-r*0.65} L${cx},${cy-r*1.3} L${cx+r*0.34},${cy-r*0.65} L${cx+r*0.68},${cy-r*1.15} L${cx+r*0.9},${cy-r*0.1} Q${cx+r*0.5},${cy-r*0.35} ${cx},${cy-r*0.3} Q${cx-r*0.5},${cy-r*0.35} ${cx-r*0.9},${cy-r*0.1} Z`;
+  return `<path d="${d}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3" stroke-linejoin="round"/>`;
+}
+function hairSideWave(cx,cy,r,c,shoulderY){
+  const left = `M${cx-r*0.85},${cy-r*0.25} C${cx-r*1.35},${cy+r*0.6} ${cx-r*1.15},${shoulderY-6} ${cx-r*0.75},${shoulderY-2} C${cx-r*0.95},${cy+r*0.5} ${cx-r*0.85},${cy} ${cx-r*0.6},${cy-r*0.5} Z`;
+  const right = `M${cx+r*0.85},${cy-r*0.25} C${cx+r*1.35},${cy+r*0.6} ${cx+r*1.15},${shoulderY-6} ${cx+r*0.75},${shoulderY-2} C${cx+r*0.95},${cy+r*0.5} ${cx+r*0.85},${cy} ${cx+r*0.6},${cy-r*0.5} Z`;
+  return { back: `<path d="${left}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/><path d="${right}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/>`, front: hairShort(cx,cy,r,c) };
+}
+function hairBun(cx,cy,r,c){
+  return hairShort(cx,cy,r*0.85,c) + `<circle cx="${cx}" cy="${cy-r*1.45}" r="${r*0.32}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/>`;
+}
+function hairThinGray(cx,cy,r,c){
+  const left = `M${cx-r*0.95},${cy-r*0.25} Q${cx-r*1.05},${cy+r*0.2} ${cx-r*0.7},${cy+r*0.35} Q${cx-r*0.85},${cy-r*0.05} ${cx-r*0.95},${cy-r*0.25} Z`;
+  const right = `M${cx+r*0.95},${cy-r*0.25} Q${cx+r*1.05},${cy+r*0.2} ${cx+r*0.7},${cy+r*0.35} Q${cx+r*0.85},${cy-r*0.05} ${cx+r*0.95},${cy-r*0.25} Z`;
+  return `<path d="${left}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.1"/><path d="${right}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.1"/>`;
+}
+function hairPonytail(cx,cy,r,c){
+  const tail = `M${cx+r*0.65},${cy-r*0.25} C${cx+r*1.55},${cy+r*0.3} ${cx+r*1.35},${cy+r*1.55} ${cx+r*1.0},${cy+r*1.75} C${cx+r*0.82},${cy+r*1.45} ${cx+r*0.95},${cy+r*0.5} ${cx+r*0.5},${cy-r*0.1} Z`;
+  return hairShort(cx,cy,r,c) + `<path d="${tail}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/>`;
+}
+function hairPigtails(cx,cy,r,c){
+  const top = `M${cx-r*0.8},${cy-r*0.1} Q${cx},${cy-r*1.1} ${cx+r*0.8},${cy-r*0.1} Q${cx+r*0.4},${cy-r*0.3} ${cx},${cy-r*0.28} Q${cx-r*0.4},${cy-r*0.3} ${cx-r*0.8},${cy-r*0.1} Z`;
+  return `<path d="${top}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/><circle cx="${cx-r*1.05}" cy="${cy+r*0.05}" r="${r*0.34}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/><circle cx="${cx+r*1.05}" cy="${cy+r*0.05}" r="${r*0.34}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/>`;
+}
+function hairTuft(cx,cy,r,c){
+  const top = `M${cx-r*0.75},${cy-r*0.1} Q${cx},${cy-r*1.0} ${cx+r*0.75},${cy-r*0.1} Q${cx+r*0.35},${cy-r*0.3} ${cx},${cy-r*0.28} Q${cx-r*0.35},${cy-r*0.3} ${cx-r*0.75},${cy-r*0.1} Z`;
+  const curl = `M${cx-r*0.05},${cy-r*0.95} Q${cx-r*0.3},${cy-r*1.35} ${cx+r*0.12},${cy-r*1.25} Q${cx-r*0.02},${cy-r*1.0} ${cx-r*0.05},${cy-r*0.95} Z`;
+  return `<path d="${top}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.3"/><path d="${curl}" fill="${c}" stroke="${OUTLINE}" stroke-width="1.1"/>`;
+}
+
+function personAvatar(o){
+  const cx = 32, kid = !!o.kid;
+  const r = kid ? 14 : 12.5;
+  const cy = kid ? 26 : 22;
+  const shoulderY = kid ? 43 : 37;
+  const bottomY = 71;
+  const shoulderHW = 9.5;
+  const bottomHW = kid ? 15 : 17;
+  const midY = shoulderY + (bottomY - shoulderY) * 0.55;
+  const hc = o.hairColor || HAIR_MAIN;
+
+  const bodyPath = `M${cx-bottomHW},${bottomY} C${cx-bottomHW},${midY} ${cx-shoulderHW},${shoulderY} ${cx},${shoulderY} C${cx+shoulderHW},${shoulderY} ${cx+bottomHW},${midY} ${cx+bottomHW},${bottomY} Z`;
+
+  let back = '', front = '';
+  if(o.hair==='shortCap') front = hairShort(cx,cy,r,hc);
+  else if(o.hair==='spiky') front = hairSpiky(cx,cy,r,hc);
+  else if(o.hair==='sideWave'){ const h = hairSideWave(cx,cy,r,hc,shoulderY); back = h.back; front = h.front; }
+  else if(o.hair==='bun') front = hairBun(cx,cy,r,hc);
+  else if(o.hair==='thinGray') front = hairThinGray(cx,cy,r,hc);
+  else if(o.hair==='ponytail') front = hairPonytail(cx,cy,r,hc);
+  else if(o.hair==='pigtails') front = hairPigtails(cx,cy,r,hc);
+  else if(o.hair==='tuft') front = hairTuft(cx,cy,r,hc);
+
+  const eyeDx = r*0.36, eyeY = cy - r*0.05;
+  const face = `<circle cx="${cx-eyeDx}" cy="${eyeY}" r="1.6" fill="${OUTLINE}"/><circle cx="${cx+eyeDx}" cy="${eyeY}" r="1.6" fill="${OUTLINE}"/><path d="M${cx-r*0.32},${cy+r*0.34} Q${cx},${cy+r*0.58} ${cx+r*0.32},${cy+r*0.34}" fill="none" stroke="${OUTLINE}" stroke-width="1.4" stroke-linecap="round"/>`;
+  const cheeks = kid ? `<circle cx="${cx-r*0.72}" cy="${cy+r*0.28}" r="2.6" fill="#FF9E9E" opacity="0.55"/><circle cx="${cx+r*0.72}" cy="${cy+r*0.28}" r="2.6" fill="#FF9E9E" opacity="0.55"/>` : '';
+
+  let acc = '';
+  (o.accessories||[]).forEach(a=>{
+    if(a==='glasses') acc += `<circle cx="${cx-eyeDx}" cy="${eyeY}" r="3.4" fill="none" stroke="${OUTLINE}" stroke-width="1.3"/><circle cx="${cx+eyeDx}" cy="${eyeY}" r="3.4" fill="none" stroke="${OUTLINE}" stroke-width="1.3"/><line x1="${cx-eyeDx+3.4}" y1="${eyeY}" x2="${cx+eyeDx-3.4}" y2="${eyeY}" stroke="${OUTLINE}" stroke-width="1.3"/>`;
+    if(a==='cane') acc += `<line x1="${cx+bottomHW-2}" y1="${shoulderY+8}" x2="${cx+bottomHW-6}" y2="${bottomY+2}" stroke="#8A6A46" stroke-width="2.4" stroke-linecap="round"/>`;
+    if(a==='tie') acc += `<path d="M${cx-2.4},${shoulderY} L${cx+2.4},${shoulderY} L${cx+1.6},${shoulderY+10} L${cx},${shoulderY+14} L${cx-1.6},${shoulderY+10} Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1"/>`;
+    if(a==='collar') acc += `<path d="M${cx-6},${shoulderY-1} L${cx},${shoulderY+5} L${cx+6},${shoulderY-1}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if(a==='point') acc += `<path d="M${cx+shoulderHW-1},${shoulderY+6} L${cx+bottomHW+9},${shoulderY-3}" stroke="${o.cloth}" stroke-width="5" stroke-linecap="round"/><circle cx="${cx+bottomHW+11}" cy="${shoulderY-4}" r="2.6" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1"/>`;
+    if(a==='chestHand') acc += `<path d="M${cx-3},${shoulderY+10} Q${cx-8},${shoulderY+16} ${cx-3},${shoulderY+22}" fill="none" stroke="${o.cloth}" stroke-width="5" stroke-linecap="round"/><circle cx="${cx-3}" cy="${shoulderY+23}" r="2.6" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1"/>`;
+  });
+
+  return `${back}<path d="${bodyPath}" fill="${o.cloth}" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.6"/>${front}${face}${cheeks}${acc}`;
+}
+
+const PERSON_DEFS = {
+  teacher:  {cloth:'#5B7FBF', hair:'shortCap', hairColor:HAIR_MAIN, accessories:['collar','tie']},
+  dad:      {cloth:'#4F8FE0', hair:'shortCap', hairColor:HAIR_MAIN},
+  mom:      {cloth:'#FF8FA8', hair:'sideWave', hairColor:HAIR_MAIN},
+  grandpa:  {cloth:'#C9A66B', hair:'thinGray', hairColor:HAIR_GRAY, accessories:['glasses','cane']},
+  grandma:  {cloth:'#C9A0DC', hair:'bun', hairColor:HAIR_GRAY, accessories:['glasses']},
+  grandpaB: {cloth:'#8FA6B8', hair:'thinGray', hairColor:HAIR_GRAY, accessories:['glasses']},
+  grandmaB: {cloth:'#D9A7A0', hair:'sideWave', hairColor:HAIR_GRAY, accessories:['glasses']},
+  teenBoy:  {cloth:'#35B7A6', hair:'spiky', hairColor:HAIR_MAIN},
+  teenGirl: {cloth:'#FF6FA5', hair:'ponytail', hairColor:HAIR_MAIN},
+  boy:      {cloth:'#4FA3D1', hair:'spiky', hairColor:HAIR_MAIN},
+  girl:     {cloth:'#F48FB1', hair:'ponytail', hairColor:HAIR_MAIN},
+  brotherSmall: {kid:true, cloth:'#4FC3F7', hair:'tuft', hairColor:HAIR_MAIN},
+  sisterSmall:  {kid:true, cloth:'#FFB6C7', hair:'pigtails', hairColor:HAIR_MAIN},
+  kid:      {kid:true, cloth:'#FFC94D', hair:'tuft', hairColor:HAIR_MAIN},
+  you:      {cloth:'#FF7A63', hair:'shortCap', hairColor:HAIR_MAIN, accessories:['point']},
+  me:       {cloth:'#7BC67E', hair:'sideWave', hairColor:HAIR_MAIN, accessories:['chestHand']},
+};
+
+function famSvg(key){
+  if(key==='group'){
+    const dad = personAvatar(PERSON_DEFS.dad);
+    const mom = personAvatar(PERSON_DEFS.mom);
+    const kidA = personAvatar(PERSON_DEFS.kid);
+    return `<svg viewBox="0 0 64 76">
+      <g transform="translate(-9,7) scale(0.5)">${dad}</g>
+      <g transform="translate(3,-5) scale(0.62)">${mom}</g>
+      <g transform="translate(19,10) scale(0.46)">${kidA}</g>
+    </svg>`;
+  }
+  return `<svg viewBox="0 0 64 76">${personAvatar(PERSON_DEFS[key])}</svg>`;
+}
+
+/* ───────────────────── 图形系列：直接画出真实形状，上色更形象 ───────────────────── */
+const SHAPE = {
+  rect: `<rect x="7" y="15" width="34" height="18" rx="2" fill="#7EC8E3" stroke="${OUTLINE}" stroke-width="2"/>`,
+  square: `<rect x="12" y="12" width="24" height="24" rx="2" fill="#FF8FA8" stroke="${OUTLINE}" stroke-width="2"/>`,
+  circle: `<circle cx="24" cy="24" r="14" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="2"/>`,
+  oval: `<ellipse cx="24" cy="24" rx="17" ry="10" fill="#B18CF0" stroke="${OUTLINE}" stroke-width="2"/>`,
+  triangle: `<path d="M24 8 L40 38 L8 38 Z" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round"/>`,
+  hexagon: `<path d="M16 8 L32 8 L40 24 L32 40 L16 40 L8 24 Z" fill="#F6A83D" stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round"/>`,
+  trapezoid: `<path d="M13 36 L35 36 L28 14 L20 14 Z" fill="#9B6FD1" stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round"/>`,
+  cube: `<path d="M8 20 L8 38 L24 44 L24 26 Z" fill="#3A7BC0" stroke="${OUTLINE}" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 20 L18 12 L34 18 L24 26 Z" fill="#7EC8E3" stroke="${OUTLINE}" stroke-width="1.8" stroke-linejoin="round"/><path d="M24 26 L34 18 L34 36 L24 44 Z" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.8" stroke-linejoin="round"/>`,
+  cylinder: `<path d="M10 14 L10 34 A14 6 0 0 0 38 34 L38 14 Z" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.8"/><ellipse cx="24" cy="14" rx="14" ry="6" fill="#7BD1A0" stroke="${OUTLINE}" stroke-width="1.8"/>`,
+  cone: `<path d="M24 8 L10 38 A14 5 0 0 0 38 38 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="24" cy="38" rx="14" ry="5" fill="#F0776D" stroke="${OUTLINE}" stroke-width="1.8"/>`,
+  sphere: `<circle cx="24" cy="24" r="16" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="2"/><path d="M8.5 26 Q24 35 39.5 26" fill="none" stroke="${OUTLINE}" stroke-width="1.6" opacity="0.55"/><circle cx="18" cy="17" r="3.4" fill="#fff" opacity="0.4"/>`,
+  heart: `<path d="M24 40 C10 30 4 20 10 13 C15 7 22 9 24 15 C26 9 33 7 38 13 C44 20 38 30 24 40 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="2"/><path d="M14 15 C16 13 19 13.5 20.5 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>`,
+  star: `<path d="M24 6 L28.5 18.5 L42 18.8 L31 27 L34.8 40 L24 32.3 L13.2 40 L17 27 L6 18.8 L19.5 18.5 Z" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="2" stroke-linejoin="round"/>`,
+};
+function shapeSvg(key){
+  return `<svg viewBox="0 0 48 48">${SHAPE[key]}</svg>`;
+}
+
+/* ───────────────────── 小图标零件库：给情绪/天气/教室/动作画更形象的插画 ───────────────────── */
+function rayLines(cx,cy,r1,r2,count,color,width){
+  let s = '';
+  for(let i=0;i<count;i++){
+    const a = (i/count)*2*Math.PI;
+    const x1=(cx+r1*Math.cos(a)).toFixed(1), y1=(cy+r1*Math.sin(a)).toFixed(1);
+    const x2=(cx+r2*Math.cos(a)).toFixed(1), y2=(cy+r2*Math.sin(a)).toFixed(1);
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${width}" stroke-linecap="round"/>`;
+  }
+  return s;
+}
+function sunIcon(cx,cy,r,color){
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="${OUTLINE}" stroke-width="1.6"/>${rayLines(cx,cy,r+2,r+7,8,color,2.6)}`;
+}
+function snowflakeIcon(cx,cy,r,color){
+  let s = rayLines(cx,cy,2,r,6,color,2.2);
+  for(let i=0;i<6;i++){
+    const a=(i/6)*2*Math.PI;
+    const mx=cx+(r*0.58)*Math.cos(a), my=cy+(r*0.58)*Math.sin(a);
+    const perp=a+Math.PI/2;
+    s += `<line x1="${(mx+3*Math.cos(perp)).toFixed(1)}" y1="${(my+3*Math.sin(perp)).toFixed(1)}" x2="${(mx-3*Math.cos(perp)).toFixed(1)}" y2="${(my-3*Math.sin(perp)).toFixed(1)}" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
+  }
+  return `<circle cx="${cx}" cy="${cy}" r="${r+5}" fill="#EAF6FB" stroke="${OUTLINE}" stroke-width="1.3"/>${s}`;
+}
+function tinyFlake(x,y,color){
+  return `<g stroke="${color}" stroke-width="1.6" stroke-linecap="round"><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}"/><line x1="${x-2.6}" y1="${y-1.5}" x2="${x+2.6}" y2="${y+1.5}"/><line x1="${x-2.6}" y1="${y+1.5}" x2="${x+2.6}" y2="${y-1.5}"/></g>`;
+}
+function raindrop(x,y,color){
+  return `<path d="M${x},${y-6} C${x+4},${y-2} ${x+4},${y+3} ${x},${y+5} C${x-4},${y+3} ${x-4},${y-2} ${x},${y-6} Z" fill="${color}" stroke="${OUTLINE}" stroke-width="1"/>`;
+}
+function cloudShape(fill){
+  return `<path d="M13 30 Q7 30 7 24 Q7 19 12 19 Q13 13 20 13 Q27 13 28 19 Q35 19 35 25 Q35 30 29 30 Z" fill="${fill}" stroke="${OUTLINE}" stroke-width="1.6"/>`;
+}
+function thermometer(liquidColor, level){
+  const tubeTop=8, tubeBottom=30, bulbCy=36;
+  const liquidTop = tubeBottom - (tubeBottom-tubeTop)*level;
+  return `<rect x="21" y="${tubeTop}" width="6" height="${tubeBottom-tubeTop+2}" rx="3" fill="#fff" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="24" cy="${bulbCy}" r="7" fill="#fff" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="22.3" y="${liquidTop}" width="3.4" height="${tubeBottom-liquidTop+6}" rx="1.7" fill="${liquidColor}"/><circle cx="24" cy="${bulbCy}" r="5" fill="${liquidColor}"/>`;
+}
+function calendarPage(headerColor, bodyContent){
+  return `<rect x="8" y="10" width="32" height="30" rx="4" fill="#fff" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M8 16 L8 14 Q8 10 12 10 L36 10 Q40 10 40 14 L40 16 Z" fill="${headerColor}" stroke="${OUTLINE}" stroke-width="1.6"/><line x1="15" y1="7" x2="15" y2="13" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/><line x1="33" y1="7" x2="33" y2="13" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/>${bodyContent}`;
+}
+function poseFigure(o){
+  let s = '';
+  (o.legs||[]).forEach(l=> s += `<line x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}" stroke="${o.color}" stroke-width="4.4" stroke-linecap="round"/>`);
+  s += `<line x1="${o.headXY[0]}" y1="${o.headXY[1]+7}" x2="${o.hipXY[0]}" y2="${o.hipXY[1]}" stroke="${o.color}" stroke-width="5.4" stroke-linecap="round"/>`;
+  (o.arms||[]).forEach(l=> s += `<line x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}" stroke="${o.color}" stroke-width="4" stroke-linecap="round"/>`);
+  s += `<circle cx="${o.headXY[0]}" cy="${o.headXY[1]}" r="5.4" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.4"/>`;
+  return `${o.extraBack||''}${s}${o.extra||''}`;
+}
+
+const ILLU = {
+  /* 情绪 */
+  angry: `<circle cx="24" cy="24" r="19" fill="#FF8A65" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M13 17 L20 20" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/><path d="M35 17 L28 20" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/><circle cx="18.5" cy="23" r="1.8" fill="${OUTLINE}"/><circle cx="29.5" cy="23" r="1.8" fill="${OUTLINE}"/><path d="M17 33 Q24 27 31 33" fill="none" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/>`,
+  sad: `<circle cx="24" cy="24" r="19" fill="#90CAF9" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M15 20 Q18.5 17.5 22 20" fill="none" stroke="${OUTLINE}" stroke-width="1.8" stroke-linecap="round"/><path d="M26 20 Q29.5 17.5 33 20" fill="none" stroke="${OUTLINE}" stroke-width="1.8" stroke-linecap="round"/><circle cx="18.5" cy="23" r="1.6" fill="${OUTLINE}"/><circle cx="29.5" cy="23" r="1.6" fill="${OUTLINE}"/><path d="M16.5 26 Q15 31 17.5 33 Q19.5 31 18 26 Z" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1"/><path d="M17 34 Q24 29 31 34" fill="none" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/>`,
+  happy: `<circle cx="24" cy="24" r="19" fill="#FFD54F" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M15.5 22 Q18.5 18.5 21.5 22" fill="none" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/><path d="M26.5 22 Q29.5 18.5 32.5 22" fill="none" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/><circle cx="16.5" cy="27" r="2.4" fill="#FF9E9E" opacity="0.6"/><circle cx="31.5" cy="27" r="2.4" fill="#FF9E9E" opacity="0.6"/><path d="M15.5 28 Q24 37 32.5 28" fill="none" stroke="${OUTLINE}" stroke-width="2.2" stroke-linecap="round"/>`,
+  scared: `<circle cx="24" cy="24" r="19" fill="#CFD8DC" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="18.5" cy="23" r="4.2" fill="#fff" stroke="${OUTLINE}" stroke-width="1.4"/><circle cx="29.5" cy="23" r="4.2" fill="#fff" stroke="${OUTLINE}" stroke-width="1.4"/><circle cx="18.5" cy="23" r="1.7" fill="${OUTLINE}"/><circle cx="29.5" cy="23" r="1.7" fill="${OUTLINE}"/><ellipse cx="24" cy="33" rx="3" ry="4" fill="${OUTLINE}"/><path d="M33 16 Q36 19 34 23" fill="none" stroke="#4A90D9" stroke-width="1.6" stroke-linecap="round"/>`,
+  heartEyesFace: `<circle cx="24" cy="24" r="19" fill="#FFB6C1" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M14 21 C14 18 18 18 18.5 21 C19 18 23 18 23 21 C23 24 18.5 27 18.5 27 C18.5 27 14 24 14 21 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1"/><path d="M25 21 C25 18 29 18 29.5 21 C30 18 34 18 34 21 C34 24 29.5 27 29.5 27 C29.5 27 25 24 25 21 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1"/><path d="M17 32 Q24 37 31 32" fill="none" stroke="${OUTLINE}" stroke-width="2" stroke-linecap="round"/>`,
+  loveHeart: `<path d="M24 37 C10 27 6 18 12 12 C17 7 23 10 24 16 C25 10 31 7 36 12 C42 18 38 27 24 37 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M15 14 C17 12 20 12.5 21.5 15" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>`,
+  bicepArm: `<path d="M14 34 Q13 22 20 18 Q28 14 33 20 Q37 24 33 28 Q29 22 24 24 Q20 26 21 32 Q22 37 17 37 Q14 37 14 34 Z" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M13 30 Q10 30 10 34 Q10 38 15 37" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M30 17 L36 11" stroke="#5B7FBF" stroke-width="5.5" stroke-linecap="round"/>`,
+  checkCircle: `<circle cx="24" cy="24" r="19" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M15 25 L21 31 L33 17" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  xCircle: `<circle cx="24" cy="24" r="19" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M16 16 L32 32 M32 16 L16 32" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>`,
+  ribbonCheck: `<path d="M24 7 L31 11 L31 21 Q31 30 24 35 Q17 30 17 21 L17 11 Z" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M18.5 19.5 L22.5 24 L29.5 15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  ribbonX: `<path d="M24 7 L31 11 L31 21 Q31 30 24 35 Q17 30 17 21 L17 11 Z" fill="#9AA0A8" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M20 17 L28 25 M28 17 L20 25" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>`,
+  reachHand: `<path d="M12 30 Q10 24 14 20 Q16 18 18 20 L18 14 Q18 11 21 11 Q24 11 24 14 L24 12 Q24 9 27 9 Q30 9 30 12 L30 14 Q30 11 33 11 Q36 11 36 14 L36 26 Q36 36 27 38 Q17 40 12 30 Z" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.5"/>`,
+  giftBox: `<rect x="10" y="20" width="28" height="18" rx="2" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="8" y="15" width="32" height="7" rx="2" fill="#FF8A3D" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="22" y="15" width="4" height="23" fill="#E8544A"/><path d="M24 15 Q16 8 12 13 Q10 16 15 15 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1"/><path d="M24 15 Q32 8 36 13 Q38 16 33 15 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1"/>`,
+  bowl: `<path d="M10 24 Q10 34 24 34 Q38 34 38 24 Z" fill="#8B5E3C" stroke="${OUTLINE}" stroke-width="1.6"/><ellipse cx="24" cy="24" rx="14" ry="4" fill="#fff" stroke="${OUTLINE}" stroke-width="1.4"/><circle cx="19" cy="23" r="1.6" fill="#F6C445"/><circle cx="24" cy="22" r="1.6" fill="#E8544A"/><circle cx="29" cy="23" r="1.6" fill="#4CAF7D"/><line x1="30" y1="14" x2="35" y2="24" stroke="#B5895B" stroke-width="1.8" stroke-linecap="round"/><line x1="33" y1="13" x2="38" y2="23" stroke="#B5895B" stroke-width="1.8" stroke-linecap="round"/>`,
+  cup: `<path d="M14 16 L34 16 L32 36 Q32 39 24 39 Q16 39 16 36 Z" fill="#fff" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M17 20 L31 20 L29.5 34 Q29.5 36 24 36 Q18.5 36 18.5 34 Z" fill="#F6A83D"/><path d="M34 19 Q41 19 40 25 Q39 30 33 29" fill="none" stroke="${OUTLINE}" stroke-width="1.8"/><path d="M20 10 Q20 13 22 13 Q20 15 22 17" fill="none" stroke="#4A90D9" stroke-width="1.4" stroke-linecap="round"/><path d="M26 10 Q26 13 28 13 Q26 15 28 17" fill="none" stroke="#4A90D9" stroke-width="1.4" stroke-linecap="round"/>`,
+
+  /* 天气与时间 */
+  windy: `<path d="M6 18 Q14 14 20 18 Q24 21 20 24 Q17 26 14 23" fill="none" stroke="#8FA6B8" stroke-width="2.4" stroke-linecap="round"/><path d="M6 26 Q16 22 24 26 Q29 29 25 32 Q21 34 18 31" fill="none" stroke="#8FA6B8" stroke-width="2.4" stroke-linecap="round"/><path d="M10 34 Q20 31 28 34" fill="none" stroke="#8FA6B8" stroke-width="2.4" stroke-linecap="round"/><path d="M33 12 Q37 14 35 18 Q33 21 36 22" fill="none" stroke="#4CAF7D" stroke-width="2" stroke-linecap="round"/>`,
+  cloudy: `<g transform="translate(3,4)">${cloudShape('#CFD8DC')}</g>`,
+  sunny: sunIcon(24,24,11,'#FFC94D'),
+  partCloudy: `${sunIcon(30,15,8,'#FFC94D')}<g transform="translate(0,10)">${cloudShape('#DCE6EC')}</g>`,
+  rainy: `<g transform="translate(3,0)">${cloudShape('#90A4AE')}</g>${raindrop(14,40,'#4A90D9')}${raindrop(24,42,'#4A90D9')}${raindrop(33,40,'#4A90D9')}`,
+  snowy: `<g transform="translate(3,0)">${cloudShape('#B0BEC5')}</g>${tinyFlake(14,40,'#7EC8E3')}${tinyFlake(24,42,'#7EC8E3')}${tinyFlake(33,40,'#7EC8E3')}`,
+  cold: `${thermometer('#4A90D9',0.25)}${tinyFlake(37,12,'#7EC8E3')}`,
+  hot: `${thermometer('#E8544A',0.85)}${rayLines(37,10,2,7,5,'#FFC94D',2)}`,
+  weatherMix: `<g transform="translate(-4,-6) scale(0.62)">${sunIcon(24,24,11,'#FFC94D')}</g><g transform="translate(5,6) scale(0.85)">${cloudShape('#CFD8DC')}</g>${raindrop(30,40,'#4A90D9')}`,
+  today: calendarPage('#FF8A3D', `<path d="M24 22 L26 27 L31.5 27.5 L27.5 31 L28.5 36.5 L24 33.5 L19.5 36.5 L20.5 31 L16.5 27.5 L22 27 Z" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="1"/>`),
+  tomorrow: calendarPage('#4CAF7D', `<path d="M17 25 L30 25 M30 25 L24.5 19.5 M30 25 L24.5 30.5" fill="none" stroke="${OUTLINE}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`),
+  yesterday: calendarPage('#9AA0A8', `<path d="M31 25 L18 25 M18 25 L23.5 19.5 M18 25 L23.5 30.5" fill="none" stroke="${OUTLINE}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`),
+  weekday1: calendarPage('#4A90D9', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">1</text>`),
+  weekday2: calendarPage('#4CAF7D', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">2</text>`),
+  weekday3: calendarPage('#F6C445', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">3</text>`),
+  weekday4: calendarPage('#FF8A3D', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">4</text>`),
+  weekday5: calendarPage('#E8544A', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">5</text>`),
+  weekday6: calendarPage('#9B6FD1', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">6</text>`),
+  weekday7: calendarPage('#FF6FA5', `<text x="24" y="32" font-size="17" font-weight="bold" text-anchor="middle" fill="${OUTLINE}" font-family="inherit">7</text>`),
+
+  /* 教室与四季 */
+  pencil: `<g transform="translate(0,4) rotate(45 24 20)"><rect x="19" y="2" width="10" height="26" rx="2" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="1.5"/><rect x="19" y="0" width="10" height="5" rx="1.5" fill="#FF8FA8" stroke="${OUTLINE}" stroke-width="1.3"/><rect x="19" y="5" width="10" height="3" fill="#EEE"/><path d="M19 28 L24 38 L29 28 Z" fill="#D9A066" stroke="${OUTLINE}" stroke-width="1.5"/><circle cx="24" cy="37" r="1.3" fill="${OUTLINE}"/></g>`,
+  eraser: `<rect x="10" y="16" width="28" height="16" rx="4" fill="#FF8FA8" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="10" y="16" width="28" height="6" rx="3" fill="#FFF0F3"/>`,
+  paperIcon: `<path d="M12 8 L30 8 L36 14 L36 40 L12 40 Z" fill="#fff" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M30 8 L30 14 L36 14 Z" fill="#DCE6EC" stroke="${OUTLINE}" stroke-width="1"/><line x1="16" y1="20" x2="31" y2="20" stroke="#B0BEC5" stroke-width="1.6"/><line x1="16" y1="26" x2="31" y2="26" stroke="#B0BEC5" stroke-width="1.6"/><line x1="16" y1="32" x2="31" y2="32" stroke="#B0BEC5" stroke-width="1.6"/>`,
+  notebook: `<rect x="12" y="8" width="26" height="32" rx="3" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="17" y="12" width="18" height="24" fill="#fff"/><line x1="20" y1="18" x2="32" y2="18" stroke="#DCE6EC" stroke-width="1.6"/><line x1="20" y1="24" x2="32" y2="24" stroke="#DCE6EC" stroke-width="1.6"/><circle cx="12" cy="14" r="1.6" fill="#fff" stroke="${OUTLINE}" stroke-width="1"/><circle cx="12" cy="24" r="1.6" fill="#fff" stroke="${OUTLINE}" stroke-width="1"/><circle cx="12" cy="34" r="1.6" fill="#fff" stroke="${OUTLINE}" stroke-width="1"/>`,
+  scissors: `<circle cx="14" cy="34" r="5" fill="none" stroke="#E8544A" stroke-width="3"/><circle cx="20" cy="37" r="5" fill="none" stroke="#4A90D9" stroke-width="3"/><path d="M16 32 L38 10" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round"/><path d="M22 35 L38 10" stroke="#B0BEC5" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="24" r="1.6" fill="${OUTLINE}"/>`,
+  bookOpen: `<path d="M24 14 Q14 8 8 12 L8 34 Q14 30 24 36 Q34 30 40 34 L40 12 Q34 8 24 14 Z" fill="#FF8A3D" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M24 14 L24 36" stroke="${OUTLINE}" stroke-width="1.4"/><path d="M11 16 L20 20 M11 21 L20 25" stroke="#fff" stroke-width="1.3" opacity="0.7"/><path d="M37 16 L28 20 M37 21 L28 25" stroke="#fff" stroke-width="1.3" opacity="0.7"/>`,
+  backpack: `<rect x="12" y="16" width="24" height="24" rx="6" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="18" y="22" width="12" height="10" rx="2" fill="#3D8F63" stroke="${OUTLINE}" stroke-width="1.3"/><path d="M17 16 Q17 8 24 8 Q31 8 31 16" fill="none" stroke="${OUTLINE}" stroke-width="2.2"/><rect x="20" y="10" width="8" height="4" rx="1.5" fill="#3D8F63"/>`,
+  crayons: `<g transform="translate(0,4)"><g transform="rotate(-16 14 20)"><rect x="10" y="6" width="8" height="24" rx="2" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1.3"/><path d="M10 6 L18 6 L14 0 Z" fill="#E8544A" stroke="${OUTLINE}" stroke-width="1.3"/></g><rect x="20" y="4" width="8" height="26" rx="2" fill="#F6C445" stroke="${OUTLINE}" stroke-width="1.3"/><g transform="rotate(16 34 20)"><rect x="30" y="6" width="8" height="24" rx="2" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.3"/><path d="M30 6 L38 6 L34 0 Z" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.3"/></g></g>`,
+  glueStick: `<rect x="17" y="10" width="14" height="28" rx="3" fill="#9B6FD1" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="15" y="6" width="18" height="7" rx="2" fill="#7B4FB1" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="20" y="16" width="8" height="14" rx="1.5" fill="#fff" opacity="0.85"/>`,
+  folder: `<path d="M8 16 L20 16 L23 12 L40 12 L40 36 L8 36 Z" fill="#F6C445" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M8 16 L40 16 L40 36 L8 36 Z" fill="#FFDE7A" stroke="${OUTLINE}" stroke-width="1.6"/>`,
+  table: `<rect x="8" y="16" width="32" height="5" rx="1.5" fill="#B5895B" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="11" y="21" width="3" height="16" fill="#8B5E3C" stroke="${OUTLINE}" stroke-width="1.3"/><rect x="34" y="21" width="3" height="16" fill="#8B5E3C" stroke="${OUTLINE}" stroke-width="1.3"/>`,
+  chair: `<rect x="14" y="8" width="20" height="16" rx="2" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="14" y="24" width="20" height="5" rx="1.5" fill="#3A7BC0" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="16" y="29" width="3" height="11" fill="#3A7BC0"/><rect x="29" y="29" width="3" height="11" fill="#3A7BC0"/>`,
+  doorClosed: `<rect x="13" y="6" width="22" height="38" rx="2" fill="#B5895B" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="30" cy="26" r="1.8" fill="#F6C445" stroke="${OUTLINE}" stroke-width="1"/><rect x="17" y="11" width="6" height="10" rx="1" fill="#8B5E3C" opacity="0.5"/><rect x="25" y="11" width="6" height="10" rx="1" fill="#8B5E3C" opacity="0.5"/>`,
+  doorOpen: `<rect x="9" y="6" width="4" height="38" fill="${OUTLINE}"/><path d="M13 6 L34 12 L34 38 L13 44 Z" fill="#B5895B" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="30" cy="26" r="1.6" fill="#F6C445"/><path d="M13 44 Q26 47 35 38" fill="none" stroke="#B0BEC5" stroke-width="1.4" stroke-dasharray="2,2"/>`,
+  lamp: `<path d="M24 8 Q34 8 34 18 Q34 26 28 28 L28 32 L20 32 L20 28 Q14 26 14 18 Q14 8 24 8 Z" fill="#FFE07A" stroke="${OUTLINE}" stroke-width="1.6"/><rect x="20" y="32" width="8" height="4" fill="#B0B0B0" stroke="${OUTLINE}" stroke-width="1.2"/><line x1="24" y1="4" x2="24" y2="1" stroke="#FFC94D" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="10" x2="9" y2="8" stroke="#FFC94D" stroke-width="2" stroke-linecap="round"/><line x1="36" y1="10" x2="39" y2="8" stroke="#FFC94D" stroke-width="2" stroke-linecap="round"/>`,
+  tree: `<rect x="21" y="26" width="6" height="16" fill="#8B5E3C" stroke="${OUTLINE}" stroke-width="1.4"/><circle cx="24" cy="16" r="13" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="15" cy="22" r="8" fill="#5DBF8C" stroke="${OUTLINE}" stroke-width="1.4"/><circle cx="33" cy="22" r="8" fill="#5DBF8C" stroke="${OUTLINE}" stroke-width="1.4"/>`,
+  leaf: `<path d="M24 8 Q40 16 32 34 Q24 42 16 34 Q8 16 24 8 Z" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M24 10 L24 38" stroke="${OUTLINE}" stroke-width="1.3"/>`,
+  fallLeaf: `<g transform="rotate(18 24 24)"><path d="M24 8 Q40 16 32 34 Q24 42 16 34 Q8 16 24 8 Z" fill="#E8944A" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M24 10 L24 38" stroke="${OUTLINE}" stroke-width="1.3"/></g>`,
+  flower: `<circle cx="24" cy="12" r="6" fill="#F6A8C8" stroke="${OUTLINE}" stroke-width="1.2"/><circle cx="34" cy="20" r="6" fill="#F6A8C8" stroke="${OUTLINE}" stroke-width="1.2"/><circle cx="14" cy="20" r="6" fill="#F6A8C8" stroke="${OUTLINE}" stroke-width="1.2"/><circle cx="24" cy="28" r="6" fill="#F6A8C8" stroke="${OUTLINE}" stroke-width="1.2"/><circle cx="24" cy="20" r="6" fill="#FFC94D" stroke="${OUTLINE}" stroke-width="1.4"/><line x1="24" y1="34" x2="24" y2="43" stroke="#4CAF7D" stroke-width="3" stroke-linecap="round"/><path d="M24 39 Q30 37 31 41" fill="none" stroke="#4CAF7D" stroke-width="2.4" stroke-linecap="round"/>`,
+  grass: `<path d="M10 40 Q10 24 16 14 Q18 24 16 40 Z" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.4"/><path d="M20 40 Q22 20 28 12 Q28 24 26 40 Z" fill="#5DBF8C" stroke="${OUTLINE}" stroke-width="1.4"/><path d="M32 40 Q34 26 38 18 Q38 28 36 40 Z" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.4"/>`,
+  sprout: `<path d="M24 42 L24 26" stroke="#4CAF7D" stroke-width="3" stroke-linecap="round"/><path d="M24 30 Q14 26 14 16 Q24 18 24 28 Z" fill="#5DBF8C" stroke="${OUTLINE}" stroke-width="1.4"/><path d="M24 26 Q34 22 34 12 Q24 14 24 24 Z" fill="#4CAF7D" stroke="${OUTLINE}" stroke-width="1.4"/>`,
+  winterFlake: snowflakeIcon(24,24,10,'#7EC8E3'),
+
+  /* 动作 */
+  eyeOpen: `<path d="M6 24 Q24 8 42 24 Q24 40 6 24 Z" fill="#fff" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="24" cy="24" r="8" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1.4"/><circle cx="24" cy="24" r="3.6" fill="${OUTLINE}"/><circle cx="21" cy="21" r="1.4" fill="#fff"/>`,
+  eyeClosed: `<path d="M6 24 Q24 16 42 24" fill="none" stroke="${OUTLINE}" stroke-width="2.6" stroke-linecap="round"/><path d="M12 18 L10 14 M36 18 L38 14 M24 20 L24 15" stroke="${OUTLINE}" stroke-width="1.6" stroke-linecap="round"/>`,
+  earListen: `<path d="M20 10 Q10 10 10 22 Q10 32 18 34 Q20 35 20 32 Q20 28 16 26 Q13 24 14 20 Q15 15 21 16 Q26 17 25 23 Q24 27 20 27" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.6"/><path d="M28 16 Q34 20 28 26" fill="none" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/><path d="M32 12 Q42 20 32 30" fill="none" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/>`,
+  speechBubble: `<path d="M8 10 L40 10 Q44 10 44 14 L44 26 Q44 30 40 30 L20 30 L12 38 L14 30 L8 30 Q4 30 4 26 L4 14 Q4 10 8 10 Z" fill="#FF6FA5" stroke="${OUTLINE}" stroke-width="1.6"/><circle cx="16" cy="20" r="2.2" fill="#fff"/><circle cx="24" cy="20" r="2.2" fill="#fff"/><circle cx="32" cy="20" r="2.2" fill="#fff"/>`,
+  comeArrow: `<rect x="30" y="8" width="4" height="34" fill="${OUTLINE}"/><rect x="30" y="8" width="10" height="34" fill="#DCE6EC" stroke="${OUTLINE}" stroke-width="1.4"/><path d="M8 24 L26 24 M26 24 L19 17 M26 24 L19 31" fill="none" stroke="#4CAF7D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
+  goArrow: `<rect x="14" y="8" width="4" height="34" fill="${OUTLINE}"/><rect x="8" y="8" width="10" height="34" fill="#DCE6EC" stroke="${OUTLINE}" stroke-width="1.4"/><path d="M40 24 L22 24 M22 24 L29 17 M22 24 L29 31" fill="none" stroke="#E8544A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
+  pushFig: `<rect x="28" y="18" width="14" height="16" rx="2" fill="#B5895B" stroke="${OUTLINE}" stroke-width="1.5"/>${poseFigure({color:'#4F8FE0', headXY:[12,16], hipXY:[18,28], legs:[[18,28,10,40],[18,28,20,40]], arms:[[18,20,28,21],[18,20,28,25]]})}`,
+  pullFig: `<line x1="14" y1="24" x2="34" y2="24" stroke="#B5895B" stroke-width="2.4" stroke-linecap="round"/>${poseFigure({color:'#E8544A', headXY:[34,16], hipXY:[30,28], legs:[[30,28,38,40],[30,28,24,38]], arms:[[30,20,16,24]]})}`,
+  walkFig: poseFigure({color:'#4F8FE0', headXY:[24,12], hipXY:[24,26], legs:[[24,26,17,40],[24,26,30,38]], arms:[[24,18,17,26],[24,18,31,24]]}),
+  runFig: poseFigure({color:'#E8544A', headXY:[22,12], hipXY:[24,26], legs:[[24,26,32,38],[24,26,15,34]], arms:[[24,18,14,14],[24,18,33,22]], extraBack:`<path d="M4 20 L11 20 M2 26 L9 26" stroke="#B0BEC5" stroke-width="2" stroke-linecap="round"/>`}),
+  jumpFig: poseFigure({color:'#F6C445', headXY:[24,10], hipXY:[24,22], legs:[[24,22,18,30],[24,22,30,30]], arms:[[24,15,14,8],[24,15,34,8]], extra:`<path d="M14 40 Q24 44 34 40" fill="none" stroke="#B0BEC5" stroke-width="2" stroke-linecap="round"/>`}),
+  flyBird: `<path d="M6 26 Q16 14 24 22 Q32 14 42 26 Q32 22 24 28 Q16 22 6 26 Z" fill="#7EC8E3" stroke="${OUTLINE}" stroke-width="1.5"/><circle cx="24" cy="23" r="2" fill="${OUTLINE}"/>`,
+  climbLadder: `<line x1="14" y1="6" x2="14" y2="42" stroke="#B5895B" stroke-width="3" stroke-linecap="round"/><line x1="34" y1="6" x2="34" y2="42" stroke="#B5895B" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="14" x2="34" y2="14" stroke="#B5895B" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="24" x2="34" y2="24" stroke="#B5895B" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="34" x2="34" y2="34" stroke="#B5895B" stroke-width="3" stroke-linecap="round"/>`,
+  swimFig: `<circle cx="12" cy="20" r="5" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.4"/><line x1="17" y1="21" x2="30" y2="23" stroke="#4F8FE0" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="23" x2="40" y2="16" stroke="#4F8FE0" stroke-width="4" stroke-linecap="round"/><line x1="17" y1="21" x2="8" y2="14" stroke="#4F8FE0" stroke-width="4" stroke-linecap="round"/><path d="M4 34 Q12 30 20 34 Q28 38 36 34 Q42 32 46 34" fill="none" stroke="#7EC8E3" stroke-width="2.4" stroke-linecap="round"/>`,
+  danceFig: poseFigure({color:'#FF6FA5', headXY:[24,12], hipXY:[24,26], legs:[[24,26,16,40],[24,26,30,34]], arms:[[24,18,32,8],[24,18,14,24]], extra:`<path d="M36 10 L38 10 M37 9 L37 11" stroke="#FFC94D" stroke-width="1.6" stroke-linecap="round"/>`}),
+  singFace: `<circle cx="20" cy="22" r="12" fill="${SKIN}" stroke="${OUTLINE}" stroke-width="1.6"/><ellipse cx="20" cy="27" rx="4" ry="5" fill="${OUTLINE}"/><circle cx="15" cy="18" r="1.4" fill="${OUTLINE}"/><circle cx="25" cy="18" r="1.4" fill="${OUTLINE}"/><path d="M33 10 L33 22 Q36 20 36 23 Q36 26 33 26 Q30 26 30 23 Q30 21 33 22" fill="#9B6FD1" stroke="${OUTLINE}" stroke-width="1"/><path d="M40 16 L40 26 Q42 25 42 27 Q42 29 40 29 Q38 29 38 27 Q38 25.5 40 26" fill="#4A90D9" stroke="${OUTLINE}" stroke-width="1"/>`,
+};
+function illuSvg(key){
+  return `<svg viewBox="0 0 48 48">${ILLU[key]}</svg>`;
+}
+
+/* ───────────────────── 词库数据 ───────────────────── */
+const fam = (zh,en,key)=>({zh,en,icon:{t:'fam',key}});
+const emo = (zh,en,e)=>({zh,en,icon:{t:'emoji',e}});
+const fa = (zh,en,cls)=>({zh,en,icon:{t:'fa-plain',cls}});
+const pos = (zh,en,cls)=>({zh,en,icon:{t:'fa-pos',cls}});
+const neg = (zh,en,cls)=>({zh,en,icon:{t:'fa-neg',cls}});
+const swatch = (zh,en,hex)=>({zh,en,icon:{t:'swatch',hex}});
+const shp = (zh,en,key)=>({zh,en,icon:{t:'shape',key}});
+const ill = (zh,en,key)=>({zh,en,icon:{t:'ill',key}});
+const illPos = (zh,en,key)=>({zh,en,icon:{t:'ill-pos',key}});
+const illNeg = (zh,en,key)=>({zh,en,icon:{t:'ill-neg',key}});
+
+const CATEGORIES = [
+  {
+    id:'family', zh:'家人', en:'Family', icon:'fa-solid fa-house-chimney', accent:'var(--cat-family)',
+    words:[
+      fam('老师','teacher','teacher'),
+      fam('爸爸','dad','dad'),
+      fam('妈妈','mom','mom'),
+      fam('爷爷','grandpa','grandpa'),
+      fam('奶奶','grandma','grandma'),
+      fam('姥爷','grandpa','grandpaB'),
+      fam('姥姥','grandma','grandmaB'),
+      fam('哥哥','big brother','teenBoy'),
+      fam('姐姐','big sister','teenGirl'),
+      fam('弟弟','little brother','brotherSmall'),
+      fam('妹妹','little sister','sisterSmall'),
+      fam('小朋友','friend','kid'),
+      fam('男生','boy','teenBoy'),
+      fam('女生','girl','teenGirl'),
+      fam('你','you','you'),
+      fam('我','me','me'),
+      fam('家人','family','group'),
+    ]
+  },
+  {
+    id:'feel', zh:'情绪与是非', en:'Feelings & Opposites', icon:'fa-solid fa-face-smile', accent:'var(--cat-feel)',
+    words:[
+      illPos('喜欢','like','heartEyesFace'), illNeg('不喜欢','dislike','heartEyesFace'),
+      illPos('爱','love','loveHeart'), illNeg('不爱','not love','loveHeart'),
+      illPos('会','can','bicepArm'), illNeg('不会','cannot','bicepArm'),
+      ill('对','correct','checkCircle'), ill('不对','incorrect','xCircle'),
+      ill('是','is','ribbonCheck'), ill('不是','is not','ribbonX'),
+      illPos('要','want','reachHand'), illNeg('不要','don’t want','reachHand'),
+      illPos('有','have','giftBox'), illNeg('没有','don’t have','giftBox'),
+      illPos('吃','eat','bowl'), illNeg('不吃','don’t eat','bowl'),
+      illPos('喝','drink','cup'), illNeg('不喝','don’t drink','cup'),
+      ill('生气','angry','angry'),
+      ill('难过','sad','sad'),
+      ill('开心','happy','happy'),
+      ill('害怕','scared','scared'),
+    ]
+  },
+  {
+    id:'weather', zh:'天气与时间', en:'Weather & Time', icon:'fa-solid fa-cloud-sun', accent:'var(--cat-weather)',
+    words:[
+      ill('刮风','windy','windy'),
+      ill('阴天','cloudy day','cloudy'),
+      ill('晴天','sunny day','sunny'),
+      ill('多云','cloudy','partCloudy'),
+      ill('下雨','rainy','rainy'),
+      ill('下雪','snowy','snowy'),
+      ill('冷','cold','cold'),
+      ill('热','hot','hot'),
+      ill('天气','weather','weatherMix'),
+      ill('今天','today','today'),
+      ill('明天','tomorrow','tomorrow'),
+      ill('昨天','yesterday','yesterday'),
+      ill('星期一','Monday','weekday1'),
+      ill('星期二','Tuesday','weekday2'),
+      ill('星期三','Wednesday','weekday3'),
+      ill('星期四','Thursday','weekday4'),
+      ill('星期五','Friday','weekday5'),
+      ill('星期六','Saturday','weekday6'),
+      ill('星期天','Sunday','weekday7'),
+    ]
+  },
+  {
+    id:'classroom', zh:'教室与四季', en:'Classroom & Seasons', icon:'fa-solid fa-chalkboard', accent:'var(--cat-class)',
+    words:[
+      ill('铅笔','pencil','pencil'),
+      ill('橡皮','eraser','eraser'),
+      ill('纸','paper','paperIcon'),
+      ill('本子','notebook','notebook'),
+      ill('剪刀','scissors','scissors'),
+      ill('书','book','bookOpen'),
+      ill('书包','backpack','backpack'),
+      ill('蜡笔','crayon','crayons'),
+      ill('胶棒','glue stick','glueStick'),
+      ill('文件夹','folder','folder'),
+      ill('桌子','table','table'),
+      ill('椅子','chair','chair'),
+      ill('门','door','doorClosed'),
+      ill('灯','lamp','lamp'),
+      ill('树','tree','tree'),
+      ill('树叶','leaf','leaf'),
+      ill('花','flower','flower'),
+      ill('草','grass','grass'),
+      ill('春天','spring','sprout'),
+      ill('夏天','summer','sunny'),
+      ill('秋天','fall','fallLeaf'),
+      ill('冬天','winter','winterFlake'),
+    ]
+  },
+  {
+    id:'color', zh:'颜色', en:'Colors', icon:'fa-solid fa-palette', accent:'var(--cat-color)',
+    words:[
+      swatch('红色','red','#E8544A'),
+      swatch('橙色','orange','#FF8A3D'),
+      swatch('黄色','yellow','#F6C445'),
+      swatch('绿色','green','#4CAF7D'),
+      swatch('蓝色','blue','#4A90D9'),
+      swatch('紫色','purple','#9B6FD1'),
+      swatch('粉色','pink','#F080A8'),
+      swatch('黑色','black','#2E3138'),
+      swatch('白色','white','#FFFFFF'),
+      swatch('棕色','brown','#8B5E3C'),
+      swatch('灰色','gray','#9AA0A8'),
+      swatch('金色','gold','#D4AF37'),
+    ]
+  },
+  {
+    id:'food', zh:'食物与饮料', en:'Food & Drink', icon:'fa-solid fa-utensils', accent:'var(--cat-food)',
+    words:[
+      emo('苹果','apple','🍎'), emo('香蕉','banana','🍌'), emo('橙子','orange','🍊'),
+      emo('桔子','tangerine','🍊'), emo('樱桃','cherry','🍒'), emo('草莓','strawberry','🍓'),
+      emo('西瓜','watermelon','🍉'), emo('葡萄','grape','🍇'), emo('蓝莓','blueberry','🫐'),
+      emo('芒果','mango','🥭'), emo('鸡蛋','egg','🥚'), emo('牛奶','milk','🥛'),
+      emo('茶','tea','🍵'), emo('咖啡','coffee','☕'), emo('橙汁','orange juice','🧃'),
+      emo('沙拉','salad','🥗'), emo('炒饭','fried rice','🍚'), emo('捞面','noodles','🍜'),
+      emo('鸡块','chicken nuggets','🍗'), emo('三明治','sandwich','🥪'), emo('冰淇淋','ice cream','🍦'),
+    ]
+  },
+  {
+    id:'animal', zh:'动物', en:'Animals', icon:'fa-solid fa-paw', accent:'var(--cat-animal)',
+    words:[
+      emo('猫','cat','🐱'), emo('小鸟','bird','🐦'), emo('鱼','fish','🐟'),
+      emo('鲨鱼','shark','🦈'), emo('猎豹','cheetah','🐆'), emo('鳄鱼','crocodile','🐊'),
+      emo('火烈鸟','flamingo','🦩'), emo('企鹅','penguin','🐧'), emo('大象','elephant','🐘'),
+      emo('乌龟','turtle','🐢'),
+    ]
+  },
+  {
+    id:'zodiac', zh:'十二生肖', en:'Chinese Zodiac', icon:'fa-solid fa-dragon', accent:'var(--cat-zodiac)',
+    words:[
+      emo('鼠','rat','🐭'), emo('牛','ox','🐮'), emo('虎','tiger','🐯'), emo('兔','rabbit','🐰'),
+      emo('龙','dragon','🐉'), emo('蛇','snake','🐍'), emo('马','horse','🐴'), emo('羊','sheep','🐑'),
+      emo('猴','monkey','🐵'), emo('鸡','rooster','🐔'), emo('狗','dog','🐶'), emo('猪','pig','🐷'),
+    ]
+  },
+  {
+    id:'verb', zh:'动作', en:'Action Words', icon:'fa-solid fa-person-running', accent:'var(--cat-verb)',
+    words:[
+      ill('看见','see','eyeOpen'),
+      ill('看不见','can’t see','eyeClosed'),
+      ill('来','come','comeArrow'),
+      ill('去','go','goArrow'),
+      ill('开','open','doorOpen'),
+      ill('关','close','doorClosed'),
+      ill('推','push','pushFig'),
+      ill('拉','pull','pullFig'),
+      ill('走','walk','walkFig'),
+      ill('跑','run','runFig'),
+      ill('跳','jump','jumpFig'),
+      ill('飞','fly','flyBird'),
+      ill('爬','climb','climbLadder'),
+      ill('看','look','eyeOpen'),
+      ill('听','listen','earListen'),
+      ill('说话','talk','speechBubble'),
+      ill('游泳','swim','swimFig'),
+      ill('跳舞','dance','danceFig'),
+      ill('唱歌','sing','singFace'),
+    ]
+  },
+  {
+    id:'body', zh:'身体部位', en:'Body Parts', icon:'fa-solid fa-child-reaching', accent:'var(--cat-body)',
+    words:[
+      emo('头发','hair','💇'), emo('眼睛','eyes','👀'), emo('眉毛','eyebrows','🤨'),
+      emo('耳朵','ears','👂'), emo('鼻子','nose','👃'), emo('嘴巴','mouth','👄'),
+      emo('脖子','neck','🦒'), emo('身体','body','🧍'), emo('腿','leg','🦵'),
+      emo('脚','foot','🦶'), emo('眼镜','glasses','👓'),
+    ]
+  },
+  {
+    id:'shape', zh:'图形', en:'Shapes', icon:'fa-solid fa-shapes', accent:'var(--cat-shape)',
+    words:[
+      shp('长方形','rectangle','rect'), shp('正方形','square','square'), shp('圆形','circle','circle'),
+      shp('椭圆形','oval','oval'), shp('三角形','triangle','triangle'), shp('六边形','hexagon','hexagon'),
+      shp('梯形','trapezoid','trapezoid'), shp('正方体','cube','cube'), shp('圆柱体','cylinder','cylinder'),
+      shp('圆锥体','cone','cone'), shp('球体','sphere','sphere'), shp('心形','heart','heart'),
+      shp('星形','star','star'),
+    ]
+  },
+];
+
+/* ───────────────────── 渲染 ───────────────────── */
+function badgeHtml(icon, accent){
+  switch(icon.t){
+    case 'fam': return `<div class="badge fam">${famSvg(icon.key)}</div>`;
+    case 'shape': return `<div class="badge shape">${shapeSvg(icon.key)}</div>`;
+    case 'emoji': return `<div class="badge emoji">${icon.e}</div>`;
+    case 'swatch': return `<div class="badge swatch" style="background:${icon.hex}"></div>`;
+    case 'fa-pos': return `<div class="badge fa-pos" style="--accent:${accent}"><i class="${icon.cls}"></i></div>`;
+    case 'fa-neg': return `<div class="badge fa-neg"><i class="${icon.cls}"></i></div>`;
+    case 'ill': return `<div class="badge ill">${illuSvg(icon.key)}</div>`;
+    case 'ill-pos': return `<div class="badge ill">${illuSvg(icon.key)}</div>`;
+    case 'ill-neg': return `<div class="badge ill ill-neg">${illuSvg(icon.key)}</div>`;
+    default: return `<div class="badge fa-plain" style="--accent:${accent}"><i class="${icon.cls}"></i></div>`;
+  }
+}
+
+function render(){
+  const wrap = document.getElementById('categories');
+  const nav = document.getElementById('quicknav');
+  wrap.innerHTML = '';
+  nav.innerHTML = '';
+
+  CATEGORIES.forEach(cat=>{
+    const chip = document.createElement('a');
+    chip.href = `#${cat.id}`;
+    chip.className = 'qn-chip font-zh';
+    chip.innerHTML = `<span class="qn-dot" style="background:${cat.accent}"></span>${cat.zh}`;
+    nav.appendChild(chip);
+
+    const section = document.createElement('section');
+    section.className = 'category';
+    section.id = cat.id;
+    section.style.setProperty('--accent', cat.accent);
+
+    const cards = cat.words.map(w=>`
+      <div class="word-card" data-zh="${w.zh}" data-en="${w.en.toLowerCase()}">
+        ${badgeHtml(w.icon, cat.accent)}
+        <div class="word-zh">${w.zh}</div>
+        <div class="word-en font-en">${w.en}</div>
+      </div>
+    `).join('');
+
+    section.innerHTML = `
+      <div class="cat-head">
+        <div class="cat-badge"><i class="${cat.icon}"></i></div>
+        <div class="cat-titles">
+          <span class="cat-zh">${cat.zh}</span>
+          <span class="cat-en">${cat.en}</span>
+        </div>
+        <span class="cat-count">${cat.words.length} 词</span>
+      </div>
+      <div class="word-grid">${cards}</div>
+    `;
+    wrap.appendChild(section);
+  });
+}
+render();
+
+/* ───────────────────── 搜索过滤 ───────────────────── */
+const searchInput = document.getElementById('wordSearch');
+const emptyMsg = document.getElementById('emptyMsg');
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  let totalVisible = 0;
+  document.querySelectorAll('.category').forEach(section=>{
+    let any = false;
+    section.querySelectorAll('.word-card').forEach(card=>{
+      const match = !q || card.dataset.zh.includes(q) || card.dataset.en.includes(q);
+      card.classList.toggle('hide', !match);
+      if(match) any = true;
+    });
+    section.classList.toggle('no-match', !any);
+    if(any) totalVisible++;
+  });
+  emptyMsg.style.display = totalVisible ? 'none' : '';
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+
+/* ───────────────────── 英文显示开关 ───────────────────── */
+const EN_KEY = 'writing_helper_show_en';
+const enToggle = document.getElementById('enToggle');
+let showEn = true;
+try {
+  const saved = localStorage.getItem(EN_KEY);
+  if (saved !== null) showEn = saved === '1';
+} catch (e) {}
+enToggle.checked = showEn;
+document.body.classList.toggle('hide-en', !showEn);
+enToggle.addEventListener('change', () => {
+  showEn = enToggle.checked;
+  document.body.classList.toggle('hide-en', !showEn);
+  try { localStorage.setItem(EN_KEY, showEn ? '1' : '0'); } catch (e) {}
+});
+</script>
+</body>
+</html>
