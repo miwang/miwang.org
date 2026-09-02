@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>你几岁？我的生日 · How Old Are You &amp; Birthday</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
+<style>
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF, U+20000-2A6DF;
+}
+:root{
+  font-size:18px;
+  --ink:#2E2A28;
+  --ink-soft:#6B625C;
+  --paper:#FFFDF7;
+  --card:#FFFFFF;
+  --line:rgba(46,42,40,.14);
+  --accent:#F0663C;
+  --accent-soft:#F0663C22;
+  --shadow:0 .35rem 1.1rem rgba(46,42,40,.13);
+  --radius:1.1rem;
+  --font-zh:"KaiTi-CJK","LXGW WenKai Lite","LXGW WenKai",serif;
+}
+@media (min-width:900px){ :root{ font-size:20px; } }
+@media (min-width:1300px){ :root{ font-size:23px; } }
+@media (min-width:1700px){ :root{ font-size:27px; } }
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--font-zh);
+  color:var(--ink);
+  background:
+    radial-gradient(60rem 40rem at 12% -10%, #FFE1CE 0%, transparent 60%),
+    radial-gradient(50rem 36rem at 95% 8%, #E8F4FF 0%, transparent 62%),
+    radial-gradient(48rem 40rem at 50% 115%, #FFF3D2 0%, transparent 60%),
+    linear-gradient(#FFFDF7,#FDF6EA);
+  overflow:hidden;
+  user-select:none;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(3.2rem);opacity:.5;pointer-events:none;z-index:0}
+.blob.a{width:22rem;height:22rem;left:-7rem;top:-6rem;background:#FFD9A8}
+.blob.b{width:20rem;height:20rem;right:-6rem;bottom:-7rem;background:#BFE3FF}
+
+/* ---------- shell ---------- */
+#app{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  width:min(96vw,72rem);max-height:100vh;margin:0 auto;padding:1.1rem .8rem .8rem}
+.topbar{display:flex;align-items:center;gap:.5rem;flex:0 0 auto;padding:.15rem 0 .5rem}
+.topbar .spacer{flex:1}
+.chip{
+  border:none;background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:.82rem;font-weight:700;
+  padding:.4rem .85rem;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;
+  display:inline-flex;align-items:center;gap:.3rem;line-height:1.2;
+  text-decoration:none;
+}
+.chip:active{transform:translateY(1px)}
+.chip.tone{background:var(--accent);color:#fff}
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---------- home ---------- */
+.home-head{text-align:center;flex:0 0 auto;padding:.2rem 0 .8rem}
+.home-title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1.1rem}
+.home-title-row h1{margin:0;font-size:2rem;letter-spacing:.04em}
+.home-head p{margin:.3rem 0 0;color:var(--ink-soft);font-size:.85rem}
+.song-btn{
+  flex:0 0 auto;border:none;background:var(--card);color:var(--ink);cursor:pointer;
+  font-family:inherit;font-size:.85rem;font-weight:700;text-decoration:none;
+  padding:.5rem 1.1rem;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:.3rem;
+}
+.song-btn:active{transform:translateY(1px)}
+
+.grid-stations{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));
+  gap:.7rem;padding:.2rem .2rem 1rem;align-content:start;
+}
+.station{
+  border:none;cursor:pointer;font-family:inherit;color:inherit;text-align:left;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem .85rem;display:flex;flex-direction:column;gap:.3rem;
+  border-top:.28rem solid var(--accent);
+}
+.station:active{transform:translateY(2px)}
+.station .ico{font-size:1.7rem;line-height:1}
+.station b{font-size:1rem}
+.station small{color:var(--ink-soft);font-size:.72rem;line-height:1.4}
+
+/* ---------- generic activity frame ---------- */
+.act{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:.6rem}
+.act-q{flex:0 0 auto;text-align:center;font-size:1.5rem;font-weight:700;line-height:1.25}
+.act-q .sub{display:block;font-size:.72rem;font-weight:400;color:var(--ink-soft);letter-spacing:.08em;margin-top:.2rem}
+.act-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;overflow:hidden}
+.act-body.scroll{overflow-y:auto;justify-content:flex-start;padding:.15rem .15rem .6rem}
+.act-foot{flex:0 0 auto;display:flex;justify-content:center;gap:.5rem;padding-bottom:.2rem}
+
+.verdict{font-size:1.5rem;font-weight:700;min-height:2rem;text-align:center}
+.verdict.good{color:#1E7A46}
+.verdict.retry{color:#B4562C}
+@keyframes popIn{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.pop{animation:popIn .34s cubic-bezier(.22,1.2,.4,1)}
+
+/* ---------- 听一听 / 选一选 ---------- */
+.choice-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
+.choice-btn{
+  width:7.5rem;height:7.5rem;border-radius:1.4rem;border:none;cursor:pointer;
+  background:var(--card);box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08);
+  font-size:3rem;font-family:inherit;font-weight:700;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+}
+.choice-btn:active{transform:scale(.96)}
+.choice-btn.wrong{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-.5rem)}75%{transform:translateX(.5rem)}}
+.prompt-word{font-size:3rem;font-weight:700;letter-spacing:.08em}
+
+/* ---------- 翻牌 ---------- */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:min(100%,32rem)}
+.number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;width:min(100%,40rem)}
+.flip{
+  aspect-ratio:1/1;border:none;border-radius:1.1rem;cursor:pointer;font-family:inherit;
+  background:var(--accent);box-shadow:var(--shadow);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;
+  font-size:2.2rem;-webkit-appearance:none;appearance:none;overflow:hidden;padding:0;
+}
+.flip.open{background:var(--card);color:var(--ink)}
+.flip .emo{font-size:1.4em;line-height:1}
+.flip span.zh{font-size:.8rem;font-weight:700}
+.flip .qm{opacity:.85}
+
+/* ---------- 十二个月 ---------- */
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem;width:min(100%,36rem)}
+.month-cell{
+  border:none;cursor:pointer;font-family:inherit;color:var(--ink);
+  background:var(--card);border-radius:.9rem;box-shadow:var(--shadow);
+  padding:.55rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;
+}
+.month-cell:active{transform:translateY(2px)}
+.month-cell .emo{font-size:1.4rem}
+.month-cell b{font-size:.78rem;font-weight:700}
+.month-cell.quiz{background:var(--accent);color:#fff}
+.month-cell.quiz b{color:#fff}
+.month-cell.quiz.open{background:var(--card);color:var(--ink)}
+.month-cell.quiz.open b{color:var(--ink)}
+
+/* ---------- 生日蛋糕 / 蜡烛 ---------- */
+.cake-emo{font-size:4.4rem;line-height:1}
+.candle-row{display:flex;flex-wrap:wrap;gap:.15rem;justify-content:center;max-width:16rem}
+.candle-row span{font-size:1.6rem;line-height:1}
+
+/* ---------- 日历卡 ---------- */
+.cal-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem 1.5rem;text-align:center;display:inline-flex;flex-direction:column;align-items:center;gap:.25rem;
+}
+.cal-card .cal-month{
+  background:var(--accent);color:#fff;border-radius:.6rem;padding:.25rem 1rem;
+  font-size:.95rem;font-weight:700;
+}
+.cal-card .cal-day{font-size:2.8rem;font-weight:700;line-height:1}
+
+/* ---------- 拼句子 ---------- */
+.sentence-built{font-size:1.9rem;font-weight:700;min-height:2.6rem;letter-spacing:.05em;text-align:center}
+.sentence-built .blank{color:var(--ink-soft)}
+.tile-row{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:30rem}
+.tile{
+  border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow);border-radius:.8rem;padding:.6rem 1rem;font-size:1.3rem;font-weight:700;
+}
+.tile:active{transform:translateY(2px)}
+.tile.used{opacity:.25;pointer-events:none}
+.tile.wrong{animation:shake .4s}
+
+/* ---------- 问答对话 ---------- */
+.dialog-wrap{display:flex;flex-direction:column;gap:.9rem;width:min(100%,30rem)}
+.dialog-line{
+  display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:.8rem 1rem;cursor:pointer;
+}
+.dialog-line .who{font-size:1.8rem;flex:0 0 auto}
+.dialog-line .txt{font-size:1.1rem;font-weight:700;flex:1 1 auto}
+.dialog-line.q{border-left:.3rem solid var(--accent)}
+.dialog-line.a{border-left:.3rem solid #4FC3F7}
+
+.turn-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1rem 1.4rem;text-align:center;display:flex;flex-direction:column;gap:.3rem;align-items:center;max-width:26rem;
+}
+.turn-card .big{font-size:2.2rem}
+.turn-card b{font-size:1.05rem}
+.turn-card small{color:var(--ink-soft);font-size:.75rem;line-height:1.5}
+
+/* ---------- 生日排排队 ---------- */
+.game-steps{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.8rem 1.1rem;max-width:32rem;font-size:.8rem;line-height:1.7;color:var(--ink-soft);
+}
+.game-steps b{color:var(--ink)}
+.round-badge{
+  background:var(--card);border-radius:999px;box-shadow:var(--shadow);padding:.35rem .85rem;
+  font-size:.78rem;font-weight:700;color:var(--ink-soft);
+}
+.bday-chip-list{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;max-width:30rem}
+.bday-chip{
+  background:var(--card);border-radius:999px;box-shadow:var(--shadow);padding:.3rem .8rem;
+  font-size:.75rem;font-weight:700;color:var(--ink-soft);
+}
+
+.hint{text-align:center;color:var(--ink-soft);font-size:.72rem;line-height:1.5;padding:0 1rem}
+.teacher-note{
+  background:#FFF6DA;border-radius:.8rem;padding:.6rem .9rem;font-size:.72rem;color:#6A5A2E;
+  line-height:1.5;max-width:34rem;text-align:center;
+}
+::-webkit-scrollbar{width:.5rem;height:.5rem}
+::-webkit-scrollbar-thumb{background:rgba(46,42,40,.2);border-radius:99px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="blob a"></div><div class="blob b"></div>
+<div id="app">
+  <div class="topbar" id="topbar"></div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<script>
+/* ============================================================
+   你几岁？我的生日 · How Old Are You? & My Birthday
+   数字 / 年龄 / 生日祝福语 / 月份 / 日期单元。单文件，无外部依赖（字体除外）。
+   7 个课堂活动，其中"生日排排队"是教室游戏工具。
+   ============================================================ */
+
+const DIGIT = ["","一","二","三","四","五","六","七","八","九"];
+function hanziNum(n){
+  if(n<10) return DIGIT[n];
+  if(n===10) return "十";
+  if(n<20) return "十"+DIGIT[n-10];
+  const tens=Math.floor(n/10), ones=n%10;
+  return DIGIT[tens]+"十"+(ones?DIGIT[ones]:"");
+}
+
+const NUMBERS = Array.from({length:10},(_,i)=>({ ar:String(i+1), zh:hanziNum(i+1) }));
+
+const MONTH_EMO = ["❄️","💗","🍀","🌧️","🌷","🍒","🎆","☀️","🍎","🎃","🦃","⛄"];
+const MONTHS = Array.from({length:12},(_,i)=>({ n:i+1, zh:hanziNum(i+1), emo:MONTH_EMO[i] }));
+const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+
+const BDAY_WORDS = [
+  { zh:"生日",     en:"Birthday",       emo:"🎂" },
+  { zh:"我的生日", en:"My birthday",    emo:"🙋" },
+  { zh:"你的生日", en:"Your birthday",  emo:"🫵" },
+  { zh:"礼物",     en:"Present",        emo:"🎁" },
+  { zh:"生日快乐", en:"Happy birthday", emo:"🎉" },
+  { zh:"谢谢",     en:"Thank you",      emo:"🙏" }
+];
+
+const FRIENDS = [
+  { name:"小明", emo:"🧒" }, { name:"小美", emo:"👧" }, { name:"安安", emo:"🧑" },
+  { name:"乐乐", emo:"👦" }, { name:"高高", emo:"👧" }, { name:"丽丽", emo:"🧒" },
+  { name:"强强", emo:"👦" }, { name:"娜娜", emo:"👧" }
+];
+
+const STATIONS = [
+  { id:"number", ico:"🔢", zh:"数字宝箱",     sub:"翻牌认数字，1到10怎么说" },
+  { id:"age",    ico:"🎂", zh:"你几岁？",     sub:"数一数蜡烛，猜猜他几岁" },
+  { id:"bwords", ico:"🎉", zh:"生日快乐",     sub:"翻一翻，认一认生日祝福语" },
+  { id:"months", ico:"📅", zh:"十二个月",     sub:"认一认月份，猜猜藏起来的是几月" },
+  { id:"date",   ico:"🗓️", zh:"几月几日",    sub:"看日历，拼出正确的日期" },
+  { id:"ask",    ico:"🎈", zh:"你的生日是几月几日？", sub:"问答对话，再和同桌试一试" },
+  { id:"lineup", ico:"🧍", zh:"生日排排队",   sub:"教室游戏：不说话，比生日排队" }
+];
+
+/* ---------------- 状态 ---------------- */
+let view = { name:"home", station:null };
+let muted = false;
+const stage = document.getElementById("stage");
+const topbar = document.getElementById("topbar");
+
+/* ---------------- 声音 ---------------- */
+let ac=null;
+function actx(){ if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ac; }
+function tone(freq,dur,type,vol,delay){
+  if(muted) return; const c=actx(); if(!c) return;
+  const t=c.currentTime+(delay||0);
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||"sine"; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol||.16,t+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.02);
+}
+const sfxTap     = ()=> tone(520,.07,"triangle",.11);
+const sfxGood    = ()=>{ tone(660,.14,"sine",.16,0); tone(880,.14,"sine",.16,.09); tone(1180,.24,"sine",.14,.18); };
+const sfxRetry   = ()=>{ tone(320,.16,"sine",.12,0); tone(250,.20,"sine",.10,.11); };
+const sfxReveal  = ()=>{ tone(740,.10,"triangle",.13,0); tone(990,.14,"triangle",.11,.07); };
+
+/* 用现有的音效引擎，凑一段"生日快乐歌"的旋律（曲调早已进入公有领域） */
+function playHappyBirthday(){
+  if(muted) return;
+  const notes = [
+    [392.00,.28,0],   [392.00,.28,.30], [440.00,.42,.60], [392.00,.42,1.05], [523.25,.42,1.50], [493.88,.75,1.95],
+    [392.00,.28,3.00],[392.00,.28,3.30],[440.00,.42,3.60],[392.00,.42,4.05], [587.33,.42,4.50], [523.25,.75,4.95],
+    [392.00,.28,6.00],[392.00,.28,6.30],[783.99,.42,6.60],[659.25,.42,7.05], [523.25,.42,7.50], [493.88,.42,7.95],[440.00,.60,8.40],
+    [698.46,.28,9.30],[698.46,.28,9.60],[659.25,.42,9.90],[523.25,.42,10.35],[587.33,.42,10.80],[523.25,.90,11.25]
+  ];
+  notes.forEach(([f,d,delay])=>tone(f,d,"triangle",.2,delay));
+}
+
+/* ---------------- 中文朗读（跟其它单元同一套发音引擎） ---------------- */
+const SANITY_PROJECT_ID = 'sow12t1i';
+const SANITY_DATASET = 'production';
+const SANITY_WORD_QUERY = encodeURIComponent('*[_type == "word"] | order(_createdAt asc) {char, "audioUrl": audio.asset->url}');
+const SANITY_WORD_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_WORD_QUERY}`;
+
+let sanityAudioMap = {};
+(async function loadSanityAudioMap(){
+  try{
+    const r = await fetch(SANITY_WORD_API);
+    const d = await r.json();
+    (d.result||[]).forEach(w=>{ if(w.char && w.audioUrl) sanityAudioMap[w.char]=w.audioUrl; });
+  }catch(e){}
+})();
+
+let globalAudio = new Audio();
+
+async function speak(text){
+  if(muted || !text) return;
+  globalAudio.pause();
+  const sanityAudioUrl = sanityAudioMap[text];
+
+  if(sanityAudioUrl){
+    globalAudio.src = sanityAudioUrl;
+    await globalAudio.play().catch(e=>console.warn("Sanity音频播放失败", e));
+    return;
+  }
+
+  const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+  const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+  try{
+    const localRes = await fetch(localPath, { method:"HEAD" }).catch(()=>null);
+    if(localRes && localRes.ok && localRes.headers.get("content-type") && localRes.headers.get("content-type").includes("audio")){
+      globalAudio.src = localPath; await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    const azureRes = await fetch(azureUrl).catch(()=>null);
+    if(azureRes && azureRes.ok && azureRes.headers.get("content-type") && azureRes.headers.get("content-type").includes("audio")){
+      const audioBlob = await azureRes.blob();
+      globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="zh-CN"; u.rate=.75;
+    const v=speechSynthesis.getVoices().find(v=>/zh|Chinese/i.test(v.lang+v.name));
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------------- 小工具 ---------------- */
+const el=(t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function randomBirthday(){
+  const m=1+rnd(12);
+  const d=1+rnd(DAYS_IN_MONTH[m-1]);
+  return { m, d };
+}
+function birthdayPhrase(b){ return hanziNum(b.m)+"月"+hanziNum(b.d)+"日"; }
+
+/* ---------------- 顶栏 ---------------- */
+function renderTop(){
+  topbar.innerHTML="";
+  if(view.name==="home"){
+    const back=el("a","chip","← 教师工具台");
+    back.href="../teachers.html";
+    topbar.appendChild(back);
+  }else{
+    const back=el("button","chip","← 你几岁？我的生日");
+    back.onclick=()=>{ sfxTap(); go("home"); };
+    topbar.appendChild(back);
+  }
+  topbar.appendChild(el("div","spacer"));
+  if(view.name==="station"){
+    const again=el("button","chip tone","↻ 再来一个");
+    again.onclick=()=>{ sfxTap(); renderStage(); };
+    topbar.appendChild(again);
+  }
+  const m=el("button","chip", muted?"🔇 静音":"🔊 有声");
+  m.onclick=()=>{ muted=!muted; if(!muted) sfxTap(); renderTop(); };
+  topbar.appendChild(m);
+}
+
+function go(name,station){
+  view={name, station: station||null};
+  renderTop(); renderStage();
+  stage.scrollTop=0;
+}
+
+/* ============================================================
+   首页 = 活动菜单
+   ============================================================ */
+function renderHome(){
+  const head=el("div","home-head");
+  const titleRow=el("div","home-title-row");
+  const song=el("button","song-btn","🎵 唱生日歌");
+  song.onclick=()=>{ sfxTap(); playHappyBirthday(); };
+  titleRow.appendChild(el("h1",null,"你几岁？我的生日"));
+  titleRow.appendChild(song);
+  head.appendChild(titleRow);
+  head.appendChild(el("p",null,"How Old Are You? & My Birthday · 点一个活动开始"));
+  stage.appendChild(head);
+
+  const grid=el("div","grid-stations");
+  STATIONS.forEach(s=>{
+    const b=el("button","station");
+    b.appendChild(el("div","ico",s.ico));
+    b.appendChild(el("b",null,s.zh));
+    b.appendChild(el("small",null,s.sub));
+    b.onclick=()=>{ sfxTap(); go("station",s.id); };
+    grid.appendChild(b);
+  });
+  stage.appendChild(grid);
+}
+
+/* ============================================================
+   活动 1 · 数字宝箱（1~10 翻牌）
+   ============================================================ */
+function actNumber(){
+  const q=el("div","act-q");
+  q.innerHTML='翻一翻，认一认<span class="sub">1 到 10，中文怎么说</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const grid=el("div","number-grid");
+  NUMBERS.forEach(n=>{
+    const c=el("button","flip");
+    c.innerHTML='<div class="qm">？</div>';
+    c.onclick=()=>{
+      if(c.classList.contains("open")){ speak(n.zh); return; }
+      sfxReveal(); c.classList.add("open","pop");
+      c.innerHTML="";
+      c.appendChild(el("div","emo",n.ar));
+      c.appendChild(el("span","zh",n.zh));
+      speak(n.zh);
+    };
+    grid.appendChild(c);
+  });
+  body.appendChild(grid);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 2 · 你几岁？（数蜡烛猜年龄）
+   ============================================================ */
+function actAge(){
+  const age = 1+rnd(8);
+  const pool=[]; for(let i=1;i<=8;i++) if(i!==age) pool.push(i);
+  const opts = shuffle([age, ...shuffle(pool).slice(0,3)]);
+
+  const q=el("div","act-q");
+  q.innerHTML='数一数，猜猜看<span class="sub">蜡烛有几根，就是几岁</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  body.appendChild(el("div","cake-emo","🎂"));
+
+  const candles=el("div","candle-row");
+  for(let i=0;i<age;i++){
+    const s=el("span",null,"🕯️");
+    s.style.animationDelay=(i*.06)+"s"; s.className="pop";
+    candles.appendChild(s);
+  }
+  body.appendChild(candles);
+
+  const row=el("div","choice-row");
+  const verdict=el("div","verdict");
+  opts.forEach(o=>{
+    const b=el("button","choice-btn",hanziNum(o));
+    b.onclick=()=>{
+      if(o===age){
+        sfxGood();
+        const phrase="我"+hanziNum(age)+"岁。";
+        verdict.textContent="对啦！"+phrase; verdict.className="verdict good pop";
+        speak(phrase);
+        row.querySelectorAll("button").forEach(x=>x.disabled=true);
+        setTimeout(renderStage,1800);
+      }else{
+        sfxRetry(); b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
+        verdict.textContent="再数一数"; verdict.className="verdict retry";
+      }
+    };
+    row.appendChild(b);
+  });
+
+  body.appendChild(row); body.appendChild(verdict);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 3 · 生日快乐（祝福语翻牌）
+   ============================================================ */
+function actBwords(){
+  const q=el("div","act-q");
+  q.innerHTML='翻一翻，认一认<span class="sub">生日祝福语怎么说</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const grid=el("div","card-grid");
+  BDAY_WORDS.forEach(w=>{
+    const c=el("button","flip");
+    c.innerHTML='<div class="qm">？</div>';
+    c.onclick=()=>{
+      if(c.classList.contains("open")){ speak(w.zh); return; }
+      sfxReveal(); c.classList.add("open","pop");
+      c.innerHTML="";
+      c.appendChild(el("div","emo",w.emo));
+      c.appendChild(el("span","zh",w.zh));
+      speak(w.zh);
+    };
+    grid.appendChild(c);
+  });
+  body.appendChild(grid);
+
+  const sing=el("button","chip tone","🎵 唱生日歌");
+  sing.onclick=()=>{ sfxTap(); playHappyBirthday(); };
+  body.appendChild(sing);
+
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 4 · 十二个月（认一认 + 猜猜藏起来的月份）
+   ============================================================ */
+function actMonths(){
+  const q=el("div","act-q");
+  q.innerHTML='十二个月<span class="sub">点一点认一认；橙色的格子，猜猜是几月</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body scroll");
+  const grid=el("div","month-grid");
+
+  function buildGrid(){
+    grid.innerHTML="";
+    let hiddenIdx = shuffle([...Array(12).keys()]).slice(0,3);
+    MONTHS.forEach((m,i)=>{
+      const cell=el("button","month-cell");
+      if(hiddenIdx.includes(i)){
+        cell.classList.add("quiz");
+        cell.innerHTML='<div class="emo">❓</div><b>几月？</b>';
+        cell.onclick=()=>{
+          sfxReveal(); cell.classList.add("open","pop");
+          cell.innerHTML='<div class="emo">'+m.emo+'</div><b>'+m.zh+'月</b>';
+          speak(m.zh+"月");
+          cell.onclick=()=>speak(m.zh+"月");
+        };
+      }else{
+        cell.innerHTML='<div class="emo">'+m.emo+'</div><b>'+m.zh+'月</b>';
+        cell.onclick=()=>{ sfxTap(); speak(m.zh+"月"); };
+      }
+      grid.appendChild(cell);
+    });
+  }
+  buildGrid();
+  body.appendChild(grid);
+
+  const again=el("button","chip tone","🔀 换一批藏起来的月份");
+  again.onclick=()=>{ sfxTap(); buildGrid(); };
+  body.appendChild(again);
+
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 5 · 几月几日（看日历拼句子）
+   ============================================================ */
+function actDate(){
+  const b = randomBirthday();
+  const tokens = [hanziNum(b.m),"月",hanziNum(b.d),"日"];
+  const shuffled = shuffle(tokens);
+
+  const q=el("div","act-q");
+  q.innerHTML='这是几月几日？<span class="sub">拼一拼，读出日期</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+
+  const cal=el("div","cal-card");
+  cal.appendChild(el("div","cal-month",hanziNum(b.m)+"月"));
+  cal.appendChild(el("div","cal-day",String(b.d)));
+  body.appendChild(cal);
+
+  const built=el("div","sentence-built");
+  const blanks = ()=> "".padStart(tokens.length,"▢");
+  built.innerHTML = '<span class="blank">'+blanks()+'</span>';
+
+  const row=el("div","tile-row");
+  const verdict=el("div","verdict");
+  let next=0, doneStr="";
+
+  shuffled.forEach(word=>{
+    const t=el("button","tile",word);
+    t.onclick=()=>{
+      if(word===tokens[next]){
+        sfxTap();
+        doneStr+=word; next++;
+        t.classList.add("used");
+        const remain = tokens.length-next;
+        built.innerHTML = doneStr + '<span class="blank">'+"".padStart(remain,"▢")+'</span>';
+        if(next===tokens.length){
+          sfxGood();
+          speak(doneStr);
+          verdict.textContent="对啦！"+doneStr;
+          verdict.className="verdict good pop";
+          row.querySelectorAll("button").forEach(x=>x.disabled=true);
+          setTimeout(renderStage,1900);
+        }
+      }else{
+        sfxRetry();
+        t.classList.remove("wrong"); void t.offsetWidth; t.classList.add("wrong");
+        verdict.textContent="再想想，下一个是什么"; verdict.className="verdict retry";
+      }
+    };
+    row.appendChild(t);
+  });
+
+  body.appendChild(built); body.appendChild(row); body.appendChild(verdict);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 6 · 你的生日是几月几日？（问答对话）
+   ============================================================ */
+function actAsk(){
+  const Q = "你的生日是几月几日？";
+  let friend = pick(FRIENDS);
+  let bday = randomBirthday();
+
+  const q=el("div","act-q");
+  q.innerHTML='问答对话<span class="sub">点一下气泡，听听怎么问、怎么答</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body scroll");
+  const wrap=el("div","dialog-wrap");
+
+  const qLine=el("div","dialog-line q");
+  qLine.appendChild(el("div","who","🙋"));
+  qLine.appendChild(el("div","txt",Q));
+  qLine.onclick=()=>{ sfxTap(); speak(Q); };
+  wrap.appendChild(qLine);
+
+  const aLine=el("div","dialog-line a");
+  function renderA(){
+    aLine.innerHTML="";
+    aLine.appendChild(el("div","who",friend.emo));
+    aLine.appendChild(el("div","txt","我的生日是"+birthdayPhrase(bday)+"。"));
+  }
+  renderA();
+  aLine.onclick=()=>{ sfxTap(); speak("我的生日是"+birthdayPhrase(bday)); };
+  wrap.appendChild(aLine);
+
+  const swap=el("button","chip","🔄 换一个朋友再听听");
+  swap.onclick=()=>{
+    sfxTap();
+    friend = pick(FRIENDS);
+    bday = randomBirthday();
+    renderA();
+    speak("我的生日是"+birthdayPhrase(bday));
+  };
+
+  body.appendChild(wrap);
+  body.appendChild(swap);
+
+  const turn=el("div","turn-card");
+  turn.appendChild(el("div","big","🎈"));
+  turn.appendChild(el("b",null,"该你啦！"));
+  turn.appendChild(el("small",null,"转身问问同桌：「你的生日是几月几日？」，再回答他/她。"));
+  body.appendChild(turn);
+
+  stage.appendChild(body);
+  speak(Q);
+}
+
+/* ============================================================
+   活动 7 · 生日排排队（教室游戏工具）
+   全班安静不说话，用手指比出自己的生日月份和日期，
+   按一月到十二月的顺序排成一条线。这里提供抽生日卡的小工具，
+   方便老师带练习、或者当作快速读日期的小游戏。
+   ============================================================ */
+function actLineup(){
+  const drawn = [];
+
+  const q=el("div","act-q");
+  q.innerHTML='生日排排队<span class="sub">教室游戏 · 安安静静，比生日排队</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body scroll");
+
+  const steps=el("div","game-steps");
+  steps.innerHTML =
+    "<b>1.</b> 全班保持安静，不能说话，只能用手指比数字。<br>"+
+    "<b>2.</b> 老师说开始，每个人先比出自己出生的月份（比如四月，就伸四根手指）。<br>"+
+    "<b>3.</b> 找到和自己同一个月出生的同学，站在一起；再比日期，从小到大站好。<br>"+
+    "<b>4.</b> 全班从一月排到十二月，排好队，一起喊：排好了！";
+  body.appendChild(steps);
+
+  const cal=el("div","cal-card");
+  cal.appendChild(el("div","cal-month","🎲"));
+  cal.appendChild(el("div","cal-day","抽一张"));
+  body.appendChild(cal);
+
+  const controls=el("div","act-foot");
+  const draw=el("button","chip tone","🎲 抽一张生日卡");
+  const roundBadge=el("div","round-badge","已抽 0 张");
+  controls.style.paddingBottom="0";
+  controls.appendChild(draw); controls.appendChild(roundBadge);
+  body.appendChild(controls);
+
+  const list=el("div","bday-chip-list");
+  body.appendChild(list);
+
+  const reset=el("button","chip","🔄 清空重来");
+  reset.onclick=()=>{
+    sfxTap();
+    drawn.length=0;
+    list.innerHTML="";
+    roundBadge.textContent="已抽 0 张";
+    cal.querySelector(".cal-month").textContent="🎲";
+    cal.querySelector(".cal-day").textContent="抽一张";
+  };
+  body.appendChild(reset);
+
+  draw.onclick=()=>{
+    sfxTap();
+    const b=randomBirthday();
+    cal.querySelector(".cal-month").textContent=hanziNum(b.m)+"月";
+    cal.querySelector(".cal-day").textContent=String(b.d);
+    speak(birthdayPhrase(b));
+    drawn.push(b);
+    roundBadge.textContent="已抽 "+drawn.length+" 张";
+    const bc=el("div","bday-chip",drawn.length+". "+birthdayPhrase(b));
+    list.appendChild(bc);
+  };
+
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   渲染分发
+   ============================================================ */
+const ACTS={ number:actNumber, age:actAge, bwords:actBwords, months:actMonths, date:actDate, ask:actAsk, lineup:actLineup };
+
+function renderStage(){
+  stage.innerHTML="";
+  if(view.name==="home") return renderHome();
+  ACTS[view.station]();
+}
+
+/* 键盘：Esc / ← 返回，空格 换一个 */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"||e.key==="ArrowLeft"){
+    if(view.name==="station") go("home");
+  }
+  if(e.key===" "&&view.name==="station"){ e.preventDefault(); renderStage(); }
+});
+
+if(window.speechSynthesis) speechSynthesis.getVoices();
+go("home");
+</script>
+</body>
+</html>
