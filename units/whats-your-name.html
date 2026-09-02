@@ -122,6 +122,11 @@ body{
 @keyframes shake{25%{transform:translateX(-.5rem)}75%{transform:translateX(.5rem)}}
 .prompt-word{font-size:3rem;font-weight:700;letter-spacing:.08em}
 
+/* 词语配图：四会字库里有的直接用照片，没有的用手绘小图标 */
+.word-visual{width:1em;height:1em;display:inline-flex;align-items:center;justify-content:center}
+.word-visual img{width:100%;height:100%;object-fit:cover;border-radius:.18em;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.word-visual svg{width:100%;height:100%;display:block}
+
 /* ---------- 翻牌 ---------- */
 .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:min(100%,32rem)}
 .flip{
@@ -157,14 +162,14 @@ body{
   padding:.35rem .8rem;border-radius:999px;background:var(--card);color:var(--ink-soft);box-shadow:var(--shadow);
 }
 .class-chip.on{background:var(--accent);color:#fff}
-.dialog-wrap{display:flex;flex-direction:column;gap:.9rem;width:min(100%,30rem)}
+.dialog-wrap{display:flex;flex-direction:column;gap:1.2rem;width:min(100%,42rem)}
 .dialog-line{
-  display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:.8rem 1rem;cursor:pointer;
+  display:flex;align-items:center;gap:1.1rem;background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:1.2rem 1.5rem;cursor:pointer;
 }
-.dialog-line .who{font-size:1.8rem;flex:0 0 auto}
-.dialog-line .who-photo{width:2.3rem;height:2.3rem;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:0 0 0 2px #fff,inset 0 0 0 1px rgba(0,0,0,.08)}
-.dialog-line .txt{font-size:1.15rem;font-weight:700;flex:1 1 auto}
+.dialog-line .who{width:4rem;height:4rem;font-size:2.4rem;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.dialog-line .who-photo{width:4rem;height:4rem;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:0 0 0 2px #fff,inset 0 0 0 1px rgba(0,0,0,.08)}
+.dialog-line .txt{font-size:1.6rem;font-weight:700;flex:1 1 auto;line-height:1.35}
 .dialog-line.q{border-left:.3rem solid var(--accent)}
 .dialog-line.a{border-left:.3rem solid #4FC3F7}
 
@@ -180,28 +185,31 @@ body{
 .tile.used{opacity:.25;pointer-events:none}
 .tile.wrong{animation:shake .4s}
 
-/* ---------- 内圈外圈问名字 ---------- */
+/* ---------- 内圈外圈问名字（对应我们教室 6×5 的方块地毯） ---------- */
 .circle-steps{
   background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
   padding:.8rem 1.1rem;max-width:32rem;font-size:.8rem;line-height:1.7;color:var(--ink-soft);
 }
 .circle-steps b{color:var(--ink)}
-.circle-stage{position:relative;width:16rem;height:16rem;flex:0 0 auto}
-.ring{position:absolute;inset:0}
-.ring.outer{animation:none}
-.ring.outer.spin{animation:ringspin var(--dur,5.5s) linear infinite}
-.ring.outer.spin.rev{animation-direction:reverse}
-@keyframes ringspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.ring-dot{
-  position:absolute;left:50%;top:50%;width:2.3rem;height:2.3rem;margin:-1.15rem;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
+.circle-stage{position:relative;width:300px;height:250px;flex:0 0 auto;border-radius:1rem;overflow:hidden;box-shadow:var(--shadow)}
+.rug-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(5,1fr)}
+.rug-cell{box-shadow:inset 0 0 0 1px rgba(46,42,40,.08)}
+.rug-cell.a{background:#FFE1CE}
+.rug-cell.b{background:#FFF3D2}
+.circle-ring-dot{
+  position:absolute;width:2.3rem;height:2.3rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
   font-size:1.2rem;box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08);
+  offset-rotate:0deg;offset-anchor:50% 50%;
 }
-.ring-dot.in{background:#FFE3CE}
-.ring-dot.out{background:#DFF4FF}
+.circle-ring-dot.in{background:#FFE3CE}
+.circle-ring-dot.out{background:#DFF4FF}
+.circle-ring-dot.out.spin{animation:trackmove var(--dur,5.5s) linear infinite}
+.circle-ring-dot.out.spin.rev{animation-direction:reverse}
+@keyframes trackmove{from{offset-distance:0%}to{offset-distance:100%}}
 .circle-hub{
   position:absolute;left:50%;top:50%;width:2.6rem;height:2.6rem;margin:-1.3rem;border-radius:50%;
-  background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;z-index:2;
 }
 .circle-status{font-size:1.15rem;font-weight:700;text-align:center;min-height:1.8rem}
 .circle-controls{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
@@ -234,14 +242,35 @@ body{
    7 个课堂活动 + 1 个"内圈外圈问名字"教室游戏工具。
    ============================================================ */
 
+/* 词语配图：优先用"四会字"词库里现成的照片（跟 word_detail 等页面同一批素材），
+   词库里没有的（叫/什么/名字）手绘一个小图标 */
+const ICON_JIAO =
+  '<svg viewBox="0 0 64 64"><path d="M8 12 h48 a6 6 0 0 1 6 6 v24 a6 6 0 0 1 -6 6 h-30 l-10 10 v-10 h-8 a6 6 0 0 1 -6 -6 v-24 a6 6 0 0 1 6 -6 Z" fill="#FFD9A8" stroke="#2E2A28" stroke-width="2.5"/><ellipse cx="32" cy="30" rx="10" ry="7" fill="#fff" stroke="#2E2A28" stroke-width="2"/><ellipse cx="32" cy="31" rx="4" ry="4" fill="#E23B2E"/></svg>';
+const ICON_SHENME =
+  '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="#B18CF0" stroke="#2E2A28" stroke-width="2.5"/><text x="32" y="44" font-size="34" font-weight="700" text-anchor="middle" fill="#fff" font-family="inherit">?</text></svg>';
+const ICON_MINGZI =
+  '<svg viewBox="0 0 64 64"><rect x="10" y="18" width="44" height="30" rx="6" fill="#FFF6DA" stroke="#2E2A28" stroke-width="2.5"/><circle cx="32" cy="14" r="5" fill="#F0663C" stroke="#2E2A28" stroke-width="2"/><line x1="32" y1="18" x2="32" y2="14" stroke="#2E2A28" stroke-width="2"/><line x1="18" y1="28" x2="46" y2="28" stroke="#2E2A28" stroke-width="2.2" stroke-linecap="round"/><line x1="18" y1="36" x2="38" y2="36" stroke="#2E2A28" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
 const WORDS = [
-  { zh:"你好", en:"Hello", emo:"👋" },
-  { zh:"你",   en:"You",   emo:"🫵" },
-  { zh:"我",   en:"Me",    emo:"🙋" },
-  { zh:"叫",   en:"named", emo:"🏷️" },
-  { zh:"什么", en:"what",  emo:"❓" },
-  { zh:"名字", en:"name",  emo:"📛" }
+  { zh:"你好", en:"Hello", img:"https://cdn.sanity.io/images/sow12t1i/production/3d4a5ff2ac9e2f7140e9df6e1a5d7f1f0beee45b-800x800.webp" },
+  { zh:"你",   en:"You",   img:"https://cdn.sanity.io/images/sow12t1i/production/35b9f87479ff70254dadf2f2482be9bb89c58814-2000x2000.webp" },
+  { zh:"我",   en:"Me",    img:"https://cdn.sanity.io/images/sow12t1i/production/2f8566e18b72d62ffb54fa39e0eb37dd3692952c-600x600.webp" },
+  { zh:"叫",   en:"named", icon:ICON_JIAO },
+  { zh:"什么", en:"what",  icon:ICON_SHENME },
+  { zh:"名字", en:"name",  icon:ICON_MINGZI }
 ];
+function wordVisualNode(w){
+  const d = document.createElement("div");
+  d.className = "word-visual";
+  if(w.img){
+    const img = document.createElement("img");
+    img.src = w.img; img.alt = w.zh;
+    d.appendChild(img);
+  }else{
+    d.innerHTML = w.icon;
+  }
+  return d;
+}
 
 const NAMES = ["罗大韦","陈小美","王强强","李丽丽","张明明","刘娜娜","高安安","黄乐乐"];
 
@@ -629,7 +658,7 @@ function actAsk(){
   aLine.onclick=()=>{ sfxTap(); speak("你好，我叫"+student.name); };
   wrap.appendChild(aLine);
 
-  const swap=el("button","chip","🔄 换个同学再听听");
+  const swap=el("button","chip","🔄 换一个小朋友");
   swap.onclick=()=>{
     sfxTap();
     student = pickStudent();
@@ -639,12 +668,6 @@ function actAsk(){
 
   body.appendChild(wrap);
   body.appendChild(swap);
-
-  const turn=el("div","turn-card");
-  turn.appendChild(el("div","big","🎤"));
-  turn.appendChild(el("b",null,"该你啦！"));
-  turn.appendChild(el("small",null,"转身问问同桌：「你叫什么名字？」，再回答他/她。"));
-  body.appendChild(turn);
 
   stage.appendChild(body);
   speak(Q);
@@ -670,7 +693,8 @@ function actListen(){
   const verdict=el("div","verdict");
 
   opts.forEach(o=>{
-    const b=el("button","choice-btn",o.emo);
+    const b=el("button","choice-btn");
+    b.appendChild(wordVisualNode(o));
     b.onclick=()=>{
       if(o===target){
         sfxGood(); verdict.textContent="对了！"+target.zh; verdict.className="verdict good pop";
@@ -706,7 +730,8 @@ function actFlip(){
       if(c.classList.contains("open")){ speak(w.zh); return; }
       sfxReveal(); c.classList.add("open","pop");
       c.innerHTML="";
-      c.appendChild(el("div","emo",w.emo));
+      const v=wordVisualNode(w); v.classList.add("emo");
+      c.appendChild(v);
       c.appendChild(el("span","zh",w.zh));
       speak(w.zh);
     };
@@ -772,17 +797,32 @@ function actSentence(){
    老师带全班坐成内外两个同心圆，外圈边唱边走，音乐一停，
    面对面的两人互相问名字。这里提供一个可视化的转圈 + 计时小工具。
    ============================================================ */
-function buildRing(cls, n, radius, emoji){
-  const ring=el("div","ring "+cls);
-  for(let i=0;i<n;i++){
-    const ang = (360/n)*i - 90;
-    const rad = ang*Math.PI/180;
-    const x = Math.cos(rad)*radius, y = Math.sin(rad)*radius;
-    const dot=el("div","ring-dot "+(cls==="outer"?"out":"in"), emoji);
-    dot.style.transform = `translate(${x}rem, ${y}rem)`;
-    ring.appendChild(dot);
+/* 地毯是 6×5 的方块（300×250，每格 50px）。外圈沿地毯边缘走，内圈坐在中间一圈不动。 */
+const RUG_COLS = 6, RUG_ROWS = 5;
+const OUTER_TRACK = "path('M40,15 H260 A25,25 0 0 1 285,40 V210 A25,25 0 0 1 260,235 H40 A25,25 0 0 1 15,210 V40 A25,25 0 0 1 40,15 Z')";
+const INNER_TRACK = "path('M105,65 H195 A20,20 0 0 1 215,85 V165 A20,20 0 0 1 195,185 H105 A20,20 0 0 1 85,165 V85 A20,20 0 0 1 105,65 Z')";
+const RING_DUR = 5.5;
+
+function buildRug(){
+  const grid = el("div","rug-grid");
+  for(let r=0;r<RUG_ROWS;r++){
+    for(let c=0;c<RUG_COLS;c++){
+      grid.appendChild(el("div","rug-cell "+((r+c)%2===0?"a":"b")));
+    }
   }
-  return ring;
+  return grid;
+}
+
+function buildRing(cls, n, emoji, track){
+  const dots = [];
+  for(let i=0;i<n;i++){
+    const dot=el("div","circle-ring-dot "+(cls==="outer"?"out":"in"), emoji);
+    dot.style.offsetPath = track;
+    dot.style.offsetDistance = (i/n*100)+"%";
+    dot.style.animationDelay = (-(i/n*RING_DUR))+"s";
+    dots.push(dot);
+  }
+  return dots;
 }
 
 function actCircle(){
@@ -796,18 +836,21 @@ function actCircle(){
 
   const steps=el("div","circle-steps");
   steps.innerHTML =
-    "<b>1.</b> 全班坐成内外两个同心圆——内圈朝外坐，外圈朝内坐，正好两两面对面。<br>"+
-    "<b>2.</b> 点「开始转圈」，外圈的同学一起边唱边慢慢挪动，内圈的同学不动。<br>"+
+    "<b>1.</b> 全班坐在我们的方块地毯上——内圈同学坐在地毯中间那一圈，朝外坐；外圈同学坐在地毯边缘那一圈，朝内坐，正好两两面对面。<br>"+
+    "<b>2.</b> 点「开始转圈」，外圈的同学一起边唱边沿着地毯边缘慢慢挪动，内圈的同学不动。<br>"+
     "<b>3.</b> 点「停下问好」，正对面的两人互相问："+
     "<b>你叫什么名字？</b> —— <b>我叫……</b><br>"+
     "<b>4.</b> 再点一次「开始」，继续下一轮，方向也会换一换。";
   body.appendChild(steps);
 
   const ringWrap=el("div","circle-stage");
-  const inner = buildRing("inner", 6, 3.3, "🧒");
-  const outer = buildRing("outer", 6, 6.2, "🧑");
+  ringWrap.appendChild(buildRug());
+  const inner = buildRing("inner", 6, "🧒", INNER_TRACK);
+  const outer = buildRing("outer", 6, "🧑", OUTER_TRACK);
+  inner.forEach(d=>ringWrap.appendChild(d));
+  outer.forEach(d=>ringWrap.appendChild(d));
   const hub = el("div","circle-hub","🎵");
-  ringWrap.appendChild(inner); ringWrap.appendChild(outer); ringWrap.appendChild(hub);
+  ringWrap.appendChild(hub);
   body.appendChild(ringWrap);
 
   const status=el("div","circle-status","准备好了就点「开始转圈」吧");
@@ -823,8 +866,7 @@ function actCircle(){
     if(!state.spinning){
       sfxTap();
       state.spinning=true;
-      outer.classList.add("spin");
-      outer.classList.toggle("rev", state.dir<0);
+      outer.forEach(d=>{ d.classList.add("spin"); d.classList.toggle("rev", state.dir<0); });
       status.textContent="🚶 走走走，一起唱着走～";
       btn.textContent="🔔 停下问好";
       stopCircleTicker();
@@ -833,7 +875,7 @@ function actCircle(){
       stopCircleTicker();
       state.spinning=false;
       state.round++; state.dir*=-1;
-      outer.classList.remove("spin","rev");
+      outer.forEach(d=>d.classList.remove("spin","rev"));
       sfxBell();
       status.textContent="🔔 停！问一问：你叫什么名字？";
       status.classList.remove("pop"); void status.offsetWidth; status.classList.add("pop");
