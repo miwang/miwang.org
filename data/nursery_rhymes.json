@@ -1,0 +1,67 @@
+{
+  "categories": [
+    {
+      "id": "manners",
+      "title": "礼貌用语",
+      "titleEn": "Polite Phrases",
+      "songs": [
+        {
+          "id": "xiexie_bukeqi",
+          "title": "谢谢 / 不客气",
+          "titleEn": "Thank You / You're Welcome",
+          "youtubeId": "8blxp12TzXQ"
+        },
+        {
+          "id": "duibuqi_meiguanxi",
+          "title": "对不起 / 没关系",
+          "titleEn": "Sorry / It's OK",
+          "youtubeId": "AP5yhAjUmI0"
+        }
+      ]
+    },
+    {
+      "id": "colors",
+      "title": "颜色",
+      "titleEn": "Colors",
+      "songs": [
+        {
+          "id": "yansege_1",
+          "title": "颜色歌（一）",
+          "titleEn": "Colors Song I",
+          "youtubeId": "ebQUaCALcuE"
+        },
+        {
+          "id": "wuyanliuse_bus",
+          "title": "五颜六色的巴士",
+          "titleEn": "The Colorful Bus",
+          "youtubeId": "hykT9tffQXw"
+        },
+        {
+          "id": "yansege_2",
+          "title": "颜色歌（二）",
+          "titleEn": "Colors Song II",
+          "youtubeId": "KUyWkXSL3MQ"
+        }
+      ]
+    },
+    {
+      "id": "about_me",
+      "title": "自我介绍",
+      "titleEn": "About Me",
+      "songs": [
+        {
+          "id": "nijiaoshemmingzi",
+          "title": "你叫什么名字",
+          "titleEn": "What's Your Name",
+          "youtubeId": "hP1NrkNMybo"
+        },
+        {
+          "id": "nijisui",
+          "title": "你几岁",
+          "titleEn": "How Old Are You",
+          "youtubeId": "ngOM7skqjjo"
+        }
+      ]
+    }
+  ]
+}

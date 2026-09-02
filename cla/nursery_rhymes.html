@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="head-title">儿歌乐园 - MECC</title>
+
+    <script src="../js/config.js"></script>
+    <link rel="stylesheet" href="../css/common_nav.css">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        :root {
+            --kaiti: "KaiTi-CJK", "LXGW WenKai Lite", sans-serif;
+            --wenkai: "LXGW WenKai Lite", sans-serif;
+            --main-teal: #598586;
+            --accent-yellow: #f3b236;
+        }
+
+        .font-zh, [class*="font-zh"] { font-family: var(--kaiti) !important; font-weight: bold; }
+        .font-en, [class*="font-en"] { font-family: var(--wenkai) !important; }
+
+        body {
+            background-color: #fff9ea; margin: 0; padding: 0;
+            padding-top: 60px; box-sizing: border-box;
+        }
+
+        #gallery-view { padding: 20px 40px 50px; box-sizing: border-box; }
+
+        .category-block { margin-bottom: 36px; }
+        .category-title {
+            font-size: 1.3rem; color: var(--main-teal); font-weight: bold;
+            border-left: 6px solid var(--accent-yellow); padding-left: 14px; margin-bottom: 16px;
+            display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+        }
+        .category-title .en { font-size: 0.95rem; color: #8a9aa5; font-weight: normal; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        @keyframes cardPop {
+            from { opacity: 0; transform: translateY(24px) scale(0.94); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .song-card {
+            background: white; border: 3px solid #e2e8f0; border-radius: 22px;
+            overflow: hidden; cursor: pointer;
+            display: flex; flex-direction: column;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: cardPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        .song-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--accent-yellow);
+            box-shadow: 0 14px 28px rgba(243, 178, 54, 0.25);
+        }
+
+        .card-img-wrapper {
+            width: 100%; aspect-ratio: 16 / 9;
+            overflow: hidden; background: #263543; position: relative;
+        }
+        .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .play-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.25s;
+        }
+        .song-card:hover .play-overlay { opacity: 1; }
+        .play-icon {
+            width: 52px; height: 52px; background: rgba(255,255,255,0.95);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .play-icon::before {
+            content: ''; width: 0; height: 0; margin-left: 5px;
+            border-top: 11px solid transparent; border-bottom: 11px solid transparent;
+            border-left: 18px solid var(--accent-yellow);
+        }
+
+        .song-info { padding: 10px 14px 14px; }
+        .song-info h3 { margin: 0 0 2px; font-size: 1.05rem; color: #2c3e50; line-height: 1.3; }
+        .song-info p { margin: 0; font-size: 0.82rem; color: #8a9aa5; }
+
+        #play-view {
+            display: none; height: 100vh; flex-direction: column; background: #1a2028;
+            z-index: 10000; position: fixed; top: 0; left: 0; width: 100%;
+        }
+        .play-header {
+            min-height: 12vh; background: var(--main-teal); display: flex; align-items: center;
+            justify-content: space-between; border-bottom: 0.6vh solid var(--accent-yellow);
+            padding: 0 20px; gap: 12px; flex-shrink: 0;
+        }
+        .play-back-btn {
+            flex-shrink: 0; color: white; cursor: pointer; font-size: 1rem; font-weight: bold;
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(255,255,255,0.4);
+            transition: 0.2s; white-space: nowrap;
+        }
+        .play-back-btn:hover { background: rgba(255,255,255,0.35); }
+        .play-header-spacer { flex-shrink: 0; visibility: hidden; padding: 8px 18px; font-size: 1rem; white-space: nowrap; }
+
+        .video-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2vh; }
+        .video-frame-wrap {
+            width: min(92vw, 160vh); aspect-ratio: 16 / 9;
+            border-radius: 2vh; overflow: hidden; border: 6px solid var(--main-teal);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); background: black;
+        }
+        .video-frame-wrap iframe { width: 100%; height: 100%; border: none; }
+
+        @media (max-width: 768px) {
+            body { padding-top: 56px; }
+            #gallery-view { padding: 14px 16px 40px !important; }
+            .category-title { font-size: 1.1rem !important; }
+            .card-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 12px !important; }
+            .song-info h3 { font-size: 0.92rem !important; }
+            .song-info p { font-size: 0.75rem !important; }
+            .play-header { min-height: auto !important; padding: 10px 12px !important; gap: 8px !important; }
+            .play-back-btn { font-size: 0.85rem !important; padding: 6px 12px !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gallery-view"></div>
+
+    <div id="play-view">
+        <div class="mecc-global-nav"><a href="#" class="mecc-nav-back" onclick="closePlay();return false;">← <span>返回</span></a><h1 class="mecc-nav-title" id="song-title-nav"></h1></div>
+        <div class="play-header" style="display:none;">
+            <div class="play-back-btn font-zh" id="btn-close-play" onclick="closePlay()">⬅️ 返回列表</div>
+            <h1 id="song-title" style="color:white; font-size: clamp(1rem, 3.5vh, 2.2rem); margin:0; text-align:center; flex:1;"></h1>
+            <div class="play-header-spacer font-zh">⬅️ 返回列表</div>
+        </div>
+        <div class="video-panel">
+            <div class="video-frame-wrap"><iframe id="video-frame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>
+        </div>
+    </div>
+
+    <script>
+        const LANG = MECC_CONFIG.getLang();
+        const t = {
+            zh: { title: "🎶 儿歌乐园", backList: "⬅️ 返回列表" },
+            en: { title: "🎶 Nursery Rhymes", backList: "⬅️ Back to List" }
+        }[LANG];
+
+        let allSongs = [];
+
+        window.onload = () => {
+            MECC_CONFIG.renderGlobalNav(t.title);
+            document.getElementById('head-title').innerText = t.title + " - MECC";
+            document.getElementById('btn-close-play').innerText = t.backList;
+
+            fetch(`../data/nursery_rhymes.json?v=${Date.now()}`)
+                .then(res => res.json())
+                .then(data => {
+                    const categories = data.categories || [];
+                    allSongs = [];
+                    document.getElementById('gallery-view').innerHTML = categories.map(cat => {
+                        const cardsHtml = cat.songs.map(song => {
+                            const idx = allSongs.length;
+                            allSongs.push(song);
+                            const thumb = `https://img.youtube.com/vi/${song.youtubeId}/hqdefault.jpg`;
+                            return `
+                            <div class="song-card" onclick="startVideo(${idx})">
+                                <div class="card-img-wrapper">
+                                    <img src="${thumb}" loading="lazy">
+                                    <div class="play-overlay"><div class="play-icon"></div></div>
+                                </div>
+                                <div class="song-info">
+                                    <h3 class="font-zh">${song.title}</h3>
+                                    <p class="font-en">${song.titleEn || ''}</p>
+                                </div>
+                            </div>`;
+                        }).join('');
+
+                        return `
+                        <div class="category-block">
+                            <div class="category-title">
+                                <span class="font-zh">${cat.title}</span>
+                                <span class="en font-en">${cat.titleEn || ''}</span>
+                            </div>
+                            <div class="card-grid">${cardsHtml}</div>
+                        </div>`;
+                    }).join('');
+                })
+                .catch(() => {
+                    document.getElementById('gallery-view').innerHTML = '<div style="text-align:center;color:#999;font-size:1.1rem;padding:40px 0;">未能加载儿歌列表，请刷新重试！</div>';
+                });
+        };
+
+        function startVideo(idx) {
+            const song = allSongs[idx];
+            document.querySelector('.mecc-global-nav').style.display = 'none';
+            document.getElementById('gallery-view').style.display = 'none';
+            document.getElementById('play-view').style.display = 'flex';
+            document.getElementById('song-title').innerText = song.title;
+            document.getElementById('song-title-nav').innerText = song.title;
+            document.getElementById('video-frame').src = `https://www.youtube-nocookie.com/embed/${song.youtubeId}?rel=0&autoplay=1`;
+        }
+
+        function closePlay() {
+            document.getElementById('video-frame').src = '';
+            document.getElementById('play-view').style.display = 'none';
+            document.getElementById('gallery-view').style.display = 'block';
+            document.querySelector('.mecc-global-nav').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
