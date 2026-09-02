@@ -8,279 +8,352 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
-        /* 🌿 引入文楷字体 + 圆润活泼标题字体 */
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cinzel:wght@600;700&display=swap');
 
         :root {
-            /* 糖果主色板 — 与全站 css/style.css 保持一致 */
-            --c-navy:    #35405A;   /* 主文字 */
-            --c-gold:    #FFC94D;   /* 阳光黄 */
-            --c-lacquer: #FF7A63;   /* 珊瑚橙 */
-            --c-teal:    #35D0BA;   /* 薄荷绿 */
-            --c-sky:     #4FC3F7;   /* 天空蓝 */
-            --c-grape:   #B18CF0;   /* 葡萄紫 */
-            --bg-paper:  #FFF8EC;   /* 奶油底色 */
+            /* ── 国风主色板：朱砂 · 石绿 · 赤金 · 宣纸 ── */
+            --gf-cinnabar:      #B23A2E;
+            --gf-cinnabar-deep: #832A21;
+            --gf-cinnabar-soft: #D9694F;
+            --gf-jade:          #0F6B5C;
+            --gf-jade-deep:     #0A4A40;
+            --gf-jade-light:    #3EA88E;
+            --gf-gold:          #C89B3C;
+            --gf-gold-bright:   #E9C168;
+            --gf-gold-pale:     #F3DFA8;
+            --gf-parchment:     #F4E8CD;
+            --gf-parchment-deep:#E9D3A0;
+            --gf-ink:           #362B1D;
+            --gf-ink-soft:      #7A6A50;
 
-            --card-bg:   rgba(255, 255, 255, 0.88);
-            --text-main: #35405A;
-            --text-muted:#6B7690;
-
-            /* 字体兜底逻辑：圆润活泼标题字体 -> 文楷 -> 系统 */
             --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
-            --font-en: "Baloo 2", "Fredoka", "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
-
-            --radius: 28px;
+            --font-en: "Cormorant Garamond", "LXGW WenKai Lite", serif;
+            --font-title: "Cinzel", "Cormorant Garamond", serif;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* 🌟 锁定一屏高度，禁止滚动 */
         body {
             font-family: var(--font-en);
-            color: var(--text-main);
+            color: var(--gf-ink);
             -webkit-font-smoothing: antialiased;
-            margin: 0;
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            background-color: var(--bg-paper);
+            background-color: var(--gf-parchment);
             background-image:
-                radial-gradient(circle at 8% 12%, rgba(79,195,247,0.22) 0, transparent 32%),
-                radial-gradient(circle at 92% 18%, rgba(255,201,77,0.26) 0, transparent 30%),
-                radial-gradient(circle at 15% 90%, rgba(177,140,240,0.18) 0, transparent 30%),
-                radial-gradient(circle at 88% 88%, rgba(53,208,186,0.22) 0, transparent 34%);
+                radial-gradient(circle at 8% 10%, rgba(15,107,92,0.16) 0, transparent 34%),
+                radial-gradient(circle at 92% 14%, rgba(233,193,104,0.30) 0, transparent 30%),
+                radial-gradient(circle at 12% 92%, rgba(178,58,46,0.12) 0, transparent 32%),
+                radial-gradient(circle at 90% 88%, rgba(15,107,92,0.14) 0, transparent 34%);
             background-attachment: fixed;
+            position: relative;
         }
 
-        /* 🌟 轻柔的光斑蒙版，让糖果色背景更柔和 */
+        /* 宣纸底纹：极淡的云纹肌理 */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle, rgba(255,248,236,0.05) 0%, rgba(255,248,236,0.25) 100%);
             pointer-events: none;
-            z-index: -1;
+            z-index: 0;
+            opacity: 0.5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23C89B3C' stroke-width='1.1' opacity='0.35'%3E%3Cpath d='M10 40c-4 0-6-4-3-7 -2-4 2-8 6-6 1-4 6-6 9-3 3-3 8-1 8 3 4-1 7 2 6 6 4 1 5 6 1 8 -1 3-5 4-7 2 -2 3-6 2-7-1 -3 2-6 0-7-2 -3 1-6-2-6 0z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 140px 140px;
         }
 
-        /* 🌟 漂浮云朵装饰 */
-        .deco-cloud {
-            position: absolute;
-            opacity: 0.9;
-            pointer-events: none;
-            z-index: -1;
-        }
-        .deco-cloud.c1 { top: 6%; left: 6%; width: 90px; }
-        .deco-cloud.c2 { top: 12%; right: 8%; width: 70px; }
-        .deco-cloud.c3 { bottom: 8%; left: 12%; width: 60px; }
+        /* ── 共用 SVG 花纹符号库 ── */
+        .gf-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-        /* ─── 紧凑型头部 ─── */
+        .site-header, .portal-main, .site-footer { position: relative; z-index: 1; }
+
+        /* ─── 顶部祥云横幅（卷轴样式）─── */
         .site-header {
-            padding: 30px 24px 10px; /* 压缩上下留白 */
-            text-align: center;
+            padding: 22px 24px 4px;
             flex-shrink: 0;
-        }
-
-        .site-header h1 {
-            font-family: var(--font-en);
-            font-size: 2.8rem;
-            font-weight: 800;
-            color: var(--c-navy);
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 20px;
-            letter-spacing: 1px;
         }
 
-        .vsg-symbol { flex-shrink: 0; }
-
-        .site-header p {
-            font-family: var(--font-zh);
-            font-size: 1.2rem;
-            color: var(--c-lacquer);
-            letter-spacing: 8px;
-            margin-top: 8px;
-            font-weight: bold;
+        .gf-banner {
+            width: 100%;
+            max-width: 760px;
         }
 
-        /* ─── 内容展示区：让卡片在屏幕中间自动对齐 ─── */
+        .gf-banner-svg { width: 100%; height: auto; display: block; overflow: visible; }
+        .gf-banner-svg text { font-family: var(--font-title); }
+        .gf-banner-svg .gf-zh-text { font-family: var(--font-zh); }
+
+        .gf-visually-hidden {
+            position: absolute; width: 1px; height: 1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+        }
+
+        /* ─── 中部主体：入口卡片 ─── */
         .portal-main {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 24px;
+            min-height: 0;
         }
 
         .portal-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 860px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 34px;
+        }
+
+        .gf-card {
             position: relative;
-        }
-
-        /* 墨竹点缀 */
-        .deco-bamboo { 
-            position: absolute; left: -100px; bottom: -20px; z-index: -1; 
-            opacity: 0.6; pointer-events: none;
-        }
-        
-        /* 🌟 核心修正 4：书法级“王”字印章 */
-        .deco-seal { 
-            position: absolute; right: -15px; top: -55px; z-index: 5; 
-            opacity: 0.95;
-            filter: drop-shadow(0 4px 10px rgba(163, 46, 46, 0.3));
-        }
-
-        .portal-card {
-            background-color: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 45px 30px; /* 保持原卡片大小的核心内边距 */
+            padding: 8px;
+            border-radius: 10px;
+            background: linear-gradient(160deg, var(--gf-gold-bright), var(--gf-gold) 55%, var(--gf-gold-bright));
+            box-shadow: 0 14px 34px rgba(54,43,29,0.22);
             text-decoration: none;
-            color: var(--text-main);
-            border: 3px solid rgba(255, 201, 77, 0.5);
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: var(--gf-ink);
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+        }
+        .gf-card:hover { transform: translateY(-6px); box-shadow: 0 20px 42px rgba(54,43,29,0.30); }
+
+        .gf-card-inner {
+            position: relative;
+            border: 1.5px solid rgba(232,201,120,0.75);
+            border-radius: 6px;
+            padding: 34px 26px 26px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 8px 24px rgba(53,64,90,0.08);
+            overflow: hidden;
         }
 
-        .portal-card:hover {
-            transform: translateY(-8px) rotate(-1deg);
-            border-color: var(--c-gold);
-            background-color: rgba(255, 255, 255, 0.96);
-            box-shadow: 0 15px 40px rgba(163, 46, 46, 0.1);
+        .gf-card.jade .gf-card-inner {
+            background: linear-gradient(150deg, #FBF3DE 0%, #E4EFE9 55%, #D7ECE4 100%);
+        }
+        .gf-card.cinnabar .gf-card-inner {
+            background: linear-gradient(150deg, #FBF3DE 0%, #F6E2D6 55%, #F3D2C4 100%);
         }
 
-        .image-placeholder {
-            width: 116px; height: 116px;
-            border: 4px solid var(--c-gold);
-            border-radius: 50%;
-            margin-bottom: 25px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 6px 15px rgba(53,64,90,0.10);
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            background-size: 65%; background-position: center; background-repeat: no-repeat;
+        .gf-corner {
+            position: absolute;
+            width: 40px; height: 40px;
+            opacity: 0.9;
         }
-        .portal-card:hover .image-placeholder { transform: rotate(-6deg) scale(1.08); }
+        .gf-corner.tl { top: -2px; left: -2px; }
+        .gf-corner.tr { top: -2px; right: -2px; transform: scaleX(-1); }
+        .gf-corner.bl { bottom: -2px; left: -2px; transform: scaleY(-1); }
+        .gf-corner.br { bottom: -2px; right: -2px; transform: scale(-1,-1); }
 
-        .teacher-card .image-placeholder {
-            background-color: var(--c-sky);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M50 25 L50 65' stroke='%23ffffff' stroke-width='4'/%3E%3Cpath d='M35 40 L45 35 M65 40 L55 35' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
-        }
+        .gf-badge { width: 78px; height: 78px; margin-bottom: 18px; flex-shrink: 0; filter: drop-shadow(0 4px 8px rgba(54,43,29,0.18)); }
 
-        .parent-card .image-placeholder {
-            background-color: var(--c-lacquer);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 60 L50 40 L70 60 L70 75 L30 75 Z' fill='none' stroke='%23ffffff' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 50 L50 25 L80 50' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M45 75 L45 55 L55 55 L55 75' fill='none' stroke='%23ffffff' stroke-width='4'/%3E%3C/svg%3E");
+        .gf-card-title-en {
+            font-family: var(--font-title);
+            font-size: 1.3rem; font-weight: 700; letter-spacing: 0.5px;
+            color: var(--gf-cinnabar-deep); margin-bottom: 4px;
         }
+        .gf-card.jade .gf-card-title-en { color: var(--gf-jade-deep); }
 
-        .card-title-en {
-            font-size: 1.8rem; font-weight: bold; line-height: 1.1;
-            color: var(--c-navy); margin-bottom: 8px;
-        }
-        .card-title-zh {
-            font-family: var(--font-zh); /* 🌟 应用正确的字体兜底 */
-            display: block; font-size: 1.15rem; font-weight: bold; color: var(--c-teal); 
-            letter-spacing: 3px; margin-bottom: 20px;
+        .gf-card-title-zh {
+            font-family: var(--font-zh);
+            display: block; font-size: 1.15rem; font-weight: bold;
+            color: var(--gf-ink); letter-spacing: 4px; margin-bottom: 14px;
         }
 
-        .card-desc {
-            font-size: 1rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;
-            padding: 0 10px;
+        .gf-card-desc {
+            font-size: 0.95rem; color: var(--gf-ink-soft); line-height: 1.55; margin-bottom: 18px;
+            font-family: var(--font-zh);
         }
 
-        .card-cta {
+        .gf-ribbon-cta {
             margin-top: auto;
-            font-family: var(--font-en); font-weight: bold; font-size: 1.1rem;
-            color: var(--c-lacquer); display: flex; align-items: center; gap: 8px;
+            font-family: var(--font-zh); font-weight: bold; font-size: 0.95rem;
+            color: var(--gf-parchment);
+            background: linear-gradient(135deg, var(--gf-cinnabar-soft), var(--gf-cinnabar-deep));
+            padding: 7px 22px;
+            border-radius: 3px;
+            letter-spacing: 2px;
+            box-shadow: 0 3px 8px rgba(131,42,33,0.35);
+            position: relative;
+        }
+        .gf-card.jade .gf-ribbon-cta {
+            background: linear-gradient(135deg, var(--gf-jade-light), var(--gf-jade-deep));
+            box-shadow: 0 3px 8px rgba(10,74,64,0.35);
+        }
+        .gf-ribbon-cta::before, .gf-ribbon-cta::after {
+            content: '';
+            position: absolute; top: 0; width: 0; height: 0;
+            border-top: 14px solid transparent;
+            border-bottom: 14px solid transparent;
+        }
+        .gf-ribbon-cta::before { left: -8px; border-right: 8px solid var(--gf-cinnabar-deep); }
+        .gf-ribbon-cta::after { right: -8px; border-left: 8px solid var(--gf-cinnabar-deep); }
+        .gf-card.jade .gf-ribbon-cta::before { border-right-color: var(--gf-jade-deep); }
+        .gf-card.jade .gf-ribbon-cta::after { border-left-color: var(--gf-jade-deep); }
+
+        /* ─── 页脚：山水云纹景观 ─── */
+        .site-footer {
+            flex-shrink: 0;
+            width: 100%;
+            height: 92px;
         }
 
-        /* ─── 紧凑页脚 ─── */
-        .site-footer {
-            text-align: center; padding: 20px;
-            font-family: var(--font-en);
-            font-size: 0.85rem; color: var(--text-muted);
-            border-top: 1px solid rgba(230, 194, 122, 0.2);
-            flex-shrink: 0;
+        .gf-landscape { width: 100%; height: 100%; display: block; }
+
+        .gf-footer-text {
+            position: absolute;
+            bottom: 8px; left: 0; right: 0;
+            text-align: center;
+            font-family: var(--font-zh);
+            font-size: 0.78rem;
+            color: #EAF4F0;
+            text-shadow: 0 1px 3px rgba(10,42,36,0.6);
+            letter-spacing: 1px;
         }
-        .site-footer b { color: var(--c-teal); font-family: var(--font-zh); }
+        .gf-footer-text b { color: var(--gf-gold-pale); }
 
         @media (max-width: 768px) {
             body { overflow-y: auto; height: auto; }
-            .site-header h1 { font-size: 2.2rem; }
-            .portal-container { grid-template-columns: 1fr; width: 90%; gap: 30px; }
-            .deco-bamboo, .deco-seal { display: none; }
+            .gf-title-en { font-size: 1.25rem; }
+            .gf-title-zh { font-size: 0.9rem; letter-spacing: 5px; }
+            .portal-container { grid-template-columns: 1fr; width: 100%; }
+            .site-footer { height: 70px; }
         }
     </style>
 </head>
 <body>
 
+    <svg class="gf-defs" aria-hidden="true">
+        <defs>
+            <!-- 祥云朵 -->
+            <path id="gf-cloud" d="M8,42 C2,42 0,34 6,30 C2,22 12,16 20,20 C22,10 36,6 46,14 C54,4 70,6 76,16 C88,12 98,20 94,30 C100,36 96,46 88,44 C88,52 78,56 70,50 C64,58 50,58 44,50 C36,56 24,54 20,46 C14,50 6,48 8,42 Z"/>
+            <!-- 如意云勾角花纹 -->
+            <path id="gf-swirl" d="M2,38 C2,20 16,4 34,4 C44,4 49,12 44,19 C40,24 32,21 33,15 C25,15 17,23 17,33 C17,41 22,46 30,45 C25,50 14,50 8,45 C3,41 2,40 2,38 Z"/>
+            <linearGradient id="gf-cinnabar-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#D9694F"/>
+                <stop offset="0.55" stop-color="#B23A2E"/>
+                <stop offset="1" stop-color="#832A21"/>
+            </linearGradient>
+            <linearGradient id="gf-jade-mtn-1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#3EA88E"/>
+                <stop offset="1" stop-color="#0A4A40"/>
+            </linearGradient>
+            <linearGradient id="gf-jade-mtn-2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#175E51"/>
+                <stop offset="1" stop-color="#083730"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
     <header class="site-header">
-        <div class="header-content">
-            <h1>
-                <svg class="vsg-symbol" width="50" height="35" viewBox="0 0 24 15" fill="none" stroke="var(--c-gold)" stroke-width="1.8">
-                    <path d="M17.5 12c2.5 0 4.5-2 4.5-4.5S20 3 17.5 3c-.5 0-1 .1-1.5.3C15 1.2 12 0 8.5 0 4.4 0 1 3.4 1 7.5c0 3.6 2.6 6.5 6 6.5h10.5z" stroke-linecap="round"/>
-                </svg>
-                Wang Laoshi's Space
-                <svg class="vsg-symbol" width="30" height="50" viewBox="0 0 24 40">
-                    <rect x="4" y="8" width="16" height="22" rx="8" fill="var(--c-lacquer)"/>
-                    <rect x="8" y="5" width="8" height="3" fill="var(--c-gold)"/>
-                    <rect x="8" y="30" width="8" height="3" fill="var(--c-gold)"/>
-                    <line x1="12" y1="33" x2="12" y2="38" stroke="var(--c-gold)" stroke-width="2"/>
-                    <line x1="12" y1="0" x2="12" y2="5" stroke="#333" stroke-width="1.5"/>
-                </svg>
-            </h1>
-            <p>文墨学堂 · 家校门户</p>
+        <h1 class="gf-visually-hidden">Wang Laoshi's Space 文墨学堂</h1>
+        <div class="gf-banner">
+            <svg class="gf-banner-svg" viewBox="0 0 760 170" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <!-- 卷轴飘带主体 -->
+                <path d="M120,30 L640,30 C650,30 656,36 656,46 L656,110 C656,120 650,126 640,126 L120,126 C110,126 104,120 104,110 L104,46 C104,36 110,30 120,30 Z"
+                      fill="url(#gf-cinnabar-grad)" stroke="var(--gf-gold-bright)" stroke-width="3"/>
+                <path d="M132,42 L628,42 C634,42 638,46 638,52 L638,104 C638,110 634,114 628,114 L132,114 C126,114 122,110 122,104 L122,52 C122,46 126,42 132,42 Z"
+                      fill="none" stroke="var(--gf-gold-pale)" stroke-width="1.2" opacity="0.8"/>
+
+                <!-- 左侧飘带尾 -->
+                <path d="M104,50 L48,40 C40,38 34,44 38,52 L58,78 L36,96 C30,102 34,110 42,108 L104,96 Z"
+                      fill="url(#gf-cinnabar-grad)" stroke="var(--gf-gold-bright)" stroke-width="2.5"/>
+                <use href="#gf-swirl" x="6" y="60" width="34" height="34" fill="var(--gf-gold-bright)"/>
+
+                <!-- 右侧飘带尾 -->
+                <path d="M656,50 L712,40 C720,38 726,44 722,52 L702,78 L724,96 C730,102 726,110 718,108 L656,96 Z"
+                      fill="url(#gf-cinnabar-grad)" stroke="var(--gf-gold-bright)" stroke-width="2.5"/>
+                <use href="#gf-swirl" x="720" y="60" width="34" height="34" fill="var(--gf-gold-bright)" transform="scale(-1,1) translate(-754,0)"/>
+
+                <!-- 顶部祥云点缀 -->
+                <use href="#gf-cloud" x="150" y="2" width="56" height="32" fill="var(--gf-gold-pale)" opacity="0.9"/>
+                <use href="#gf-cloud" x="332" y="-8" width="96" height="52" fill="var(--gf-gold-bright)"/>
+                <use href="#gf-cloud" x="554" y="2" width="56" height="32" fill="var(--gf-gold-pale)" opacity="0.9"/>
+
+                <!-- 印玺 -->
+                <circle cx="168" cy="78" r="34" fill="url(#gf-jade-mtn-1)" stroke="var(--gf-gold-bright)" stroke-width="3"/>
+                <circle cx="168" cy="78" r="28" fill="none" stroke="var(--gf-gold-pale)" stroke-width="1" opacity="0.7"/>
+                <text x="168" y="90" text-anchor="middle" class="gf-zh-text" font-size="30" fill="#F3DFA8">王</text>
+
+                <!-- 标题文字 -->
+                <text x="450" y="70" text-anchor="middle" font-size="26" font-weight="700" letter-spacing="1" fill="#F8E7B8">WANG LAOSHI'S SPACE</text>
+                <text x="450" y="104" text-anchor="middle" class="gf-zh-text" font-size="21" font-weight="bold" letter-spacing="7" fill="#F8E7B8">文墨学堂</text>
+            </svg>
         </div>
     </header>
 
     <main class="portal-main">
         <div class="portal-container">
-            <svg class="deco-cloud c1 float" viewBox="0 0 100 60" fill="var(--c-sky)" opacity="0.5">
-                <ellipse cx="30" cy="38" rx="26" ry="18"/><ellipse cx="55" cy="28" rx="20" ry="16"/><ellipse cx="75" cy="40" rx="18" ry="14"/>
-            </svg>
-            <svg class="deco-cloud c2 float" viewBox="0 0 100 60" fill="var(--c-grape)" opacity="0.4">
-                <ellipse cx="30" cy="38" rx="26" ry="18"/><ellipse cx="55" cy="28" rx="20" ry="16"/><ellipse cx="75" cy="40" rx="18" ry="14"/>
-            </svg>
-            <svg class="deco-seal" width="70" height="70" viewBox="0 0 40 40">
-                <rect x="4" y="4" width="32" height="32" rx="4" fill="var(--c-lacquer)"/>
-                <path d="M14 15H26" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M17 21H23" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M11 28H29" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> <path d="M20 15V28" stroke="#faf6ed" stroke-width="3" stroke-linecap="round"/> </svg>
 
-            <svg class="deco-bamboo" width="130" height="220" viewBox="0 0 60 100" fill="none">
-                <path d="M30 100V75 M30 70V40 M30 35V5" stroke="var(--c-teal)" stroke-width="2" stroke-linecap="round"/>
-                <path d="M30 75 Q42 68 52 75 Q42 78 30 75Z" fill="var(--c-teal)" opacity="0.6"/>
-                <path d="M30 75 Q18 68 8 75 Q18 78 30 75Z" fill="var(--c-teal)" opacity="0.6"/>
-                <path d="M30 40 Q45 32 55 40 Q45 45 30 40Z" fill="var(--c-teal)" opacity="0.8"/>
-            </svg>
+            <a href="parents.html" class="gf-card cinnabar">
+                <div class="gf-card-inner">
+                    <svg class="gf-corner tl" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-cinnabar)"/></svg>
+                    <svg class="gf-corner tr" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-cinnabar)"/></svg>
+                    <svg class="gf-corner bl" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-gold)"/></svg>
+                    <svg class="gf-corner br" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-gold)"/></svg>
 
-            <a href="parents.html" class="portal-card parent-card">
-                <div class="image-placeholder"></div>
-                <div class="card-title-en">Parents &amp; Students</div>
-                <span class="card-title-zh">学生与家长入口</span>
-                <p class="card-desc">Practice vocabulary, explore the library, and play learning games together.</p>
-                <span class="card-cta">Enter Portal →</span>
+                    <svg class="gf-badge" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="44" fill="url(#gf-cinnabar-grad)" stroke="var(--gf-gold)" stroke-width="3"/>
+                        <path d="M30 60 L50 40 L70 60 L70 75 L30 75 Z" fill="none" stroke="#F3DFA8" stroke-width="4" stroke-linejoin="round"/>
+                        <path d="M20 50 L50 25 L80 50" fill="none" stroke="#F3DFA8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M45 75 L45 55 L55 55 L55 75" fill="none" stroke="#F3DFA8" stroke-width="4"/>
+                    </svg>
+
+                    <div class="gf-card-title-en">Parents &amp; Students</div>
+                    <span class="gf-card-title-zh">学生与家长入口</span>
+                    <p class="gf-card-desc">识字练习、绘本阅读、寓教于乐的中文小游戏。</p>
+                    <span class="gf-ribbon-cta">进 入 门 户</span>
+                </div>
             </a>
 
-            <a href="teachers.html" class="portal-card teacher-card">
-                <div class="image-placeholder"></div>
-                <div class="card-title-en">Teacher's Tools</div>
-                <span class="card-title-zh">教师专属工具台</span>
-                <p class="card-desc">Lesson management, student group rotations, and teaching resources.</p>
-                <span class="card-cta">Access Tools →</span>
+            <a href="teachers.html" class="gf-card jade">
+                <div class="gf-card-inner">
+                    <svg class="gf-corner tl" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-jade)"/></svg>
+                    <svg class="gf-corner tr" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-jade)"/></svg>
+                    <svg class="gf-corner bl" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-gold)"/></svg>
+                    <svg class="gf-corner br" viewBox="0 0 40 40"><use href="#gf-swirl" width="40" height="40" fill="var(--gf-gold)"/></svg>
+
+                    <svg class="gf-badge" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="44" fill="url(#gf-jade-mtn-1)" stroke="var(--gf-gold)" stroke-width="3"/>
+                        <path d="M25 70 Q50 60 75 70 L75 30 Q50 20 25 30 Z" fill="none" stroke="#F3DFA8" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M50 25 L50 65" stroke="#F3DFA8" stroke-width="4"/>
+                        <path d="M35 40 L45 35 M65 40 L55 35" stroke="#F3DFA8" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+
+                    <div class="gf-card-title-en">Teacher's Tools</div>
+                    <span class="gf-card-title-zh">教师专属工具台</span>
+                    <p class="gf-card-desc">课堂管理、分组点名、教学资源一站直达。</p>
+                    <span class="gf-ribbon-cta">进 入 工 具 台</span>
+                </div>
             </a>
+
         </div>
     </main>
 
     <footer class="site-footer">
-        © 2026 <b>王老师</b> Wang Laoshi. <br>Tradition Meets Innovation.
+        <svg class="gf-landscape" viewBox="0 0 1200 130" preserveAspectRatio="none">
+            <!-- 远山 -->
+            <path d="M0,80 L90,20 L160,70 L230,10 L300,75 L380,30 L460,80 L540,15 L620,75 L700,25 L780,78 L860,20 L940,70 L1020,15 L1100,72 L1200,30 L1200,130 L0,130 Z"
+                  fill="url(#gf-jade-mtn-2)" opacity="0.85"/>
+            <!-- 近山 -->
+            <path d="M0,110 L70,55 L140,95 L220,45 L310,100 L400,60 L480,105 L560,50 L650,100 L740,55 L830,102 L920,58 L1010,100 L1100,60 L1200,95 L1200,130 L0,130 Z"
+                  fill="url(#gf-jade-mtn-1)"/>
+            <g stroke="var(--gf-gold-pale)" stroke-width="1" opacity="0.55" fill="none">
+                <path d="M70,55 L100,72 M140,95 L120,75 M220,45 L255,70 M400,60 L430,78 M560,50 L595,73 M740,55 L770,74 M920,58 L955,78 M1100,60 L1135,80"/>
+            </g>
+            <!-- 祥云点缀 -->
+            <use href="#gf-cloud" x="60" y="88" width="90" height="45" fill="var(--gf-gold-bright)" opacity="0.92"/>
+            <use href="#gf-cloud" x="330" y="80" width="110" height="55" fill="var(--gf-cinnabar-soft)" opacity="0.85"/>
+            <use href="#gf-cloud" x="600" y="92" width="90" height="45" fill="var(--gf-gold-bright)" opacity="0.9"/>
+            <use href="#gf-cloud" x="870" y="82" width="110" height="55" fill="var(--gf-cinnabar-soft)" opacity="0.85"/>
+            <use href="#gf-cloud" x="1080" y="90" width="80" height="40" fill="var(--gf-gold-bright)" opacity="0.9"/>
+        </svg>
+        <p class="gf-footer-text">© 2026 <b>王老师</b> Wang Laoshi · 文墨传薪，古今相承</p>
     </footer>
 
 </body>
