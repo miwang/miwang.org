@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>你几岁？我的生日 · How Old Are You &amp; Birthday</title>
+<title>你几岁？· How Old Are You</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
 <style>
 /* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
@@ -110,7 +110,7 @@ body{
 @keyframes popIn{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
 .pop{animation:popIn .34s cubic-bezier(.22,1.2,.4,1)}
 
-/* ---------- 听一听 / 选一选 ---------- */
+/* ---------- 选一选 / 分类切换 ---------- */
 .choice-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
 .choice-btn{
   width:7.5rem;height:7.5rem;border-radius:1.4rem;border:none;cursor:pointer;
@@ -121,7 +121,13 @@ body{
 .choice-btn:active{transform:scale(.96)}
 .choice-btn.wrong{animation:shake .4s}
 @keyframes shake{25%{transform:translateX(-.5rem)}75%{transform:translateX(.5rem)}}
-.prompt-word{font-size:3rem;font-weight:700;letter-spacing:.08em}
+
+.class-filter{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.class-chip{
+  border:none;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;
+  padding:.35rem .8rem;border-radius:999px;background:var(--card);color:var(--ink-soft);box-shadow:var(--shadow);
+}
+.class-chip.on{background:var(--accent);color:#fff}
 
 /* ---------- 翻牌 ---------- */
 .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:min(100%,32rem)}
@@ -137,25 +143,37 @@ body{
 .flip span.zh{font-size:.8rem;font-weight:700}
 .flip .qm{opacity:.85}
 
+/* ---------- 数字连线 ---------- */
+.match-wrap{position:relative;display:flex;gap:2.8rem;justify-content:center;padding:.4rem 0 .2rem}
+.match-col{display:flex;flex-direction:column;gap:.55rem}
+.match-btn{
+  width:4.6rem;height:3.1rem;border:none;border-radius:.8rem;cursor:pointer;font-family:inherit;
+  font-weight:700;font-size:1.3rem;color:var(--ink);background:var(--card);box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;
+}
+.match-btn.sel{box-shadow:var(--shadow),inset 0 0 0 .16rem var(--accent);background:var(--accent-soft)}
+.match-btn.done{opacity:.3;pointer-events:none}
+.match-btn.wrong{animation:shake .3s}
+.match-svg{position:absolute;inset:0;pointer-events:none}
+
 /* ---------- 十二个月 ---------- */
 .month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem;width:min(100%,36rem)}
 .month-cell{
   border:none;cursor:pointer;font-family:inherit;color:var(--ink);
   background:var(--card);border-radius:.9rem;box-shadow:var(--shadow);
-  padding:.55rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;
+  padding:.5rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;
 }
 .month-cell:active{transform:translateY(2px)}
-.month-cell .emo{font-size:1.4rem}
+.month-cell .emo{line-height:1;display:flex;align-items:center;justify-content:center;height:1.7rem}
 .month-cell b{font-size:.78rem;font-weight:700}
 .month-cell.quiz{background:var(--accent);color:#fff}
 .month-cell.quiz b{color:#fff}
 .month-cell.quiz.open{background:var(--card);color:var(--ink)}
 .month-cell.quiz.open b{color:var(--ink)}
 
-/* ---------- 生日蛋糕 / 蜡烛 ---------- */
-.cake-emo{font-size:4.4rem;line-height:1}
-.candle-row{display:flex;flex-wrap:wrap;gap:.15rem;justify-content:center;max-width:16rem}
-.candle-row span{font-size:1.6rem;line-height:1}
+/* ---------- 生日蛋糕 ---------- */
+.cake-row{display:flex;align-items:center;justify-content:center;gap:1rem}
+.cake-friend{font-size:3rem;line-height:1}
 
 /* ---------- 日历卡 ---------- */
 .cal-card{
@@ -164,7 +182,7 @@ body{
 }
 .cal-card .cal-month{
   background:var(--accent);color:#fff;border-radius:.6rem;padding:.25rem 1rem;
-  font-size:.95rem;font-weight:700;
+  font-size:.85rem;font-weight:700;white-space:nowrap;
 }
 .cal-card .cal-day{font-size:2.8rem;font-weight:700;line-height:1}
 
@@ -187,6 +205,7 @@ body{
   box-shadow:var(--shadow);padding:.8rem 1rem;cursor:pointer;
 }
 .dialog-line .who{font-size:1.8rem;flex:0 0 auto}
+.dialog-line .who svg{width:1.8rem;height:1.8rem;display:block}
 .dialog-line .txt{font-size:1.1rem;font-weight:700;flex:1 1 auto}
 .dialog-line.q{border-left:.3rem solid var(--accent)}
 .dialog-line.a{border-left:.3rem solid #4FC3F7}
@@ -199,21 +218,13 @@ body{
 .turn-card b{font-size:1.05rem}
 .turn-card small{color:var(--ink-soft);font-size:.75rem;line-height:1.5}
 
-/* ---------- 生日排排队 ---------- */
-.game-steps{
-  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:.8rem 1.1rem;max-width:32rem;font-size:.8rem;line-height:1.7;color:var(--ink-soft);
-}
-.game-steps b{color:var(--ink)}
-.round-badge{
-  background:var(--card);border-radius:999px;box-shadow:var(--shadow);padding:.35rem .85rem;
-  font-size:.78rem;font-weight:700;color:var(--ink-soft);
-}
-.bday-chip-list{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;max-width:30rem}
-.bday-chip{
-  background:var(--card);border-radius:999px;box-shadow:var(--shadow);padding:.3rem .8rem;
-  font-size:.75rem;font-weight:700;color:var(--ink-soft);
-}
+.student-card{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.student-photo{width:5.5rem;height:5.5rem;border-radius:50%;object-fit:cover;box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08)}
+.student-photo.placeholder{display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:var(--card)}
+.student-card b{font-size:1.05rem}
+
+.complete-banner{display:none;background:#FFF6DA;color:#6A5A2E;border-radius:999px;padding:.4rem 1.1rem;font-size:.8rem;font-weight:700;text-align:center}
+.complete-banner.show{display:block}
 
 .hint{text-align:center;color:var(--ink-soft);font-size:.72rem;line-height:1.5;padding:0 1rem}
 .teacher-note{
@@ -234,9 +245,9 @@ body{
 
 <script>
 /* ============================================================
-   你几岁？我的生日 · How Old Are You? & My Birthday
-   数字 / 年龄 / 生日祝福语 / 月份 / 日期单元。单文件，无外部依赖（字体除外）。
-   7 个课堂活动，其中"生日排排队"是教室游戏工具。
+   你几岁？ · How Old Are You
+   数字 / 年龄 / 月份 / 日期单元。单文件，无外部依赖（字体除外）。
+   6 个课堂活动，"你的生日是几月几日？"从 Sanity 里抽本学年真实同学的生日。
    ============================================================ */
 
 const DIGIT = ["","一","二","三","四","五","六","七","八","九"];
@@ -249,34 +260,40 @@ function hanziNum(n){
 }
 
 const NUMBERS = Array.from({length:10},(_,i)=>({ ar:String(i+1), zh:hanziNum(i+1) }));
-
-const MONTH_EMO = ["❄️","💗","🍀","🌧️","🌷","🍒","🎆","☀️","🍎","🎃","🦃","⛄"];
-const MONTHS = Array.from({length:12},(_,i)=>({ n:i+1, zh:hanziNum(i+1), emo:MONTH_EMO[i] }));
 const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+const EN_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-const BDAY_WORDS = [
-  { zh:"生日",     en:"Birthday",       emo:"🎂" },
-  { zh:"我的生日", en:"My birthday",    emo:"🙋" },
-  { zh:"你的生日", en:"Your birthday",  emo:"🫵" },
-  { zh:"礼物",     en:"Present",        emo:"🎁" },
-  { zh:"生日快乐", en:"Happy birthday", emo:"🎉" },
-  { zh:"谢谢",     en:"Thank you",      emo:"🙏" }
+/* 每个月一个手绘小图标（不用 emoji，画得更用心一点） */
+const MONTH_ICONS = [
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#2E6E93" stroke-width="3" stroke-linecap="round"><line x1="32" y1="8" x2="32" y2="56"/><line x1="8" y1="32" x2="56" y2="32"/><line x1="14" y1="14" x2="50" y2="50"/><line x1="14" y1="50" x2="50" y2="14"/></g><g stroke="#2E6E93" stroke-width="2.4" stroke-linecap="round"><line x1="32" y1="8" x2="26" y2="16"/><line x1="32" y1="8" x2="38" y2="16"/><line x1="32" y1="56" x2="26" y2="48"/><line x1="32" y1="56" x2="38" y2="48"/><line x1="8" y1="32" x2="16" y2="26"/><line x1="8" y1="32" x2="16" y2="38"/><line x1="56" y1="32" x2="48" y2="26"/><line x1="56" y1="32" x2="48" y2="38"/></g><circle cx="32" cy="32" r="5" fill="#BFE6FA" stroke="#2E6E93" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 50 C10 34 10 16 24 14 C29 13 32 18 32 22 C32 18 35 13 40 14 C54 16 54 34 32 50Z" fill="#F06A8C" stroke="#2E2A28" stroke-width="2.5"/><line x1="10" y1="14" x2="54" y2="50" stroke="#2E2A28" stroke-width="2.5"/><path d="M50 46 L54 50 L50 54" fill="none" stroke="#2E2A28" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#2E2A28" stroke-width="2.2"><circle cx="24" cy="24" r="12" fill="#4FAE5B"/><circle cx="40" cy="24" r="12" fill="#4FAE5B"/><circle cx="24" cy="40" r="12" fill="#4FAE5B"/><circle cx="40" cy="40" r="12" fill="#4FAE5B"/></g><line x1="32" y1="44" x2="32" y2="58" stroke="#2E2A28" stroke-width="2.5" stroke-linecap="round"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M10 30 Q32 8 54 30 Z" fill="#5EA8D9" stroke="#2E2A28" stroke-width="2.5" stroke-linejoin="round"/><line x1="32" y1="30" x2="32" y2="52" stroke="#2E2A28" stroke-width="2.5"/><path d="M32 52 Q38 56 34 58" fill="none" stroke="#2E2A28" stroke-width="2.5" stroke-linecap="round"/><g stroke="#5EA8D9" stroke-width="2.5" stroke-linecap="round"><line x1="14" y1="42" x2="12" y2="50"/><line x1="50" y1="42" x2="48" y2="50"/></g></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 10 C22 10 20 22 26 28 C20 28 18 24 18 24 C18 34 24 38 32 38 C40 38 46 34 46 24 C46 24 44 28 38 28 C44 22 42 10 32 10Z" fill="#E85D8A" stroke="#2E2A28" stroke-width="2.2"/><line x1="32" y1="38" x2="32" y2="56" stroke="#2E8B4A" stroke-width="2.5"/><path d="M32 46 Q22 44 20 52" fill="none" stroke="#2E8B4A" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M34 12 Q40 22 46 26 M34 12 Q30 24 24 30" fill="none" stroke="#4A7A2E" stroke-width="2.2" stroke-linecap="round"/><circle cx="22" cy="42" r="11" fill="#D42B3F" stroke="#2E2A28" stroke-width="2.2"/><circle cx="42" cy="40" r="11" fill="#D42B3F" stroke="#2E2A28" stroke-width="2.2"/><circle cx="18" cy="38" r="2.6" fill="#fff" opacity=".7"/><circle cx="38" cy="36" r="2.6" fill="#fff" opacity=".7"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke-linecap="round"><line x1="32" y1="32" x2="32" y2="10" stroke="#D42B3F" stroke-width="3"/><line x1="32" y1="32" x2="50" y2="18" stroke="#3060C0" stroke-width="3"/><line x1="32" y1="32" x2="54" y2="36" stroke="#D42B3F" stroke-width="3"/><line x1="32" y1="32" x2="42" y2="54" stroke="#3060C0" stroke-width="3"/><line x1="32" y1="32" x2="22" y2="54" stroke="#D42B3F" stroke-width="3"/><line x1="32" y1="32" x2="10" y2="36" stroke="#3060C0" stroke-width="3"/><line x1="32" y1="32" x2="14" y2="18" stroke="#D42B3F" stroke-width="3"/></g><circle cx="32" cy="32" r="5" fill="#FFD54A" stroke="#2E2A28" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#E8A33D" stroke-width="3" stroke-linecap="round"><line x1="32" y1="4" x2="32" y2="14"/><line x1="32" y1="50" x2="32" y2="60"/><line x1="4" y1="32" x2="14" y2="32"/><line x1="50" y1="32" x2="60" y2="32"/><line x1="12" y1="12" x2="19" y2="19"/><line x1="45" y1="45" x2="52" y2="52"/><line x1="12" y1="52" x2="19" y2="45"/><line x1="45" y1="19" x2="52" y2="12"/></g><circle cx="32" cy="32" r="16" fill="#FFC94D" stroke="#2E2A28" stroke-width="2.5"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 22 C20 18 10 26 10 38 C10 50 20 58 28 58 C30 58 31 57 32 57 C33 57 34 58 36 58 C44 58 54 50 54 38 C54 26 44 18 32 22Z" fill="#E23B2E" stroke="#2E2A28" stroke-width="2.5"/><path d="M32 22 Q32 14 30 10" fill="none" stroke="#6B4226" stroke-width="2.5" stroke-linecap="round"/><path d="M32 13 Q40 8 42 16 Q36 16 32 13Z" fill="#4FAE5B" stroke="#2E2A28" stroke-width="1.6"/><ellipse cx="22" cy="34" rx="3.4" ry="5" fill="#fff" opacity=".55"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 16 Q30 10 26 8" fill="none" stroke="#4A7A2E" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="32" cy="38" rx="22" ry="18" fill="#F0803C" stroke="#2E2A28" stroke-width="2.5"/><path d="M22 22 Q22 54 22 54 M32 20 Q32 56 32 56 M42 22 Q42 54 42 54" fill="none" stroke="#C9601F" stroke-width="2"/><path d="M22 34 L27 38 L22 42Z M42 34 L37 38 L42 42Z" fill="#2E2A28"/><path d="M24 46 Q32 52 40 46 Q36 50 32 50 Q28 50 24 46Z" fill="#2E2A28"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#2E2A28" stroke-width="2"><path d="M20 20 Q10 10 6 20 Q16 22 18 28Z" fill="#D42B3F"/><path d="M28 16 Q22 4 14 12 Q22 18 24 24Z" fill="#E8A33D"/><path d="M36 16 Q40 2 46 12 Q38 16 36 24Z" fill="#4FAE5B"/><path d="M44 20 Q54 8 56 20 Q46 20 42 26Z" fill="#3060C0"/></g><circle cx="30" cy="36" r="16" fill="#8B5A2B" stroke="#2E2A28" stroke-width="2.5"/><circle cx="24" cy="30" r="2" fill="#2E2A28"/><path d="M18 32 Q10 34 14 40" fill="#D42B3F" stroke="#2E2A28" stroke-width="1.8"/><path d="M16 40 L10 38 L12 44Z" fill="#E8A33D" stroke="#2E2A28" stroke-width="1.4"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><circle cx="32" cy="46" r="14" fill="#fff" stroke="#2E2A28" stroke-width="2.2"/><circle cx="32" cy="24" r="10" fill="#fff" stroke="#2E2A28" stroke-width="2.2"/><path d="M22 16 L42 16 L38 8 L26 8Z" fill="#2E2A28"/><circle cx="29" cy="22" r="1.4" fill="#2E2A28"/><circle cx="35" cy="22" r="1.4" fill="#2E2A28"/><path d="M32 25 L38 27 L32 29Z" fill="#E8843D"/><circle cx="32" cy="42" r="1.4" fill="#2E2A28"/><circle cx="32" cy="48" r="1.4" fill="#2E2A28"/></svg>'
 ];
+const MONTHS = Array.from({length:12},(_,i)=>({ n:i+1, zh:hanziNum(i+1), icon:MONTH_ICONS[i] }));
+const MONTH_SONGS = [
+  "https://youtu.be/d2gUFlwxUfI?si=VDIgBsFp-ePTBqT0",
+  "https://www.youtube.com/watch?v=RswZH92SKvM&list=RDRswZH92SKvM&start_radio=1"
+];
+const BIRTHDAY_SONG_URL = "https://www.youtube.com/watch?v=EMfithOo7EE&list=RDEMfithOo7EE&start_radio=1&t=7s";
 
-const FRIENDS = [
-  { name:"小明", emo:"🧒" }, { name:"小美", emo:"👧" }, { name:"安安", emo:"🧑" },
-  { name:"乐乐", emo:"👦" }, { name:"高高", emo:"👧" }, { name:"丽丽", emo:"🧒" },
-  { name:"强强", emo:"👦" }, { name:"娜娜", emo:"👧" }
-];
+const CAKE_FRIENDS = ["🐰","🐶","🐱","🐼","🐨","🦊","🐻","🐯","🐸","🐵"];
 
 const STATIONS = [
   { id:"number", ico:"🔢", zh:"数字宝箱",     sub:"翻牌认数字，1到10怎么说" },
+  { id:"match",  ico:"🔗", zh:"数字连线",     sub:"连一连，数字和中文配对" },
   { id:"age",    ico:"🎂", zh:"你几岁？",     sub:"数一数蜡烛，猜猜他几岁" },
-  { id:"bwords", ico:"🎉", zh:"生日快乐",     sub:"翻一翻，认一认生日祝福语" },
   { id:"months", ico:"📅", zh:"十二个月",     sub:"认一认月份，猜猜藏起来的是几月" },
   { id:"date",   ico:"🗓️", zh:"几月几日",    sub:"看日历，拼出正确的日期" },
-  { id:"ask",    ico:"🎈", zh:"你的生日是几月几日？", sub:"问答对话，再和同桌试一试" },
-  { id:"lineup", ico:"🧍", zh:"生日排排队",   sub:"教室游戏：不说话，比生日排队" }
+  { id:"ask",    ico:"🎈", zh:"你的生日是几月几日？", sub:"问答对话，抽一个同学试一试" }
 ];
 
 /* ---------------- 状态 ---------------- */
@@ -303,18 +320,6 @@ const sfxGood    = ()=>{ tone(660,.14,"sine",.16,0); tone(880,.14,"sine",.16,.09
 const sfxRetry   = ()=>{ tone(320,.16,"sine",.12,0); tone(250,.20,"sine",.10,.11); };
 const sfxReveal  = ()=>{ tone(740,.10,"triangle",.13,0); tone(990,.14,"triangle",.11,.07); };
 
-/* 用现有的音效引擎，凑一段"生日快乐歌"的旋律（曲调早已进入公有领域） */
-function playHappyBirthday(){
-  if(muted) return;
-  const notes = [
-    [392.00,.28,0],   [392.00,.28,.30], [440.00,.42,.60], [392.00,.42,1.05], [523.25,.42,1.50], [493.88,.75,1.95],
-    [392.00,.28,3.00],[392.00,.28,3.30],[440.00,.42,3.60],[392.00,.42,4.05], [587.33,.42,4.50], [523.25,.75,4.95],
-    [392.00,.28,6.00],[392.00,.28,6.30],[783.99,.42,6.60],[659.25,.42,7.05], [523.25,.42,7.50], [493.88,.42,7.95],[440.00,.60,8.40],
-    [698.46,.28,9.30],[698.46,.28,9.60],[659.25,.42,9.90],[523.25,.42,10.35],[587.33,.42,10.80],[523.25,.90,11.25]
-  ];
-  notes.forEach(([f,d,delay])=>tone(f,d,"triangle",.2,delay));
-}
-
 /* ---------------- 中文朗读（跟其它单元同一套发音引擎） ---------------- */
 const SANITY_PROJECT_ID = 'sow12t1i';
 const SANITY_DATASET = 'production';
@@ -329,6 +334,82 @@ let sanityAudioMap = {};
     (d.result||[]).forEach(w=>{ if(w.char && w.audioUrl) sanityAudioMap[w.char]=w.audioUrl; });
   }catch(e){}
 })();
+
+/* ---------------- 本学年真实学生名单（大象班 + 老虎班），带生日和头像 ---------------- */
+function currentAcademicYear(){
+  const now = new Date();
+  const startYear = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1;
+  return `${String(startYear).slice(-2)}-${String(startYear+1).slice(-2)}`;
+}
+const ACADEMIC_YEAR = currentAcademicYear();
+const SANITY_ROSTER_QUERY = encodeURIComponent(`*[_type == "student" && className in ["elephant","tiger"] && academicYear == "${ACADEMIC_YEAR}"]{name, className, birthday, "img": avatar.asset->url}`);
+const SANITY_ROSTER_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_ROSTER_QUERY}`;
+
+let roster = [];
+(async function loadRoster(){
+  try{
+    const r = await fetch(SANITY_ROSTER_API);
+    const d = await r.json();
+    roster = (d.result||[]).filter(s=>s.name && s.birthday).map(s=>{
+      const parts = s.birthday.split("-").map(Number);
+      return { name:s.name, className:s.className, img:s.img||null, m:parts[1], d:parts[2] };
+    });
+  }catch(e){}
+})();
+
+/* 名单没读到（离线/新学年还没录入）时，退回到这几个通用示例同学 */
+const FALLBACK_FRIENDS = [
+  { name:"小明", className:"all", img:null, m:3,  d:12 },
+  { name:"小美", className:"all", img:null, m:6,  d:1  },
+  { name:"安安", className:"all", img:null, m:9,  d:20 },
+  { name:"乐乐", className:"all", img:null, m:11, d:5  },
+  { name:"高高", className:"all", img:null, m:1,  d:18 },
+  { name:"丽丽", className:"all", img:null, m:5,  d:9  },
+  { name:"强强", className:"all", img:null, m:8,  d:23 },
+  { name:"娜娜", className:"all", img:null, m:2,  d:14 }
+];
+function studentsForFilter(filter){
+  const pool = filter==="all" ? roster : roster.filter(s=>s.className===filter);
+  return pool.length ? pool : FALLBACK_FRIENDS;
+}
+
+/* 当前选的班级：all / elephant / tiger，记在本机浏览器里 */
+let classFilter = "all";
+try{ classFilter = localStorage.getItem("hoay.classFilter") || "all"; }catch(e){}
+function setClassFilter(f){
+  classFilter = f;
+  try{ localStorage.setItem("hoay.classFilter", f); }catch(e){}
+}
+
+/* 当天抽过的同学记一笔，全部抽完一轮才重新循环；刚好抽完最后一个时提示一下 */
+const PICK_STATE_KEY = "hoay.pickState.v1";
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function loadPickState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(PICK_STATE_KEY));
+    if(s && s.date===todayStr()) return s;
+  }catch(e){}
+  return { date: todayStr(), pools:{} };
+}
+function savePickState(s){ try{ localStorage.setItem(PICK_STATE_KEY, JSON.stringify(s)); }catch(e){} }
+
+function pickStudentNoRepeat(filter){
+  const pool = studentsForFilter(filter);
+  const state = loadPickState();
+  if(!state.pools[filter]) state.pools[filter] = [];
+  let used = state.pools[filter];
+  let remaining = pool.filter(s=>!used.includes(s.name));
+  if(!remaining.length){ used = []; remaining = pool; }
+
+  const chosen = pick(remaining);
+  used.push(chosen.name);
+  let justCompleted = false;
+  if(used.length>=pool.length){ justCompleted = true; used = []; }
+  state.pools[filter] = used;
+  savePickState(state);
+  return { student:chosen, justCompleted };
+}
+function birthdayPhrase(b){ return hanziNum(b.m)+"月"+hanziNum(b.d)+"日"; }
 
 let globalAudio = new Audio();
 
@@ -382,7 +463,47 @@ function randomBirthday(){
   const d=1+rnd(DAYS_IN_MONTH[m-1]);
   return { m, d };
 }
-function birthdayPhrase(b){ return hanziNum(b.m)+"月"+hanziNum(b.d)+"日"; }
+
+/* 王老师头像：问问题的那个人 */
+const TEACHER_AVATAR_SVG =
+  '<svg viewBox="0 0 64 64" width="100%" height="100%">'
+  + '<path d="M8 60 Q8 42 32 40 Q56 42 56 60 Z" fill="#BFD3B6" stroke="#2E2A28" stroke-width="2"/>'
+  + '<rect x="27" y="34" width="10" height="10" fill="#F0C8A0"/>'
+  + '<path d="M24 40 L32 48 L40 40" fill="none" stroke="#2E2A28" stroke-width="1.6"/>'
+  + '<circle cx="32" cy="26" r="16" fill="#F0C8A0" stroke="#2E2A28" stroke-width="2"/>'
+  + '<path d="M16 24 Q14 8 32 8 Q50 8 48 24 Q46 14 38 14 Q34 20 30 14 Q24 12 22 18 Q20 14 16 24Z" fill="#2E241C" stroke="#2E2A28" stroke-width="1.5"/>'
+  + '<rect x="19" y="24" width="11" height="8" rx="3" fill="none" stroke="#2E2A28" stroke-width="2"/>'
+  + '<rect x="34" y="24" width="11" height="8" rx="3" fill="none" stroke="#2E2A28" stroke-width="2"/>'
+  + '<line x1="30" y1="27" x2="34" y2="27" stroke="#2E2A28" stroke-width="2"/>'
+  + '<circle cx="24.5" cy="28" r="1.3" fill="#2E2A28"/><circle cx="39.5" cy="28" r="1.3" fill="#2E2A28"/>'
+  + '<path d="M27 35 Q32 39 37 35" fill="none" stroke="#2E2A28" stroke-width="1.6" stroke-linecap="round"/>'
+  + '<circle cx="22" cy="33" r="2.4" fill="#F4A9A0" opacity=".55"/><circle cx="42" cy="33" r="2.4" fill="#F4A9A0" opacity=".55"/>'
+  + '</svg>';
+function teacherAvatarNode(cls){
+  const d = el("div", cls || "who");
+  d.innerHTML = TEACHER_AVATAR_SVG;
+  return d;
+}
+
+/* 自绘生日蛋糕：蜡烛数量 = 年龄，唯一的蜡烛来源就是这些蜡烛本身 */
+function cakeSvg(age){
+  const startX=40, totalW=120;
+  const gap = age>1 ? totalW/(age-1) : 0;
+  let candles="";
+  for(let i=0;i<age;i++){
+    const cx = age===1 ? 100 : startX+gap*i;
+    candles += `<rect x="${cx-3}" y="34" width="6" height="18" rx="2" fill="#FFD54A" stroke="#2E2A28" stroke-width="2"/>`
+      + `<path d="M${cx} 24 Q${cx-5} 14 ${cx} 6 Q${cx+5} 14 ${cx} 24 Z" fill="#FF9F43" stroke="#B4562C" stroke-width="1.5"/>`;
+  }
+  return `<svg viewBox="0 0 200 140" width="180" height="126">
+    <ellipse cx="100" cy="128" rx="86" ry="10" fill="#F0663C22"/>
+    <rect x="30" y="70" width="140" height="46" rx="10" fill="#FDEBD8" stroke="#2E2A28" stroke-width="3"/>
+    <rect x="30" y="70" width="140" height="14" rx="7" fill="#FFFFFF" stroke="#2E2A28" stroke-width="3"/>
+    <rect x="45" y="52" width="110" height="30" rx="10" fill="#F7C6D9" stroke="#2E2A28" stroke-width="3"/>
+    <rect x="45" y="52" width="110" height="12" rx="6" fill="#FFFFFF" stroke="#2E2A28" stroke-width="3"/>
+    ${candles}
+  </svg>`;
+}
 
 /* ---------------- 顶栏 ---------------- */
 function renderTop(){
@@ -392,7 +513,7 @@ function renderTop(){
     back.href="../teachers.html";
     topbar.appendChild(back);
   }else{
-    const back=el("button","chip","← 你几岁？我的生日");
+    const back=el("button","chip","← 你几岁？");
     back.onclick=()=>{ sfxTap(); go("home"); };
     topbar.appendChild(back);
   }
@@ -419,12 +540,21 @@ function go(name,station){
 function renderHome(){
   const head=el("div","home-head");
   const titleRow=el("div","home-title-row");
-  const song=el("button","song-btn","🎵 唱生日歌");
-  song.onclick=()=>{ sfxTap(); playHappyBirthday(); };
-  titleRow.appendChild(el("h1",null,"你几岁？我的生日"));
-  titleRow.appendChild(song);
+
+  const left=el("span","song-btn","🎵 你几岁儿歌");
+  left.style.opacity=".45"; left.style.cursor="default";
+  left.title="等老师提供这首儿歌的链接";
+  titleRow.appendChild(left);
+
+  titleRow.appendChild(el("h1",null,"你几岁？"));
+
+  const right=el("a","song-btn","🎵 祝你生日快乐");
+  right.href=BIRTHDAY_SONG_URL; right.target="_blank"; right.rel="noopener";
+  right.onclick=()=>sfxTap();
+  titleRow.appendChild(right);
+
   head.appendChild(titleRow);
-  head.appendChild(el("p",null,"How Old Are You? & My Birthday · 点一个活动开始"));
+  head.appendChild(el("p",null,"How Old Are You? · 点一个活动开始"));
   stage.appendChild(head);
 
   const grid=el("div","grid-stations");
@@ -467,7 +597,120 @@ function actNumber(){
 }
 
 /* ============================================================
-   活动 2 · 你几岁？（数蜡烛猜年龄）
+   活动 2 · 数字连线（连连看：阿拉伯数字 ↔ 中文数字）
+   ============================================================ */
+function actMatch(){
+  let level = 5;
+
+  const q=el("div","act-q");
+  q.innerHTML='数字连线<span class="sub">先选难度，再把配对的两个连起来</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+
+  const modeRow=el("div","class-filter");
+  const btn5=el("button","class-chip on","1-5");
+  const btn10=el("button","class-chip","1-10");
+  modeRow.appendChild(btn5); modeRow.appendChild(btn10);
+  body.appendChild(modeRow);
+
+  const board=el("div");
+  body.appendChild(board);
+  const verdict=el("div","verdict");
+  body.appendChild(verdict);
+
+  function build(){
+    board.innerHTML=""; verdict.textContent=""; verdict.className="verdict";
+    const nums = NUMBERS.slice(0,level);
+    const leftOrder = shuffle(nums);
+    const rightOrder = shuffle(nums);
+
+    const wrap=el("div","match-wrap");
+    const svgNS="http://www.w3.org/2000/svg";
+    const svg=document.createElementNS(svgNS,"svg");
+    svg.setAttribute("class","match-svg");
+    wrap.appendChild(svg);
+
+    const colL=el("div","match-col");
+    const colR=el("div","match-col");
+    let selL=null, selR=null, matched=0;
+
+    function sizeSvg(){
+      svg.setAttribute("width", wrap.clientWidth);
+      svg.setAttribute("height", wrap.clientHeight);
+    }
+
+    function tryMatch(){
+      if(!selL||!selR) return;
+      if(selL.dataset.n===selR.dataset.n){
+        sfxGood();
+        const wr=wrap.getBoundingClientRect(), a=selL.getBoundingClientRect(), b=selR.getBoundingClientRect();
+        const line=document.createElementNS(svgNS,"line");
+        line.setAttribute("x1", a.right-wr.left);
+        line.setAttribute("y1", a.top+a.height/2-wr.top);
+        line.setAttribute("x2", b.left-wr.left);
+        line.setAttribute("y2", b.top+b.height/2-wr.top);
+        line.setAttribute("stroke","#F0663C"); line.setAttribute("stroke-width","4"); line.setAttribute("stroke-linecap","round");
+        svg.appendChild(line);
+        speak(selL.dataset.zh);
+        selL.classList.add("done"); selR.classList.add("done");
+        selL.classList.remove("sel"); selR.classList.remove("sel");
+        selL=null; selR=null; matched++;
+        if(matched===level){
+          verdict.textContent="全部连对啦！"; verdict.className="verdict good pop";
+          setTimeout(renderStage,1700);
+        }
+      }else{
+        sfxRetry();
+        const badL=selL, badR=selR;
+        badL.classList.add("wrong"); badR.classList.add("wrong");
+        verdict.textContent="再想想"; verdict.className="verdict retry";
+        setTimeout(()=>{
+          badL.classList.remove("sel","wrong"); badR.classList.remove("sel","wrong");
+        },380);
+        selL=null; selR=null;
+      }
+    }
+
+    leftOrder.forEach(n=>{
+      const b=el("button","match-btn",n.ar);
+      b.dataset.n=n.ar; b.dataset.zh=n.zh;
+      b.onclick=()=>{
+        if(b.classList.contains("done")) return;
+        sfxTap();
+        if(selL) selL.classList.remove("sel");
+        selL=b; b.classList.add("sel");
+        tryMatch();
+      };
+      colL.appendChild(b);
+    });
+    rightOrder.forEach(n=>{
+      const b=el("button","match-btn",n.zh);
+      b.dataset.n=n.ar; b.dataset.zh=n.zh;
+      b.onclick=()=>{
+        if(b.classList.contains("done")) return;
+        sfxTap();
+        if(selR) selR.classList.remove("sel");
+        selR=b; b.classList.add("sel");
+        tryMatch();
+      };
+      colR.appendChild(b);
+    });
+
+    wrap.appendChild(colL); wrap.appendChild(colR);
+    board.appendChild(wrap);
+    sizeSvg();
+  }
+
+  btn5.onclick=()=>{ sfxTap(); level=5; btn5.classList.add("on"); btn10.classList.remove("on"); build(); };
+  btn10.onclick=()=>{ sfxTap(); level=10; btn10.classList.add("on"); btn5.classList.remove("on"); build(); };
+
+  build();
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 3 · 你几岁？（数蜡烛猜年龄）
    ============================================================ */
 function actAge(){
   const age = 1+rnd(8);
@@ -479,17 +722,13 @@ function actAge(){
   stage.appendChild(q);
 
   const body=el("div","act-body");
-  body.appendChild(el("div","cake-emo","🎂"));
+  const row=el("div","cake-row");
+  const cakeWrap=el("div"); cakeWrap.innerHTML=cakeSvg(age);
+  row.appendChild(cakeWrap);
+  row.appendChild(el("div","cake-friend",pick(CAKE_FRIENDS)));
+  body.appendChild(row);
 
-  const candles=el("div","candle-row");
-  for(let i=0;i<age;i++){
-    const s=el("span",null,"🕯️");
-    s.style.animationDelay=(i*.06)+"s"; s.className="pop";
-    candles.appendChild(s);
-  }
-  body.appendChild(candles);
-
-  const row=el("div","choice-row");
+  const choiceRow=el("div","choice-row");
   const verdict=el("div","verdict");
   opts.forEach(o=>{
     const b=el("button","choice-btn",hanziNum(o));
@@ -499,49 +738,17 @@ function actAge(){
         const phrase="我"+hanziNum(age)+"岁。";
         verdict.textContent="对啦！"+phrase; verdict.className="verdict good pop";
         speak(phrase);
-        row.querySelectorAll("button").forEach(x=>x.disabled=true);
+        choiceRow.querySelectorAll("button").forEach(x=>x.disabled=true);
         setTimeout(renderStage,1800);
       }else{
         sfxRetry(); b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
         verdict.textContent="再数一数"; verdict.className="verdict retry";
       }
     };
-    row.appendChild(b);
+    choiceRow.appendChild(b);
   });
 
-  body.appendChild(row); body.appendChild(verdict);
-  stage.appendChild(body);
-}
-
-/* ============================================================
-   活动 3 · 生日快乐（祝福语翻牌）
-   ============================================================ */
-function actBwords(){
-  const q=el("div","act-q");
-  q.innerHTML='翻一翻，认一认<span class="sub">生日祝福语怎么说</span>';
-  stage.appendChild(q);
-
-  const body=el("div","act-body");
-  const grid=el("div","card-grid");
-  BDAY_WORDS.forEach(w=>{
-    const c=el("button","flip");
-    c.innerHTML='<div class="qm">？</div>';
-    c.onclick=()=>{
-      if(c.classList.contains("open")){ speak(w.zh); return; }
-      sfxReveal(); c.classList.add("open","pop");
-      c.innerHTML="";
-      c.appendChild(el("div","emo",w.emo));
-      c.appendChild(el("span","zh",w.zh));
-      speak(w.zh);
-    };
-    grid.appendChild(c);
-  });
-  body.appendChild(grid);
-
-  const sing=el("button","chip tone","🎵 唱生日歌");
-  sing.onclick=()=>{ sfxTap(); playHappyBirthday(); };
-  body.appendChild(sing);
-
+  body.appendChild(choiceRow); body.appendChild(verdict);
   stage.appendChild(body);
 }
 
@@ -566,12 +773,12 @@ function actMonths(){
         cell.innerHTML='<div class="emo">❓</div><b>几月？</b>';
         cell.onclick=()=>{
           sfxReveal(); cell.classList.add("open","pop");
-          cell.innerHTML='<div class="emo">'+m.emo+'</div><b>'+m.zh+'月</b>';
+          cell.innerHTML='<div class="emo">'+m.icon+'</div><b>'+m.zh+'月</b>';
           speak(m.zh+"月");
           cell.onclick=()=>speak(m.zh+"月");
         };
       }else{
-        cell.innerHTML='<div class="emo">'+m.emo+'</div><b>'+m.zh+'月</b>';
+        cell.innerHTML='<div class="emo">'+m.icon+'</div><b>'+m.zh+'月</b>';
         cell.onclick=()=>{ sfxTap(); speak(m.zh+"月"); };
       }
       grid.appendChild(cell);
@@ -584,11 +791,19 @@ function actMonths(){
   again.onclick=()=>{ sfxTap(); buildGrid(); };
   body.appendChild(again);
 
+  const songRow=el("div","act-foot"); songRow.style.paddingBottom="0";
+  MONTH_SONGS.forEach((url,i)=>{
+    const a=el("a","chip","🎵 月份歌 "+(i+1));
+    a.href=url; a.target="_blank"; a.rel="noopener"; a.onclick=()=>sfxTap();
+    songRow.appendChild(a);
+  });
+  body.appendChild(songRow);
+
   stage.appendChild(body);
 }
 
 /* ============================================================
-   活动 5 · 几月几日（看日历拼句子）
+   活动 5 · 几月几日（英文日历拼中文句子）
    ============================================================ */
 function actDate(){
   const b = randomBirthday();
@@ -602,7 +817,7 @@ function actDate(){
   const body=el("div","act-body");
 
   const cal=el("div","cal-card");
-  cal.appendChild(el("div","cal-month",hanziNum(b.m)+"月"));
+  cal.appendChild(el("div","cal-month",EN_MONTHS[b.m-1]));
   cal.appendChild(el("div","cal-day",String(b.d)));
   body.appendChild(cal);
 
@@ -645,22 +860,42 @@ function actDate(){
 }
 
 /* ============================================================
-   活动 6 · 你的生日是几月几日？（问答对话）
+   活动 6 · 你的生日是几月几日？（问答对话，抽真实同学）
    ============================================================ */
+const CLASS_OPTIONS = [
+  { id:"all",      label:"全部" },
+  { id:"elephant", label:"🐘 大象班" },
+  { id:"tiger",    label:"🐯 老虎班" }
+];
+
 function actAsk(){
   const Q = "你的生日是几月几日？";
-  let friend = pick(FRIENDS);
-  let bday = randomBirthday();
+  let current = pickStudentNoRepeat(classFilter);
 
   const q=el("div","act-q");
   q.innerHTML='问答对话<span class="sub">点一下气泡，听听怎么问、怎么答</span>';
   stage.appendChild(q);
 
   const body=el("div","act-body scroll");
-  const wrap=el("div","dialog-wrap");
 
+  const filterRow=el("div","class-filter");
+  const filterBtns={};
+  CLASS_OPTIONS.forEach(opt=>{
+    const b=el("button","class-chip"+(classFilter===opt.id?" on":""),opt.label);
+    b.onclick=()=>{
+      sfxTap();
+      setClassFilter(opt.id);
+      CLASS_OPTIONS.forEach(o=>filterBtns[o.id].classList.toggle("on", o.id===opt.id));
+      draw();
+    };
+    filterBtns[opt.id]=b;
+    filterRow.appendChild(b);
+  });
+  body.appendChild(filterRow);
+
+  const wrap=el("div","dialog-wrap");
   const qLine=el("div","dialog-line q");
-  qLine.appendChild(el("div","who","🙋"));
+  qLine.appendChild(teacherAvatarNode("who"));
   qLine.appendChild(el("div","txt",Q));
   qLine.onclick=()=>{ sfxTap(); speak(Q); };
   wrap.appendChild(qLine);
@@ -668,24 +903,43 @@ function actAsk(){
   const aLine=el("div","dialog-line a");
   function renderA(){
     aLine.innerHTML="";
-    aLine.appendChild(el("div","who",friend.emo));
-    aLine.appendChild(el("div","txt","我的生日是"+birthdayPhrase(bday)+"。"));
+    aLine.appendChild(el("div","who","🧒"));
+    aLine.appendChild(el("div","txt","我的生日是"+birthdayPhrase(current.student)+"。"));
   }
-  renderA();
-  aLine.onclick=()=>{ sfxTap(); speak("我的生日是"+birthdayPhrase(bday)); };
+  aLine.onclick=()=>{ sfxTap(); speak("我的生日是"+birthdayPhrase(current.student)); };
   wrap.appendChild(aLine);
-
-  const swap=el("button","chip","🔄 换一个朋友再听听");
-  swap.onclick=()=>{
-    sfxTap();
-    friend = pick(FRIENDS);
-    bday = randomBirthday();
-    renderA();
-    speak("我的生日是"+birthdayPhrase(bday));
-  };
-
   body.appendChild(wrap);
+
+  const studentCard=el("div","student-card");
+  function renderStudentCard(){
+    studentCard.innerHTML="";
+    if(current.student.img){
+      const img=document.createElement("img");
+      img.className="student-photo"; img.src=current.student.img; img.alt=current.student.name;
+      studentCard.appendChild(img);
+    }else{
+      studentCard.appendChild(el("div","student-photo placeholder","🧒"));
+    }
+    studentCard.appendChild(el("b",null,current.student.name));
+  }
+  body.appendChild(studentCard);
+
+  const banner=el("div","complete-banner","🎉 全班同学都抽过一遍啦！新的一轮开始～");
+  body.appendChild(banner);
+
+  const swap=el("button","chip","🔄 换一个同学再听听");
+  swap.onclick=()=>{ sfxTap(); draw(); };
   body.appendChild(swap);
+
+  function draw(){
+    current = pickStudentNoRepeat(classFilter);
+    renderA(); renderStudentCard();
+    banner.classList.toggle("show", current.justCompleted);
+    if(current.justCompleted) banner.classList.add("pop");
+    speak("我的生日是"+birthdayPhrase(current.student));
+  }
+  renderA(); renderStudentCard();
+  banner.classList.toggle("show", current.justCompleted);
 
   const turn=el("div","turn-card");
   turn.appendChild(el("div","big","🎈"));
@@ -698,73 +952,9 @@ function actAsk(){
 }
 
 /* ============================================================
-   活动 7 · 生日排排队（教室游戏工具）
-   全班安静不说话，用手指比出自己的生日月份和日期，
-   按一月到十二月的顺序排成一条线。这里提供抽生日卡的小工具，
-   方便老师带练习、或者当作快速读日期的小游戏。
-   ============================================================ */
-function actLineup(){
-  const drawn = [];
-
-  const q=el("div","act-q");
-  q.innerHTML='生日排排队<span class="sub">教室游戏 · 安安静静，比生日排队</span>';
-  stage.appendChild(q);
-
-  const body=el("div","act-body scroll");
-
-  const steps=el("div","game-steps");
-  steps.innerHTML =
-    "<b>1.</b> 全班保持安静，不能说话，只能用手指比数字。<br>"+
-    "<b>2.</b> 老师说开始，每个人先比出自己出生的月份（比如四月，就伸四根手指）。<br>"+
-    "<b>3.</b> 找到和自己同一个月出生的同学，站在一起；再比日期，从小到大站好。<br>"+
-    "<b>4.</b> 全班从一月排到十二月，排好队，一起喊：排好了！";
-  body.appendChild(steps);
-
-  const cal=el("div","cal-card");
-  cal.appendChild(el("div","cal-month","🎲"));
-  cal.appendChild(el("div","cal-day","抽一张"));
-  body.appendChild(cal);
-
-  const controls=el("div","act-foot");
-  const draw=el("button","chip tone","🎲 抽一张生日卡");
-  const roundBadge=el("div","round-badge","已抽 0 张");
-  controls.style.paddingBottom="0";
-  controls.appendChild(draw); controls.appendChild(roundBadge);
-  body.appendChild(controls);
-
-  const list=el("div","bday-chip-list");
-  body.appendChild(list);
-
-  const reset=el("button","chip","🔄 清空重来");
-  reset.onclick=()=>{
-    sfxTap();
-    drawn.length=0;
-    list.innerHTML="";
-    roundBadge.textContent="已抽 0 张";
-    cal.querySelector(".cal-month").textContent="🎲";
-    cal.querySelector(".cal-day").textContent="抽一张";
-  };
-  body.appendChild(reset);
-
-  draw.onclick=()=>{
-    sfxTap();
-    const b=randomBirthday();
-    cal.querySelector(".cal-month").textContent=hanziNum(b.m)+"月";
-    cal.querySelector(".cal-day").textContent=String(b.d);
-    speak(birthdayPhrase(b));
-    drawn.push(b);
-    roundBadge.textContent="已抽 "+drawn.length+" 张";
-    const bc=el("div","bday-chip",drawn.length+". "+birthdayPhrase(b));
-    list.appendChild(bc);
-  };
-
-  stage.appendChild(body);
-}
-
-/* ============================================================
    渲染分发
    ============================================================ */
-const ACTS={ number:actNumber, age:actAge, bwords:actBwords, months:actMonths, date:actDate, ask:actAsk, lineup:actLineup };
+const ACTS={ number:actNumber, match:actMatch, age:actAge, months:actMonths, date:actDate, ask:actAsk };
 
 function renderStage(){
   stage.innerHTML="";
