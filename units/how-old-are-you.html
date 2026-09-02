@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>你几岁？· How Old Are You</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
+<style>
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF, U+20000-2A6DF;
+}
+:root{
+  font-size:18px;
+  --ink:#2E2A28;
+  --ink-soft:#6B625C;
+  --paper:#FFFDF7;
+  --card:#FFFFFF;
+  --line:rgba(46,42,40,.14);
+  --accent:#F0663C;
+  --accent-soft:#F0663C22;
+  --shadow:0 .35rem 1.1rem rgba(46,42,40,.13);
+  --radius:1.1rem;
+  --font-zh:"KaiTi-CJK","LXGW WenKai Lite","LXGW WenKai",serif;
+}
+@media (min-width:900px){ :root{ font-size:20px; } }
+@media (min-width:1300px){ :root{ font-size:23px; } }
+@media (min-width:1700px){ :root{ font-size:27px; } }
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--font-zh);
+  color:var(--ink);
+  background:
+    radial-gradient(60rem 40rem at 12% -10%, #FFE1CE 0%, transparent 60%),
+    radial-gradient(50rem 36rem at 95% 8%, #E8F4FF 0%, transparent 62%),
+    radial-gradient(48rem 40rem at 50% 115%, #FFF3D2 0%, transparent 60%),
+    linear-gradient(#FFFDF7,#FDF6EA);
+  overflow:hidden;
+  user-select:none;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(3.2rem);opacity:.5;pointer-events:none;z-index:0}
+.blob.a{width:22rem;height:22rem;left:-7rem;top:-6rem;background:#FFD9A8}
+.blob.b{width:20rem;height:20rem;right:-6rem;bottom:-7rem;background:#BFE3FF}
+
+/* ---------- shell ---------- */
+#app{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  width:min(96vw,72rem);max-height:100vh;margin:0 auto;padding:1.1rem .8rem .8rem}
+.topbar{display:flex;align-items:center;gap:.5rem;flex:0 0 auto;padding:.15rem 0 .5rem}
+.topbar .spacer{flex:1}
+.chip{
+  border:none;background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:.82rem;font-weight:700;
+  padding:.4rem .85rem;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;
+  display:inline-flex;align-items:center;gap:.3rem;line-height:1.2;
+  text-decoration:none;
+}
+.chip:active{transform:translateY(1px)}
+.chip.tone{background:var(--accent);color:#fff}
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---------- home ---------- */
+.home-head{text-align:center;flex:0 0 auto;padding:.2rem 0 .8rem}
+.home-title-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1.1rem}
+.home-title-row h1{margin:0;font-size:2rem;letter-spacing:.04em}
+.home-head p{margin:.3rem 0 0;color:var(--ink-soft);font-size:.85rem}
+.song-btn{
+  flex:0 0 auto;border:none;background:var(--card);color:var(--ink);cursor:pointer;
+  font-family:inherit;font-size:.85rem;font-weight:700;text-decoration:none;
+  padding:.5rem 1.1rem;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:.3rem;
+}
+.song-btn:active{transform:translateY(1px)}
+
+.grid-stations{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));
+  gap:.7rem;padding:.2rem .2rem 1rem;align-content:start;
+}
+.station{
+  border:none;cursor:pointer;font-family:inherit;color:inherit;text-align:left;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem .85rem;display:flex;flex-direction:column;gap:.3rem;
+  border-top:.28rem solid var(--accent);
+}
+.station:active{transform:translateY(2px)}
+.station .ico{font-size:1.7rem;line-height:1}
+.station b{font-size:1rem}
+.station small{color:var(--ink-soft);font-size:.72rem;line-height:1.4}
+
+/* ---------- generic activity frame ---------- */
+.act{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:.6rem}
+.act-q{flex:0 0 auto;text-align:center;font-size:1.5rem;font-weight:700;line-height:1.25}
+.act-q .sub{display:block;font-size:.72rem;font-weight:400;color:var(--ink-soft);letter-spacing:.08em;margin-top:.2rem}
+.act-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;overflow:hidden}
+.act-body.scroll{overflow-y:auto;justify-content:flex-start;padding:.15rem .15rem .6rem}
+.act-foot{flex:0 0 auto;display:flex;justify-content:center;gap:.5rem;padding-bottom:.2rem}
+
+.verdict{font-size:1.5rem;font-weight:700;min-height:2rem;text-align:center}
+.verdict.good{color:#1E7A46}
+.verdict.retry{color:#B4562C}
+@keyframes popIn{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.pop{animation:popIn .34s cubic-bezier(.22,1.2,.4,1)}
+
+/* ---------- 选一选 / 分类切换 ---------- */
+.choice-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
+.choice-btn{
+  width:7.5rem;height:7.5rem;border-radius:1.4rem;border:none;cursor:pointer;
+  background:var(--card);box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08);
+  font-size:3rem;font-family:inherit;font-weight:700;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+}
+.choice-btn:active{transform:scale(.96)}
+.choice-btn.wrong{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-.5rem)}75%{transform:translateX(.5rem)}}
+
+.class-filter{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.class-chip{
+  border:none;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;
+  padding:.35rem .8rem;border-radius:999px;background:var(--card);color:var(--ink-soft);box-shadow:var(--shadow);
+}
+.class-chip.on{background:var(--accent);color:#fff}
+
+/* ---------- 翻牌 ---------- */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:min(100%,32rem)}
+.number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;width:min(100%,40rem)}
+.flip{
+  aspect-ratio:1/1;border:none;border-radius:1.1rem;cursor:pointer;font-family:inherit;
+  background:var(--accent);box-shadow:var(--shadow);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;
+  font-size:2.2rem;-webkit-appearance:none;appearance:none;overflow:hidden;padding:0;
+}
+.flip.open{background:var(--card);color:var(--ink)}
+.flip .emo{font-size:1.4em;line-height:1}
+.flip span.zh{font-size:.8rem;font-weight:700}
+.flip .qm{opacity:.85}
+
+/* ---------- 数字连线 ---------- */
+.match-wrap{position:relative;display:flex;gap:2.8rem;justify-content:center;padding:.4rem 0 .2rem}
+.match-col{display:flex;flex-direction:column;gap:.55rem}
+.match-btn{
+  width:4.6rem;height:3.1rem;border:none;border-radius:.8rem;cursor:pointer;font-family:inherit;
+  font-weight:700;font-size:1.3rem;color:var(--ink);background:var(--card);box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;
+}
+.match-btn.sel{box-shadow:var(--shadow),inset 0 0 0 .16rem var(--accent);background:var(--accent-soft)}
+.match-btn.done{opacity:.3;pointer-events:none}
+.match-btn.wrong{animation:shake .3s}
+.match-svg{position:absolute;inset:0;pointer-events:none}
+
+/* ---------- 十二个月 ---------- */
+.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem;width:min(100%,36rem)}
+.month-cell{
+  border:none;cursor:pointer;font-family:inherit;color:var(--ink);
+  background:var(--card);border-radius:.9rem;box-shadow:var(--shadow);
+  padding:.5rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;
+}
+.month-cell:active{transform:translateY(2px)}
+.month-cell .emo{line-height:1;display:flex;align-items:center;justify-content:center;height:1.7rem}
+.month-cell b{font-size:.78rem;font-weight:700}
+.month-cell.quiz{background:var(--accent);color:#fff}
+.month-cell.quiz b{color:#fff}
+.month-cell.quiz.open{background:var(--card);color:var(--ink)}
+.month-cell.quiz.open b{color:var(--ink)}
+
+/* ---------- 生日蛋糕 ---------- */
+.cake-row{display:flex;align-items:center;justify-content:center;gap:1rem}
+.cake-friend{font-size:3rem;line-height:1}
+
+/* ---------- 日历卡 ---------- */
+.cal-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem 1.5rem;text-align:center;display:inline-flex;flex-direction:column;align-items:center;gap:.25rem;
+}
+.cal-card .cal-month{
+  background:var(--accent);color:#fff;border-radius:.6rem;padding:.25rem 1rem;
+  font-size:.85rem;font-weight:700;white-space:nowrap;
+}
+.cal-card .cal-day{font-size:2.8rem;font-weight:700;line-height:1}
+
+/* ---------- 拼句子 ---------- */
+.sentence-built{font-size:1.9rem;font-weight:700;min-height:2.6rem;letter-spacing:.05em;text-align:center}
+.sentence-built .blank{color:var(--ink-soft)}
+.tile-row{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:30rem}
+.tile{
+  border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow);border-radius:.8rem;padding:.6rem 1rem;font-size:1.3rem;font-weight:700;
+}
+.tile:active{transform:translateY(2px)}
+.tile.used{opacity:.25;pointer-events:none}
+.tile.wrong{animation:shake .4s}
+
+/* ---------- 问答对话 ---------- */
+.dialog-wrap{display:flex;flex-direction:column;gap:.9rem;width:min(100%,30rem)}
+.dialog-line{
+  display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:.8rem 1rem;cursor:pointer;
+}
+.dialog-line .who{font-size:1.8rem;flex:0 0 auto}
+.dialog-line .who svg{width:1.8rem;height:1.8rem;display:block}
+.dialog-line .txt{font-size:1.1rem;font-weight:700;flex:1 1 auto}
+.dialog-line.q{border-left:.3rem solid var(--accent)}
+.dialog-line.a{border-left:.3rem solid #4FC3F7}
+
+.turn-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:1rem 1.4rem;text-align:center;display:flex;flex-direction:column;gap:.3rem;align-items:center;max-width:26rem;
+}
+.turn-card .big{font-size:2.2rem}
+.turn-card b{font-size:1.05rem}
+.turn-card small{color:var(--ink-soft);font-size:.75rem;line-height:1.5}
+
+.student-card{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.student-photo{width:5.5rem;height:5.5rem;border-radius:50%;object-fit:cover;box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08)}
+.student-photo.placeholder{display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:var(--card)}
+.student-card b{font-size:1.05rem}
+
+.complete-banner{display:none;background:#FFF6DA;color:#6A5A2E;border-radius:999px;padding:.4rem 1.1rem;font-size:.8rem;font-weight:700;text-align:center}
+.complete-banner.show{display:block}
+
+.hint{text-align:center;color:var(--ink-soft);font-size:.72rem;line-height:1.5;padding:0 1rem}
+.teacher-note{
+  background:#FFF6DA;border-radius:.8rem;padding:.6rem .9rem;font-size:.72rem;color:#6A5A2E;
+  line-height:1.5;max-width:34rem;text-align:center;
+}
+::-webkit-scrollbar{width:.5rem;height:.5rem}
+::-webkit-scrollbar-thumb{background:rgba(46,42,40,.2);border-radius:99px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="blob a"></div><div class="blob b"></div>
+<div id="app">
+  <div class="topbar" id="topbar"></div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<script>
+/* ============================================================
+   你几岁？ · How Old Are You
+   数字 / 年龄 / 月份 / 日期单元。单文件，无外部依赖（字体除外）。
+   6 个课堂活动，"你的生日是几月几日？"从 Sanity 里抽本学年真实同学的生日。
+   ============================================================ */
+
+const DIGIT = ["","一","二","三","四","五","六","七","八","九"];
+function hanziNum(n){
+  if(n<10) return DIGIT[n];
+  if(n===10) return "十";
+  if(n<20) return "十"+DIGIT[n-10];
+  const tens=Math.floor(n/10), ones=n%10;
+  return DIGIT[tens]+"十"+(ones?DIGIT[ones]:"");
+}
+
+const NUMBERS = Array.from({length:10},(_,i)=>({ ar:String(i+1), zh:hanziNum(i+1) }));
+const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+const EN_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/* 每个月一个手绘小图标（不用 emoji，画得更用心一点） */
+const MONTH_ICONS = [
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#2E6E93" stroke-width="3" stroke-linecap="round"><line x1="32" y1="8" x2="32" y2="56"/><line x1="8" y1="32" x2="56" y2="32"/><line x1="14" y1="14" x2="50" y2="50"/><line x1="14" y1="50" x2="50" y2="14"/></g><g stroke="#2E6E93" stroke-width="2.4" stroke-linecap="round"><line x1="32" y1="8" x2="26" y2="16"/><line x1="32" y1="8" x2="38" y2="16"/><line x1="32" y1="56" x2="26" y2="48"/><line x1="32" y1="56" x2="38" y2="48"/><line x1="8" y1="32" x2="16" y2="26"/><line x1="8" y1="32" x2="16" y2="38"/><line x1="56" y1="32" x2="48" y2="26"/><line x1="56" y1="32" x2="48" y2="38"/></g><circle cx="32" cy="32" r="5" fill="#BFE6FA" stroke="#2E6E93" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 50 C10 34 10 16 24 14 C29 13 32 18 32 22 C32 18 35 13 40 14 C54 16 54 34 32 50Z" fill="#F06A8C" stroke="#2E2A28" stroke-width="2.5"/><line x1="10" y1="14" x2="54" y2="50" stroke="#2E2A28" stroke-width="2.5"/><path d="M50 46 L54 50 L50 54" fill="none" stroke="#2E2A28" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#2E2A28" stroke-width="2.2"><circle cx="24" cy="24" r="12" fill="#4FAE5B"/><circle cx="40" cy="24" r="12" fill="#4FAE5B"/><circle cx="24" cy="40" r="12" fill="#4FAE5B"/><circle cx="40" cy="40" r="12" fill="#4FAE5B"/></g><line x1="32" y1="44" x2="32" y2="58" stroke="#2E2A28" stroke-width="2.5" stroke-linecap="round"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M10 30 Q32 8 54 30 Z" fill="#5EA8D9" stroke="#2E2A28" stroke-width="2.5" stroke-linejoin="round"/><line x1="32" y1="30" x2="32" y2="52" stroke="#2E2A28" stroke-width="2.5"/><path d="M32 52 Q38 56 34 58" fill="none" stroke="#2E2A28" stroke-width="2.5" stroke-linecap="round"/><g stroke="#5EA8D9" stroke-width="2.5" stroke-linecap="round"><line x1="14" y1="42" x2="12" y2="50"/><line x1="50" y1="42" x2="48" y2="50"/></g></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 10 C22 10 20 22 26 28 C20 28 18 24 18 24 C18 34 24 38 32 38 C40 38 46 34 46 24 C46 24 44 28 38 28 C44 22 42 10 32 10Z" fill="#E85D8A" stroke="#2E2A28" stroke-width="2.2"/><line x1="32" y1="38" x2="32" y2="56" stroke="#2E8B4A" stroke-width="2.5"/><path d="M32 46 Q22 44 20 52" fill="none" stroke="#2E8B4A" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M34 12 Q40 22 46 26 M34 12 Q30 24 24 30" fill="none" stroke="#4A7A2E" stroke-width="2.2" stroke-linecap="round"/><circle cx="22" cy="42" r="11" fill="#D42B3F" stroke="#2E2A28" stroke-width="2.2"/><circle cx="42" cy="40" r="11" fill="#D42B3F" stroke="#2E2A28" stroke-width="2.2"/><circle cx="18" cy="38" r="2.6" fill="#fff" opacity=".7"/><circle cx="38" cy="36" r="2.6" fill="#fff" opacity=".7"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke-linecap="round"><line x1="32" y1="32" x2="32" y2="10" stroke="#D42B3F" stroke-width="3"/><line x1="32" y1="32" x2="50" y2="18" stroke="#3060C0" stroke-width="3"/><line x1="32" y1="32" x2="54" y2="36" stroke="#D42B3F" stroke-width="3"/><line x1="32" y1="32" x2="42" y2="54" stroke="#3060C0" stroke-width="3"/><line x1="32" y1="32" x2="22" y2="54" stroke="#D42B3F" stroke-width="3"/><line x1="32" y1="32" x2="10" y2="36" stroke="#3060C0" stroke-width="3"/><line x1="32" y1="32" x2="14" y2="18" stroke="#D42B3F" stroke-width="3"/></g><circle cx="32" cy="32" r="5" fill="#FFD54A" stroke="#2E2A28" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#E8A33D" stroke-width="3" stroke-linecap="round"><line x1="32" y1="4" x2="32" y2="14"/><line x1="32" y1="50" x2="32" y2="60"/><line x1="4" y1="32" x2="14" y2="32"/><line x1="50" y1="32" x2="60" y2="32"/><line x1="12" y1="12" x2="19" y2="19"/><line x1="45" y1="45" x2="52" y2="52"/><line x1="12" y1="52" x2="19" y2="45"/><line x1="45" y1="19" x2="52" y2="12"/></g><circle cx="32" cy="32" r="16" fill="#FFC94D" stroke="#2E2A28" stroke-width="2.5"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 22 C20 18 10 26 10 38 C10 50 20 58 28 58 C30 58 31 57 32 57 C33 57 34 58 36 58 C44 58 54 50 54 38 C54 26 44 18 32 22Z" fill="#E23B2E" stroke="#2E2A28" stroke-width="2.5"/><path d="M32 22 Q32 14 30 10" fill="none" stroke="#6B4226" stroke-width="2.5" stroke-linecap="round"/><path d="M32 13 Q40 8 42 16 Q36 16 32 13Z" fill="#4FAE5B" stroke="#2E2A28" stroke-width="1.6"/><ellipse cx="22" cy="34" rx="3.4" ry="5" fill="#fff" opacity=".55"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><path d="M32 16 Q30 10 26 8" fill="none" stroke="#4A7A2E" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="32" cy="38" rx="22" ry="18" fill="#F0803C" stroke="#2E2A28" stroke-width="2.5"/><path d="M22 22 Q22 54 22 54 M32 20 Q32 56 32 56 M42 22 Q42 54 42 54" fill="none" stroke="#C9601F" stroke-width="2"/><path d="M22 34 L27 38 L22 42Z M42 34 L37 38 L42 42Z" fill="#2E2A28"/><path d="M24 46 Q32 52 40 46 Q36 50 32 50 Q28 50 24 46Z" fill="#2E2A28"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><g stroke="#2E2A28" stroke-width="2"><path d="M20 20 Q10 10 6 20 Q16 22 18 28Z" fill="#D42B3F"/><path d="M28 16 Q22 4 14 12 Q22 18 24 24Z" fill="#E8A33D"/><path d="M36 16 Q40 2 46 12 Q38 16 36 24Z" fill="#4FAE5B"/><path d="M44 20 Q54 8 56 20 Q46 20 42 26Z" fill="#3060C0"/></g><circle cx="30" cy="36" r="16" fill="#8B5A2B" stroke="#2E2A28" stroke-width="2.5"/><circle cx="24" cy="30" r="2" fill="#2E2A28"/><path d="M18 32 Q10 34 14 40" fill="#D42B3F" stroke="#2E2A28" stroke-width="1.8"/><path d="M16 40 L10 38 L12 44Z" fill="#E8A33D" stroke="#2E2A28" stroke-width="1.4"/></svg>',
+  '<svg viewBox="0 0 64 64" width="28" height="28"><circle cx="32" cy="46" r="14" fill="#fff" stroke="#2E2A28" stroke-width="2.2"/><circle cx="32" cy="24" r="10" fill="#fff" stroke="#2E2A28" stroke-width="2.2"/><path d="M22 16 L42 16 L38 8 L26 8Z" fill="#2E2A28"/><circle cx="29" cy="22" r="1.4" fill="#2E2A28"/><circle cx="35" cy="22" r="1.4" fill="#2E2A28"/><path d="M32 25 L38 27 L32 29Z" fill="#E8843D"/><circle cx="32" cy="42" r="1.4" fill="#2E2A28"/><circle cx="32" cy="48" r="1.4" fill="#2E2A28"/></svg>'
+];
+const MONTHS = Array.from({length:12},(_,i)=>({ n:i+1, zh:hanziNum(i+1), icon:MONTH_ICONS[i] }));
+const MONTH_SONGS = [
+  "https://youtu.be/d2gUFlwxUfI?si=VDIgBsFp-ePTBqT0",
+  "https://www.youtube.com/watch?v=RswZH92SKvM&list=RDRswZH92SKvM&start_radio=1"
+];
+const BIRTHDAY_SONG_URL = "https://www.youtube.com/watch?v=EMfithOo7EE&list=RDEMfithOo7EE&start_radio=1&t=7s";
+
+const CAKE_FRIENDS = ["🐰","🐶","🐱","🐼","🐨","🦊","🐻","🐯","🐸","🐵"];
+
+const STATIONS = [
+  { id:"number", ico:"🔢", zh:"数字宝箱",     sub:"翻牌认数字，1到10怎么说" },
+  { id:"match",  ico:"🔗", zh:"数字连线",     sub:"连一连，数字和中文配对" },
+  { id:"age",    ico:"🎂", zh:"你几岁？",     sub:"数一数蜡烛，猜猜他几岁" },
+  { id:"months", ico:"📅", zh:"十二个月",     sub:"认一认月份，猜猜藏起来的是几月" },
+  { id:"date",   ico:"🗓️", zh:"几月几日",    sub:"看日历，拼出正确的日期" },
+  { id:"ask",    ico:"🎈", zh:"你的生日是几月几日？", sub:"问答对话，抽一个同学试一试" }
+];
+
+/* ---------------- 状态 ---------------- */
+let view = { name:"home", station:null };
+let muted = false;
+const stage = document.getElementById("stage");
+const topbar = document.getElementById("topbar");
+
+/* ---------------- 声音 ---------------- */
+let ac=null;
+function actx(){ if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ac; }
+function tone(freq,dur,type,vol,delay){
+  if(muted) return; const c=actx(); if(!c) return;
+  const t=c.currentTime+(delay||0);
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||"sine"; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol||.16,t+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.02);
+}
+const sfxTap     = ()=> tone(520,.07,"triangle",.11);
+const sfxGood    = ()=>{ tone(660,.14,"sine",.16,0); tone(880,.14,"sine",.16,.09); tone(1180,.24,"sine",.14,.18); };
+const sfxRetry   = ()=>{ tone(320,.16,"sine",.12,0); tone(250,.20,"sine",.10,.11); };
+const sfxReveal  = ()=>{ tone(740,.10,"triangle",.13,0); tone(990,.14,"triangle",.11,.07); };
+
+/* ---------------- 中文朗读（跟其它单元同一套发音引擎） ---------------- */
+const SANITY_PROJECT_ID = 'sow12t1i';
+const SANITY_DATASET = 'production';
+const SANITY_WORD_QUERY = encodeURIComponent('*[_type == "word"] | order(_createdAt asc) {char, "audioUrl": audio.asset->url}');
+const SANITY_WORD_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_WORD_QUERY}`;
+
+let sanityAudioMap = {};
+(async function loadSanityAudioMap(){
+  try{
+    const r = await fetch(SANITY_WORD_API);
+    const d = await r.json();
+    (d.result||[]).forEach(w=>{ if(w.char && w.audioUrl) sanityAudioMap[w.char]=w.audioUrl; });
+  }catch(e){}
+})();
+
+/* ---------------- 本学年真实学生名单（大象班 + 老虎班），带生日和头像 ---------------- */
+function currentAcademicYear(){
+  const now = new Date();
+  const startYear = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1;
+  return `${String(startYear).slice(-2)}-${String(startYear+1).slice(-2)}`;
+}
+const ACADEMIC_YEAR = currentAcademicYear();
+const SANITY_ROSTER_QUERY = encodeURIComponent(`*[_type == "student" && className in ["elephant","tiger"] && academicYear == "${ACADEMIC_YEAR}"]{name, className, birthday, "img": avatar.asset->url}`);
+const SANITY_ROSTER_API = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_ROSTER_QUERY}`;
+
+let roster = [];
+(async function loadRoster(){
+  try{
+    const r = await fetch(SANITY_ROSTER_API);
+    const d = await r.json();
+    roster = (d.result||[]).filter(s=>s.name && s.birthday).map(s=>{
+      const parts = s.birthday.split("-").map(Number);
+      return { name:s.name, className:s.className, img:s.img||null, m:parts[1], d:parts[2] };
+    });
+  }catch(e){}
+})();
+
+/* 名单没读到（离线/新学年还没录入）时，退回到这几个通用示例同学 */
+const FALLBACK_FRIENDS = [
+  { name:"小明", className:"all", img:null, m:3,  d:12 },
+  { name:"小美", className:"all", img:null, m:6,  d:1  },
+  { name:"安安", className:"all", img:null, m:9,  d:20 },
+  { name:"乐乐", className:"all", img:null, m:11, d:5  },
+  { name:"高高", className:"all", img:null, m:1,  d:18 },
+  { name:"丽丽", className:"all", img:null, m:5,  d:9  },
+  { name:"强强", className:"all", img:null, m:8,  d:23 },
+  { name:"娜娜", className:"all", img:null, m:2,  d:14 }
+];
+function studentsForFilter(filter){
+  const pool = filter==="all" ? roster : roster.filter(s=>s.className===filter);
+  return pool.length ? pool : FALLBACK_FRIENDS;
+}
+
+/* 当前选的班级：all / elephant / tiger，记在本机浏览器里 */
+let classFilter = "all";
+try{ classFilter = localStorage.getItem("hoay.classFilter") || "all"; }catch(e){}
+function setClassFilter(f){
+  classFilter = f;
+  try{ localStorage.setItem("hoay.classFilter", f); }catch(e){}
+}
+
+/* 当天抽过的同学记一笔，全部抽完一轮才重新循环；刚好抽完最后一个时提示一下 */
+const PICK_STATE_KEY = "hoay.pickState.v1";
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function loadPickState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(PICK_STATE_KEY));
+    if(s && s.date===todayStr()) return s;
+  }catch(e){}
+  return { date: todayStr(), pools:{} };
+}
+function savePickState(s){ try{ localStorage.setItem(PICK_STATE_KEY, JSON.stringify(s)); }catch(e){} }
+
+function pickStudentNoRepeat(filter){
+  const pool = studentsForFilter(filter);
+  const state = loadPickState();
+  if(!state.pools[filter]) state.pools[filter] = [];
+  let used = state.pools[filter];
+  let remaining = pool.filter(s=>!used.includes(s.name));
+  if(!remaining.length){ used = []; remaining = pool; }
+
+  const chosen = pick(remaining);
+  used.push(chosen.name);
+  let justCompleted = false;
+  if(used.length>=pool.length){ justCompleted = true; used = []; }
+  state.pools[filter] = used;
+  savePickState(state);
+  return { student:chosen, justCompleted };
+}
+function birthdayPhrase(b){ return hanziNum(b.m)+"月"+hanziNum(b.d)+"日"; }
+
+let globalAudio = new Audio();
+
+async function speak(text){
+  if(muted || !text) return;
+  globalAudio.pause();
+  const sanityAudioUrl = sanityAudioMap[text];
+
+  if(sanityAudioUrl){
+    globalAudio.src = sanityAudioUrl;
+    await globalAudio.play().catch(e=>console.warn("Sanity音频播放失败", e));
+    return;
+  }
+
+  const localPath = `../audio/sight_words_phrases/${encodeURIComponent(text)}.mp3`;
+  const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+  try{
+    const localRes = await fetch(localPath, { method:"HEAD" }).catch(()=>null);
+    if(localRes && localRes.ok && localRes.headers.get("content-type") && localRes.headers.get("content-type").includes("audio")){
+      globalAudio.src = localPath; await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    const azureRes = await fetch(azureUrl).catch(()=>null);
+    if(azureRes && azureRes.ok && azureRes.headers.get("content-type") && azureRes.headers.get("content-type").includes("audio")){
+      const audioBlob = await azureRes.blob();
+      globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="zh-CN"; u.rate=.75;
+    const v=speechSynthesis.getVoices().find(v=>/zh|Chinese/i.test(v.lang+v.name));
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------------- 小工具 ---------------- */
+const el=(t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+const rnd=n=>Math.floor(Math.random()*n);
+const pick=a=>a[rnd(a.length)];
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function randomBirthday(){
+  const m=1+rnd(12);
+  const d=1+rnd(DAYS_IN_MONTH[m-1]);
+  return { m, d };
+}
+
+/* 王老师头像：问问题的那个人 */
+const TEACHER_AVATAR_SVG =
+  '<svg viewBox="0 0 64 64" width="100%" height="100%">'
+  + '<path d="M8 60 Q8 42 32 40 Q56 42 56 60 Z" fill="#BFD3B6" stroke="#2E2A28" stroke-width="2"/>'
+  + '<rect x="27" y="34" width="10" height="10" fill="#F0C8A0"/>'
+  + '<path d="M24 40 L32 48 L40 40" fill="none" stroke="#2E2A28" stroke-width="1.6"/>'
+  + '<circle cx="32" cy="26" r="16" fill="#F0C8A0" stroke="#2E2A28" stroke-width="2"/>'
+  + '<path d="M16 24 Q14 8 32 8 Q50 8 48 24 Q46 14 38 14 Q34 20 30 14 Q24 12 22 18 Q20 14 16 24Z" fill="#2E241C" stroke="#2E2A28" stroke-width="1.5"/>'
+  + '<rect x="19" y="24" width="11" height="8" rx="3" fill="none" stroke="#2E2A28" stroke-width="2"/>'
+  + '<rect x="34" y="24" width="11" height="8" rx="3" fill="none" stroke="#2E2A28" stroke-width="2"/>'
+  + '<line x1="30" y1="27" x2="34" y2="27" stroke="#2E2A28" stroke-width="2"/>'
+  + '<circle cx="24.5" cy="28" r="1.3" fill="#2E2A28"/><circle cx="39.5" cy="28" r="1.3" fill="#2E2A28"/>'
+  + '<path d="M27 35 Q32 39 37 35" fill="none" stroke="#2E2A28" stroke-width="1.6" stroke-linecap="round"/>'
+  + '<circle cx="22" cy="33" r="2.4" fill="#F4A9A0" opacity=".55"/><circle cx="42" cy="33" r="2.4" fill="#F4A9A0" opacity=".55"/>'
+  + '</svg>';
+function teacherAvatarNode(cls){
+  const d = el("div", cls || "who");
+  d.innerHTML = TEACHER_AVATAR_SVG;
+  return d;
+}
+
+/* 自绘生日蛋糕：蜡烛数量 = 年龄，唯一的蜡烛来源就是这些蜡烛本身 */
+function cakeSvg(age){
+  const startX=40, totalW=120;
+  const gap = age>1 ? totalW/(age-1) : 0;
+  let candles="";
+  for(let i=0;i<age;i++){
+    const cx = age===1 ? 100 : startX+gap*i;
+    candles += `<rect x="${cx-3}" y="34" width="6" height="18" rx="2" fill="#FFD54A" stroke="#2E2A28" stroke-width="2"/>`
+      + `<path d="M${cx} 24 Q${cx-5} 14 ${cx} 6 Q${cx+5} 14 ${cx} 24 Z" fill="#FF9F43" stroke="#B4562C" stroke-width="1.5"/>`;
+  }
+  return `<svg viewBox="0 0 200 140" width="180" height="126">
+    <ellipse cx="100" cy="128" rx="86" ry="10" fill="#F0663C22"/>
+    <rect x="30" y="70" width="140" height="46" rx="10" fill="#FDEBD8" stroke="#2E2A28" stroke-width="3"/>
+    <rect x="30" y="70" width="140" height="14" rx="7" fill="#FFFFFF" stroke="#2E2A28" stroke-width="3"/>
+    <rect x="45" y="52" width="110" height="30" rx="10" fill="#F7C6D9" stroke="#2E2A28" stroke-width="3"/>
+    <rect x="45" y="52" width="110" height="12" rx="6" fill="#FFFFFF" stroke="#2E2A28" stroke-width="3"/>
+    ${candles}
+  </svg>`;
+}
+
+/* ---------------- 顶栏 ---------------- */
+function renderTop(){
+  topbar.innerHTML="";
+  if(view.name==="home"){
+    const back=el("a","chip","← 教师工具台");
+    back.href="../teachers.html";
+    topbar.appendChild(back);
+  }else{
+    const back=el("button","chip","← 你几岁？");
+    back.onclick=()=>{ sfxTap(); go("home"); };
+    topbar.appendChild(back);
+  }
+  topbar.appendChild(el("div","spacer"));
+  if(view.name==="station"){
+    const again=el("button","chip tone","↻ 再来一个");
+    again.onclick=()=>{ sfxTap(); renderStage(); };
+    topbar.appendChild(again);
+  }
+  const m=el("button","chip", muted?"🔇 静音":"🔊 有声");
+  m.onclick=()=>{ muted=!muted; if(!muted) sfxTap(); renderTop(); };
+  topbar.appendChild(m);
+}
+
+function go(name,station){
+  view={name, station: station||null};
+  renderTop(); renderStage();
+  stage.scrollTop=0;
+}
+
+/* ============================================================
+   首页 = 活动菜单
+   ============================================================ */
+function renderHome(){
+  const head=el("div","home-head");
+  const titleRow=el("div","home-title-row");
+
+  const left=el("span","song-btn","🎵 你几岁儿歌");
+  left.style.opacity=".45"; left.style.cursor="default";
+  left.title="等老师提供这首儿歌的链接";
+  titleRow.appendChild(left);
+
+  titleRow.appendChild(el("h1",null,"你几岁？"));
+
+  const right=el("a","song-btn","🎵 祝你生日快乐");
+  right.href=BIRTHDAY_SONG_URL; right.target="_blank"; right.rel="noopener";
+  right.onclick=()=>sfxTap();
+  titleRow.appendChild(right);
+
+  head.appendChild(titleRow);
+  head.appendChild(el("p",null,"How Old Are You? · 点一个活动开始"));
+  stage.appendChild(head);
+
+  const grid=el("div","grid-stations");
+  STATIONS.forEach(s=>{
+    const b=el("button","station");
+    b.appendChild(el("div","ico",s.ico));
+    b.appendChild(el("b",null,s.zh));
+    b.appendChild(el("small",null,s.sub));
+    b.onclick=()=>{ sfxTap(); go("station",s.id); };
+    grid.appendChild(b);
+  });
+  stage.appendChild(grid);
+}
+
+/* ============================================================
+   活动 1 · 数字宝箱（1~10 翻牌）
+   ============================================================ */
+function actNumber(){
+  const q=el("div","act-q");
+  q.innerHTML='翻一翻，认一认<span class="sub">1 到 10，中文怎么说</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const grid=el("div","number-grid");
+  NUMBERS.forEach(n=>{
+    const c=el("button","flip");
+    c.innerHTML='<div class="qm">？</div>';
+    c.onclick=()=>{
+      if(c.classList.contains("open")){ speak(n.zh); return; }
+      sfxReveal(); c.classList.add("open","pop");
+      c.innerHTML="";
+      c.appendChild(el("div","emo",n.ar));
+      c.appendChild(el("span","zh",n.zh));
+      speak(n.zh);
+    };
+    grid.appendChild(c);
+  });
+  body.appendChild(grid);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 2 · 数字连线（连连看：阿拉伯数字 ↔ 中文数字）
+   ============================================================ */
+function actMatch(){
+  let level = 5;
+
+  const q=el("div","act-q");
+  q.innerHTML='数字连线<span class="sub">先选难度，再把配对的两个连起来</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+
+  const modeRow=el("div","class-filter");
+  const btn5=el("button","class-chip on","1-5");
+  const btn10=el("button","class-chip","1-10");
+  modeRow.appendChild(btn5); modeRow.appendChild(btn10);
+  body.appendChild(modeRow);
+
+  const board=el("div");
+  body.appendChild(board);
+  const verdict=el("div","verdict");
+  body.appendChild(verdict);
+
+  function build(){
+    board.innerHTML=""; verdict.textContent=""; verdict.className="verdict";
+    const nums = NUMBERS.slice(0,level);
+    const leftOrder = shuffle(nums);
+    const rightOrder = shuffle(nums);
+
+    const wrap=el("div","match-wrap");
+    const svgNS="http://www.w3.org/2000/svg";
+    const svg=document.createElementNS(svgNS,"svg");
+    svg.setAttribute("class","match-svg");
+    wrap.appendChild(svg);
+
+    const colL=el("div","match-col");
+    const colR=el("div","match-col");
+    let selL=null, selR=null, matched=0;
+
+    function sizeSvg(){
+      svg.setAttribute("width", wrap.clientWidth);
+      svg.setAttribute("height", wrap.clientHeight);
+    }
+
+    function tryMatch(){
+      if(!selL||!selR) return;
+      if(selL.dataset.n===selR.dataset.n){
+        sfxGood();
+        const wr=wrap.getBoundingClientRect(), a=selL.getBoundingClientRect(), b=selR.getBoundingClientRect();
+        const line=document.createElementNS(svgNS,"line");
+        line.setAttribute("x1", a.right-wr.left);
+        line.setAttribute("y1", a.top+a.height/2-wr.top);
+        line.setAttribute("x2", b.left-wr.left);
+        line.setAttribute("y2", b.top+b.height/2-wr.top);
+        line.setAttribute("stroke","#F0663C"); line.setAttribute("stroke-width","4"); line.setAttribute("stroke-linecap","round");
+        svg.appendChild(line);
+        speak(selL.dataset.zh);
+        selL.classList.add("done"); selR.classList.add("done");
+        selL.classList.remove("sel"); selR.classList.remove("sel");
+        selL=null; selR=null; matched++;
+        if(matched===level){
+          verdict.textContent="全部连对啦！"; verdict.className="verdict good pop";
+          setTimeout(renderStage,1700);
+        }
+      }else{
+        sfxRetry();
+        const badL=selL, badR=selR;
+        badL.classList.add("wrong"); badR.classList.add("wrong");
+        verdict.textContent="再想想"; verdict.className="verdict retry";
+        setTimeout(()=>{
+          badL.classList.remove("sel","wrong"); badR.classList.remove("sel","wrong");
+        },380);
+        selL=null; selR=null;
+      }
+    }
+
+    leftOrder.forEach(n=>{
+      const b=el("button","match-btn",n.ar);
+      b.dataset.n=n.ar; b.dataset.zh=n.zh;
+      b.onclick=()=>{
+        if(b.classList.contains("done")) return;
+        sfxTap();
+        if(selL) selL.classList.remove("sel");
+        selL=b; b.classList.add("sel");
+        tryMatch();
+      };
+      colL.appendChild(b);
+    });
+    rightOrder.forEach(n=>{
+      const b=el("button","match-btn",n.zh);
+      b.dataset.n=n.ar; b.dataset.zh=n.zh;
+      b.onclick=()=>{
+        if(b.classList.contains("done")) return;
+        sfxTap();
+        if(selR) selR.classList.remove("sel");
+        selR=b; b.classList.add("sel");
+        tryMatch();
+      };
+      colR.appendChild(b);
+    });
+
+    wrap.appendChild(colL); wrap.appendChild(colR);
+    board.appendChild(wrap);
+    sizeSvg();
+  }
+
+  btn5.onclick=()=>{ sfxTap(); level=5; btn5.classList.add("on"); btn10.classList.remove("on"); build(); };
+  btn10.onclick=()=>{ sfxTap(); level=10; btn10.classList.add("on"); btn5.classList.remove("on"); build(); };
+
+  build();
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 3 · 你几岁？（数蜡烛猜年龄）
+   ============================================================ */
+function actAge(){
+  const age = 1+rnd(8);
+  const pool=[]; for(let i=1;i<=8;i++) if(i!==age) pool.push(i);
+  const opts = shuffle([age, ...shuffle(pool).slice(0,3)]);
+
+  const q=el("div","act-q");
+  q.innerHTML='数一数，猜猜看<span class="sub">蜡烛有几根，就是几岁</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+  const row=el("div","cake-row");
+  const cakeWrap=el("div"); cakeWrap.innerHTML=cakeSvg(age);
+  row.appendChild(cakeWrap);
+  row.appendChild(el("div","cake-friend",pick(CAKE_FRIENDS)));
+  body.appendChild(row);
+
+  const choiceRow=el("div","choice-row");
+  const verdict=el("div","verdict");
+  opts.forEach(o=>{
+    const b=el("button","choice-btn",hanziNum(o));
+    b.onclick=()=>{
+      if(o===age){
+        sfxGood();
+        const phrase="我"+hanziNum(age)+"岁。";
+        verdict.textContent="对啦！"+phrase; verdict.className="verdict good pop";
+        speak(phrase);
+        choiceRow.querySelectorAll("button").forEach(x=>x.disabled=true);
+        setTimeout(renderStage,1800);
+      }else{
+        sfxRetry(); b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
+        verdict.textContent="再数一数"; verdict.className="verdict retry";
+      }
+    };
+    choiceRow.appendChild(b);
+  });
+
+  body.appendChild(choiceRow); body.appendChild(verdict);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 4 · 十二个月（认一认 + 猜猜藏起来的月份）
+   ============================================================ */
+function actMonths(){
+  const q=el("div","act-q");
+  q.innerHTML='十二个月<span class="sub">点一点认一认；橙色的格子，猜猜是几月</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body scroll");
+  const grid=el("div","month-grid");
+
+  function buildGrid(){
+    grid.innerHTML="";
+    let hiddenIdx = shuffle([...Array(12).keys()]).slice(0,3);
+    MONTHS.forEach((m,i)=>{
+      const cell=el("button","month-cell");
+      if(hiddenIdx.includes(i)){
+        cell.classList.add("quiz");
+        cell.innerHTML='<div class="emo">❓</div><b>几月？</b>';
+        cell.onclick=()=>{
+          sfxReveal(); cell.classList.add("open","pop");
+          cell.innerHTML='<div class="emo">'+m.icon+'</div><b>'+m.zh+'月</b>';
+          speak(m.zh+"月");
+          cell.onclick=()=>speak(m.zh+"月");
+        };
+      }else{
+        cell.innerHTML='<div class="emo">'+m.icon+'</div><b>'+m.zh+'月</b>';
+        cell.onclick=()=>{ sfxTap(); speak(m.zh+"月"); };
+      }
+      grid.appendChild(cell);
+    });
+  }
+  buildGrid();
+  body.appendChild(grid);
+
+  const again=el("button","chip tone","🔀 换一批藏起来的月份");
+  again.onclick=()=>{ sfxTap(); buildGrid(); };
+  body.appendChild(again);
+
+  const songRow=el("div","act-foot"); songRow.style.paddingBottom="0";
+  MONTH_SONGS.forEach((url,i)=>{
+    const a=el("a","chip","🎵 月份歌 "+(i+1));
+    a.href=url; a.target="_blank"; a.rel="noopener"; a.onclick=()=>sfxTap();
+    songRow.appendChild(a);
+  });
+  body.appendChild(songRow);
+
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 5 · 几月几日（英文日历拼中文句子）
+   ============================================================ */
+function actDate(){
+  const b = randomBirthday();
+  const tokens = [hanziNum(b.m),"月",hanziNum(b.d),"日"];
+  const shuffled = shuffle(tokens);
+
+  const q=el("div","act-q");
+  q.innerHTML='这是几月几日？<span class="sub">拼一拼，读出日期</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body");
+
+  const cal=el("div","cal-card");
+  cal.appendChild(el("div","cal-month",EN_MONTHS[b.m-1]));
+  cal.appendChild(el("div","cal-day",String(b.d)));
+  body.appendChild(cal);
+
+  const built=el("div","sentence-built");
+  const blanks = ()=> "".padStart(tokens.length,"▢");
+  built.innerHTML = '<span class="blank">'+blanks()+'</span>';
+
+  const row=el("div","tile-row");
+  const verdict=el("div","verdict");
+  let next=0, doneStr="";
+
+  shuffled.forEach(word=>{
+    const t=el("button","tile",word);
+    t.onclick=()=>{
+      if(word===tokens[next]){
+        sfxTap();
+        doneStr+=word; next++;
+        t.classList.add("used");
+        const remain = tokens.length-next;
+        built.innerHTML = doneStr + '<span class="blank">'+"".padStart(remain,"▢")+'</span>';
+        if(next===tokens.length){
+          sfxGood();
+          speak(doneStr);
+          verdict.textContent="对啦！"+doneStr;
+          verdict.className="verdict good pop";
+          row.querySelectorAll("button").forEach(x=>x.disabled=true);
+          setTimeout(renderStage,1900);
+        }
+      }else{
+        sfxRetry();
+        t.classList.remove("wrong"); void t.offsetWidth; t.classList.add("wrong");
+        verdict.textContent="再想想，下一个是什么"; verdict.className="verdict retry";
+      }
+    };
+    row.appendChild(t);
+  });
+
+  body.appendChild(built); body.appendChild(row); body.appendChild(verdict);
+  stage.appendChild(body);
+}
+
+/* ============================================================
+   活动 6 · 你的生日是几月几日？（问答对话，抽真实同学）
+   ============================================================ */
+const CLASS_OPTIONS = [
+  { id:"all",      label:"全部" },
+  { id:"elephant", label:"🐘 大象班" },
+  { id:"tiger",    label:"🐯 老虎班" }
+];
+
+function actAsk(){
+  const Q = "你的生日是几月几日？";
+  let current = pickStudentNoRepeat(classFilter);
+
+  const q=el("div","act-q");
+  q.innerHTML='问答对话<span class="sub">点一下气泡，听听怎么问、怎么答</span>';
+  stage.appendChild(q);
+
+  const body=el("div","act-body scroll");
+
+  const filterRow=el("div","class-filter");
+  const filterBtns={};
+  CLASS_OPTIONS.forEach(opt=>{
+    const b=el("button","class-chip"+(classFilter===opt.id?" on":""),opt.label);
+    b.onclick=()=>{
+      sfxTap();
+      setClassFilter(opt.id);
+      CLASS_OPTIONS.forEach(o=>filterBtns[o.id].classList.toggle("on", o.id===opt.id));
+      draw();
+    };
+    filterBtns[opt.id]=b;
+    filterRow.appendChild(b);
+  });
+  body.appendChild(filterRow);
+
+  const wrap=el("div","dialog-wrap");
+  const qLine=el("div","dialog-line q");
+  qLine.appendChild(teacherAvatarNode("who"));
+  qLine.appendChild(el("div","txt",Q));
+  qLine.onclick=()=>{ sfxTap(); speak(Q); };
+  wrap.appendChild(qLine);
+
+  const aLine=el("div","dialog-line a");
+  function renderA(){
+    aLine.innerHTML="";
+    aLine.appendChild(el("div","who","🧒"));
+    aLine.appendChild(el("div","txt","我的生日是"+birthdayPhrase(current.student)+"。"));
+  }
+  aLine.onclick=()=>{ sfxTap(); speak("我的生日是"+birthdayPhrase(current.student)); };
+  wrap.appendChild(aLine);
+  body.appendChild(wrap);
+
+  const studentCard=el("div","student-card");
+  function renderStudentCard(){
+    studentCard.innerHTML="";
+    if(current.student.img){
+      const img=document.createElement("img");
+      img.className="student-photo"; img.src=current.student.img; img.alt=current.student.name;
+      studentCard.appendChild(img);
+    }else{
+      studentCard.appendChild(el("div","student-photo placeholder","🧒"));
+    }
+    studentCard.appendChild(el("b",null,current.student.name));
+  }
+  body.appendChild(studentCard);
+
+  const banner=el("div","complete-banner","🎉 全班同学都抽过一遍啦！新的一轮开始～");
+  body.appendChild(banner);
+
+  const swap=el("button","chip","🔄 换一个同学再听听");
+  swap.onclick=()=>{ sfxTap(); draw(); };
+  body.appendChild(swap);
+
+  function draw(){
+    current = pickStudentNoRepeat(classFilter);
+    renderA(); renderStudentCard();
+    banner.classList.toggle("show", current.justCompleted);
+    if(current.justCompleted) banner.classList.add("pop");
+    speak("我的生日是"+birthdayPhrase(current.student));
+  }
+  renderA(); renderStudentCard();
+  banner.classList.toggle("show", current.justCompleted);
+
+  const turn=el("div","turn-card");
+  turn.appendChild(el("div","big","🎈"));
+  turn.appendChild(el("b",null,"该你啦！"));
+  turn.appendChild(el("small",null,"转身问问同桌：「你的生日是几月几日？」，再回答他/她。"));
+  body.appendChild(turn);
+
+  stage.appendChild(body);
+  speak(Q);
+}
+
+/* ============================================================
+   渲染分发
+   ============================================================ */
+const ACTS={ number:actNumber, match:actMatch, age:actAge, months:actMonths, date:actDate, ask:actAsk };
+
+function renderStage(){
+  stage.innerHTML="";
+  if(view.name==="home") return renderHome();
+  ACTS[view.station]();
+}
+
+/* 键盘：Esc / ← 返回，空格 换一个 */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"||e.key==="ArrowLeft"){
+    if(view.name==="station") go("home");
+  }
+  if(e.key===" "&&view.name==="station"){ e.preventDefault(); renderStage(); }
+});
+
+if(window.speechSynthesis) speechSynthesis.getVoices();
+go("home");
+</script>
+</body>
+</html>
