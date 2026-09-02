@@ -129,6 +129,23 @@ body{
 }
 .class-chip.on{background:var(--accent);color:#fff}
 
+.title-flank-row{display:flex;align-items:center;justify-content:center;gap:.9rem;flex-wrap:wrap}
+
+/* ---------- 视频弹窗（歌曲在本页内播放） ---------- */
+.video-modal{
+  position:fixed;inset:0;background:rgba(20,16,12,.82);z-index:50;
+  display:none;align-items:center;justify-content:center;padding:2rem;
+}
+.video-modal.open{display:flex}
+.video-modal-inner{position:relative;width:min(92vw,64rem)}
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:1rem;overflow:hidden;box-shadow:0 1rem 3rem rgba(0,0,0,.4)}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.video-close{
+  position:absolute;top:-2.6rem;right:0;border:none;cursor:pointer;
+  background:#fff;color:var(--ink);border-radius:999px;width:2.4rem;height:2.4rem;
+  font-size:1.1rem;box-shadow:var(--shadow);
+}
+
 /* ---------- 翻牌 ---------- */
 .card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;width:min(100%,32rem)}
 .number-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;width:min(100%,40rem)}
@@ -144,11 +161,11 @@ body{
 .flip .qm{opacity:.85}
 
 /* ---------- 数字连线 ---------- */
-.match-wrap{position:relative;display:flex;gap:2.8rem;justify-content:center;padding:.4rem 0 .2rem}
-.match-col{display:flex;flex-direction:column;gap:.55rem}
+.match-wrap{position:relative;display:flex;gap:5rem;justify-content:center;padding:.4rem 0 .2rem}
+.match-col{display:flex;flex-direction:column;gap:.8rem}
 .match-btn{
-  width:4.6rem;height:3.1rem;border:none;border-radius:.8rem;cursor:pointer;font-family:inherit;
-  font-weight:700;font-size:1.3rem;color:var(--ink);background:var(--card);box-shadow:var(--shadow);
+  width:6.4rem;height:4.2rem;border:none;border-radius:1rem;cursor:pointer;font-family:inherit;
+  font-weight:700;font-size:2rem;color:var(--ink);background:var(--card);box-shadow:var(--shadow);
   display:flex;align-items:center;justify-content:center;
 }
 .match-btn.sel{box-shadow:var(--shadow),inset 0 0 0 .16rem var(--accent);background:var(--accent-soft)}
@@ -157,15 +174,20 @@ body{
 .match-svg{position:absolute;inset:0;pointer-events:none}
 
 /* ---------- 十二个月 ---------- */
-.month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem;width:min(100%,36rem)}
+.month-grid{
+  flex:1 1 auto;min-height:0;display:grid;
+  grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);
+  gap:1rem;width:100%;
+}
 .month-cell{
   border:none;cursor:pointer;font-family:inherit;color:var(--ink);
-  background:var(--card);border-radius:.9rem;box-shadow:var(--shadow);
-  padding:.5rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;
+  background:var(--card);border-radius:1.2rem;box-shadow:var(--shadow);
+  padding:.5rem .3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;
 }
 .month-cell:active{transform:translateY(2px)}
-.month-cell .emo{line-height:1;display:flex;align-items:center;justify-content:center;height:1.7rem}
-.month-cell b{font-size:.78rem;font-weight:700}
+.month-cell .emo{line-height:1;display:flex;align-items:center;justify-content:center;width:3.6rem;height:3.6rem;font-size:2.4rem}
+.month-cell .emo svg{width:100%;height:100%;display:block}
+.month-cell b{font-size:1.5rem;font-weight:700}
 .month-cell.quiz{background:var(--accent);color:#fff}
 .month-cell.quiz b{color:#fff}
 .month-cell.quiz.open{background:var(--card);color:var(--ink)}
@@ -178,52 +200,41 @@ body{
 /* ---------- 日历卡 ---------- */
 .cal-card{
   background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:.9rem 1.5rem;text-align:center;display:inline-flex;flex-direction:column;align-items:center;gap:.25rem;
+  padding:1.4rem 2.4rem;text-align:center;display:inline-flex;flex-direction:column;align-items:center;gap:.5rem;
 }
 .cal-card .cal-month{
-  background:var(--accent);color:#fff;border-radius:.6rem;padding:.25rem 1rem;
-  font-size:.85rem;font-weight:700;white-space:nowrap;
+  background:var(--accent);color:#fff;border-radius:.7rem;padding:.4rem 1.4rem;
+  font-size:1.3rem;font-weight:700;white-space:nowrap;
 }
-.cal-card .cal-day{font-size:2.8rem;font-weight:700;line-height:1}
+.cal-card .cal-day{font-size:4.6rem;font-weight:700;line-height:1}
 
 /* ---------- 拼句子 ---------- */
-.sentence-built{font-size:1.9rem;font-weight:700;min-height:2.6rem;letter-spacing:.05em;text-align:center}
+.sentence-built{font-size:2.8rem;font-weight:700;min-height:3.6rem;letter-spacing:.05em;text-align:center}
 .sentence-built .blank{color:var(--ink-soft)}
-.tile-row{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:30rem}
+.tile-row{display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;max-width:40rem}
 .tile{
   border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
-  box-shadow:var(--shadow);border-radius:.8rem;padding:.6rem 1rem;font-size:1.3rem;font-weight:700;
+  box-shadow:var(--shadow);border-radius:1rem;padding:.9rem 1.5rem;font-size:2rem;font-weight:700;
 }
 .tile:active{transform:translateY(2px)}
 .tile.used{opacity:.25;pointer-events:none}
 .tile.wrong{animation:shake .4s}
 
 /* ---------- 问答对话 ---------- */
-.dialog-wrap{display:flex;flex-direction:column;gap:.9rem;width:min(100%,30rem)}
+.dialog-wrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:1.3rem;width:min(100%,42rem);justify-content:center}
 .dialog-line{
-  display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:.8rem 1rem;cursor:pointer;
+  display:flex;align-items:center;gap:1.1rem;background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:1.3rem 1.6rem;cursor:pointer;
 }
-.dialog-line .who{font-size:1.8rem;flex:0 0 auto}
-.dialog-line .who svg{width:1.8rem;height:1.8rem;display:block}
-.dialog-line .txt{font-size:1.1rem;font-weight:700;flex:1 1 auto}
-.dialog-line.q{border-left:.3rem solid var(--accent)}
-.dialog-line.a{border-left:.3rem solid #4FC3F7}
+.dialog-line .who{font-size:2.6rem;flex:0 0 auto}
+.dialog-line .who svg{width:2.6rem;height:2.6rem;display:block}
+.dialog-line .who-photo{width:4rem;height:4rem;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:0 0 0 2px #fff,inset 0 0 0 1px rgba(0,0,0,.08)}
+.dialog-line .who-photo.placeholder{display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:var(--paper)}
+.dialog-line .txt{font-size:1.7rem;font-weight:700;flex:1 1 auto;line-height:1.35}
+.dialog-line.q{border-left:.4rem solid var(--accent)}
+.dialog-line.a{border-left:.4rem solid #4FC3F7}
 
-.turn-card{
-  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:1rem 1.4rem;text-align:center;display:flex;flex-direction:column;gap:.3rem;align-items:center;max-width:26rem;
-}
-.turn-card .big{font-size:2.2rem}
-.turn-card b{font-size:1.05rem}
-.turn-card small{color:var(--ink-soft);font-size:.75rem;line-height:1.5}
-
-.student-card{display:flex;flex-direction:column;align-items:center;gap:.4rem}
-.student-photo{width:5.5rem;height:5.5rem;border-radius:50%;object-fit:cover;box-shadow:var(--shadow),inset 0 0 0 1px rgba(0,0,0,.08)}
-.student-photo.placeholder{display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:var(--card)}
-.student-card b{font-size:1.05rem}
-
-.complete-banner{display:none;background:#FFF6DA;color:#6A5A2E;border-radius:999px;padding:.4rem 1.1rem;font-size:.8rem;font-weight:700;text-align:center}
+.complete-banner{display:none;background:#FFF6DA;color:#6A5A2E;border-radius:999px;padding:.5rem 1.3rem;font-size:1rem;font-weight:700;text-align:center}
 .complete-banner.show{display:block}
 
 .hint{text-align:center;color:var(--ink-soft);font-size:.72rem;line-height:1.5;padding:0 1rem}
@@ -241,6 +252,13 @@ body{
 <div id="app">
   <div class="topbar" id="topbar"></div>
   <div class="stage" id="stage"></div>
+</div>
+
+<div id="videoModal" class="video-modal">
+  <div class="video-modal-inner">
+    <button class="video-close" id="videoCloseBtn">✕</button>
+    <div class="video-frame"><iframe id="videoFrame" src="" title="视频" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0"></iframe></div>
+  </div>
 </div>
 
 <script>
@@ -279,11 +297,9 @@ const MONTH_ICONS = [
   '<svg viewBox="0 0 64 64" width="28" height="28"><circle cx="32" cy="46" r="14" fill="#fff" stroke="#2E2A28" stroke-width="2.2"/><circle cx="32" cy="24" r="10" fill="#fff" stroke="#2E2A28" stroke-width="2.2"/><path d="M22 16 L42 16 L38 8 L26 8Z" fill="#2E2A28"/><circle cx="29" cy="22" r="1.4" fill="#2E2A28"/><circle cx="35" cy="22" r="1.4" fill="#2E2A28"/><path d="M32 25 L38 27 L32 29Z" fill="#E8843D"/><circle cx="32" cy="42" r="1.4" fill="#2E2A28"/><circle cx="32" cy="48" r="1.4" fill="#2E2A28"/></svg>'
 ];
 const MONTHS = Array.from({length:12},(_,i)=>({ n:i+1, zh:hanziNum(i+1), icon:MONTH_ICONS[i] }));
-const MONTH_SONGS = [
-  "https://youtu.be/d2gUFlwxUfI?si=VDIgBsFp-ePTBqT0",
-  "https://www.youtube.com/watch?v=RswZH92SKvM&list=RDRswZH92SKvM&start_radio=1"
-];
-const BIRTHDAY_SONG_URL = "https://www.youtube.com/watch?v=EMfithOo7EE&list=RDEMfithOo7EE&start_radio=1&t=7s";
+const AGE_SONG_ID = "ngOM7skqjjo";
+const BIRTHDAY_SONG_ID = "EMfithOo7EE";
+const MONTH_SONG_IDS = ["d2gUFlwxUfI", "RswZH92SKvM"];
 
 const CAKE_FRIENDS = ["🐰","🐶","🐱","🐼","🐨","🦊","🐻","🐯","🐸","🐵"];
 
@@ -319,6 +335,26 @@ const sfxTap     = ()=> tone(520,.07,"triangle",.11);
 const sfxGood    = ()=>{ tone(660,.14,"sine",.16,0); tone(880,.14,"sine",.16,.09); tone(1180,.24,"sine",.14,.18); };
 const sfxRetry   = ()=>{ tone(320,.16,"sine",.12,0); tone(250,.20,"sine",.10,.11); };
 const sfxReveal  = ()=>{ tone(740,.10,"triangle",.13,0); tone(990,.14,"triangle",.11,.07); };
+
+/* ---------------- 视频弹窗：歌曲直接在本页内播放 ---------------- */
+const videoModal = document.getElementById("videoModal");
+const videoFrame = document.getElementById("videoFrame");
+const videoCloseBtn = document.getElementById("videoCloseBtn");
+function openVideo(id, opts){
+  opts = opts || {};
+  let src = "https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0";
+  if(opts.start) src += "&start="+opts.start;
+  videoFrame.src = src;
+  videoModal.classList.add("open");
+}
+function closeVideo(){ videoModal.classList.remove("open"); videoFrame.src = ""; }
+videoCloseBtn.onclick = ()=>{ sfxTap(); closeVideo(); };
+videoModal.addEventListener("click", e=>{ if(e.target===videoModal) closeVideo(); });
+function songBtn(cls, label, id, opts){
+  const b = el("button", cls, "🎵 "+label);
+  b.onclick = ()=>{ sfxTap(); openVideo(id, opts); };
+  return b;
+}
 
 /* ---------------- 中文朗读（跟其它单元同一套发音引擎） ---------------- */
 const SANITY_PROJECT_ID = 'sow12t1i';
@@ -464,20 +500,24 @@ function randomBirthday(){
   return { m, d };
 }
 
-/* 王老师头像：问问题的那个人 */
+/* 王老师头像：问问题的那个人（根据老师照片手绘） */
 const TEACHER_AVATAR_SVG =
   '<svg viewBox="0 0 64 64" width="100%" height="100%">'
-  + '<path d="M8 60 Q8 42 32 40 Q56 42 56 60 Z" fill="#BFD3B6" stroke="#2E2A28" stroke-width="2"/>'
-  + '<rect x="27" y="34" width="10" height="10" fill="#F0C8A0"/>'
-  + '<path d="M24 40 L32 48 L40 40" fill="none" stroke="#2E2A28" stroke-width="1.6"/>'
-  + '<circle cx="32" cy="26" r="16" fill="#F0C8A0" stroke="#2E2A28" stroke-width="2"/>'
-  + '<path d="M16 24 Q14 8 32 8 Q50 8 48 24 Q46 14 38 14 Q34 20 30 14 Q24 12 22 18 Q20 14 16 24Z" fill="#2E241C" stroke="#2E2A28" stroke-width="1.5"/>'
-  + '<rect x="19" y="24" width="11" height="8" rx="3" fill="none" stroke="#2E2A28" stroke-width="2"/>'
-  + '<rect x="34" y="24" width="11" height="8" rx="3" fill="none" stroke="#2E2A28" stroke-width="2"/>'
-  + '<line x1="30" y1="27" x2="34" y2="27" stroke="#2E2A28" stroke-width="2"/>'
-  + '<circle cx="24.5" cy="28" r="1.3" fill="#2E2A28"/><circle cx="39.5" cy="28" r="1.3" fill="#2E2A28"/>'
-  + '<path d="M27 35 Q32 39 37 35" fill="none" stroke="#2E2A28" stroke-width="1.6" stroke-linecap="round"/>'
-  + '<circle cx="22" cy="33" r="2.4" fill="#F4A9A0" opacity=".55"/><circle cx="42" cy="33" r="2.4" fill="#F4A9A0" opacity=".55"/>'
+  + '<path d="M6 60 Q6 40 32 38 Q58 40 58 60 Z" fill="#C7D8BE" stroke="#2E2A28" stroke-width="2"/>'
+  + '<path d="M22 38 L32 34 L42 38 L38 44 Q32 47 26 44 Z" fill="#EFF5EA" stroke="#2E2A28" stroke-width="1.6"/>'
+  + '<rect x="26" y="32" width="12" height="10" fill="#EFC9A4"/>'
+  + '<circle cx="32" cy="25" r="17" fill="#F3CDA6" stroke="#2E2A28" stroke-width="2"/>'
+  + '<path d="M12 24 Q10 2 32 3 Q54 2 52 24 Q52 12 46 9 Q44 16 38 12 Q36 18 30 12 Q26 18 20 11 Q17 15 18 22 Q14 17 12 24Z" fill="#241B14" stroke="#2E2A28" stroke-width="1.4"/>'
+  + '<path d="M11 22 Q9 30 13 34" fill="none" stroke="#241B14" stroke-width="5" stroke-linecap="round"/>'
+  + '<path d="M53 22 Q55 30 51 34" fill="none" stroke="#241B14" stroke-width="5" stroke-linecap="round"/>'
+  + '<rect x="16" y="23" width="14" height="9" rx="3.5" fill="none" stroke="#2E2A28" stroke-width="2.2"/>'
+  + '<rect x="34" y="23" width="14" height="9" rx="3.5" fill="none" stroke="#2E2A28" stroke-width="2.2"/>'
+  + '<line x1="30" y1="27" x2="34" y2="27" stroke="#2E2A28" stroke-width="2.2"/>'
+  + '<line x1="16" y1="25" x2="10" y2="23" stroke="#2E2A28" stroke-width="2"/>'
+  + '<line x1="48" y1="25" x2="54" y2="23" stroke="#2E2A28" stroke-width="2"/>'
+  + '<circle cx="23" cy="28" r="1.5" fill="#2E2A28"/><circle cx="41" cy="28" r="1.5" fill="#2E2A28"/>'
+  + '<path d="M25 36 Q32 41 39 36" fill="none" stroke="#2E2A28" stroke-width="1.8" stroke-linecap="round"/>'
+  + '<circle cx="20" cy="32" r="2.6" fill="#F0A99C" opacity=".5"/><circle cx="44" cy="32" r="2.6" fill="#F0A99C" opacity=".5"/>'
   + '</svg>';
 function teacherAvatarNode(cls){
   const d = el("div", cls || "who");
@@ -541,17 +581,9 @@ function renderHome(){
   const head=el("div","home-head");
   const titleRow=el("div","home-title-row");
 
-  const left=el("span","song-btn","🎵 你几岁儿歌");
-  left.style.opacity=".45"; left.style.cursor="default";
-  left.title="等老师提供这首儿歌的链接";
-  titleRow.appendChild(left);
-
+  titleRow.appendChild(songBtn("song-btn", "你几岁儿歌", AGE_SONG_ID));
   titleRow.appendChild(el("h1",null,"你几岁？"));
-
-  const right=el("a","song-btn","🎵 祝你生日快乐");
-  right.href=BIRTHDAY_SONG_URL; right.target="_blank"; right.rel="noopener";
-  right.onclick=()=>sfxTap();
-  titleRow.appendChild(right);
+  titleRow.appendChild(songBtn("song-btn", "祝你生日快乐", BIRTHDAY_SONG_ID, {start:7}));
 
   head.appendChild(titleRow);
   head.appendChild(el("p",null,"How Old Are You? · 点一个活动开始"));
@@ -650,7 +682,7 @@ function actMatch(){
         line.setAttribute("y1", a.top+a.height/2-wr.top);
         line.setAttribute("x2", b.left-wr.left);
         line.setAttribute("y2", b.top+b.height/2-wr.top);
-        line.setAttribute("stroke","#F0663C"); line.setAttribute("stroke-width","4"); line.setAttribute("stroke-linecap","round");
+        line.setAttribute("stroke","#F0663C"); line.setAttribute("stroke-width","6"); line.setAttribute("stroke-linecap","round");
         svg.appendChild(line);
         speak(selL.dataset.zh);
         selL.classList.add("done"); selR.classList.add("done");
@@ -705,8 +737,8 @@ function actMatch(){
   btn5.onclick=()=>{ sfxTap(); level=5; btn5.classList.add("on"); btn10.classList.remove("on"); build(); };
   btn10.onclick=()=>{ sfxTap(); level=10; btn10.classList.add("on"); btn5.classList.remove("on"); build(); };
 
-  build();
   stage.appendChild(body);
+  build();
 }
 
 /* ============================================================
@@ -757,11 +789,17 @@ function actAge(){
    ============================================================ */
 function actMonths(){
   const q=el("div","act-q");
-  q.innerHTML='十二个月<span class="sub">点一点认一认；橙色的格子，猜猜是几月</span>';
+  const titleRow=el("div","title-flank-row");
+  titleRow.appendChild(songBtn("chip", "月份歌 1", MONTH_SONG_IDS[0]));
+  titleRow.appendChild(el("span",null,"十二个月"));
+  titleRow.appendChild(songBtn("chip", "月份歌 2", MONTH_SONG_IDS[1]));
+  q.appendChild(titleRow);
+  q.appendChild(el("span","sub","点一点认一认；橙色的格子，猜猜是几月"));
   stage.appendChild(q);
 
-  const body=el("div","act-body scroll");
+  const body=el("div","act-body");
   const grid=el("div","month-grid");
+  body.appendChild(grid);
 
   function buildGrid(){
     grid.innerHTML="";
@@ -784,22 +822,13 @@ function actMonths(){
       grid.appendChild(cell);
     });
   }
-  buildGrid();
-  body.appendChild(grid);
 
   const again=el("button","chip tone","🔀 换一批藏起来的月份");
   again.onclick=()=>{ sfxTap(); buildGrid(); };
   body.appendChild(again);
 
-  const songRow=el("div","act-foot"); songRow.style.paddingBottom="0";
-  MONTH_SONGS.forEach((url,i)=>{
-    const a=el("a","chip","🎵 月份歌 "+(i+1));
-    a.href=url; a.target="_blank"; a.rel="noopener"; a.onclick=()=>sfxTap();
-    songRow.appendChild(a);
-  });
-  body.appendChild(songRow);
-
   stage.appendChild(body);
+  buildGrid();
 }
 
 /* ============================================================
@@ -903,26 +932,18 @@ function actAsk(){
   const aLine=el("div","dialog-line a");
   function renderA(){
     aLine.innerHTML="";
-    aLine.appendChild(el("div","who","🧒"));
-    aLine.appendChild(el("div","txt","我的生日是"+birthdayPhrase(current.student)+"。"));
+    if(current.student.img){
+      const img=document.createElement("img");
+      img.className="who-photo"; img.src=current.student.img; img.alt=current.student.name;
+      aLine.appendChild(img);
+    }else{
+      aLine.appendChild(el("div","who-photo placeholder","🧒"));
+    }
+    aLine.appendChild(el("div","txt",current.student.name+"：我的生日是"+birthdayPhrase(current.student)+"。"));
   }
   aLine.onclick=()=>{ sfxTap(); speak("我的生日是"+birthdayPhrase(current.student)); };
   wrap.appendChild(aLine);
   body.appendChild(wrap);
-
-  const studentCard=el("div","student-card");
-  function renderStudentCard(){
-    studentCard.innerHTML="";
-    if(current.student.img){
-      const img=document.createElement("img");
-      img.className="student-photo"; img.src=current.student.img; img.alt=current.student.name;
-      studentCard.appendChild(img);
-    }else{
-      studentCard.appendChild(el("div","student-photo placeholder","🧒"));
-    }
-    studentCard.appendChild(el("b",null,current.student.name));
-  }
-  body.appendChild(studentCard);
 
   const banner=el("div","complete-banner","🎉 全班同学都抽过一遍啦！新的一轮开始～");
   body.appendChild(banner);
@@ -933,19 +954,13 @@ function actAsk(){
 
   function draw(){
     current = pickStudentNoRepeat(classFilter);
-    renderA(); renderStudentCard();
+    renderA();
     banner.classList.toggle("show", current.justCompleted);
     if(current.justCompleted) banner.classList.add("pop");
     speak("我的生日是"+birthdayPhrase(current.student));
   }
-  renderA(); renderStudentCard();
+  renderA();
   banner.classList.toggle("show", current.justCompleted);
-
-  const turn=el("div","turn-card");
-  turn.appendChild(el("div","big","🎈"));
-  turn.appendChild(el("b",null,"该你啦！"));
-  turn.appendChild(el("small",null,"转身问问同桌：「你的生日是几月几日？」，再回答他/她。"));
-  body.appendChild(turn);
 
   stage.appendChild(body);
   speak(Q);
@@ -964,7 +979,12 @@ function renderStage(){
 
 /* 键盘：Esc / ← 返回，空格 换一个 */
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"||e.key==="ArrowLeft"){
+  if(e.key==="Escape"){
+    if(videoModal.classList.contains("open")){ closeVideo(); return; }
+    if(view.name==="station") go("home");
+    return;
+  }
+  if(e.key==="ArrowLeft"){
     if(view.name==="station") go("home");
   }
   if(e.key===" "&&view.name==="station"){ e.preventDefault(); renderStage(); }
