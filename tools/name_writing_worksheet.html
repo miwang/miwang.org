@@ -9,9 +9,15 @@
 <link rel="stylesheet" href="../css/tools.css" />
 <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 <style>
-  /* 英文名标题用活泼一点的圆体，跟站内其它标题字体一致 */
-  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Baloo+2:wght@700;800&display=swap');
-  :root{ --disp:"Baloo 2","Fredoka","LXGW WenKai Lite",sans-serif; }
+  /* 英文名用 KG Miss Kindergarten——跟名牌生成（name_tags.html）同一个字体。这是个人授权
+     字体，不能当 webfont 打包分发，所以用 local() 调用老师自己电脑上装的那一份；
+     没装就退回站内标准的霞鹜文楷。 */
+  @font-face{
+    font-family:"WorksheetKG";
+    src:local("KG Miss Kindergarten"),local("KGMissKindergarten"),
+        local("ARCHRISTY"),local("ArChristy");
+  }
+  :root{ --disp:"WorksheetKG","LXGW WenKai Lite",sans-serif; }
 
   * { box-sizing: border-box; }
   body { margin: 0; background: #eceae5; font-family: var(--tool-font); color: #1a1a1a; }
@@ -108,9 +114,10 @@
 </div>
 
 <div class="note noprint">
-  每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字先给一遍带笔顺数字的示范，
-  再给几遍空心字描红，最后留两格让孩子自己写。笔画数据来自开源的 <code>hanzi-writer-data</code>，
-  取不到某个生僻字时会退化成普通空心字（没有笔顺数字）。打印时把缩放设为「100% / 实际大小」。
+  每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字先给一格带笔顺数字的示范，
+  再给几格空心字描红，最后留几格让孩子自己写；方格大小按整页自动铺满计算，行数会自动补到填满
+  这一页为止。笔画数据来自开源的 <code>hanzi-writer-data</code>，取不到某个生僻字时会退化成
+  普通空心字（没有笔顺数字）。打印时把缩放设为「100% / 实际大小」。
 </div>
 
 <div id="out"></div>
@@ -121,10 +128,10 @@ var SANITY_PROJECT = 'sow12t1i';
 var SANITY_DATASET = 'production';
 var CLASS_LABELS = { elephant: '🐘 大象班', tiger: '🐯 老虎班' };
 
-// 每个汉字给几格：1 格带笔顺数字的示范 + 3 格空心字描红 + 2 格空白自己写
-var PATTERN = ['model', 'trace', 'trace', 'trace', 'blank', 'blank'];
-// 名字只有一两个字时纸面会空很多，加一整行纯练习（笔顺示范格只需要出现一次）
-var REPEAT_PATTERN = ['trace', 'trace', 'trace', 'trace', 'blank', 'blank'];
+// 每行 4 格，格子越少格子越大、看得越清楚。第一行：1 格带笔顺数字的示范 + 2 格空心字
+// 描红 + 1 格空白；后面补的行不用再示范，2 格描红 + 2 格空白，逐步过渡到自己写。
+var PATTERN = ['model', 'trace', 'trace', 'blank'];
+var REPEAT_PATTERN = ['trace', 'trace', 'blank', 'blank'];
 
 var $ = function (id) { return document.getElementById(id); };
 var esc = function (v) {
@@ -252,20 +259,18 @@ function enFontSize(name) {
   return '0.3in';
 }
 
-function sheet(s, charData) {
+// 先只塞一行占位格子，等这一页真的插进文档、量出剩下的高度还能再放几行之后，
+// fillZhRows() 会把 zh-rows 的内容整个换成填满整页的版本。
+function buildSheetSkeleton(s, charData) {
   var d = document.createElement('div');
   d.className = 'sheet';
   var clsLabel = CLASS_LABELS[s.cls] || s.cls || '';
   var zhChars = (s.zh || '').trim() ? Array.from(s.zh.trim()).filter(isHanzi) : [];
+  d._zhChars = zhChars;
+  d._charData = charData;
 
-  // 一两个字的名字纸面空得多，多给一行练习；三四个字的名字一页就快排满了，只给一行。
-  var rowsPerChar = zhChars.length <= 2 ? 2 : 1;
-  var zhRowsHtml = zhChars.length
-    ? zhChars.map(function (ch) {
-        var rows = [charRowHtml(ch, charData[ch], PATTERN)];
-        for (var i = 1; i < rowsPerChar; i++) rows.push(charRowHtml(ch, charData[ch], REPEAT_PATTERN));
-        return rows.join('');
-      }).join('')
+  var placeholderHtml = zhChars.length
+    ? charRowHtml(zhChars[0], charData[zhChars[0]], PATTERN)
     : '<div class="zh-empty">（这位同学还没有录入中文名）</div>';
 
   d.innerHTML =
@@ -274,9 +279,36 @@ function sheet(s, charData) {
     '<div class="en-name" style="font-size:' + enFontSize(s.en) + '">' + esc(s.en || ' ') + '</div>' +
     '<div class="zh-section">' +
       '<div class="zh-caption">沿着<b>灰色笔画</b>描红，第一格的<b>蓝色数字</b>是笔顺，照着顺序写。</div>' +
-      '<div class="zh-rows">' + zhRowsHtml + '</div>' +
+      '<div class="zh-rows">' + placeholderHtml + '</div>' +
     '</div>';
   return d;
+}
+
+// 量出 zh-rows 实际可用的高度，算出能塞下几行方格，再把行数尽量平均分给每个字
+// （多出来的整行优先补给前面的字），让方格既够大又铺满整页，不留一截空白。
+function fillZhRows(sheetEl) {
+  var zhChars = sheetEl._zhChars, charData = sheetEl._charData;
+  if (!zhChars.length) return;
+
+  var zhRowsEl = sheetEl.querySelector('.zh-rows');
+  var box = zhRowsEl.querySelector('.char-box');
+  var boxH = box.getBoundingClientRect().height;
+  var availH = zhRowsEl.clientHeight;
+  var rowGap = parseFloat(getComputedStyle(zhRowsEl).rowGap) || 0;
+
+  var totalRows = zhChars.length;
+  if (boxH > 0) {
+    totalRows = Math.max(zhChars.length, Math.floor((availH + rowGap) / (boxH + rowGap)));
+  }
+
+  var base = Math.floor(totalRows / zhChars.length);
+  var extra = totalRows - base * zhChars.length;
+  zhRowsEl.innerHTML = zhChars.map(function (ch, idx) {
+    var rows = Math.max(1, base + (idx < extra ? 1 : 0));
+    var rowsHtml = [charRowHtml(ch, charData[ch], PATTERN)];
+    for (var i = 1; i < rows; i++) rowsHtml.push(charRowHtml(ch, charData[ch], REPEAT_PATTERN));
+    return rowsHtml.join('');
+  }).join('');
 }
 
 /* ================= 渲染 ================= */
@@ -298,7 +330,11 @@ function render() {
     return loadChar(ch).then(function (data) { charData[ch] = data; });
   })).then(function () {
     out.innerHTML = '';
-    people.forEach(function (s) { out.appendChild(sheet(s, charData)); });
+    people.forEach(function (s) {
+      var el = buildSheetSkeleton(s, charData);
+      out.appendChild(el); // 要先插进文档才量得出实际可用高度
+      fillZhRows(el);
+    });
     var missed = charList.filter(function (ch) { return !charData[ch]; });
     setStatus(people.length + ' 名学生，共 ' + people.length + ' 页。' +
       (missed.length ? ('有 ' + missed.length + ' 个字（' + missed.join('') + '）没查到笔画，已退化成普通空心字。') : ''));
