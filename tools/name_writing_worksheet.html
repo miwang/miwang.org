@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>姓名描红练习纸 · Name Writing Worksheet</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<link rel="stylesheet" href="../css/tools.css" />
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+<style>
+  /* 英文名标题用活泼一点的圆体，跟站内其它标题字体一致 */
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Baloo+2:wght@700;800&display=swap');
+  :root{ --disp:"Baloo 2","Fredoka","LXGW WenKai Lite",sans-serif; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eceae5; font-family: var(--tool-font); color: #1a1a1a; }
+
+  /* ---------- 控制面板（只在屏幕上显示） ---------- */
+  .panel {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff; border-bottom: 1px solid #d5d1c8;
+    padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end;
+  }
+  .panel h1 { font-size: 19px; margin: 0 12px 0 0; font-weight: 700; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field > span { font-size: 12px; color: #6b6459; }
+  select, button {
+    font-family: inherit; font-size: 14px; padding: 6px 10px;
+    border: 1px solid #c8c3b8; border-radius: 6px; background: #fff;
+  }
+  button { cursor: pointer; }
+  button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; padding: 7px 18px; }
+  .status { font-size: 13px; color: #6b6459; margin-left: auto; text-align: right; line-height: 1.5; max-width: 320px; }
+  .status.err { color: #a1301f; }
+  .note {
+    padding: 10px 20px; background: #fffaf2; border-bottom: 1px solid #e5d9c4;
+    font-size: 12.5px; color: #7a6b4a; line-height: 1.6;
+  }
+
+  /* ---------- 练习纸 ---------- */
+  #out { padding: 24px 0 60px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .sheet {
+    width: 8.5in; height: 11in; padding: 0.55in 0.6in; background: #fff;
+    display: flex; flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,.14);
+  }
+  .hdr {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12pt; color: #6b6459; border-bottom: 1.4pt solid #ddd;
+    padding-bottom: 8pt; margin-bottom: 16pt; flex: 0 0 auto;
+  }
+  .hdr .sub { font-size: 9pt; color: #a39a86; margin-left: 6pt; }
+
+  .en-name {
+    flex: 0 0 auto; text-align: center; font-family: var(--disp); font-weight: 700;
+    color: #1a1a1a; margin: 2pt 0 22pt; letter-spacing: .02em; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .zh-section { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .zh-caption { font-size: 11pt; color: #8a8072; margin: 0 0 12pt; }
+  .zh-caption b { color: #1a1a1a; }
+  .zh-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: flex-start; gap: 0.2in; }
+  .zh-row { display: flex; gap: 0.12in; }
+  .char-box { flex: 1 1 0; aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden; background: #fff; }
+  .char-box svg { width: 100%; height: 100%; display: block; }
+  .zh-empty { color: #a39a86; font-size: 13pt; text-align: center; margin-top: 0.6in; }
+
+  @page { size: letter portrait; margin: 0; }
+  @media print {
+    body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .panel, .note, .noprint { display: none !important; }
+    #out { padding: 0; gap: 0; }
+    .sheet { box-shadow: none; break-after: page; page-break-after: always; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tool-backbar noprint"><a class="tool-back" href="index.html"><i class="fas fa-arrow-left"></i> 返回教师工具</a></div>
+
+<div class="panel noprint">
+  <h1>姓名描红练习纸</h1>
+
+  <label class="field"><span>学年</span>
+    <select id="year">
+      <option value="24-25">2024-2025</option>
+      <option value="25-26" selected>2025-2026</option>
+      <option value="26-27">2026-2027</option>
+      <option value="27-28">2027-2028</option>
+    </select>
+  </label>
+
+  <label class="field"><span>班级</span>
+    <select id="cls"><option value="all">全部</option></select>
+  </label>
+
+  <div class="field"><span>&nbsp;</span>
+    <div style="display:flex;gap:8px">
+      <button id="reload">重新读名单</button>
+      <button class="primary" id="print">打印 / 存 PDF</button>
+    </div>
+  </div>
+
+  <div class="status" id="status">正在读名单…</div>
+</div>
+
+<div class="note noprint">
+  每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字先给一遍带笔顺数字的示范，
+  再给几遍空心字描红，最后留两格让孩子自己写。笔画数据来自开源的 <code>hanzi-writer-data</code>，
+  取不到某个生僻字时会退化成普通空心字（没有笔顺数字）。打印时把缩放设为「100% / 实际大小」。
+</div>
+
+<div id="out"></div>
+
+<script>
+/* ================= 配置 ================= */
+var SANITY_PROJECT = 'sow12t1i';
+var SANITY_DATASET = 'production';
+var CLASS_LABELS = { elephant: '🐘 大象班', tiger: '🐯 老虎班' };
+
+// 每个汉字给几格：1 格带笔顺数字的示范 + 3 格空心字描红 + 2 格空白自己写
+var PATTERN = ['model', 'trace', 'trace', 'trace', 'blank', 'blank'];
+// 名字只有一两个字时纸面会空很多，加一整行纯练习（笔顺示范格只需要出现一次）
+var REPEAT_PATTERN = ['trace', 'trace', 'trace', 'trace', 'blank', 'blank'];
+
+var $ = function (id) { return document.getElementById(id); };
+var esc = function (v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function (m) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+  });
+};
+
+/* ================= 笔画数据（按字缓存，同姓的孩子不用重复下载） ================= */
+var charCache = {};
+function loadChar(ch) {
+  if (!(ch in charCache)) {
+    charCache[ch] = HanziWriter.loadCharacterData(ch).catch(function () { return null; });
+  }
+  return charCache[ch];
+}
+function isHanzi(ch) { return /[㐀-鿿]/.test(ch); }
+
+/* ================= 名单 ================= */
+var roster = []; // [{cls, en, zh, no}]
+
+function groqUrl(year) {
+  var q = '*[_type=="student" && academicYear==$y && status=="active"]' +
+          '|order(className asc, studentNumber asc)' +
+          '{"cls":className,"en":nameEn,"zh":nameZh,"no":studentNumber}';
+  return 'https://' + SANITY_PROJECT + '.apicdn.sanity.io/v2023-05-03/data/query/' +
+         SANITY_DATASET + '?query=' + encodeURIComponent(q) +
+         '&$y=' + encodeURIComponent(JSON.stringify(year));
+}
+
+function setStatus(msg, bad) {
+  var el = $('status');
+  el.textContent = msg;
+  el.className = 'status' + (bad ? ' err' : '');
+}
+
+function loadRoster() {
+  var year = $('year').value.trim();
+  setStatus('正在读 ' + year + ' 名单…');
+  fetch(groqUrl(year))
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (d) {
+      var rows = (d.result || []).filter(function (s) { return s.en || s.zh; });
+      if (!rows.length) throw new Error('这个学年没有查到学生');
+      roster = rows;
+      afterRoster();
+    })
+    .catch(function (e) { setStatus('读名单失败（' + e.message + '）。', true); });
+}
+
+function afterRoster() {
+  var sel = $('cls');
+  var seen = [];
+  roster.forEach(function (s) { if (seen.indexOf(s.cls) < 0) seen.push(s.cls); });
+  sel.innerHTML = '<option value="all">全部（' + seen.length + ' 个班）</option>' +
+    seen.map(function (c) {
+      var n = roster.filter(function (s) { return s.cls === c; }).length;
+      return '<option value="' + esc(c) + '">' + esc(CLASS_LABELS[c] || c) + '（' + n + ' 人）</option>';
+    }).join('');
+  render();
+}
+
+function selectedStudents() {
+  var cls = $('cls').value;
+  return roster.filter(function (s) { return cls === 'all' || s.cls === cls; });
+}
+
+/* ================= 空心字 + 笔顺 SVG ================= */
+// 字库坐标系是 1024×1024，笔画数据的 y 轴朝上，翻到 SVG 里要用
+// scale(1,-1) translate(0,-900) —— 900 是 hanzi-writer 内部约定的基线偏移。
+function gridSvg() {
+  return '<rect x="4" y="4" width="1016" height="1016" fill="none" stroke="#333" stroke-width="14"/>' +
+    '<line x1="512" y1="4" x2="512" y2="1020" stroke="#f0a8b4" stroke-width="6" stroke-dasharray="18 14"/>' +
+    '<line x1="4" y1="512" x2="1020" y2="512" stroke="#f0a8b4" stroke-width="6" stroke-dasharray="18 14"/>' +
+    '<line x1="4" y1="4" x2="1020" y2="1020" stroke="#f0a8b4" stroke-width="6" stroke-dasharray="18 14"/>' +
+    '<line x1="1020" y1="4" x2="4" y2="1020" stroke="#f0a8b4" stroke-width="6" stroke-dasharray="18 14"/>';
+}
+
+function strokesSvg(data, numbered) {
+  if (!data || !data.strokes) return '';
+  // 每一笔本身就是一个完整的笔画轮廓（不是一条线），白色填充 + 灰色描边才会显出
+  // "空心"的笔画形状；如果只描边不填色，相邻笔画的轮廓会连成一团看不出笔画。
+  var paths = data.strokes.map(function (d) {
+    return '<path d="' + d + '" fill="#fff" stroke="#9aa1ac" stroke-width="6" stroke-linejoin="round"/>';
+  }).join('');
+  var html = '<g transform="scale(1,-1) translate(0,-900)">' + paths + '</g>';
+  if (numbered && data.medians) {
+    html += data.medians.map(function (median, i) {
+      var pt = median[0], sx = pt[0], sy = 900 - pt[1];
+      return '<circle cx="' + sx + '" cy="' + sy + '" r="34" fill="#4f7fd6"/>' +
+        '<text x="' + sx + '" y="' + (sy + 13) + '" font-size="44" text-anchor="middle" ' +
+        'fill="#fff" font-family="Arial,sans-serif" font-weight="700">' + (i + 1) + '</text>';
+    }).join('');
+  }
+  return html;
+}
+
+function charBoxHtml(kind, data, fallbackChar) {
+  var inner = gridSvg();
+  if (kind !== 'blank') {
+    if (data) {
+      inner += strokesSvg(data, kind === 'model');
+    } else {
+      // 没抓到这个字的笔画数据（生僻字或网络问题）：用镂空文字退化，至少还是空心字，能描红
+      inner += '<text x="512" y="660" font-size="620" text-anchor="middle" fill="none" ' +
+        'stroke="#9aa1ac" stroke-width="4" ' +
+        'font-family="&quot;KaiTi-CJK&quot;,&quot;LXGW WenKai Lite&quot;,serif">' + esc(fallbackChar) + '</text>';
+    }
+  }
+  return '<div class="char-box"><svg viewBox="0 0 1024 1024">' + inner + '</svg></div>';
+}
+
+function charRowHtml(ch, data, pattern) {
+  return '<div class="zh-row">' +
+    pattern.map(function (kind) { return charBoxHtml(kind, data, ch); }).join('') +
+    '</div>';
+}
+
+/* ================= 每个学生一页 ================= */
+function enFontSize(name) {
+  var len = (name || '').length;
+  if (len <= 6) return '0.6in';
+  if (len <= 10) return '0.48in';
+  if (len <= 16) return '0.38in';
+  return '0.3in';
+}
+
+function sheet(s, charData) {
+  var d = document.createElement('div');
+  d.className = 'sheet';
+  var clsLabel = CLASS_LABELS[s.cls] || s.cls || '';
+  var zhChars = (s.zh || '').trim() ? Array.from(s.zh.trim()).filter(isHanzi) : [];
+
+  // 一两个字的名字纸面空得多，多给一行练习；三四个字的名字一页就快排满了，只给一行。
+  var rowsPerChar = zhChars.length <= 2 ? 2 : 1;
+  var zhRowsHtml = zhChars.length
+    ? zhChars.map(function (ch) {
+        var rows = [charRowHtml(ch, charData[ch], PATTERN)];
+        for (var i = 1; i < rowsPerChar; i++) rows.push(charRowHtml(ch, charData[ch], REPEAT_PATTERN));
+        return rows.join('');
+      }).join('')
+    : '<div class="zh-empty">（这位同学还没有录入中文名）</div>';
+
+  d.innerHTML =
+    '<div class="hdr"><span>姓名描红练习<span class="sub">Name Tracing Practice</span></span>' +
+    '<span>' + esc(clsLabel) + '</span></div>' +
+    '<div class="en-name" style="font-size:' + enFontSize(s.en) + '">' + esc(s.en || ' ') + '</div>' +
+    '<div class="zh-section">' +
+      '<div class="zh-caption">沿着<b>灰色笔画</b>描红，第一格的<b>蓝色数字</b>是笔顺，照着顺序写。</div>' +
+      '<div class="zh-rows">' + zhRowsHtml + '</div>' +
+    '</div>';
+  return d;
+}
+
+/* ================= 渲染 ================= */
+function render() {
+  var people = selectedStudents();
+  var out = $('out');
+  if (!people.length) { out.innerHTML = ''; setStatus('没有符合条件的学生。', true); return; }
+
+  setStatus('正在加载笔画数据…');
+  var chars = {};
+  people.forEach(function (s) {
+    if (!s.zh) return;
+    Array.from(s.zh).forEach(function (ch) { if (isHanzi(ch)) chars[ch] = true; });
+  });
+  var charList = Object.keys(chars);
+  var charData = {};
+
+  Promise.all(charList.map(function (ch) {
+    return loadChar(ch).then(function (data) { charData[ch] = data; });
+  })).then(function () {
+    out.innerHTML = '';
+    people.forEach(function (s) { out.appendChild(sheet(s, charData)); });
+    var missed = charList.filter(function (ch) { return !charData[ch]; });
+    setStatus(people.length + ' 名学生，共 ' + people.length + ' 页。' +
+      (missed.length ? ('有 ' + missed.length + ' 个字（' + missed.join('') + '）没查到笔画，已退化成普通空心字。') : ''));
+  });
+}
+
+/* ================= 启动 ================= */
+(function init() {
+  $('year').addEventListener('change', loadRoster);
+  $('cls').addEventListener('change', render);
+  $('reload').onclick = loadRoster;
+  $('print').onclick = function () { window.print(); };
+
+  loadRoster();
+})();
+</script>
+</body>
+</html>
