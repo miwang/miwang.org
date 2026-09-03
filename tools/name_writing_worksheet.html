@@ -94,12 +94,7 @@
   <h1>姓名描红练习纸</h1>
 
   <label class="field"><span>学年</span>
-    <select id="year">
-      <option value="24-25">2024-2025</option>
-      <option value="25-26" selected>2025-2026</option>
-      <option value="26-27">2026-2027</option>
-      <option value="27-28">2027-2028</option>
-    </select>
+    <select id="year"></select>
   </label>
 
   <label class="field"><span>班级</span>
@@ -151,6 +146,26 @@ function loadChar(ch) {
   return charCache[ch];
 }
 function isHanzi(ch) { return /[㐀-鿿]/.test(ch); }
+
+/* ================= 学年下拉框（默认选中当前学年，跟 name_tags.html 算法一致） ================= */
+// 8 月起算新学年：9 月（月份下标 8）在读的就是「今年-明年」这一届。
+function currentAcademicYear() {
+  var now = new Date();
+  var endYear = (now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1) + 1;
+  return String(endYear - 1).slice(-2) + '-' + String(endYear).slice(-2);
+}
+
+function buildYearOptions() {
+  var cur = currentAcademicYear();
+  var curEndYear = 2000 + parseInt(cur.split('-')[1], 10);
+  var html = '';
+  for (var endYear = curEndYear + 1; endYear >= curEndYear - 5; endYear--) {
+    var val = String(endYear - 1).slice(-2) + '-' + String(endYear).slice(-2);
+    var label = (endYear - 1) + '-' + endYear;
+    html += '<option value="' + val + '"' + (val === cur ? ' selected' : '') + '>' + label + '</option>';
+  }
+  $('year').innerHTML = html;
+}
 
 /* ================= 名单 ================= */
 var roster = []; // [{cls, en, zh, no}]
@@ -333,6 +348,8 @@ function render() {
 
 /* ================= 启动 ================= */
 (function init() {
+  buildYearOptions(); // 默认选中当前学年，不用每次手动切换
+
   $('year').addEventListener('change', loadRoster);
   $('cls').addEventListener('change', render);
   $('reload').onclick = loadRoster;
