@@ -67,9 +67,12 @@
   .zh-section { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
   .zh-caption { font-size: 11pt; color: #8a8072; margin: 0 0 12pt; }
   .zh-caption b { color: #1a1a1a; }
-  .zh-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: flex-start; gap: 0.2in; }
-  .zh-row { display: flex; gap: 0.12in; }
-  .char-box { flex: 1 1 0; aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden; background: #fff; }
+  .zh-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; gap: 0.2in; }
+  .zh-row { display: flex; justify-content: center; gap: 0.16in; width: 100%; }
+  .char-box { flex: 1 1 0; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; background: #fff; max-width: 100%; }
+  /* fitZhRows() 量出实际能放多大之后，用这个类切到固定边长，方格才能同时顶到页面的
+     宽和高（三格一行的宽度上限、几行摞起来的高度上限，取较小的那个）。 */
+  .zh-rows.sized .char-box { flex: 0 0 auto; width: var(--box-side); height: var(--box-side); aspect-ratio: auto; }
   .char-box svg { width: 100%; height: 100%; display: block; }
   .zh-empty { color: #a39a86; font-size: 13pt; text-align: center; margin-top: 0.6in; }
 
@@ -114,9 +117,9 @@
 </div>
 
 <div class="note noprint">
-  每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字先给一格带笔顺数字的示范，
-  再给几格空心字描红，最后留几格让孩子自己写；方格大小按整页自动铺满计算，行数会自动补到填满
-  这一页为止。笔画数据来自开源的 <code>hanzi-writer-data</code>，取不到某个生僻字时会退化成
+  每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字固定练 3 遍（带笔顺数字的示范、
+  空心字描红、自己写），不会因为是姓氏就多练几遍。方格边长按这一页实际剩下的宽高自动放到最大，
+  尽量铺满整页。笔画数据来自开源的 <code>hanzi-writer-data</code>，取不到某个生僻字时会退化成
   普通空心字（没有笔顺数字）。打印时把缩放设为「100% / 实际大小」。
 </div>
 
@@ -128,10 +131,9 @@ var SANITY_PROJECT = 'sow12t1i';
 var SANITY_DATASET = 'production';
 var CLASS_LABELS = { elephant: '🐘 大象班', tiger: '🐯 老虎班' };
 
-// 每行 4 格，格子越少格子越大、看得越清楚。第一行：1 格带笔顺数字的示范 + 2 格空心字
-// 描红 + 1 格空白；后面补的行不用再示范，2 格描红 + 2 格空白，逐步过渡到自己写。
-var PATTERN = ['model', 'trace', 'trace', 'blank'];
-var REPEAT_PATTERN = ['trace', 'trace', 'blank', 'blank'];
+// 每个字固定练 3 遍，不管名字几个字都一样多：带笔顺数字的示范一遍、空心字描红一遍、
+// 空格自己写一遍。每个字一行，方格大小再按这一页实际剩下的宽高自动放到最大。
+var PATTERN = ['model', 'trace', 'blank'];
 
 var $ = function (id) { return document.getElementById(id); };
 var esc = function (v) {
@@ -259,56 +261,44 @@ function enFontSize(name) {
   return '0.3in';
 }
 
-// 先只塞一行占位格子，等这一页真的插进文档、量出剩下的高度还能再放几行之后，
-// fillZhRows() 会把 zh-rows 的内容整个换成填满整页的版本。
+// 每个字固定一行、固定 3 格，内容跟名字长短无关，先按现有 CSS（宽度撑满）建好。
 function buildSheetSkeleton(s, charData) {
   var d = document.createElement('div');
   d.className = 'sheet';
   var clsLabel = CLASS_LABELS[s.cls] || s.cls || '';
   var zhChars = (s.zh || '').trim() ? Array.from(s.zh.trim()).filter(isHanzi) : [];
-  d._zhChars = zhChars;
-  d._charData = charData;
 
-  var placeholderHtml = zhChars.length
-    ? charRowHtml(zhChars[0], charData[zhChars[0]], PATTERN)
+  var zhRowsHtml = zhChars.length
+    ? zhChars.map(function (ch) { return charRowHtml(ch, charData[ch], PATTERN); }).join('')
     : '<div class="zh-empty">（这位同学还没有录入中文名）</div>';
 
   d.innerHTML =
     '<div class="hdr"><span>姓名描红练习<span class="sub">Name Tracing Practice</span></span>' +
     '<span>' + esc(clsLabel) + '</span></div>' +
-    '<div class="en-name" style="font-size:' + enFontSize(s.en) + '">' + esc(s.en || ' ') + '</div>' +
+    '<div class="en-name" style="font-size:' + enFontSize(s.en) + '">' + esc(s.en || ' ') + '</div>' +
     '<div class="zh-section">' +
       '<div class="zh-caption">沿着<b>灰色笔画</b>描红，第一格的<b>蓝色数字</b>是笔顺，照着顺序写。</div>' +
-      '<div class="zh-rows">' + placeholderHtml + '</div>' +
+      '<div class="zh-rows">' + zhRowsHtml + '</div>' +
     '</div>';
   return d;
 }
 
-// 量出 zh-rows 实际可用的高度，算出能塞下几行方格，再把行数尽量平均分给每个字
-// （多出来的整行优先补给前面的字），让方格既够大又铺满整页，不留一截空白。
-function fillZhRows(sheetEl) {
-  var zhChars = sheetEl._zhChars, charData = sheetEl._charData;
-  if (!zhChars.length) return;
-
+// 行数固定死了（一个字一行），所以要填满整页只能靠放大方格本身：分别按「这一页横向
+// 还能放多宽」和「纵向还能放多高／有几行」算出两个边长上限，取较小的那个铺满剩下的空间。
+function fitZhRows(sheetEl) {
   var zhRowsEl = sheetEl.querySelector('.zh-rows');
+  var rows = zhRowsEl.querySelectorAll('.zh-row');
   var box = zhRowsEl.querySelector('.char-box');
-  var boxH = box.getBoundingClientRect().height;
-  var availH = zhRowsEl.clientHeight;
+  if (!rows.length || !box) return;
+
+  var widthSide = box.getBoundingClientRect().width; // 目前按 flex 宽度自动撑开的边长
   var rowGap = parseFloat(getComputedStyle(zhRowsEl).rowGap) || 0;
+  var availH = zhRowsEl.clientHeight;
+  var heightSide = (availH - (rows.length - 1) * rowGap) / rows.length;
 
-  var totalRows = zhChars.length;
-  if (boxH > 0) {
-    totalRows = Math.max(zhChars.length, Math.floor((availH + rowGap) / (boxH + rowGap)));
-  }
-
-  var base = Math.floor(totalRows / zhChars.length);
-  var extra = totalRows - base * zhChars.length;
-  zhRowsEl.innerHTML = zhChars.map(function (ch, idx) {
-    var rows = Math.max(1, base + (idx < extra ? 1 : 0));
-    var rowsHtml = [charRowHtml(ch, charData[ch], PATTERN)];
-    for (var i = 1; i < rows; i++) rowsHtml.push(charRowHtml(ch, charData[ch], REPEAT_PATTERN));
-    return rowsHtml.join('');
-  }).join('');
+  var side = Math.max(24, Math.min(widthSide, heightSide));
+  zhRowsEl.style.setProperty('--box-side', side + 'px');
+  zhRowsEl.classList.add('sized');
 }
 
 /* ================= 渲染 ================= */
@@ -332,8 +322,8 @@ function render() {
     out.innerHTML = '';
     people.forEach(function (s) {
       var el = buildSheetSkeleton(s, charData);
-      out.appendChild(el); // 要先插进文档才量得出实际可用高度
-      fillZhRows(el);
+      out.appendChild(el); // 要先插进文档才量得出实际可用宽高
+      fitZhRows(el);
     });
     var missed = charList.filter(function (ch) { return !charData[ch]; });
     setStatus(people.length + ' 名学生，共 ' + people.length + ' 页。' +
