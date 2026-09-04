@@ -543,7 +543,83 @@ const GIVEN = {
   "杰":"Outstanding and heroic.",
   "俊":"Handsome and talented.",
   "豪":"Heroic, bold, and generous.",
-  "雄":"Grand and heroic."
+  "雄":"Grand and heroic.",
+  "昊":"The vast sky — grand and expansive.",
+  "锋":"The cutting edge of a blade — sharp and outstanding.",
+  "磊":"Piled-up stones — an open, upright character.",
+  "涛":"Great waves — bold and dynamic.",
+  "澜":"Big rolling waves — dynamic and grand.",
+  "沛":"Abundant and vigorous, like a rushing river.",
+  "妤":"A beautiful, refined character often used in girls' names.",
+  "姗":"To walk gracefully and unhurried.",
+  "菁":"The finest, most essential part of something — brilliance.",
+  "萌":"A budding sprout — cute and full of potential.",
+  "歆":"To be delighted by, as by a pleasant fragrance — warmly welcomed.",
+  "冉":"Soft and gradual — a gentle, unfolding quality.",
+  "芊":"Lush and green, like thriving young plants.",
+  "沐":"To bathe or be immersed in sunlight — fresh and renewed.",
+  "淼":"A vast expanse of water — grand and flowing.",
+  "彦":"An accomplished, virtuous scholar.",
+  "彬":"Refined, cultured, and elegant in manner.",
+  "韬":"Strategy and wisdom, as in military strategy (韬略).",
+  "弈":"The game of chess/Go — wisdom and strategic thinking.",
+  "历":"To experience and grow through life's journey.",
+  "山":"Mountain — strength and steadiness.",
+  "古":"Ancient — a link to tradition and history.",
+  "达":"To reach or arrive at — achieving one's goals.",
+  "泽":"A marsh or pond; also “kindness, grace” in classical usage.",
+  "肯":"Willing and agreeable.",
+  "凡":"Down-to-earth; ordinary in the best sense.",
+  "格":"Character and standards, as in “personality.”",
+  "茜":"A vivid red dye plant (madder) — a popular, pretty girls'-name character.",
+  "昂":"Held high — spirited and confident.",
+  "琼":"Fine jade — beautiful and precious.",
+  "翰":"A writing brush — scholarly and cultured.",
+  "维":"To hold together and support — steady and reliable.",
+  "治":"To govern well, or to heal — bringing order and care.",
+  "约":"A promise kept — trustworthy.",
+  "恩":"Grace and kindness.",
+  "爱":"Love — a warm, affectionate character.",
+  "诺":"A promise — someone who keeps their word.",
+  "纳":"To accept and take in graciously.",
+  "亨":"Smooth-going and prosperous.",
+  "米":"Rice — nourishment and sustenance.",
+  "芙":"A lotus-flower character, used for its beauty in names.",
+  "洛":"Named for the Luo River — a classical, elegant place name.",
+  "蒙":"To receive guidance and teaching.",
+  "乔":"Tall and lofty, like a great tree.",
+  "戴":"To carry with honor.",
+  "贝":"A shell — precious in ancient times, at the root of many characters about treasure.",
+  "伊":"A gentle, graceful pronoun in classical Chinese.",
+  "可":"Approved and agreeable.",
+  "汉":"The Han people and culture — a proud cultural heritage.",
+  "薇":"A small, delicate flower (vetch) — gentle beauty.",
+  "菲":"Fragrant plants — a graceful, sweet-smelling character.",
+  "黛":"A dark eyebrow pigment prized in classical poetry — refined elegance.",
+  "艾":"Mugwort, a fragrant healing herb used in traditional medicine.",
+  "妮":"A soft, affectionate character often ending girls' names.",
+  "史":"Historian or scribe — a keeper of stories and memory.",
+  "布":"Cloth — simple, honest, and down-to-earth.",
+  "登":"To climb and ascend — rising step by step.",
+  "顿":"Steady and settled.",
+  "尼":"A gentle, soft-sounding character.",
+  "勒":"A steady, grounded character.",
+  "柯":"An axe handle in classical texts — sturdy and dependable.",
+  "索":"A rope or cord — connection and strength.",
+  "奥":"Profound and mysterious — deep wisdom.",
+  "哈":"The joyful sound of laughter.",
+  "珀":"Amber — warm, glowing, and precious.",
+  "比":"To compare or stand alongside — companionship.",
+  "盖":"To cover and shelter, providing protection.",
+  "埃":"Used mostly for its gentle sound in names.",
+  "卡":"Used mostly for its crisp, bright sound in names.",
+  "芭":"Banana leaf / plantain — lush and vivid.",
+  "逊":"Modest and humble.",
+  "莫":"Firm and resolute (“let nothing stop you”).",
+  "弗":"A soft, understated character used mainly for its sound.",
+  "詹":"An old, dignified character used mainly for its sound.",
+  "考":"To examine closely — thoughtful and studious.",
+  "莱":"A type of grain in classical texts — nourishing and wholesome."
 };
 
 function pinyinFor(char){
@@ -706,8 +782,13 @@ function meaningCard(ch, isSurname){
   const py = pinyinFor(ch);
   body.appendChild(el("div","py-line", ch + (py?"  ·  "+py:"")));
 
-  const dict = isSurname ? SURNAMES : GIVEN;
-  const meaning = dict[ch] || (isSurname ? SURNAMES[ch] : GIVEN[ch]);
+  // A character's "main" dictionary depends on whether it's sitting in the
+  // surname or given-name slot, but a lot of characters are common in both
+  // roles (e.g. 林/白/雷 are frequent surnames AND given-name characters), so
+  // always fall back to the other dictionary before giving up.
+  const primary = isSurname ? SURNAMES : GIVEN;
+  const secondary = isSurname ? GIVEN : SURNAMES;
+  const meaning = primary[ch] || secondary[ch];
   body.appendChild(el("div","en", meaning || "This character's story hasn't been added yet — ask your teacher what it means!"));
 
   const btns = el("div","row-btns");
