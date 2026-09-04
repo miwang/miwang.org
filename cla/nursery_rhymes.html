@@ -129,7 +129,7 @@
     <div id="gallery-view"></div>
 
     <div id="play-view">
-        <div class="mecc-global-nav"><a href="#" class="mecc-nav-back" onclick="closePlay();return false;">← <span>返回</span></a><h1 class="mecc-nav-title" id="song-title-nav"></h1></div>
+        <div class="mecc-global-nav"><a href="#" class="mecc-nav-back" onclick="closePlay();return false;">← <span id="play-nav-back-label">返回</span></a><h1 class="mecc-nav-title" id="song-title-nav"></h1></div>
         <div class="play-header" style="display:none;">
             <div class="play-back-btn font-zh" id="btn-close-play" onclick="closePlay()">⬅️ 返回列表</div>
             <h1 id="song-title" style="color:white; font-size: clamp(1rem, 3.5vh, 2.2rem); margin:0; text-align:center; flex:1;"></h1>
@@ -143,8 +143,8 @@
     <script>
         const LANG = MECC_CONFIG.getLang();
         const t = {
-            zh: { title: "🎶 儿歌乐园", backList: "⬅️ 返回列表" },
-            en: { title: "🎶 Nursery Rhymes", backList: "⬅️ Back to List" }
+            zh: { title: "🎶 儿歌乐园", backList: "⬅️ 返回列表", backNav: "返回" },
+            en: { title: "🎶 Nursery Rhymes", backList: "⬅️ Back to List", backNav: "Back" }
         }[LANG];
 
         let allSongs = [];
@@ -153,6 +153,7 @@
             MECC_CONFIG.renderGlobalNav(t.title);
             document.getElementById('head-title').innerText = t.title + " - MECC";
             document.getElementById('btn-close-play').innerText = t.backList;
+            document.getElementById('play-nav-back-label').innerText = t.backNav;
 
             fetch(`../data/nursery_rhymes.json?v=${Date.now()}`)
                 .then(res => res.json())
