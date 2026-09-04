@@ -79,6 +79,19 @@ body{
   display:inline-flex;align-items:center;gap:.3rem;
 }
 .song-btn:active{transform:translateY(1px)}
+.video-modal{
+  position:fixed;inset:0;background:rgba(20,16,12,.82);z-index:50;
+  display:none;align-items:center;justify-content:center;padding:2rem;
+}
+.video-modal.open{display:flex}
+.video-modal-inner{position:relative;width:min(92vw,48rem)}
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:1rem;overflow:hidden;box-shadow:0 1rem 3rem rgba(0,0,0,.4)}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.video-close{
+  position:absolute;top:-2.6rem;right:0;border:none;cursor:pointer;
+  background:#fff;color:var(--ink);border-radius:999px;width:2.4rem;height:2.4rem;
+  font-size:1.1rem;box-shadow:var(--shadow);
+}
 
 .grid-stations{
   flex:1 1 auto;min-height:0;overflow-y:auto;
@@ -233,6 +246,13 @@ body{
 <div id="app">
   <div class="topbar" id="topbar"></div>
   <div class="stage" id="stage"></div>
+</div>
+
+<div id="videoModal" class="video-modal">
+  <div class="video-modal-inner">
+    <button class="video-close" id="videoCloseBtn">✕</button>
+    <div class="video-frame"><iframe id="videoFrame" src="" title="歌曲" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0"></iframe></div>
+  </div>
 </div>
 
 <script>
@@ -488,14 +508,11 @@ function go(name,station){
   stage.scrollTop=0;
 }
 
-/* 两首歌是老师课件里用的原版视频，YouTube 上作者都关了嵌入播放权限，
-   所以这里直接跳转到 YouTube 本尊页面，而不是站内弹窗播放 */
-function songLink(song){
-  const a=el("a","song-btn","🎵 "+song.zh);
-  a.href="https://www.youtube.com/watch?v="+song.id;
-  a.target="_blank"; a.rel="noopener";
-  a.onclick=()=>sfxTap();
-  return a;
+/* 两首歌是老师课件里用的原版视频，站内弹窗内嵌播放 */
+function songBtn(song){
+  const b=el("button","song-btn","🎵 "+song.zh);
+  b.onclick=()=>{ sfxTap(); openVideo(song.id); };
+  return b;
 }
 
 /* ============================================================
@@ -504,8 +521,8 @@ function songLink(song){
 function renderHome(){
   const head=el("div","home-head");
   const titleRow=el("div","home-title-row");
-  const leftSong=songLink(SONGS[0]);
-  const rightSong=songLink(SONGS[1]);
+  const leftSong=songBtn(SONGS[0]);
+  const rightSong=songBtn(SONGS[1]);
   titleRow.appendChild(leftSong);
   titleRow.appendChild(el("h1",null,"你叫什么名字？"));
   titleRow.appendChild(rightSong);
@@ -905,8 +922,31 @@ function renderStage(){
   ACTS[view.station]();
 }
 
-/* 键盘：Esc / ← 返回，空格 换一个 */
+/* ---------------- 歌曲弹窗 ---------------- */
+const videoModal=document.getElementById("videoModal");
+const videoFrame=document.getElementById("videoFrame");
+const videoCloseBtn=document.getElementById("videoCloseBtn");
+function openVideo(id){
+  videoFrame.src="https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0";
+  videoModal.classList.add("open");
+  videoCloseBtn.focus();
+}
+function closeVideo(){
+  videoModal.classList.remove("open");
+  videoFrame.src="";
+}
+videoCloseBtn.onclick=()=>{ sfxTap(); closeVideo(); };
+videoModal.addEventListener("click",e=>{ if(e.target===videoModal) closeVideo(); });
+/* YouTube 播放器是跨域 iframe，焦点一旦进去父页面就收不到键盘事件了；
+   弹窗开着的时候把焦点抢回关闭按钮上，ESC 才能一直生效 */
+window.addEventListener("blur",()=>{
+  if(!videoModal.classList.contains("open")) return;
+  setTimeout(()=>{ if(videoModal.classList.contains("open")) videoCloseBtn.focus(); },0);
+});
+
+/* 键盘：Esc 返回 / 关弹窗，空格 换一个 */
 document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&videoModal.classList.contains("open")){ closeVideo(); return; }
   if(e.key==="Escape"||e.key==="ArrowLeft"){
     if(view.name==="station") go("home");
   }
