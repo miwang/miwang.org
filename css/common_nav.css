@@ -1,7 +1,7 @@
-/* css/common_nav.css — 全站统一导航栏（活泼童趣版） */
+/* css/common_nav.css — 全站统一导航栏（国风版） */
 :root {
     --nav-font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
-    --nav-font-en: "Baloo 2", "Fredoka", "LXGW WenKai Lite", sans-serif;
+    --nav-font-en: "LXGW WenKai Lite", serif;
 }
 
 /* 🌟 全局统一导航栏容器 */
@@ -11,9 +11,9 @@
     left: 0;
     width: 100%;
     height: 60px;
-    background: linear-gradient(120deg, #4FC3F7 0%, #35D0BA 100%);
-    border-bottom: 5px solid #FFC94D;
-    box-shadow: 0 4px 14px rgba(53,64,90,0.18);
+    background: linear-gradient(120deg, #0A4A40 0%, #0F6B5C 100%);
+    border-bottom: 5px solid #C89B3C;
+    box-shadow: 0 4px 14px rgba(10,74,64,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -59,7 +59,7 @@
     background: #fff;
     border-radius: 50%;
     padding: 3px;
-    color: #35D0BA;
+    color: #0A4A40;
 }
 
 /* 🌟 全局统一标题 */
