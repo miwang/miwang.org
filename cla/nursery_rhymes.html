@@ -199,7 +199,8 @@
             document.getElementById('play-view').style.display = 'flex';
             document.getElementById('song-title').innerText = song.title;
             document.getElementById('song-title-nav').innerText = song.title;
-            document.getElementById('video-frame').src = `https://www.youtube-nocookie.com/embed/${song.youtubeId}?rel=0&autoplay=1`;
+            const startParam = song.startTime > 0 ? `&start=${song.startTime}` : '';
+            document.getElementById('video-frame').src = `https://www.youtube-nocookie.com/embed/${song.youtubeId}?rel=0&autoplay=1${startParam}`;
         }
 
         function closePlay() {
