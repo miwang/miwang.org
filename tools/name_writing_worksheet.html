@@ -88,17 +88,17 @@
 </head>
 <body>
 
-<div class="tool-backbar noprint"><a class="tool-back" href="index.html"><i class="fas fa-arrow-left"></i> 返回教师工具</a></div>
+<div class="tool-backbar noprint"><a class="tool-back" href="index.html"><i class="fas fa-arrow-left"></i> <span id="back-label">返回教师工具</span></a></div>
 
 <div class="panel noprint">
-  <h1>姓名描红练习纸</h1>
+  <h1 id="panel-title">姓名描红练习纸</h1>
 
-  <label class="field"><span>学年</span>
+  <label class="field"><span id="lbl-year">学年</span>
     <select id="year"></select>
   </label>
 
-  <label class="field"><span>班级</span>
-    <select id="cls"><option value="all">全部</option></select>
+  <label class="field"><span id="lbl-cls">班级</span>
+    <select id="cls"><option id="cls-all-option" value="all">全部</option></select>
   </label>
 
   <div class="field"><span>&nbsp;</span>
@@ -111,7 +111,7 @@
   <div class="status" id="status">正在读名单…</div>
 </div>
 
-<div class="note noprint">
+<div class="note noprint" id="note-text">
   每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字固定练 3 遍（带笔顺数字的示范、
   空心字描红、自己写），不会因为是姓氏就多练几遍。方格边长按这一页实际剩下的宽高自动放到最大，
   尽量铺满整页。笔画数据来自开源的 <code>hanzi-writer-data</code>，取不到某个生僻字时会退化成
@@ -124,7 +124,6 @@
 /* ================= 配置 ================= */
 var SANITY_PROJECT = 'sow12t1i';
 var SANITY_DATASET = 'production';
-var CLASS_LABELS = { elephant: '🐘 大象班', tiger: '🐯 老虎班' };
 
 // 每个字固定练 3 遍，不管名字几个字都一样多：带笔顺数字的示范一遍、空心字描红一遍、
 // 空格自己写一遍。每个字一行，方格大小再按这一页实际剩下的宽高自动放到最大。
@@ -139,11 +138,72 @@ var esc = function (v) {
 
 /* ================= 单个学生模式 =================
    从"我的中文名字"页面点"打印练习纸"过来时带 ?student=<中文名>，
-   这里就只出这一个孩子的一页，不再管班级下拉框。 */
+   这里就只出这一个孩子的一页，不再管班级下拉框。这个入口是给家长看的，
+   所以单人模式（以及显式 role=parents）一律用英文界面。 */
 var urlParams = new URLSearchParams(location.search);
 var studentFilter = urlParams.get('student') || '';
 var fromParam = urlParams.get('from') || '';
 var childParam = urlParams.get('child') || '';
+var LANG = (studentFilter || urlParams.get('role') === 'parents') ? 'en' : 'zh';
+
+var CLASS_LABELS = LANG === 'en'
+  ? { elephant: '🐘 Elephants', tiger: '🐯 Tigers' }
+  : { elephant: '🐘 大象班', tiger: '🐯 老虎班' };
+
+var t = LANG === 'en' ? {
+  backDefault: 'Back to Teacher Tools',
+  title: 'Name Tracing Practice',
+  year: 'Year',
+  cls: 'Class',
+  clsAll: 'All',
+  reload: 'Reload Roster',
+  print: 'Print / Save PDF',
+  loading: 'Loading roster…',
+  loadingYear: function (y) { return 'Loading ' + y + ' roster…'; },
+  loadFailed: function (msg) { return 'Failed to load roster (' + msg + ').'; },
+  noStudentsYear: 'No students found for this academic year.',
+  noStudentsMatch: 'No students match this filter.',
+  loadingStrokes: 'Loading stroke data…',
+  summary: function (n) { return n + (n === 1 ? ' student, 1 page.' : ' students, ' + n + ' pages.'); },
+  missedChars: function (list) {
+    return ' ' + list.length + ' character' + (list.length === 1 ? '' : 's') + ' (' + list.join('') +
+      ') don’t have stroke data yet and appear as plain outlines.';
+  },
+  note: 'One page per student: the English name on top, then Chinese name tracing practice below — ' +
+    'each character gets 3 rows (a numbered stroke-order model, a hollow outline to trace, and a blank ' +
+    'square to write it alone), the same for every character whether it’s the family name or not. The ' +
+    'grid squares automatically grow to fill the page. Stroke data comes from the open-source ' +
+    '<code>hanzi-writer-data</code> project; a character it doesn’t have falls back to a plain hollow ' +
+    'outline (no stroke numbers). Set printing to “100% / actual size.”',
+  hdr: 'Name Tracing Practice',
+  caption: 'Trace the <b>gray strokes</b>. The <b>blue numbers</b> in the first square show the stroke order — follow them in order.',
+  noZhName: '(No Chinese name on file yet)'
+} : {
+  backDefault: '返回教师工具',
+  title: '姓名描红练习纸',
+  year: '学年',
+  cls: '班级',
+  clsAll: '全部',
+  reload: '重新读名单',
+  print: '打印 / 存 PDF',
+  loading: '正在读名单…',
+  loadingYear: function (y) { return '正在读 ' + y + ' 名单…'; },
+  loadFailed: function (msg) { return '读名单失败（' + msg + '）。'; },
+  noStudentsYear: '这个学年没有查到学生',
+  noStudentsMatch: '没有符合条件的学生。',
+  loadingStrokes: '正在加载笔画数据…',
+  summary: function (n) { return n + ' 名学生，共 ' + n + ' 页。'; },
+  missedChars: function (list) {
+    return '有 ' + list.length + ' 个字（' + list.join('') + '）没查到笔画，已退化成普通空心字。';
+  },
+  note: '每个学生一页：上面是英文名，下面是中文名的描红练习 —— 每个字固定练 3 遍（带笔顺数字的示范、' +
+    '空心字描红、自己写），不会因为是姓氏就多练几遍。方格边长按这一页实际剩下的宽高自动放到最大，' +
+    '尽量铺满整页。笔画数据来自开源的 <code>hanzi-writer-data</code>，取不到某个生僻字时会退化成' +
+    '普通空心字（没有笔顺数字）。打印时把缩放设为「100% / 实际大小」。',
+  hdr: '姓名描红练习',
+  caption: '沿着<b>灰色笔画</b>描红，第一格的<b>蓝色数字</b>是笔顺，照着顺序写。',
+  noZhName: '（这位同学还没有录入中文名）'
+};
 
 /* ================= 笔画数据（按字缓存，同姓的孩子不用重复下载） ================= */
 var charCache = {};
@@ -195,26 +255,30 @@ function setStatus(msg, bad) {
 
 function loadRoster() {
   var year = $('year').value.trim();
-  setStatus('正在读 ' + year + ' 名单…');
+  setStatus(t.loadingYear(year));
   fetch(groqUrl(year))
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function (d) {
       var rows = (d.result || []).filter(function (s) { return s.en || s.zh; });
-      if (!rows.length) throw new Error('这个学年没有查到学生');
+      if (!rows.length) throw new Error(t.noStudentsYear);
       roster = rows;
       afterRoster();
     })
-    .catch(function (e) { setStatus('读名单失败（' + e.message + '）。', true); });
+    .catch(function (e) { setStatus(t.loadFailed(e.message), true); });
 }
 
 function afterRoster() {
   var sel = $('cls');
   var seen = [];
   roster.forEach(function (s) { if (seen.indexOf(s.cls) < 0) seen.push(s.cls); });
-  sel.innerHTML = '<option value="all">全部（' + seen.length + ' 个班）</option>' +
+  var allLabel = LANG === 'en'
+    ? t.clsAll + ' (' + seen.length + (seen.length === 1 ? ' class)' : ' classes)')
+    : t.clsAll + '（' + seen.length + ' 个班）';
+  sel.innerHTML = '<option value="all">' + esc(allLabel) + '</option>' +
     seen.map(function (c) {
       var n = roster.filter(function (s) { return s.cls === c; }).length;
-      return '<option value="' + esc(c) + '">' + esc(CLASS_LABELS[c] || c) + '（' + n + ' 人）</option>';
+      var peopleLabel = LANG === 'en' ? ' (' + n + (n === 1 ? ' student)' : ' students)') : '（' + n + ' 人）';
+      return '<option value="' + esc(c) + '">' + esc(CLASS_LABELS[c] || c) + esc(peopleLabel) + '</option>';
     }).join('');
   render();
 }
@@ -296,14 +360,18 @@ function buildSheetSkeleton(s, charData) {
 
   var zhRowsHtml = zhChars.length
     ? zhChars.map(function (ch) { return charRowHtml(ch, charData[ch], PATTERN); }).join('')
-    : '<div class="zh-empty">（这位同学还没有录入中文名）</div>';
+    : '<div class="zh-empty">' + t.noZhName + '</div>';
+
+  var hdrHtml = LANG === 'en'
+    ? '<span>' + t.hdr + '</span>'
+    : '<span>' + t.hdr + '<span class="sub">Name Tracing Practice</span></span>';
 
   d.innerHTML =
-    '<div class="hdr"><span>姓名描红练习<span class="sub">Name Tracing Practice</span></span>' +
+    '<div class="hdr">' + hdrHtml +
     '<span>' + esc(clsLabel) + '</span></div>' +
     '<div class="en-name" style="font-size:' + enFontSize(s.en) + '">' + esc(s.en || ' ') + '</div>' +
     '<div class="zh-section">' +
-      '<div class="zh-caption">沿着<b>灰色笔画</b>描红，第一格的<b>蓝色数字</b>是笔顺，照着顺序写。</div>' +
+      '<div class="zh-caption">' + t.caption + '</div>' +
       '<div class="zh-rows">' + zhRowsHtml + '</div>' +
     '</div>';
   return d;
@@ -331,9 +399,9 @@ function fitZhRows(sheetEl) {
 function render() {
   var people = selectedStudents();
   var out = $('out');
-  if (!people.length) { out.innerHTML = ''; setStatus('没有符合条件的学生。', true); return; }
+  if (!people.length) { out.innerHTML = ''; setStatus(t.noStudentsMatch, true); return; }
 
-  setStatus('正在加载笔画数据…');
+  setStatus(t.loadingStrokes);
   var chars = {};
   people.forEach(function (s) {
     if (!s.zh) return;
@@ -352,27 +420,37 @@ function render() {
       fitZhRows(el);
     });
     var missed = charList.filter(function (ch) { return !charData[ch]; });
-    setStatus(people.length + ' 名学生，共 ' + people.length + ' 页。' +
-      (missed.length ? ('有 ' + missed.length + ' 个字（' + missed.join('') + '）没查到笔画，已退化成普通空心字。') : ''));
+    setStatus(t.summary(people.length) + (missed.length ? t.missedChars(missed) : ''));
   });
 }
 
 /* ================= 启动 ================= */
 (function init() {
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'zh-CN';
+  $('back-label').textContent = t.backDefault;
+  $('panel-title').textContent = t.title;
+  $('lbl-year').textContent = t.year;
+  $('lbl-cls').textContent = t.cls;
+  $('cls-all-option').textContent = t.clsAll;
+  $('reload').textContent = t.reload;
+  $('print').textContent = t.print;
+  setStatus(t.loading);
+  $('note-text').innerHTML = t.note;
+
   buildYearOptions(); // 默认选中当前学年，不用每次手动切换
 
   if (studentFilter) {
     // 单人模式：从"我的中文名字"页面过来只打印这一个孩子，班级下拉框用不上，藏起来。
     var clsField = $('cls').closest('.field');
     if (clsField) clsField.style.display = 'none';
-    document.querySelector('.panel h1').textContent = '姓名描红练习纸 · ' + studentFilter;
+    $('panel-title').textContent = t.title + ' · ' + studentFilter;
   }
 
   if (fromParam === 'name') {
     var backLink = document.querySelector('.tool-back');
     if (backLink) {
       backLink.href = '../units/my-chinese-name.html?child=' + encodeURIComponent(childParam) + '&role=parents';
-      backLink.innerHTML = '<i class="fas fa-arrow-left"></i> Back to My Chinese Name';
+      $('back-label').textContent = 'Back to My Chinese Name';
     }
   }
 
