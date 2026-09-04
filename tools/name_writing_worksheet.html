@@ -88,9 +88,8 @@
 </head>
 <body>
 
-<div class="tool-backbar noprint"><a class="tool-back" href="index.html"><i class="fas fa-arrow-left"></i> <span id="back-label">返回教师工具</span></a></div>
-
 <div class="panel noprint">
+  <a class="tool-back" id="back-link" href="index.html"><i class="fas fa-arrow-left"></i> <span id="back-label">返回教师工具</span></a>
   <h1 id="panel-title">姓名描红练习纸</h1>
 
   <label class="field"><span id="lbl-year">学年</span>
@@ -440,14 +439,18 @@ function render() {
   buildYearOptions(); // 默认选中当前学年，不用每次手动切换
 
   if (studentFilter) {
-    // 单人模式：从"我的中文名字"页面过来只打印这一个孩子，班级下拉框用不上，藏起来。
+    // 单人模式：从"我的中文名字"页面过来只打印这一个孩子，班级下拉框、学年下拉框、
+    // 重新读名单按钮都用不上，藏起来，只留"打印/存 PDF"。
     var clsField = $('cls').closest('.field');
     if (clsField) clsField.style.display = 'none';
+    var yearField = $('year').closest('.field');
+    if (yearField) yearField.style.display = 'none';
+    $('reload').style.display = 'none';
     $('panel-title').textContent = t.title + ' · ' + studentFilter;
   }
 
   if (fromParam === 'name') {
-    var backLink = document.querySelector('.tool-back');
+    var backLink = $('back-link');
     if (backLink) {
       backLink.href = '../units/my-chinese-name.html?child=' + encodeURIComponent(childParam) + '&role=parents';
       $('back-label').textContent = 'Back to My Chinese Name';

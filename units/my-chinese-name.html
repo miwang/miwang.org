@@ -998,7 +998,7 @@ function openFromUrl(){
    首页 = 名单
    ============================================================ */
 const CLASS_OPTIONS = [
-  { id:"all",      label:"All 全部" },
+  { id:"all",      label:"All" },
   { id:"elephant", label:"🐘 Elephants" },
   { id:"tiger",    label:"🐯 Tigers" }
 ];
@@ -1007,8 +1007,8 @@ function renderHome(){
   stage.className = "stage";
 
   const head=el("div","home-head");
-  head.appendChild(el("h1",null,"我的中文名字"));
-  head.appendChild(el("p",null,"My Chinese Name · 点一位小朋友，看头像、听发音、学写字"));
+  head.appendChild(el("h1",null,"My Chinese Name"));
+  head.appendChild(el("p",null,"Click on a friend to see their photo, hear their name, and learn how to write it!"));
   stage.appendChild(head);
 
   const filterRow=el("div","class-filter");
@@ -1023,7 +1023,7 @@ function renderHome(){
   const pool = studentsForFilter(classFilter);
 
   if(!pool.length){
-    scroll.appendChild(el("div","empty-note","还没有找到名单。No students found for this class yet."));
+    scroll.appendChild(el("div","empty-note","No students found for this class yet."));
   }else{
     const grid=el("div","roster-grid");
     pool.forEach(s=>{
@@ -1061,7 +1061,7 @@ function meaningCard(ch, isSurname){
   card.appendChild(glyph);
 
   const body = el("div","body");
-  body.appendChild(el("div","tag", isSurname ? "Family Name · 姓" : "Given Name · 名"));
+  body.appendChild(el("div","tag", isSurname ? "Family Name" : "Given Name"));
 
   const py = pinyinFor(ch);
   body.appendChild(el("div","py-line", ch + (py?"  ·  "+py:"")));
@@ -1076,7 +1076,7 @@ function meaningCard(ch, isSurname){
   body.appendChild(el("div","en", meaning || "This character's story hasn't been added yet — ask your teacher what it means!"));
 
   const btns = el("div","row-btns");
-  const playBtn = el("button","mini-btn","🔊 Say it");
+  const playBtn = el("button","mini-btn","🔊 Read it");
   playBtn.onclick=()=>speak(ch);
   btns.appendChild(playBtn);
 
@@ -1109,7 +1109,7 @@ function renderDetail(){
   if(!chars.length){
     dhead.appendChild(el("div",null,student.display||"—"));
     wrap.appendChild(dhead);
-    wrap.appendChild(el("div","empty-note","还没有登记中文名字。No Chinese name on file yet."));
+    wrap.appendChild(el("div","empty-note","No Chinese name on file yet."));
     stage.appendChild(wrap);
     return;
   }
@@ -1157,7 +1157,7 @@ function renderDetail(){
   wrap.appendChild(grid);
 
   const note = el("div","teacher-note",
-    "小贴士：同一个字在不同名字里可能有不同的寓意，这里给出的是最常见的一种解读。A character can carry more than one good meaning — this is just one common reading.");
+    "Tip: a character can carry more than one good meaning depending on the name — this is just one common reading.");
   wrap.appendChild(note);
 
   stage.appendChild(wrap);
