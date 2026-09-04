@@ -542,8 +542,27 @@
         function changeW(t, a) { event.stopPropagation(); wStats[t] = Math.max(0, wStats[t]+a); localStorage.setItem('mecc_weather_stats', JSON.stringify(wStats)); updateW(); }
         function updateW() { for(let k in wStats) { const el = document.getElementById(`count-${k}`); if(el) el.innerText = wStats[k]; } }
         function resetWeather() { if(confirm("确定重置本月统计吗？")) { for(let k in wStats) wStats[k]=0; updateW(); } }
-        function initHundredGrid() { const container = document.getElementById('hundred-grid'); for (let i = 1; i <= 100; i++) { const box = document.createElement('div'); box.className = 'num-box'; if (i % 10 === 0) box.classList.add('tens-column'); box.innerText = i; box.onclick = () => box.classList.toggle('highlight'); container.appendChild(box); } }
-        function clearHighlights() { document.querySelectorAll('.num-box').forEach(b => b.classList.remove('highlight')); }
+        let hundredGridBoxes = [];
+        let hundredGridIndex = 0;
+        function initHundredGrid() { const container = document.getElementById('hundred-grid'); hundredGridBoxes = []; for (let i = 1; i <= 100; i++) { const box = document.createElement('div'); box.className = 'num-box'; if (i % 10 === 0) box.classList.add('tens-column'); box.innerText = i; box.onclick = () => box.classList.toggle('highlight'); container.appendChild(box); hundredGridBoxes.push(box); } }
+        function clearHighlights() { document.querySelectorAll('.num-box').forEach(b => b.classList.remove('highlight')); hundredGridIndex = 0; }
+        function advanceHundredGrid(delta) {
+            if (curr !== 4 || !hundredGridBoxes.length) return;
+            if (delta > 0) {
+                if (hundredGridIndex >= hundredGridBoxes.length) return;
+                hundredGridBoxes[hundredGridIndex].classList.add('highlight');
+                hundredGridIndex++;
+            } else {
+                if (hundredGridIndex <= 0) return;
+                hundredGridIndex--;
+                hundredGridBoxes[hundredGridIndex].classList.remove('highlight');
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (curr !== 4) return;
+            if (e.key === 'ArrowRight') { e.preventDefault(); advanceHundredGrid(1); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); advanceHundredGrid(-1); }
+        });
 
         function addDay(amt) { schoolDays = Math.max(0, schoolDays + amt); localStorage.setItem('mecc_school_days', schoolDays); updateSchoolDays(); }
         function updateSchoolDays() {
