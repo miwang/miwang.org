@@ -55,12 +55,13 @@
 <script>
 const LANG = MECC_CONFIG.getLang();
 const t = {
- zh:{ title:"写字大挑战 ✍️", wait:"等一下...", yourTurn:"该你了！", perfect:"太棒了！", writeChar:"请写生字：", playDemo:"播放笔顺", mastered:"你今天已经完全掌握了这个字！", finish:"完成练习", backDetail:(char)=>`返回${char||'详情'}`, backList:"返回四会字" },
- en:{ title:"Tracing Challenge ✍️", wait:"Wait for it...", yourTurn:"Your Turn!", perfect:"Perfect!", writeChar:"Trace: ", playDemo:"Play Demo", mastered:"You've mastered this character today!", finish:"Finish", backDetail:(char)=>`Back to ${char||'Details'}`, backList:"Back to List" }
+ zh:{ title:"写字大挑战 ✍️", wait:"等一下...", yourTurn:"该你了！", perfect:"太棒了！", writeChar:"请写生字：", playDemo:"播放笔顺", mastered:"你今天已经完全掌握了这个字！", finish:"完成练习", backDetail:(char)=>`返回${char||'详情'}`, backList:"返回四会字", backName:"返回我的名字" },
+ en:{ title:"Tracing Challenge ✍️", wait:"Wait for it...", yourTurn:"Your Turn!", perfect:"Perfect!", writeChar:"Trace: ", playDemo:"Play Demo", mastered:"You've mastered this character today!", finish:"Finish", backDetail:(char)=>`Back to ${char||'Details'}`, backList:"Back to List", backName:"Back to My Name" }
 }[LANG];
 const urlParams=new URLSearchParams(window.location.search);
 const charToDraw=urlParams.get('char')||'天';
 const from=urlParams.get('from');
+const fromChild=urlParams.get('child')||'';
 document.getElementById('char-display').innerText=charToDraw;
 document.getElementById('head-title').innerText=t.title+" - MECC";
 document.getElementById('ui-write-char').innerText=t.writeChar;
@@ -74,6 +75,7 @@ if(LANG==='en'){ document.getElementById('btn-play-mob').classList.add('font-en'
 const roleQuery=LANG==='en'?'?role=parents':''; const roleSuffix=LANG==='en'?'&role=parents':'';
 let backUrl=`words_and_phrases.html${roleQuery}`, backText=t.backList;
 if(from==='detail'){ backUrl=`word_detail.html?char=${encodeURIComponent(charToDraw)}${roleSuffix}`; backText=t.backDetail(charToDraw); }
+else if(from==='name'){ backUrl=`../units/my-chinese-name.html?child=${encodeURIComponent(fromChild)}${roleSuffix}`; backText=t.backName; }
 document.getElementById('finish-btn').onclick=()=>{ location.href=backUrl; };
 function updateNavBackDisplay(){
  const btn=document.querySelector('.mecc-nav-back'); if(!btn) return;

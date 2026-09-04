@@ -6,38 +6,53 @@
     <title>Parents & Students — Wang Laoshi's Space</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css');
 
         :root {
-            --primary:    #1a2740;
-            --primary-lt: #243552;
-            --accent:     #f0a832;
-            --accent-dk:  #d4922a;
-            --teal:       #4e8a8b;
-            --teal-dk:    #3d7172;
-            --bg:         #f0f3f7;
-            --card-bg:    #ffffff;
-            --text:       #1a2740;
-            --text-muted: #6a7b90;
-            --border:     #dfe5ed;
+            /* ── 国风主色板：石绿 · 朱砂 · 赤金 · 宣纸 ── */
+            --primary:    #0A4A40;   /* 石绿深 */
+            --primary-lt: #0F6B5C;   /* 石绿 */
+            --accent:     #C89B3C;   /* 赤金 */
+            --accent-dk:  #A97F2C;
+            --teal:       #B23A2E;   /* 朱砂 */
+            --teal-dk:    #832A21;
+            --bg:         #F4E8CD;   /* 宣纸底色 */
+            --card-bg:    #FBF3DE;
+            --text:       #362B1D;
+            --text-muted: #7A6A50;
+            --border:     rgba(200,155,60,0.32);
+            --gf-gold-bright: #E9C168;
+            --gf-gold-pale:   #F3DFA8;
             --font-zh: "KaiTi-CJK", "LXGW WenKai Lite", serif;
             --font-en: "LXGW WenKai Lite", system-ui, -apple-system, sans-serif;
             --radius: 16px;
-            --shadow: 0 4px 18px rgba(26,39,64,0.07);
-            --shadow-hover: 0 10px 28px rgba(26,39,64,0.14);
+            --shadow: 0 4px 18px rgba(54,43,29,0.10);
+            --shadow-hover: 0 10px 28px rgba(54,43,29,0.18);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-en); background: var(--bg); color: var(--text); }
+        body {
+            font-family: var(--font-en);
+            background: var(--bg);
+            color: var(--text);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23C89B3C' stroke-width='1.1' opacity='0.3'%3E%3Cpath d='M10 40c-4 0-6-4-3-7 -2-4 2-8 6-6 1-4 6-6 9-3 3-3 8-1 8 3 4-1 7 2 6 6 4 1 5 6 1 8 -1 3-5 4-7 2 -2 3-6 2-7-1 -3 2-6 0-7-2 -3 1-6-2-6 0z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 140px 140px;
+        }
 
-        /* ── Header ── */
+        /* ── Header（与 teachers.html 统一：高度、居中方式、返回按钮位置） ── */
         .site-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-lt) 100%);
-            padding: 12px 24px 16px;
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23F3DFA8' stroke-width='1.1' opacity='0.16'%3E%3Cpath d='M10 40c-4 0-6-4-3-7 -2-4 2-8 6-6 1-4 6-6 9-3 3-3 8-1 8 3 4-1 7 2 6 6 4 1 5 6 1 8 -1 3-5 4-7 2 -2 3-6 2-7-1 -3 2-6 0-7-2 -3 1-6-2-6 0z'/%3E%3C/g%3E%3C/svg%3E"),
+                linear-gradient(135deg, var(--primary) 0%, var(--primary-lt) 100%);
+            min-height: 85px;
+            padding: 16px 24px;
             position: relative;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
         }
         .site-header::after {
@@ -48,27 +63,27 @@
             background: linear-gradient(90deg, var(--teal), var(--accent), var(--teal));
         }
 
-        /* 🌟 扁平化返回按钮样式 */
+        /* 🌟 返回按钮：与 teachers.html 一致，固定在左侧垂直居中 */
         .site-header .back-link {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            position: relative;
+            gap: 6px;
             font-family: var(--font-en);
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
             font-size: 0.95rem;
+            line-height: 1;
             white-space: nowrap;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: opacity 0.2s, transform 0.2s;
+            transition: opacity 0.2s ease;
             z-index: 2;
-            margin-bottom: 8px;
-            background: transparent; /* 扁平化无背景 */
         }
-        .site-header .back-link:hover { opacity: 0.8; transform: translateX(-3px); }
-        .site-header .back-link i { font-size: 1.2rem; }
+        .site-header .back-link:hover { opacity: 0.75; }
+        .circle-arrow-icon { width: 22px; height: 22px; flex-shrink: 0; }
 
         .header-content { position: relative; z-index: 1; }
 
@@ -76,21 +91,22 @@
             font-family: var(--font-en);
             font-size: 2rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--gf-gold-pale);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
             margin-bottom: 4px;
             line-height: 1.3;
         }
         .site-header .zh-sub {
             font-family: var(--font-zh);
             font-size: 0.92rem;
-            color: rgba(255,255,255,0.5);
+            color: rgba(243,223,168,0.7);
             letter-spacing: 3px;
         }
 
         /* ── Layout ── */
         .container {
             width: 94%;
-            max-width: 1040px;
+            max-width: 1080px;
             margin: 32px auto 20px;
             display: flex;
             flex-direction: column;
@@ -135,20 +151,49 @@
             position: relative;
         }
         .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); border-color: var(--accent); }
+        .card::before, .card::after {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M2,38 C2,20 16,4 34,4 C44,4 49,12 44,19 C40,24 32,21 33,15 C25,15 17,23 17,33 C17,41 22,46 30,45 C25,50 14,50 8,45 C3,41 2,40 2,38 Z' fill='%23C89B3C'/%3E%3C/svg%3E");
+            background-size: contain;
+            opacity: 0.75;
+            pointer-events: none;
+        }
+        .card::before { top: -1px; left: -1px; }
+        .card::after { bottom: -1px; right: -1px; transform: rotate(180deg); }
         .card-icon { font-size: 2.6rem; margin-bottom: 12px; transition: transform 0.3s ease; }
         .card-title { font-family: var(--font-en); font-size: 1.02rem; font-weight: 700; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
         .card-title .zh { font-family: var(--font-zh); display: block; font-size: 0.92rem; font-weight: normal; color: var(--teal); margin-top: 2px; }
         .card-desc { font-family: var(--font-en); font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
 
-        .site-footer { text-align: center; padding: 22px; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 8px; }
         @media (max-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); } }
+
+        /* 移动端：返回按钮挪到标题上方居中，避免和标题挤在一起（与 teachers.html 一致） */
+        @media (max-width: 768px) {
+            .site-header {
+                min-height: 90px;
+                padding: 50px 16px 14px;
+            }
+            .site-header .back-link {
+                left: 50%;
+                top: 12px;
+                transform: translateX(-50%);
+            }
+            .site-header h1 { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
 
     <header class="site-header">
         <a href="index.html" class="back-link">
-            <i class="far fa-arrow-alt-circle-left"></i> Back to Portal
+            <svg class="circle-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="16" y1="12" x2="8" y2="12"></line>
+                <polyline points="12 8 8 12 12 16"></polyline>
+            </svg>
+            <span>Back to Portal</span>
         </a>
         <div class="header-content">
             <h1>Chinese Playground 🐼</h1>
@@ -188,6 +233,11 @@
         <section>
             <div class="section-title">📝 Chinese Literacy <span class="zh">中文听说读写</span></div>
             <div class="grid">
+                <a href="./units/my-chinese-name.html?role=parents" class="card">
+                    <div class="card-icon">🀄</div>
+                    <div class="card-title">My Chinese Name<span class="zh">我的中文名字</span></div>
+                    <p class="card-desc">See your child's photo, hear their name, learn what it means, and practice writing it.</p>
+                </a>
                 <a href="./cla/words_and_phrases.html?role=parents" class="card">
                     <div class="card-icon">📖</div>
                     <div class="card-title">Vocabulary & Writing<span class="zh">词汇与书写</span></div>
@@ -312,8 +362,28 @@
 
     </div>
 
-    <footer class="site-footer">
-        Created with ❤️ by <span class="font-zh">王老师</span> Wang Laoshi
+    <footer style="width:100%; height:78px; margin-top:12px; position:relative;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 130" preserveAspectRatio="none" style="width:100%; height:100%; display:block;">
+            <defs>
+                <path id="pf-cloud" d="M8,42 C2,42 0,34 6,30 C2,22 12,16 20,20 C22,10 36,6 46,14 C54,4 70,6 76,16 C88,12 98,20 94,30 C100,36 96,46 88,44 C88,52 78,56 70,50 C64,58 50,58 44,50 C36,56 24,54 20,46 C14,50 6,48 8,42 Z"/>
+                <linearGradient id="pf-mtn-1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#3EA88E"/><stop offset="1" stop-color="#0A4A40"/>
+                </linearGradient>
+                <linearGradient id="pf-mtn-2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#175E51"/><stop offset="1" stop-color="#083730"/>
+                </linearGradient>
+            </defs>
+            <path d="M0,80 L90,20 L160,70 L230,10 L300,75 L380,30 L460,80 L540,15 L620,75 L700,25 L780,78 L860,20 L940,70 L1020,15 L1100,72 L1200,30 L1200,130 L0,130 Z" fill="url(#pf-mtn-2)" opacity="0.85"/>
+            <path d="M0,110 L70,55 L140,95 L220,45 L310,100 L400,60 L480,105 L560,50 L650,100 L740,55 L830,102 L920,58 L1010,100 L1100,60 L1200,95 L1200,130 L0,130 Z" fill="url(#pf-mtn-1)"/>
+            <use href="#pf-cloud" x="60" y="88" width="90" height="45" fill="#E9C168" opacity="0.92"/>
+            <use href="#pf-cloud" x="330" y="80" width="110" height="55" fill="#D9694F" opacity="0.85"/>
+            <use href="#pf-cloud" x="600" y="92" width="90" height="45" fill="#E9C168" opacity="0.9"/>
+            <use href="#pf-cloud" x="870" y="82" width="110" height="55" fill="#D9694F" opacity="0.85"/>
+            <use href="#pf-cloud" x="1080" y="90" width="80" height="40" fill="#E9C168" opacity="0.9"/>
+        </svg>
+        <p style="position:absolute; bottom:8px; left:0; right:0; text-align:center; font-family:var(--font-zh); font-size:0.78rem; color:#EAF4F0; text-shadow:0 1px 3px rgba(10,42,36,0.6); letter-spacing:1px;">
+            Created with ❤️ by <b style="color:#F3DFA8">王老师</b> Wang Laoshi
+        </p>
     </footer>
 
     <script src="js/sight_words_data.js"></script>

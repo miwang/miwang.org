@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我的中文名字 · My Chinese Name</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
+<script src="https://unpkg.com/pinyin-pro"></script>
+<style>
+/* CJK-only KaiTi — unicode-range restricts this face to Chinese/CJK characters only,
+   so Latin letters, digits, and symbols automatically fall back to LXGW WenKai Lite. */
+@font-face {
+  font-family: "KaiTi-CJK";
+  src: local("STKaiti-SC-Regular"), local("STKaiti"), local("Kaiti SC"),
+       local("BiauKai"), local("KaiTi"), local("楷体");
+  unicode-range:
+    U+2E80-2EFF, U+2F00-2FDF, U+3000-303F, U+3040-30FF, U+31F0-31FF,
+    U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F,
+    U+FF00-FFEF, U+20000-2A6DF;
+}
+:root{
+  font-size:18px;
+  --ink:#2E2A28;
+  --ink-soft:#6B625C;
+  --paper:#FFFDF7;
+  --card:#FFFFFF;
+  --line:rgba(46,42,40,.14);
+  --accent:#F0663C;
+  --accent-soft:#F0663C22;
+  --shadow:0 .35rem 1.1rem rgba(46,42,40,.13);
+  --radius:1.1rem;
+  --font-zh:"KaiTi-CJK","LXGW WenKai Lite","LXGW WenKai",serif;
+}
+@media (min-width:900px){ :root{ font-size:20px; } }
+@media (min-width:1300px){ :root{ font-size:23px; } }
+@media (min-width:1700px){ :root{ font-size:27px; } }
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--font-zh);
+  color:var(--ink);
+  background:
+    radial-gradient(60rem 40rem at 12% -10%, #FFF3D6 0%, transparent 60%),
+    radial-gradient(50rem 36rem at 95% 8%, #E8F4FF 0%, transparent 62%),
+    radial-gradient(48rem 40rem at 50% 115%, #FFE9F2 0%, transparent 60%),
+    linear-gradient(#FFFDF7,#FDF6EA);
+  overflow:hidden;
+  user-select:none;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(3.2rem);opacity:.5;pointer-events:none;z-index:0}
+.blob.a{width:22rem;height:22rem;left:-7rem;top:-6rem;background:#FFD9A8}
+.blob.b{width:20rem;height:20rem;right:-6rem;bottom:-7rem;background:#BFE3FF}
+
+/* ---------- shell ---------- */
+#app{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+  width:min(96vw,72rem);max-height:100vh;margin:0 auto;padding:1.1rem .8rem .8rem}
+.topbar{display:flex;align-items:center;gap:.5rem;flex:0 0 auto;padding:.15rem 0 .5rem}
+.topbar .spacer{flex:1}
+.chip{
+  border:none;background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:.82rem;font-weight:700;
+  padding:.4rem .85rem;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;
+  display:inline-flex;align-items:center;gap:.3rem;line-height:1.2;
+  text-decoration:none;
+}
+.chip:active{transform:translateY(1px)}
+.chip.tone{background:var(--accent);color:#fff}
+.stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.stage.scroll{overflow-y:auto}
+
+/* ---------- home ---------- */
+.home-head{text-align:center;flex:0 0 auto;padding:.2rem 0 .8rem}
+.home-head h1{margin:0;font-size:2rem;letter-spacing:.04em}
+.home-head p{margin:.3rem 0 0;color:var(--ink-soft);font-size:.85rem}
+
+.class-filter{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;flex:0 0 auto;padding-bottom:.7rem}
+.class-chip{
+  border:none;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;
+  padding:.35rem .8rem;border-radius:999px;background:var(--card);color:var(--ink-soft);box-shadow:var(--shadow);
+}
+.class-chip.on{background:var(--accent);color:#fff}
+
+.roster-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;padding:.2rem .2rem 1rem}
+.roster-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));
+  gap:.7rem;
+}
+.student-card{
+  border:none;cursor:pointer;font-family:inherit;color:inherit;text-align:center;
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;
+}
+.student-card:active{transform:translateY(2px)}
+.student-card .pic{width:3.6rem;height:3.6rem;border-radius:50%;object-fit:cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.student-card .pic-fallback{width:3.6rem;height:3.6rem;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:1.7rem}
+.student-card b{font-size:1rem}
+.student-card small{color:var(--ink-soft);font-size:.68rem}
+.empty-note{text-align:center;color:var(--ink-soft);font-size:.82rem;padding:2rem 1rem;line-height:1.6}
+
+/* ---------- detail ---------- */
+.detail{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;gap:1rem;overflow-y:auto;padding:.2rem .2rem 1.4rem}
+.detail-head{display:flex;flex-direction:column;align-items:center;gap:.6rem;flex:0 0 auto;padding-top:.3rem}
+.detail-head .pic{width:6.5rem;height:6.5rem;border-radius:50%;object-fit:cover;box-shadow:var(--shadow),inset 0 0 0 2px #fff}
+.detail-head .pic-fallback{width:6.5rem;height:6.5rem;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:3rem;box-shadow:var(--shadow)}
+.name-row{display:flex;gap:.4rem;align-items:flex-end}
+.name-char{
+  border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow);border-radius:.9rem;padding:.5rem .7rem;font-size:2.3rem;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;line-height:1.1;
+}
+.name-char:active{transform:translateY(2px)}
+.name-char .py{font-size:.62rem;font-weight:400;color:var(--ink-soft);font-family:"LXGW WenKai Lite",sans-serif;margin-top:.15rem}
+.name-char.surname{border-bottom:.28rem solid #4FC3F7}
+.name-char.given{border-bottom:.28rem solid var(--accent)}
+.read-btn{
+  border:none;cursor:pointer;font-family:inherit;background:var(--accent);color:#fff;
+  box-shadow:var(--shadow);border-radius:999px;padding:.5rem 1.2rem;font-size:.9rem;font-weight:700;
+  display:inline-flex;align-items:center;gap:.4rem;
+}
+.read-btn:active{transform:translateY(2px)}
+.action-row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.print-btn{
+  border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow),inset 0 0 0 1.5px var(--accent);border-radius:999px;padding:.5rem 1.2rem;
+  font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;
+}
+.print-btn:active{transform:translateY(2px)}
+.legend{display:flex;gap:1rem;font-size:.68rem;color:var(--ink-soft);flex-wrap:wrap;justify-content:center}
+.legend span{display:inline-flex;align-items:center;gap:.3rem}
+.legend i{width:.6rem;height:.6rem;border-radius:50%;display:inline-block}
+.legend i.surname{background:#4FC3F7}
+.legend i.given{background:var(--accent)}
+
+.meaning-grid{display:flex;flex-direction:column;gap:.7rem;width:min(100%,34rem)}
+.meaning-card{
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:.9rem 1rem;display:flex;gap:.9rem;align-items:flex-start;
+}
+.meaning-card .glyph{
+  flex:0 0 auto;width:3.4rem;height:3.4rem;border-radius:.8rem;
+  display:flex;align-items:center;justify-content:center;font-size:1.9rem;font-weight:700;
+  background:var(--accent-soft);color:var(--ink);position:relative;
+}
+.meaning-card.surname .glyph{background:#4FC3F722}
+.meaning-card .body{flex:1 1 auto;display:flex;flex-direction:column;gap:.25rem;min-width:0}
+.meaning-card .tag{font-size:.62rem;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);text-transform:uppercase;font-family:"LXGW WenKai Lite",sans-serif}
+.meaning-card .py-line{font-size:.78rem;color:var(--ink-soft);font-family:"LXGW WenKai Lite",sans-serif}
+.meaning-card .en{font-size:.82rem;line-height:1.5;color:var(--ink);font-family:"LXGW WenKai Lite",sans-serif}
+.meaning-card .row-btns{display:flex;gap:.5rem;margin-top:.2rem;flex-wrap:wrap}
+.mini-btn{
+  border:none;cursor:pointer;font-family:"LXGW WenKai Lite",sans-serif;background:#fff;color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--line);border-radius:.6rem;padding:.3rem .65rem;font-size:.72rem;font-weight:700;
+  display:inline-flex;align-items:center;gap:.3rem;
+}
+.mini-btn:active{transform:translateY(1px)}
+.mini-btn.write{background:var(--accent);color:#fff;box-shadow:none}
+
+.teacher-note{
+  background:#FFF6DA;border-radius:.8rem;padding:.6rem .9rem;font-size:.72rem;color:#6A5A2E;
+  line-height:1.5;max-width:34rem;text-align:center;
+}
+
+::-webkit-scrollbar{width:.5rem;height:.5rem}
+::-webkit-scrollbar-thumb{background:rgba(46,42,40,.2);border-radius:99px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="blob a"></div><div class="blob b"></div>
+<div id="app">
+  <div class="topbar" id="topbar"></div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<script>
+/* ============================================================
+   我的中文名字 · My Chinese Name
+   家长专区：点一位小朋友，看头像 + 中文名，点名字里的每个字可以听发音、
+   看英文寓意讲解，还能跳到"写字大挑战"练笔顺。
+   单文件，无外部依赖（字体、pinyin-pro 除外）。
+   ============================================================ */
+
+const PROJECT_ID = 'sow12t1i';
+const DATASET = 'production';
+
+function currentAcademicYear(){
+  const now = new Date();
+  const startYear = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1;
+  return `${String(startYear).slice(-2)}-${String(startYear+1).slice(-2)}`;
+}
+const ACADEMIC_YEAR = currentAcademicYear();
+const ROSTER_QUERY = encodeURIComponent(
+  `*[_type == "student" && className in ["elephant","tiger"] && academicYear == "${ACADEMIC_YEAR}" && coalesce(status,"active") == "active"]
+   | order(nameEn asc, nameZh asc, name asc)
+   {nameZh, nameEn, name, className, "img": avatar.asset->url}`
+);
+const ROSTER_API = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${DATASET}?query=${ROSTER_QUERY}`;
+
+/* 样例小朋友：万一名单还没读到（离线 / 新学年还没录入），先看看效果 */
+const SAMPLE_STUDENTS = [
+  { display:"罗大韦", nameEn:"David Luo",  className:"elephant", img:null },
+  { display:"陈小美", nameEn:"Amy Chen",   className:"tiger",    img:null },
+  { display:"王强强", nameEn:"Jack Wang",  className:"elephant", img:null },
+  { display:"李丽丽", nameEn:"Lily Li",    className:"tiger",    img:null },
+];
+
+let roster = [];
+let rosterLoaded = false;
+
+(async function loadRoster(){
+  try{
+    const r = await fetch(ROSTER_API);
+    const d = await r.json();
+    roster = (d.result||[])
+      .map(s => ({ display: s.nameZh || s.name || s.nameEn || "", nameEn: s.nameEn || "", className: s.className, img: s.img }))
+      .filter(s => s.display);
+  }catch(e){}
+  rosterLoaded = true;
+  // Landing directly on a detail view (e.g. returning from the tracing tool via
+  // ?child=...) renders before this fetch resolves, so the first paint falls back
+  // to a placeholder avatar. Re-render whatever view is active once real data is in.
+  renderStage();
+})();
+
+function studentsForFilter(filter){
+  const pool = rosterLoaded && roster.length ? roster : SAMPLE_STUDENTS;
+  if(filter==="all") return pool;
+  return pool.filter(s=>s.className===filter);
+}
+
+/* ---------------- 是否是汉字 ---------------- */
+const CJK_RE = /[一-鿿]/g;
+function chineseChars(str){ return (str.match(CJK_RE)||[]); }
+
+/* ---------------- 常见姓氏 —— 简短的英文小知识 ---------------- */
+const SURNAME_2 = ["欧阳","司马","上官","诸葛","东方","令狐","皇甫","独孤","公孙","慕容","长孙","宇文"];
+const SURNAMES = {
+  "王":"“King” — one of the most common Chinese surnames, from ancient rulers and nobility.",
+  "李":"Linked to the plum tree 🌳 — the most common surname in the world, shared with the philosopher Laozi.",
+  "张":"From an ancient word for “archer / bow-maker” — a top-3 Chinese surname with 3,000+ years of history.",
+  "刘":"Traced to an ancient state name — the surname of the Han dynasty's founding emperor.",
+  "陈":"From the ancient state of Chen — a top-5 surname, especially common in southern China.",
+  "杨":"Named for the poplar tree 🌳 — a widespread surname since the Zhou dynasty.",
+  "黄":"Means “yellow,” linked to the Yellow River and the legendary Yellow Emperor.",
+  "赵":"The very first surname listed in the classic “Hundred Family Surnames” text.",
+  "吴":"From the ancient state of Wu, near the Yangtze River delta.",
+  "周":"From the great Zhou dynasty (1046–256 BC), one of China's longest-ruling dynasties.",
+  "徐":"From an ancient state in eastern China; a very old and respected clan name.",
+  "孙":"Means “grandchild / descendant” — shared with Sun Tzu, author of The Art of War.",
+  "马":"Means “horse” 🐎 — a surname carried by many families along the Silk Road.",
+  "朱":"Means “vermillion red” — the surname of the Ming dynasty's imperial family.",
+  "胡":"An ancient surname once linked to peoples beyond China's northern frontier.",
+  "林":"Means “forest” 🌲 — a very common surname, especially in southern China and Taiwan.",
+  "郭":"Means “outer city wall” — an old and honorable clan name.",
+  "何":"As a surname, traces back to the ancient state of Han.",
+  "高":"Means “tall / high” — a surname carried by ancient nobility.",
+  "罗":"Means “net” — historically linked to skilled hunters and an ancient state.",
+  "郑":"From the ancient state of Zheng — home to one of history's great diplomats.",
+  "梁":"Means “bridge / beam” — from the ancient state of Liang.",
+  "谢":"Means “to thank” — tied to a distinguished poetic family of the Six Dynasties.",
+  "宋":"From the Song dynasty and an ancient royal state.",
+  "唐":"From the glorious Tang dynasty (618–907), a golden age of Chinese culture.",
+  "许":"Means “to permit / promise” — an ancient and honorable clan name.",
+  "韩":"From the ancient state of Han — also the Chinese name for Korea.",
+  "冯":"An ancient noble clan name, written with the “horse” radical.",
+  "邓":"From an ancient state in central China.",
+  "曹":"From the ancient state of Cao — surname of a famous Three Kingdoms era family.",
+  "彭":"Linked to a legendary long-living sage, Ancestor Peng.",
+  "曾":"Traced to the disciple Zengzi, a student of Confucius.",
+  "萧":"An ancient and noble clan name.",
+  "肖":"A variant of 萧 (Xiao) — an ancient and noble clan name.",
+  "田":"Means “field” 🌾 — an ancient agricultural clan name.",
+  "董":"Means “to supervise / direct” — an old scholarly surname.",
+  "袁":"An ancient clan name tied to a noble lineage.",
+  "潘":"Named for an ancient river — a widespread southern Chinese surname.",
+  "于":"As a surname, traces back to the Zhou royal family.",
+  "蒋":"From an ancient state name — carried by 20th-century leader Chiang Kai-shek.",
+  "蔡":"From the ancient state of Cai.",
+  "余":"Means “surplus / abundance” — a lucky-sounding, widespread surname.",
+  "杜":"Linked to a birchleaf pear tree — the surname of the great Tang poet Du Fu.",
+  "叶":"Means “leaf” 🍃 — a common southern Chinese and Cantonese surname.",
+  "程":"Means “journey / rule” — an ancient and scholarly clan name.",
+  "苏":"Linked to a fragrant herb — the surname of the beloved poet Su Dongpo.",
+  "魏":"From the powerful ancient state of Wei.",
+  "吕":"One of China's oldest surnames, from a Shang-dynasty era state.",
+  "丁":"Historically meant a hearty, able-bodied person; also an old counting term.",
+  "沈":"Named for an ancient river or state.",
+  "任":"Means “responsibility / duty” — an ancient and honorable clan name.",
+  "姚":"From a legendary sage-king, Emperor Shun, said to be born by the Yao River.",
+  "卢":"Means “hut / hearth” — an ancient clan name.",
+  "姜":"Means “ginger” 🥚 — one of China's very oldest surnames, from Emperor Yan.",
+  "崔":"Means “lofty / towering” — a prestigious clan name of the Tang dynasty.",
+  "钟":"Means “bell” 🔔 — a melodious, ancient surname.",
+  "谭":"From an ancient small state near Shandong.",
+  "陆":"Means “land” — traced to a prince of the ancient Qi state.",
+  "汪":"Means “vast / deep water” — a surname linked to ancient nobility.",
+  "范":"Means “model / example” — the surname of the noted statesman Fan Zhongyan.",
+  "金":"Means “gold” 🥇 — a bright, prosperous-sounding surname.",
+  "石":"Means “stone” 🪨 — a strong, steady-sounding surname.",
+  "廖":"An ancient and honorable Chinese clan name.",
+  "贾":"Means “merchant” — also the surname of a great literary family in Dream of the Red Chamber.",
+  "夏":"Means “summer,” also China's very first dynasty.",
+  "韦":"Means “leather strap” — an ancient clan name.",
+  "傅":"Means “to assist / tutor.”",
+  "付":"A common variant form related to 傅.",
+  "方":"Means “square / direction / upright” — a clean, principled-sounding surname.",
+  "白":"Means “white” ⚪ — shared with the great Tang poet Bai Juyi.",
+  "邹":"From an ancient small state, home to the philosopher Mencius.",
+  "孟":"Means “eldest” — the surname of the great philosopher Mencius (Mengzi).",
+  "熊":"Means “bear” 🐻 — from the royal clan of the ancient state of Chu.",
+  "秦":"From the mighty Qin dynasty, which first unified China.",
+  "邱":"Traced to Confucius's hometown region, Mount Qiu.",
+  "江":"Means “river” 🌊 — a flowing, auspicious-sounding surname.",
+  "尹":"Means “to govern” — an ancient title-turned-surname.",
+  "薛":"From an ancient state name.",
+  "阎":"An ancient noble clan name.",
+  "闫":"A common variant of 阎, an ancient noble clan name.",
+  "段":"Traced to an ancient prince's title.",
+  "雷":"Means “thunder” ⚡ — a bold, powerful-sounding surname.",
+  "侯":"Means “marquis,” an ancient noble title turned surname.",
+  "龙":"Means “dragon” 🐉 — a majestic and auspicious surname.",
+  "史":"Means “historian / scribe” — an honorable, scholarly surname.",
+  "陶":"Means “pottery” 🏺 — linked to the poet-recluse Tao Yuanming.",
+  "黎":"Means “the multitude / dawn” — an ancient southern clan name.",
+  "贺":"Means “to congratulate / celebrate” 🎉 — a joyful-sounding surname.",
+  "顾":"Means “to look after / care for” — a scholarly Jiangnan clan name.",
+  "毛":"Means “fur / feather,” also the surname of Mao Zedong.",
+  "郝":"An ancient clan name from a Shang-dynasty era fief.",
+  "龚":"Means “reverent / respectful” — an ancient honorable clan name.",
+  "邵":"From an ancient noble fief of the Zhou dynasty.",
+  "万":"Means “ten thousand,” symbolizing abundance and countless blessings.",
+  "钱":"Means “money / coin” 💰 — a prosperous-sounding surname.",
+  "严":"Means “strict / dignified” — a respected clan name.",
+  "欧阳":"A two-character surname meaning roughly “the sunny side of Ou Mountain.”",
+  "司马":"A two-character surname meaning “manager of horses,” an ancient military title.",
+  "上官":"A two-character surname from an ancient palace-official title.",
+  "诸葛":"A two-character surname made famous by the brilliant strategist Zhuge Liang.",
+  "习":"An ancient clan name; also means “to practice and learn,” as in 学习 (to study).",
+  "令":"Part of the two-character surname 令狐 (Linghu), from an ancient fief name.",
+  "佟":"An old surname with Manchu roots, common in northeastern China.",
+  "倪":"From an ancient small state; also means “the beginning of something,” as in 端倪.",
+  "况":"An old surname; as a word it means “condition” or “moreover.”",
+  "冷":"Literally “cold,” but as a surname it traces to an ancient musical-official title.",
+  "包":"Means “to wrap and contain”; the surname of the legendary upright judge Bao Zheng.",
+  "卫":"From the ancient state of Wey; also means “to guard and protect.”",
+  "危":"An ancient clan name meaning “high, lofty, and upright.”",
+  "台":"An old surname; also means “platform” or “stage” as a word.",
+  "司":"Means “to manage and oversee,” as in 司马 (manager of horses).",
+  "孔":"The surname of Confucius (孔子) — a name synonymous with wisdom and learning.",
+  "寇":"An ancient title-turned-surname, originally a defense minister's post.",
+  "尔":"A classical word meaning “you” or “thus”; a distinguished old surname.",
+  "尚":"Means “to esteem and value”; the surname of the legendary strategist Jiang Shang.",
+  "巴":"From the ancient state of Ba, in what is now Sichuan and Chongqing.",
+  "庞":"An ancient noble clan name; also means “huge and vast.”",
+  "怀":"Means “to cherish and embrace” — a warm, thoughtful surname.",
+  "戈":"Named for an ancient weapon; also an ancient state name.",
+  "拓":"Part of the surname 拓跋 (Tuoba), the ruling clan of the Northern Wei dynasty.",
+  "施":"Means “to bestow and carry out”; an old and respected clan name.",
+  "木":"Means “tree, wood” — a simple, grounded surname.",
+  "欧":"Part of surnames like 欧阳; also means “Europe” in modern usage.",
+  "毕":"Means “to finish and complete”; an ancient clan name from the Zhou royal family.",
+  "水":"Means “water” — a flowing, life-giving surname.",
+  "汤":"The surname of Tang, founder of the Shang dynasty; also means “soup.”",
+  "沙":"Means “sand”; an old surname found among several ethnic groups in China.",
+  "涂":"Named for an ancient river; also means “road, path.”",
+  "滕":"From the ancient state of Teng, a small vassal state of the Zhou dynasty.",
+  "狄":"An ancient clan name, historically linked to northern peoples.",
+  "班":"The surname of the great Han-dynasty historian Ban Gu and explorer Ban Chao.",
+  "甘":"Means “sweet”; an ancient clan name from the Zhou royal family.",
+  "穆":"Means “solemn and dignified” — a respected, ancient clan name.",
+  "窦":"An ancient and noble clan name, prominent in the Han-dynasty imperial family.",
+  "翟":"An ancient clan name; also a pheasant feather used in ceremonial dress.",
+  "耿":"Means “bright and upright”; an old and honorable clan name.",
+  "聂":"An ancient clan name, originally from a small fief near the Zhou capital.",
+  "舒":"Means “relaxed and unhurried”; from the ancient state of Shu.",
+  "芮":"From the ancient state of Rui, a small vassal state of the Zhou dynasty.",
+  "茅":"Named for cogon grass; the surname of the Daoist immortals of Maoshan.",
+  "落":"Means “to fall and settle,” as in a place a family settles down.",
+  "葛":"From the ancient state of Ge; also part of the surname Zhuge (诸葛).",
+  "蒲":"Means “cattail reed”; the surname of the great storyteller Pu Songling.",
+  "裴":"An ancient and prestigious clan name from Shanxi, prominent for over a thousand years.",
+  "诗":"Means “poetry” — a rare, literary surname.",
+  "诸":"Part of the surname 诸葛 (Zhuge), made famous by the brilliant strategist Zhuge Liang.",
+  "费":"An ancient clan name from a Zhou-dynasty fief; also means “to spend.”",
+  "辛":"Means “hardworking, laborious”; an ancient clan name from the Xia-dynasty era.",
+  "边":"Means “border, edge”; an old and distinguished clan name.",
+  "那":"An old surname with ethnic-minority roots, found in both southern and northern China.",
+  "都":"Means “capital city”; also an old clan name.",
+  "阮":"From the ancient state of Ruan; the surname of one of the “Seven Sages of the Bamboo Grove.”",
+  "霍":"From the ancient state of Huo; the surname of the celebrated Han general Huo Qubing.",
+  "饶":"Means “abundant, plentiful” — a generous-sounding surname.",
+  "麦":"Means “wheat” — nourishment and a good harvest.",
+  "齐":"From the powerful ancient state of Qi, one of the great states of its era."
+};
+
+/* ---------------- 名字里常见的字 —— 英文寓意（正向解读） ---------------- */
+const GIVEN = {
+  "安":"Peace, safety, and calm — a wish for a tranquil, secure life.",
+  "静":"Quiet, serene, and calm-hearted.",
+  "宁":"Peace and tranquility.",
+  "平":"Level, even-tempered, peaceful.",
+  "泰":"Safety and peace; also evokes Mount Tai — grand and steady.",
+  "康":"Health and well-being.",
+  "和":"Harmony, peace, and gentleness.",
+  "乐":"Joy, happiness, and music.",
+  "欣":"Joyful and delighted.",
+  "悦":"Delight and pleasure.",
+  "怡":"Cheerful, harmonious joy.",
+  "欢":"Joy, delight, and cheer.",
+  "笑":"A smile, laughter, and good humor.",
+  "喜":"Happiness and delight.",
+  "美":"Beautiful and good.",
+  "丽":"Beautiful and elegant.",
+  "秀":"Elegant, outstanding, and graceful.",
+  "雅":"Elegant and refined.",
+  "婷":"Graceful and lovely.",
+  "妍":"Beautiful and lovely.",
+  "娜":"Graceful and elegant, often used in girls' names.",
+  "娟":"Graceful and beautiful.",
+  "婉":"Gentle and graceful.",
+  "姿":"A beautiful bearing or posture.",
+  "明":"Bright, clear, and brilliant.",
+  "亮":"Bright and shining.",
+  "辉":"Radiance and brilliance.",
+  "耀":"To shine; glory.",
+  "晨":"Morning and dawn — a fresh start.",
+  "昕":"Dawn and daybreak — the first light.",
+  "旭":"The rising sun.",
+  "阳":"Sunshine and warmth.",
+  "曦":"The soft light of dawn.",
+  "晗":"Morning light, a hint of dawn.",
+  "昀":"Sunlight and radiance.",
+  "煜":"Bright, shining, and blazing.",
+  "炜":"Bright and brilliant, like glowing light.",
+  "熠":"Sparkling and glittering.",
+  "晖":"Sunshine and radiance.",
+  "晓":"Dawn; also “to understand clearly.”",
+  "曜":"Sunlight and brilliance.",
+  "煦":"Warm, cozy sunlight.",
+  "晴":"Clear, sunny weather — optimism.",
+  "朗":"Bright, clear, and cheerful.",
+  "彤":"Vivid, warm vermillion red.",
+  "红":"Red — joy and good fortune.",
+  "紫":"Purple — nobility and good omen in Chinese culture.",
+  "青":"Green-blue — youth and vitality.",
+  "翠":"Emerald green — freshness and vitality.",
+  "碧":"Jade green — pure and precious.",
+  "天":"Sky, heaven — vast and boundless.",
+  "宇":"The universe, and the eaves of a house — vast and grand.",
+  "宙":"The cosmos; eternity.",
+  "辰":"The stars; an auspicious moment in time.",
+  "星":"A star.",
+  "月":"The moon.",
+  "云":"A cloud.",
+  "霞":"Rosy morning or sunset clouds.",
+  "雨":"Rain — nourishing and life-giving.",
+  "雪":"Snow — purity.",
+  "露":"Dew — freshness.",
+  "虹":"A rainbow.",
+  "海":"The sea — vastness and an open heart.",
+  "洋":"The ocean — vastness.",
+  "江":"A great river.",
+  "河":"A river.",
+  "泉":"A spring or fountain — the source of life.",
+  "清":"Clear and pure.",
+  "涵":"To contain and hold — broad-minded and deeply cultured.",
+  "潇":"Free and unrestrained, like wind and rain.",
+  "浩":"Vast and great, like a great expanse of water.",
+  "兰":"Orchid — elegance and nobility.",
+  "梅":"Plum blossom — resilience through winter.",
+  "菊":"Chrysanthemum — quiet strength and autumn beauty.",
+  "竹":"Bamboo — flexibility, integrity, steady growth.",
+  "松":"Pine tree — steadfastness and longevity.",
+  "柏":"Cypress — strength and endurance.",
+  "桐":"Parasol tree — an auspicious tree said to welcome the phoenix.",
+  "荷":"Lotus — purity rising above the mud.",
+  "莲":"Lotus — purity and grace.",
+  "蓉":"Hibiscus or lotus flower — beauty.",
+  "芳":"Fragrant — a virtuous reputation.",
+  "芬":"Fragrance and sweetness.",
+  "蕊":"A flower's stamen — the heart of a blossom.",
+  "萱":"Day lily — a symbol of a mother's love.",
+  "桂":"Osmanthus — honor and success.",
+  "樱":"Cherry blossom — delicate beauty.",
+  "苗":"A sprout or seedling — new growth and potential.",
+  "芽":"A bud or sprout — new beginnings.",
+  "颖":"Sharp and talented, like the tip of a seed — cleverness.",
+  "梓":"Catalpa tree — often paired with 子 for a pleasant sound; represents home and roots.",
+  "仁":"Benevolence and kindness.",
+  "义":"Righteousness and loyalty.",
+  "礼":"Courtesy and good manners.",
+  "智":"Wisdom.",
+  "信":"Trustworthiness and faith.",
+  "忠":"Loyalty and devotion.",
+  "孝":"Filial piety — love and respect for one's parents.",
+  "勇":"Courage and bravery.",
+  "毅":"Resolve and perseverance.",
+  "刚":"Firmness and strength of character.",
+  "强":"Strong and powerful.",
+  "健":"Healthy and vigorous.",
+  "谦":"Modest and humble.",
+  "诚":"Sincerity and honesty.",
+  "善":"Kindness and goodness.",
+  "良":"Good and virtuous.",
+  "慧":"Intelligence and wisdom.",
+  "睿":"Wise and perceptive.",
+  "聪":"Clever and sharp-witted.",
+  "敏":"Quick-witted and sharp.",
+  "勤":"Diligent and hardworking.",
+  "俭":"Frugal and simple-living.",
+  "恭":"Respectful and courteous.",
+  "谨":"Careful and prudent.",
+  "慎":"Cautious and careful.",
+  "真":"True and genuine.",
+  "纯":"Pure and simple.",
+  "洁":"Clean and pure.",
+  "朴":"Simple, plain, and unadorned.",
+  "实":"Solid, honest, and substantial.",
+  "贤":"Virtuous, capable, and worthy.",
+  "哲":"Wise and philosophical.",
+  "锐":"Sharp and keen — a quick mind.",
+  "铭":"Engraved — to always remember, a lasting impression.",
+  "福":"Good fortune and blessing.",
+  "禄":"Prosperity and success.",
+  "寿":"Longevity, a long and healthy life.",
+  "财":"Wealth and fortune.",
+  "富":"Rich and abundant.",
+  "贵":"Noble and precious.",
+  "荣":"Glory and honor.",
+  "华":"Splendor and flourishing; also the word for “China.”",
+  "兴":"Prosperous and flourishing.",
+  "旺":"Thriving and prosperous.",
+  "盛":"Flourishing and abundant.",
+  "昌":"Prosperous and flourishing.",
+  "隆":"Grand and prosperous.",
+  "顺":"Smooth and favorable.",
+  "吉":"Lucky and auspicious.",
+  "祥":"Auspicious — a good omen.",
+  "瑞":"An auspicious sign; good fortune.",
+  "庆":"Celebration and good fortune.",
+  "满":"Full, complete, and content.",
+  "志":"Ambition and aspiration.",
+  "远":"Far-reaching and ambitious.",
+  "鹏":"A giant mythical bird — soaring ambition.",
+  "飞":"To fly — freedom and high aspiration.",
+  "翔":"To soar and glide.",
+  "腾":"To rise and gallop — vigorous energy.",
+  "跃":"To leap — jumping ahead with energy.",
+  "超":"To surpass and exceed.",
+  "越":"To surpass and go beyond.",
+  "卓":"Outstanding and exceptional.",
+  "凌":"To rise above and soar.",
+  "展":"To unfold — displaying one's talents.",
+  "宏":"Grand and great in scope.",
+  "博":"Broad and extensive in knowledge.",
+  "弘":"Great and expansive.",
+  "硕":"Large, great, and accomplished.",
+  "凯":"Triumphant and victorious.",
+  "帆":"A sail — moving forward with purpose.",
+  "航":"To navigate or sail — journeying forward.",
+  "轩":"High and spacious, like a canopied carriage — a noble bearing.",
+  "宸":"An imperial residence — grand and dignified.",
+  "玉":"Jade — purity and virtue.",
+  "珍":"Precious and treasured.",
+  "宝":"A treasure, something precious.",
+  "钰":"Precious metal or jade — a treasure.",
+  "鑫":"Abundance of gold and wealth (three “gold” characters stacked together).",
+  "晶":"Crystal — sparkling clarity.",
+  "琳":"Fine jade — beautiful and precious.",
+  "珊":"Coral — rare beauty.",
+  "玲":"The tinkling sound of jade — delicate and melodious.",
+  "瑶":"Precious jade — beautiful and valuable.",
+  "琪":"Fine jade — a treasured gem.",
+  "瑾":"Fine jade — a virtuous gem.",
+  "璐":"Beautiful jade.",
+  "琛":"A treasure; precious jade.",
+  "珂":"A white jade-like stone — pure beauty.",
+  "璇":"Beautiful jade, likened to a bright star.",
+  "珺":"A fine, noble jade.",
+  "锦":"Brocade — rich, beautiful, and splendid.",
+  "绣":"Embroidery — fine and skillful beauty.",
+  "龙":"Dragon — power, nobility, and good fortune.",
+  "凤":"Phoenix — grace, virtue, and renewal.",
+  "鹤":"Crane — longevity and grace.",
+  "鹿":"Deer — good fortune and gentleness.",
+  "麟":"Qilin, a mythical benevolent creature — auspicious and kind.",
+  "虎":"Tiger — courage and strength.",
+  "春":"Spring — new life and renewal.",
+  "夏":"Summer — vitality and warmth.",
+  "秋":"Autumn — harvest and maturity.",
+  "冬":"Winter — quiet strength and resilience.",
+  "念":"To think of fondly — remembered with love.",
+  "思":"To think — thoughtful.",
+  "忆":"A fond memory.",
+  "梦":"A dream — hopes and aspirations.",
+  "曼":"Graceful and elegant.",
+  "丹":"Cinnabar red — sincerity and a devoted heart.",
+  "心":"Heart and mind — sincerity and care.",
+  "灵":"Clever, spirited, and quick-minded.",
+  "嫣":"A beautiful, charming smile.",
+  "媛":"A beautiful, graceful woman.",
+  "姝":"Pretty and good-looking.",
+  "淑":"Gentle and virtuous.",
+  "子":"Child; also a respectful title, as in “master.”",
+  "小":"Little, dear one — an affectionate name element.",
+  "大":"Big and great.",
+  "伟":"Great and remarkable.",
+  "杰":"Outstanding and heroic.",
+  "俊":"Handsome and talented.",
+  "豪":"Heroic, bold, and generous.",
+  "雄":"Grand and heroic.",
+  "昊":"The vast sky — grand and expansive.",
+  "锋":"The cutting edge of a blade — sharp and outstanding.",
+  "磊":"Piled-up stones — an open, upright character.",
+  "涛":"Great waves — bold and dynamic.",
+  "澜":"Big rolling waves — dynamic and grand.",
+  "沛":"Abundant and vigorous, like a rushing river.",
+  "妤":"A beautiful, refined character often used in girls' names.",
+  "姗":"To walk gracefully and unhurried.",
+  "菁":"The finest, most essential part of something — brilliance.",
+  "萌":"A budding sprout — cute and full of potential.",
+  "歆":"To be delighted by, as by a pleasant fragrance — warmly welcomed.",
+  "冉":"Soft and gradual — a gentle, unfolding quality.",
+  "芊":"Lush and green, like thriving young plants.",
+  "沐":"To bathe or be immersed in sunlight — fresh and renewed.",
+  "淼":"A vast expanse of water — grand and flowing.",
+  "彦":"An accomplished, virtuous scholar.",
+  "彬":"Refined, cultured, and elegant in manner.",
+  "韬":"Strategy and wisdom, as in military strategy (韬略).",
+  "弈":"The game of chess/Go — wisdom and strategic thinking.",
+  "历":"To experience and grow through life's journey.",
+  "山":"Mountain — strength and steadiness.",
+  "古":"Ancient — a link to tradition and history.",
+  "达":"To reach or arrive at — achieving one's goals.",
+  "泽":"A marsh or pond; also “kindness, grace” in classical usage.",
+  "肯":"Willing and agreeable.",
+  "凡":"Down-to-earth; ordinary in the best sense.",
+  "格":"Character and standards, as in “personality.”",
+  "茜":"A vivid red dye plant (madder) — a popular, pretty girls'-name character.",
+  "昂":"Held high — spirited and confident.",
+  "琼":"Fine jade — beautiful and precious.",
+  "翰":"A writing brush — scholarly and cultured.",
+  "维":"To hold together and support — steady and reliable.",
+  "治":"To govern well, or to heal — bringing order and care.",
+  "约":"A promise kept — trustworthy.",
+  "恩":"Grace and kindness.",
+  "爱":"Love — a warm, affectionate character.",
+  "诺":"A promise — someone who keeps their word.",
+  "纳":"To accept and take in graciously.",
+  "亨":"Smooth-going and prosperous.",
+  "米":"Rice — nourishment and sustenance.",
+  "芙":"A lotus-flower character, used for its beauty in names.",
+  "洛":"Named for the Luo River — a classical, elegant place name.",
+  "蒙":"To receive guidance and teaching.",
+  "乔":"Tall and lofty, like a great tree.",
+  "戴":"To carry with honor.",
+  "贝":"A shell — precious in ancient times, at the root of many characters about treasure.",
+  "伊":"A gentle, graceful pronoun in classical Chinese.",
+  "可":"Approved and agreeable.",
+  "汉":"The Han people and culture — a proud cultural heritage.",
+  "薇":"A small, delicate flower (vetch) — gentle beauty.",
+  "菲":"Fragrant plants — a graceful, sweet-smelling character.",
+  "黛":"A dark eyebrow pigment prized in classical poetry — refined elegance.",
+  "艾":"Mugwort, a fragrant healing herb used in traditional medicine.",
+  "妮":"A soft, affectionate character often ending girls' names.",
+  "史":"Historian or scribe — a keeper of stories and memory.",
+  "布":"Cloth — simple, honest, and down-to-earth.",
+  "登":"To climb and ascend — rising step by step.",
+  "顿":"Steady and settled.",
+  "尼":"A gentle, soft-sounding character.",
+  "勒":"A steady, grounded character.",
+  "柯":"An axe handle in classical texts — sturdy and dependable.",
+  "索":"A rope or cord — connection and strength.",
+  "奥":"Profound and mysterious — deep wisdom.",
+  "哈":"The joyful sound of laughter.",
+  "珀":"Amber — warm, glowing, and precious.",
+  "比":"To compare or stand alongside — companionship.",
+  "盖":"To cover and shelter, providing protection.",
+  "埃":"Used mostly for its gentle sound in names.",
+  "卡":"Used mostly for its crisp, bright sound in names.",
+  "芭":"Banana leaf / plantain — lush and vivid.",
+  "逊":"Modest and humble.",
+  "莫":"Firm and resolute (“let nothing stop you”).",
+  "弗":"A soft, understated character used mainly for its sound.",
+  "詹":"An old, dignified character used mainly for its sound.",
+  "考":"To examine closely — thoughtful and studious.",
+  "莱":"A type of grain in classical texts — nourishing and wholesome.",
+  "佳":"Good, fine, and excellent.",
+  "加":"To add — increase and growth.",
+  "家":"Home and family — belonging and warmth.",
+  "嘉":"Excellent, admirable, and joyous.",
+  "力":"Strength and power.",
+  "立":"To stand firm and establish oneself.",
+  "利":"Sharp, favorable, and beneficial.",
+  "莉":"Jasmine flower — delicate fragrance.",
+  "俐":"Clever and quick-witted (as in 伶俐).",
+  "栋":"A ridgepole — the main beam of a house, a pillar of strength.",
+  "沁":"To seep in gently, like a cool, refreshing feeling.",
+  "泓":"A deep, clear pool of water.",
+  "鸿":"A wild swan or goose — grand ambitions (as in 鸿图).",
+  "翎":"A bird's feather — light and graceful.",
+  "翊":"To assist and support, like wings helping flight.",
+  "翌":"The next day — looking ahead to a fresh start.",
+  "翼":"Wings — the power to soar.",
+  "颜":"One's face and countenance — dignity and expression.",
+  "颂":"To praise and sing in honor of.",
+  "颐":"To nurture and take good care of.",
+  "颢":"Bright and vast, like a clear sky.",
+  "馨":"A far-reaching, lingering fragrance — virtue that spreads.",
+  "韵":"Rhyme and grace — refined charm.",
+  "音":"Sound — music and harmony.",
+  "韶":"Beautiful, often describing youth — linked to fine classical music.",
+  "央":"The center — the heart of things.",
+  "旻":"The autumn sky — vast and clear.",
+  "昭":"Bright and clear; to make evident.",
+  "炫":"Dazzling and brilliant.",
+  "烁":"Sparkling and shining.",
+  "燃":"To burn brightly — full of passion and energy.",
+  "炎":"A blazing flame — energy and passion; also linked to the legendary Yan Emperor.",
+  "培":"To cultivate and nurture growth.",
+  "淳":"Simple, honest, and pure-hearted.",
+  "澄":"Clear and transparent, like still water.",
+  "沂":"Named for the Yi River — a classical, gentle place name.",
+  "汐":"The evening tide — calm and rhythmic.",
+  "渝":"Unchanging (as in 矢志不渝) — steadfast loyalty.",
+  "滢":"Clear, sparkling water.",
+  "澈":"Thoroughly clear, like pure water.",
+  "熙":"Bright and prosperous, full of vitality.",
+  "煊":"Radiant warmth, like brilliant sunshine.",
+  "炯":"Bright and shining, as in alert, sparkling eyes.",
+  "昶":"A long, bright day.",
+  "晏":"Calm, clear, and peaceful.",
+  "晔":"Bright and glorious.",
+  "晟":"Bright and flourishing.",
+  "杭":"Named for the beautiful city of Hangzhou.",
+  "栩":"Lifelike and vivid, full of character.",
+  "桦":"Birch tree — resilience in cold climates.",
+  "楠":"Nanmu tree — a fine, precious hardwood.",
+  "榕":"Banyan tree — broad, sheltering strength.",
+  "槿":"Rose of Sharon — gentle, hibiscus-like beauty.",
+  "杉":"Fir or cedar tree — steady and evergreen.",
+  "柳":"Willow tree — graceful and flexible.",
+  "枫":"Maple tree — vivid autumn beauty.",
+  "橙":"Orange — warmth and vitality.",
+  "文":"Literature and culture — refined and scholarly.",
+  "武":"Martial and valiant — strength and discipline.",
+  "恒":"Constant and enduring.",
+  "阿":"A friendly, affectionate prefix used before names.",
+  "克":"Used mainly for its crisp sound in transliterated names (like Mark or Frederick); also means “to overcome.”",
+  "里":"A traditional unit of distance; also phonetic, as in Larry or Riley.",
+  "斯":"A soft, common sound used in many transliterated Western names.",
+  "一":"One — the beginning of all things, unity and wholeness.",
+  "不":"A linking word (“not”), often paired for rhythm and meaning, as in 不同 (“unique”).",
+  "东":"East — the direction of the rising sun and new beginnings.",
+  "丫":"A soft, playful character often used in affectionate nicknames for girls.",
+  "举":"To raise up and lift high — achievement and ambition.",
+  "之":"A classical connector word, giving a name an elegant, literary feel.",
+  "乎":"A classical exclamation particle, giving a name a thoughtful, literary flavor.",
+  "书":"Book — a love of learning and knowledge.",
+  "亚":"Second, or “Asia” in modern usage — a graceful sound in names.",
+  "亦":"Also, likewise — a soft, literary character common in given names.",
+  "以":"By means of, or “to use well” — thoughtful and purposeful.",
+  "优":"Excellent and outstanding.",
+  "伦":"Order and moral relationships — a sense of harmony and propriety.",
+  "佩":"To wear with pride, as a fine jade ornament — admiration and respect.",
+  "依":"To rely on and be close to — closeness and warmth.",
+  "侠":"A chivalrous hero — brave and generous of spirit.",
+  "修":"To cultivate and refine oneself.",
+  "傲":"Proud and unbending — a confident spirit, as in 傲骨 (backbone, integrity).",
+  "儒":"A Confucian scholar — learning and moral cultivation.",
+  "儿":"A soft, affectionate suffix often used at the end of names.",
+  "先":"First, ahead — a pioneering spirit.",
+  "兮":"A lyrical classical particle, giving a name a poetic, song-like quality.",
+  "军":"Army, troops — discipline and strength.",
+  "冰":"Ice — clarity and purity.",
+  "勋":"Merit and achievement, as in a medal of honor.",
+  "千":"A thousand — abundance and vastness.",
+  "半":"Half — a gentle, balanced quality.",
+  "南":"South — warmth, as of the sunny south.",
+  "即":"Right away, at once — a decisive, ready spirit.",
+  "原":"Original and sincere; also “a wide plain.”",
+  "友":"Friend — friendship and companionship.",
+  "双":"A pair — togetherness, often used for twins.",
+  "同":"Together, alike — unity and harmony.",
+  "名":"A name, or fame and reputation — a good name to live up to.",
+  "君":"A noble person of virtue and honor, as in 君子 (a person of integrity).",
+  "含":"To hold gently within, as a flower holds its fragrance.",
+  "咏":"To sing or chant — a poetic, musical quality.",
+  "囡":"A tender, affectionate word for “little girl” in the Wu Chinese dialects.",
+  "固":"Firm and solid — steadfast.",
+  "坤":"The earth (paired with 乾, heaven, in the I Ching) — nurturing and grounded.",
+  "夕":"Evening — the gentle, glowing time of sunset.",
+  "奎":"A star in Chinese astronomy associated with literary talent.",
+  "奕":"Radiant and full of spirit, as in 神采奕奕 (glowing with vitality).",
+  "如":"Like, as if — often paired to mean “just as wished for” (如愿).",
+  "妹":"Little sister — affection and closeness.",
+  "威":"Might and dignity — commanding respect.",
+  "娅":"A soft, gentle sound often used in girls' names.",
+  "婧":"Slender and graceful, with quiet inner strength.",
+  "宗":"An ancestor or respected forebear — honoring one's roots.",
+  "宛":"Gentle and graceful, as if winding softly.",
+  "宜":"Suitable and agreeable — a fitting, harmonious quality.",
+  "客":"A guest — hospitality; also evokes the free-spirited 侠客 (wandering hero).",
+  "宬":"An old word for a hall used to store books and archives — scholarly.",
+  "将":"A general or leader; also “about to be” — future promise.",
+  "岚":"Mountain mist — ethereal, misty beauty.",
+  "希":"Hope and aspiration.",
+  "建":"To build and establish.",
+  "开":"To open — new beginnings and possibility.",
+  "德":"Virtue and moral character.",
+  "忱":"Sincerity and heartfelt feeling.",
+  "怜":"Tender love and compassion.",
+  "恨":"Deep longing in classical poetry — often paired for dramatic, literary effect.",
+  "成":"To succeed and accomplish.",
+  "拉":"Used mainly for its sound in transliterated names.",
+  "振":"To rouse and invigorate.",
+  "捷":"Quick and victorious.",
+  "掬":"To scoop up gently with both hands — a tender, careful gesture.",
+  "敬":"Respect and reverence.",
+  "旬":"A ten-day period — marking meaningful time.",
+  "昇":"A variant of 升, meaning to rise and ascend.",
+  "映":"To reflect and shine, as moonlight on water.",
+  "昱":"The bright light of the sun — a new day dawning.",
+  "景":"Scenery and bright light — a beautiful view.",
+  "有":"To have and possess — abundance.",
+  "朋":"A friend — companionship and community.",
+  "未":"Not yet — full of future potential.",
+  "本":"The root or origin — staying true to one's roots.",
+  "朵":"A measure word for flowers — delicate and blooming.",
+  "来":"To come — welcoming new beginnings.",
+  "枚":"A measure word for small, precious things.",
+  "桉":"Eucalyptus tree — fresh and fragrant.",
+  "桓":"A tall, stately tree; also “mighty and grand.”",
+  "桠":"A tree branch — natural growth and flexibility.",
+  "森":"A forest (three trees together) — abundant, thriving nature.",
+  "民":"The people — connection to community.",
+  "永":"Forever and eternal.",
+  "汶":"Named for the Wen River.",
+  "波":"Waves — dynamic energy.",
+  "洪":"A great flood — grand and powerful, like a mighty river.",
+  "润":"Moist and nourishing — gentle abundance.",
+  "源":"The source — origin and wellspring.",
+  "火":"Fire — warmth, energy, and passion.",
+  "炘":"A warm, glowing brightness — a rare, poetic character.",
+  "然":"So, thus — natural and genuine, as in 自然 (nature).",
+  "燕":"Swallow (the bird) — grace and the return of spring.",
+  "爽":"Bright, crisp, and cheerful.",
+  "牧":"To herd and tend — care and stewardship.",
+  "狐":"Fox — clever and quick-witted; part of the surname 令狐 (Linghu).",
+  "珠":"A pearl — precious and beautiful.",
+  "琍":"A gem-like character used mainly for its pleasant sound (as in the name Lili).",
+  "琦":"A fine, rare piece of jade — outstanding and precious.",
+  "生":"Life and growth.",
+  "甲":"First in rank — excellence, as in 甲等 (top grade).",
+  "百":"One hundred — abundance and completeness.",
+  "皓":"Bright and luminous, like moonlight.",
+  "看":"To look and observe — awareness and attentiveness.",
+  "知":"To know — wisdom and understanding.",
+  "禧":"Happiness and good fortune, especially New Year blessings.",
+  "秉":"To hold firmly and uphold, as in 秉持 (to uphold one's principles).",
+  "章":"A chapter or emblem — accomplishment and order.",
+  "笙":"A traditional reed instrument — music and harmony.",
+  "笛":"A bamboo flute — music and grace.",
+  "粒":"A small grain — a tiny, precious treasure.",
+  "素":"Plain, pure, and unadorned elegance.",
+  "继":"To continue and carry forward.",
+  "绮":"Fine patterned silk — refined beauty.",
+  "群":"A group — community and togetherness.",
+  "羽":"A feather — lightness and the power to fly.",
+  "胜":"To win and prevail.",
+  "艺":"Art and skill.",
+  "芃":"Lush and flourishing plant growth.",
+  "花":"Flower — beauty and blossoming.",
+  "芷":"A fragrant angelica plant, prized in classical poetry for its purity.",
+  "苇":"Reed — flexible, resilient growth by the water.",
+  "若":"As if, like — often paired to mean “like an orchid” (若兰) or similar.",
+  "英":"A hero, or the finest part of a flower — outstanding brilliance.",
+  "茹":"To take in gently — gentle and accommodating.",
+  "荧":"A soft glimmer of light, like a firefly or starlight.",
+  "莎":"A type of grass (sedge); also phonetic, as in Sarah.",
+  "莹":"Sparkling and translucent, like fine jade.",
+  "菀":"Lush and flourishing, like a thriving garden.",
+  "蓓":"A flower bud — full of promise, about to bloom.",
+  "蕾":"A flower bud — potential and new beginnings.",
+  "语":"Language and speech — thoughtful expression.",
+  "谷":"A valley — a fertile, sheltering, peaceful place.",
+  "豆":"A bean — small, wholesome, and full of life; often an affectionate nickname.",
+  "跋":"Part of the surname 拓跋 (Tuoba); also “to travel over mountains” (跋涉).",
+  "路":"A road or path — a life's journey.",
+  "连":"To connect and join together.",
+  "迪":"To guide and enlighten.",
+  "逸":"Free, easy, and unrestrained — a carefree spirit.",
+  "邦":"A country or state — belonging to something greater.",
+  "铁":"Iron — strength and resilience.",
+  "长":"Long-lasting, or “to grow” — endurance and growth.",
+  "问":"To ask — curiosity and a searching mind.",
+  "闵":"To sympathize and care for others; also an ancient state name.",
+  "雯":"Colorful, patterned clouds — beautiful and unique.",
+  "霏":"Falling snow or rain, softly drifting.",
+  "霓":"A rainbow — beauty after the rain.",
+  "霖":"A long, gentle, nourishing rain.",
+  "香":"Fragrant — pleasant and memorable.",
+  "骄":"Proud, as of a splendid achievement, as in 天之骄子 (a favored child of heaven).",
+  "鱼":"Fish — abundance, as in the New Year saying 年年有余 (surplus every year)."
+};
+
+function pinyinFor(char){
+  try{
+    if(window.pinyinPro) return window.pinyinPro.pinyin(char,{toneType:"symbol"});
+  }catch(e){}
+  return "";
+}
+
+function splitSurnameGiven(name){
+  for(const s of SURNAME_2){ if(name.startsWith(s)) return { surname:s, given:name.slice(s.length) }; }
+  // 中文姓名的常见结构是"姓在前，名在后"，就算这个姓不在我们的小词典里，
+  // 也按这个惯例把第一个字当姓，其余当名。
+  return { surname:name[0], given:name.slice(1) };
+}
+
+/* ---------------- 中文朗读（跟四会字页面同一套发音引擎/同一套 fallback 链路） ---------------- */
+let globalAudio = new Audio();
+async function speak(text){
+  if(!text) return;
+  globalAudio.pause();
+
+  const localPath = `../audio/student_names/${encodeURIComponent(text)}.mp3`;
+  const azureUrl = `/api/tts?text=${encodeURIComponent(text)}`;
+
+  try{
+    const localRes = await fetch(localPath, { method:"HEAD" }).catch(()=>null);
+    if(localRes && localRes.ok && localRes.headers.get("content-type") && localRes.headers.get("content-type").includes("audio")){
+      globalAudio.src = localPath; await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    const azureRes = await fetch(azureUrl).catch(()=>null);
+    if(azureRes && azureRes.ok && azureRes.headers.get("content-type") && azureRes.headers.get("content-type").includes("audio")){
+      const audioBlob = await azureRes.blob();
+      globalAudio.src = URL.createObjectURL(audioBlob); await globalAudio.play(); return;
+    }
+  }catch(e){}
+
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="zh-CN"; u.rate=.78;
+    const v=speechSynthesis.getVoices().find(v=>/zh|Chinese/i.test(v.lang+v.name));
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------------- 小工具 ---------------- */
+const el=(t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+
+/* ---------------- 状态 & 顶栏 ---------------- */
+let classFilter = "all";
+try{ classFilter = localStorage.getItem("mcn.classFilter") || "all"; }catch(e){}
+function setClassFilter(f){ classFilter=f; try{ localStorage.setItem("mcn.classFilter",f); }catch(e){} }
+
+let view = { name:"home", student:null };
+const stage = document.getElementById("stage");
+const topbar = document.getElementById("topbar");
+
+function renderTop(){
+  topbar.innerHTML="";
+  if(view.name==="home"){
+    const back=el("a","chip","← Parents & Students");
+    back.href="../parents.html";
+    topbar.appendChild(back);
+  }else{
+    const back=el("button","chip","← My Chinese Name");
+    back.onclick=()=>go("home");
+    topbar.appendChild(back);
+  }
+  topbar.appendChild(el("div","spacer"));
+}
+
+function go(name, student){
+  view = { name, student: student||null };
+  renderTop(); renderStage();
+  stage.scrollTop = 0;
+}
+
+/* URL 里带 ?child=... 时（比如从"写字大挑战"练完字返回），直接打开那个小朋友的详情页 */
+function openFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const child = params.get("child");
+  if(child) go("detail", decodeURIComponent(child));
+  else go("home");
+}
+
+/* ============================================================
+   首页 = 名单
+   ============================================================ */
+const CLASS_OPTIONS = [
+  { id:"all",      label:"All" },
+  { id:"elephant", label:"🐘 Elephants" },
+  { id:"tiger",    label:"🐯 Tigers" }
+];
+
+function renderHome(){
+  stage.className = "stage";
+
+  const head=el("div","home-head");
+  head.appendChild(el("h1",null,"My Chinese Name"));
+  head.appendChild(el("p",null,"Click on a friend to see their photo, hear their name, and learn how to write it!"));
+  stage.appendChild(head);
+
+  const filterRow=el("div","class-filter");
+  CLASS_OPTIONS.forEach(opt=>{
+    const b=el("button","class-chip"+(classFilter===opt.id?" on":""),opt.label);
+    b.onclick=()=>{ setClassFilter(opt.id); renderStage(); };
+    filterRow.appendChild(b);
+  });
+  stage.appendChild(filterRow);
+
+  const scroll=el("div","roster-scroll");
+  const pool = studentsForFilter(classFilter);
+
+  if(!pool.length){
+    scroll.appendChild(el("div","empty-note","No students found for this class yet."));
+  }else{
+    const grid=el("div","roster-grid");
+    pool.forEach(s=>{
+      const b=el("button","student-card");
+      if(s.img){
+        const img=document.createElement("img");
+        img.className="pic"; img.src=s.img; img.alt=s.display;
+        b.appendChild(img);
+      }else{
+        b.appendChild(el("div","pic-fallback","🙋"));
+      }
+      b.appendChild(el("b",null,s.display));
+      const classLabel = s.className==="elephant"?"🐘 Elephants":s.className==="tiger"?"🐯 Tigers":"";
+      b.appendChild(el("small",null, s.nameEn || classLabel));
+      b.onclick=()=>go("detail", s.display);
+      grid.appendChild(b);
+    });
+    scroll.appendChild(grid);
+  }
+  stage.appendChild(scroll);
+}
+
+/* ============================================================
+   详情页
+   ============================================================ */
+function studentByName(name){
+  const pool = rosterLoaded && roster.length ? roster : SAMPLE_STUDENTS;
+  return pool.find(s=>s.display===name) || { display:name, className:null, img:null };
+}
+
+function meaningCard(ch, isSurname){
+  const card = el("div","meaning-card"+(isSurname?" surname":""));
+
+  const glyph = el("div","glyph",ch);
+  card.appendChild(glyph);
+
+  const body = el("div","body");
+  body.appendChild(el("div","tag", isSurname ? "Family Name" : "Given Name"));
+
+  const py = pinyinFor(ch);
+  body.appendChild(el("div","py-line", ch + (py?"  ·  "+py:"")));
+
+  // A character's "main" dictionary depends on whether it's sitting in the
+  // surname or given-name slot, but a lot of characters are common in both
+  // roles (e.g. 林/白/雷 are frequent surnames AND given-name characters), so
+  // always fall back to the other dictionary before giving up.
+  const primary = isSurname ? SURNAMES : GIVEN;
+  const secondary = isSurname ? GIVEN : SURNAMES;
+  const meaning = primary[ch] || secondary[ch];
+  body.appendChild(el("div","en", meaning || "This character's story hasn't been added yet — ask your teacher what it means!"));
+
+  const btns = el("div","row-btns");
+  const playBtn = el("button","mini-btn","🔊 Read it");
+  playBtn.onclick=()=>speak(ch);
+  btns.appendChild(playBtn);
+
+  const writeBtn = el("a","mini-btn write","✍️ Practice writing");
+  const childParam = encodeURIComponent(view.student||"");
+  writeBtn.href = `../cla/tracing.html?char=${encodeURIComponent(ch)}&from=name&child=${childParam}&role=parents`;
+  btns.appendChild(writeBtn);
+
+  body.appendChild(btns);
+  card.appendChild(body);
+  return card;
+}
+
+function renderDetail(){
+  stage.className = "stage";
+  const student = studentByName(view.student);
+  const chars = chineseChars(student.display);
+
+  const wrap = el("div","detail");
+
+  const dhead = el("div","detail-head");
+  if(student.img){
+    const img=document.createElement("img");
+    img.className="pic"; img.src=student.img; img.alt=student.display;
+    dhead.appendChild(img);
+  }else{
+    dhead.appendChild(el("div","pic-fallback","🙋"));
+  }
+
+  if(!chars.length){
+    dhead.appendChild(el("div",null,student.display||"—"));
+    wrap.appendChild(dhead);
+    wrap.appendChild(el("div","empty-note","No Chinese name on file yet."));
+    stage.appendChild(wrap);
+    return;
+  }
+
+  const { surname, given } = splitSurnameGiven(student.display);
+
+  const nameRow = el("div","name-row");
+  chars.forEach((ch,i)=>{
+    const isSurname = i < surname.length;
+    const btn = el("button","name-char"+(isSurname?" surname":" given"));
+    btn.appendChild(document.createTextNode(ch));
+    const py = el("div","py", pinyinFor(ch));
+    btn.appendChild(py);
+    btn.onclick=()=>speak(ch);
+    nameRow.appendChild(btn);
+  });
+  dhead.appendChild(nameRow);
+
+  const legend = el("div","legend");
+  legend.innerHTML = '<span><i class="surname"></i>Family name</span><span><i class="given"></i>Given name</span>';
+  dhead.appendChild(legend);
+
+  const actions = el("div","action-row");
+
+  const readAll = el("button","read-btn","🔊 Read My Whole Name");
+  readAll.onclick=()=>speak(student.display);
+  actions.appendChild(readAll);
+
+  const printBtn = el("a","print-btn","🖨️ Print Practice Sheet");
+  const childParamHead = encodeURIComponent(view.student||"");
+  printBtn.href = `../tools/name_writing_worksheet.html?student=${encodeURIComponent(student.display)}&from=name&child=${childParamHead}`;
+  printBtn.target = "_blank";
+  printBtn.rel = "noopener";
+  actions.appendChild(printBtn);
+
+  dhead.appendChild(actions);
+
+  wrap.appendChild(dhead);
+
+  const grid = el("div","meaning-grid");
+  chars.forEach((ch,i)=>{
+    const isSurname = i < surname.length;
+    grid.appendChild(meaningCard(ch, isSurname));
+  });
+  wrap.appendChild(grid);
+
+  const note = el("div","teacher-note",
+    "Tip: a character can carry more than one good meaning depending on the name — this is just one common reading.");
+  wrap.appendChild(note);
+
+  stage.appendChild(wrap);
+  speak(student.display);
+}
+
+/* ============================================================
+   渲染分发
+   ============================================================ */
+function renderStage(){
+  stage.innerHTML="";
+  if(view.name==="home") return renderHome();
+  return renderDetail();
+}
+
+document.addEventListener("keydown",e=>{
+  if((e.key==="Escape"||e.key==="ArrowLeft") && view.name==="detail") go("home");
+});
+
+if(window.speechSynthesis) speechSynthesis.getVoices();
+renderTop();
+openFromUrl();
+</script>
+</body>
+</html>
