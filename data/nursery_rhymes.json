@@ -62,6 +62,46 @@
           "youtubeId": "ngOM7skqjjo"
         }
       ]
+    },
+    {
+      "id": "numbers",
+      "title": "数字",
+      "titleEn": "Numbers",
+      "songs": [
+        {
+          "id": "shudaoyibai",
+          "title": "数到100",
+          "titleEn": "Counting to 100",
+          "youtubeId": "1RNFE4690fk"
+        }
+      ]
+    },
+    {
+      "id": "shapes",
+      "title": "形状",
+      "titleEn": "Shapes",
+      "songs": [
+        {
+          "id": "xingzhuangge",
+          "title": "形状歌",
+          "titleEn": "Shapes Song",
+          "youtubeId": "d1OuG1qXIiA",
+          "startTime": 18
+        }
+      ]
+    },
+    {
+      "id": "weather",
+      "title": "天气",
+      "titleEn": "Weather",
+      "songs": [
+        {
+          "id": "tianqizenmeyang",
+          "title": "天气怎么样",
+          "titleEn": "What's the Weather Like",
+          "youtubeId": "tyo3Rzbtl3w"
+        }
+      ]
     }
   ]
 }
