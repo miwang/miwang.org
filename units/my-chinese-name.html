@@ -119,6 +119,13 @@ body{
   display:inline-flex;align-items:center;gap:.4rem;
 }
 .read-btn:active{transform:translateY(2px)}
+.action-row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.print-btn{
+  border:none;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink);
+  box-shadow:var(--shadow),inset 0 0 0 1.5px var(--accent);border-radius:999px;padding:.5rem 1.2rem;
+  font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;
+}
+.print-btn:active{transform:translateY(2px)}
 .legend{display:flex;gap:1rem;font-size:.68rem;color:var(--ink-soft);flex-wrap:wrap;justify-content:center}
 .legend span{display:inline-flex;align-items:center;gap:.3rem}
 .legend i{width:.6rem;height:.6rem;border-radius:50%;display:inline-block}
@@ -192,10 +199,10 @@ const ROSTER_API = `https://${PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/$
 
 /* 样例小朋友：万一名单还没读到（离线 / 新学年还没录入），先看看效果 */
 const SAMPLE_STUDENTS = [
-  { display:"罗大韦", className:"elephant", img:null },
-  { display:"陈小美", className:"tiger",    img:null },
-  { display:"王强强", className:"elephant", img:null },
-  { display:"李丽丽", className:"tiger",    img:null },
+  { display:"罗大韦", nameEn:"David Luo",  className:"elephant", img:null },
+  { display:"陈小美", nameEn:"Amy Chen",   className:"tiger",    img:null },
+  { display:"王强强", nameEn:"Jack Wang",  className:"elephant", img:null },
+  { display:"李丽丽", nameEn:"Lily Li",    className:"tiger",    img:null },
 ];
 
 let roster = [];
@@ -206,7 +213,7 @@ let rosterLoaded = false;
     const r = await fetch(ROSTER_API);
     const d = await r.json();
     roster = (d.result||[])
-      .map(s => ({ display: s.nameZh || s.name || s.nameEn || "", className: s.className, img: s.img }))
+      .map(s => ({ display: s.nameZh || s.name || s.nameEn || "", nameEn: s.nameEn || "", className: s.className, img: s.img }))
       .filter(s => s.display);
   }catch(e){}
   rosterLoaded = true;
@@ -619,7 +626,71 @@ const GIVEN = {
   "弗":"A soft, understated character used mainly for its sound.",
   "詹":"An old, dignified character used mainly for its sound.",
   "考":"To examine closely — thoughtful and studious.",
-  "莱":"A type of grain in classical texts — nourishing and wholesome."
+  "莱":"A type of grain in classical texts — nourishing and wholesome.",
+  "佳":"Good, fine, and excellent.",
+  "加":"To add — increase and growth.",
+  "家":"Home and family — belonging and warmth.",
+  "嘉":"Excellent, admirable, and joyous.",
+  "力":"Strength and power.",
+  "立":"To stand firm and establish oneself.",
+  "利":"Sharp, favorable, and beneficial.",
+  "莉":"Jasmine flower — delicate fragrance.",
+  "俐":"Clever and quick-witted (as in 伶俐).",
+  "栋":"A ridgepole — the main beam of a house, a pillar of strength.",
+  "沁":"To seep in gently, like a cool, refreshing feeling.",
+  "泓":"A deep, clear pool of water.",
+  "鸿":"A wild swan or goose — grand ambitions (as in 鸿图).",
+  "翎":"A bird's feather — light and graceful.",
+  "翊":"To assist and support, like wings helping flight.",
+  "翌":"The next day — looking ahead to a fresh start.",
+  "翼":"Wings — the power to soar.",
+  "颜":"One's face and countenance — dignity and expression.",
+  "颂":"To praise and sing in honor of.",
+  "颐":"To nurture and take good care of.",
+  "颢":"Bright and vast, like a clear sky.",
+  "馨":"A far-reaching, lingering fragrance — virtue that spreads.",
+  "韵":"Rhyme and grace — refined charm.",
+  "音":"Sound — music and harmony.",
+  "韶":"Beautiful, often describing youth — linked to fine classical music.",
+  "央":"The center — the heart of things.",
+  "旻":"The autumn sky — vast and clear.",
+  "昭":"Bright and clear; to make evident.",
+  "炫":"Dazzling and brilliant.",
+  "烁":"Sparkling and shining.",
+  "燃":"To burn brightly — full of passion and energy.",
+  "炎":"A blazing flame — energy and passion; also linked to the legendary Yan Emperor.",
+  "培":"To cultivate and nurture growth.",
+  "淳":"Simple, honest, and pure-hearted.",
+  "澄":"Clear and transparent, like still water.",
+  "沂":"Named for the Yi River — a classical, gentle place name.",
+  "汐":"The evening tide — calm and rhythmic.",
+  "渝":"Unchanging (as in 矢志不渝) — steadfast loyalty.",
+  "滢":"Clear, sparkling water.",
+  "澈":"Thoroughly clear, like pure water.",
+  "熙":"Bright and prosperous, full of vitality.",
+  "煊":"Radiant warmth, like brilliant sunshine.",
+  "炯":"Bright and shining, as in alert, sparkling eyes.",
+  "昶":"A long, bright day.",
+  "晏":"Calm, clear, and peaceful.",
+  "晔":"Bright and glorious.",
+  "晟":"Bright and flourishing.",
+  "杭":"Named for the beautiful city of Hangzhou.",
+  "栩":"Lifelike and vivid, full of character.",
+  "桦":"Birch tree — resilience in cold climates.",
+  "楠":"Nanmu tree — a fine, precious hardwood.",
+  "榕":"Banyan tree — broad, sheltering strength.",
+  "槿":"Rose of Sharon — gentle, hibiscus-like beauty.",
+  "杉":"Fir or cedar tree — steady and evergreen.",
+  "柳":"Willow tree — graceful and flexible.",
+  "枫":"Maple tree — vivid autumn beauty.",
+  "橙":"Orange — warmth and vitality.",
+  "文":"Literature and culture — refined and scholarly.",
+  "武":"Martial and valiant — strength and discipline.",
+  "恒":"Constant and enduring.",
+  "阿":"A friendly, affectionate prefix used before names.",
+  "克":"Used mainly for its crisp sound in transliterated names (like Mark or Frederick); also means “to overcome.”",
+  "里":"A traditional unit of distance; also phonetic, as in Larry or Riley.",
+  "斯":"A soft, common sound used in many transliterated Western names."
 };
 
 function pinyinFor(char){
@@ -753,7 +824,8 @@ function renderHome(){
         b.appendChild(el("div","pic-fallback","🙋"));
       }
       b.appendChild(el("b",null,s.display));
-      b.appendChild(el("small",null, s.className==="elephant"?"🐘 Elephants":s.className==="tiger"?"🐯 Tigers":""));
+      const classLabel = s.className==="elephant"?"🐘 Elephants":s.className==="tiger"?"🐯 Tigers":"";
+      b.appendChild(el("small",null, s.nameEn || classLabel));
       b.onclick=()=>go("detail", s.display);
       grid.appendChild(b);
     });
@@ -848,9 +920,20 @@ function renderDetail(){
   legend.innerHTML = '<span><i class="surname"></i>Family name</span><span><i class="given"></i>Given name</span>';
   dhead.appendChild(legend);
 
+  const actions = el("div","action-row");
+
   const readAll = el("button","read-btn","🔊 Read My Whole Name");
   readAll.onclick=()=>speak(student.display);
-  dhead.appendChild(readAll);
+  actions.appendChild(readAll);
+
+  const printBtn = el("a","print-btn","🖨️ Print Practice Sheet");
+  const childParamHead = encodeURIComponent(view.student||"");
+  printBtn.href = `../tools/name_writing_worksheet.html?student=${encodeURIComponent(student.display)}&from=name&child=${childParamHead}`;
+  printBtn.target = "_blank";
+  printBtn.rel = "noopener";
+  actions.appendChild(printBtn);
+
+  dhead.appendChild(actions);
 
   wrap.appendChild(dhead);
 

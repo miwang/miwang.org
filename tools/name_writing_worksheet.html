@@ -137,6 +137,14 @@ var esc = function (v) {
   });
 };
 
+/* ================= 单个学生模式 =================
+   从"我的中文名字"页面点"打印练习纸"过来时带 ?student=<中文名>，
+   这里就只出这一个孩子的一页，不再管班级下拉框。 */
+var urlParams = new URLSearchParams(location.search);
+var studentFilter = urlParams.get('student') || '';
+var fromParam = urlParams.get('from') || '';
+var childParam = urlParams.get('child') || '';
+
 /* ================= 笔画数据（按字缓存，同姓的孩子不用重复下载） ================= */
 var charCache = {};
 function loadChar(ch) {
@@ -212,6 +220,9 @@ function afterRoster() {
 }
 
 function selectedStudents() {
+  if (studentFilter) {
+    return roster.filter(function (s) { return s.zh === studentFilter; });
+  }
   var cls = $('cls').value;
   return roster.filter(function (s) { return cls === 'all' || s.cls === cls; });
 }
@@ -349,6 +360,21 @@ function render() {
 /* ================= 启动 ================= */
 (function init() {
   buildYearOptions(); // 默认选中当前学年，不用每次手动切换
+
+  if (studentFilter) {
+    // 单人模式：从"我的中文名字"页面过来只打印这一个孩子，班级下拉框用不上，藏起来。
+    var clsField = $('cls').closest('.field');
+    if (clsField) clsField.style.display = 'none';
+    document.querySelector('.panel h1').textContent = '姓名描红练习纸 · ' + studentFilter;
+  }
+
+  if (fromParam === 'name') {
+    var backLink = document.querySelector('.tool-back');
+    if (backLink) {
+      backLink.href = '../units/my-chinese-name.html?child=' + encodeURIComponent(childParam) + '&role=parents';
+      backLink.innerHTML = '<i class="fas fa-arrow-left"></i> Back to My Chinese Name';
+    }
+  }
 
   $('year').addEventListener('change', loadRoster);
   $('cls').addEventListener('change', render);
